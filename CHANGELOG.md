@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.3.0
 
+- **Diagrams artifact.** The built-in `outline` schema adds `diagrams.md` after `design`: the few views (sequence diagram, call tree, state machine, data shapes, table, and so on) that explain the change, chosen from the candidates in its template. It requires `outline`; apply still requires only `tasks`, so it never blocks apply. `propose`, `ff`, and onboarding write it before `tasks`. A project that forked the schema only to add it can drop its fork.
+- **Outline in the summary.** The outline instruction tells the agent to include `outline.md` verbatim when it summarizes the finished workflow.
 - **Shorter prefix.** Skills are `outl-*` (`outl-propose`) and commands are `/outl:propose` or `/outl-propose`, in `outl/` command folders. `init` and `update` remove the old `outline-spec-*` skills and `outline-spec/` commands they generated. The CLI, package, and `outline-spec/` project folder keep their names.
 - **`outl` command.** `outl` runs the CLI too: `outl archive <change>` is `outline-spec archive <change>`.
 
