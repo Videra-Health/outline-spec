@@ -1,5 +1,5 @@
 import { touches } from '../core/outline/outline.js';
-import { hasChangeOutline, listChanges, readChangeEdits } from '../core/outline/specs.js';
+import { editTouches, hasChangeOutline, listChanges, readChangeEdits } from '../core/outline/specs.js';
 import { resolveRootForCommand, toRootOutput } from '../core/root-selection.js';
 
 export interface PendingOptions {
@@ -15,7 +15,7 @@ export interface PendingChange {
 }
 
 /** What each open change's outline touches, and which paths two or more changes share. */
-export function collectPending(changesDir: string): {
+export function collectPending(changesDir: string, specsDir?: string): {
   changes: PendingChange[];
   overlaps: Array<{ path: string; changes: string[] }>;
 } {
@@ -24,7 +24,8 @@ export function collectPending(changesDir: string): {
   for (const name of listChanges(changesDir)) {
     if (!hasChangeOutline(changesDir, name)) continue;
     try {
-      const paths = readChangeEdits(changesDir, name).flatMap(touches);
+      const edits = readChangeEdits(changesDir, name);
+      const paths = specsDir ? editTouches(specsDir, edits) : edits.flatMap((e) => touches(e));
       changes.push({ name, touches: paths });
       for (const p of paths) seen.set(p, [...(seen.get(p) ?? []), name]);
     } catch (e) {
@@ -41,7 +42,7 @@ export async function pendingCommand(options: PendingOptions): Promise<void> {
     failurePayload: { changes: [], overlaps: [], root: null },
   });
   if (!root) return;
-  const result = collectPending(root.changesDir);
+  const result = collectPending(root.changesDir, root.specsDir);
   if (result.changes.some((c) => c.error)) process.exitCode = 1;
   if (options.json) {
     console.log(JSON.stringify({ ...result, root: toRootOutput(root) }, null, 2));

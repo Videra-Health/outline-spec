@@ -2,8 +2,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { Validator } from '../core/validation/validator.js';
 import type { RootOutput } from '../core/root-selection.js';
-import { touches, writeSpec } from '../core/outline/outline.js';
-import { CHANGE_OUTLINE, describePlan, planEdits, readChangeEdits } from '../core/outline/specs.js';
+import { writeSpec } from '../core/outline/outline.js';
+import { CHANGE_OUTLINE, describePlan, editTouches, planEdits, readChangeEdits } from '../core/outline/specs.js';
 import { isInteractive } from '../utils/interactive.js';
 import { getActiveChangeIds } from '../utils/item-discovery.js';
 import { describeNestedChange, findNestedChangesIn } from '../utils/nested-change.js';
@@ -113,7 +113,7 @@ export class ChangeCommand {
       const output = {
         id: changeName,
         outline,
-        touches: edits.flatMap(touches),
+        touches: editTouches(this.getSpecsPath(), edits),
         ...(archived ? { archived } : {}),
         ...(archiveError ? { archiveError: archiveError.split('\n') } : {}),
         ...(options.rootOutput ? { root: options.rootOutput } : {}),

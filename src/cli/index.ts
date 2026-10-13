@@ -519,7 +519,7 @@ program
   .option('--type <type>', 'Specify item type when ambiguous: change|spec')
   .option('--no-interactive', 'Disable interactive prompts')
   .option('--diff', 'Show the spec text archiving the change would produce (change)')
-  .option('--item <path>', 'Show one item, e.g. "Catalog" or "Catalog.n.ii" (spec)')
+  .option('--item <path>', 'Show one item or table row, e.g. "Catalog", "Catalog.n.ii", or "Catalog.overdrive" (spec)')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   // Explicit registration required: allowUnknownOption would otherwise
   // silently swallow --store-path instead of rejecting it deliberately.

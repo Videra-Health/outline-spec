@@ -1,7 +1,7 @@
 /** Reads and writes outline specs and change outlines on disk. */
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs';
 import path from 'path';
-import { applyEdit, parseChange, parseSpec, writeSpec, type Spec, type SpecEdit } from './outline.js';
+import { applyEdit, parseChange, parseSpec, touches, writeSpec, type Spec, type SpecEdit } from './outline.js';
 import { folderStyleNameProblem } from '../id.js';
 
 export const CHANGE_OUTLINE = 'outline.md';
@@ -66,6 +66,19 @@ export function planEdits(specsDir: string, edits: SpecEdit[]): SpecPlan {
   }
   if (errors.length) throw new Error(errors.join('\n'));
   return out;
+}
+
+/** What each edit touches, read against the live spec when it parses so new table rows read as adds. */
+export function editTouches(specsDir: string, edits: SpecEdit[]): string[] {
+  return edits.flatMap((edit) => {
+    let live: Spec | null | undefined;
+    try {
+      live = specNameProblem(edit.spec) ? undefined : readLiveSpec(specsDir, edit.spec);
+    } catch {
+      live = undefined;
+    }
+    return touches(edit, live);
+  });
 }
 
 export function planChange(specsDir: string, changesDir: string, change: string): SpecPlan {

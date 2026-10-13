@@ -54,6 +54,14 @@ describe('outline-spec adopt', () => {
     expect(existsSync(at('.claude/skills/outline-spec-propose'))).toBe(false);
   });
 
+  it('keeps an outline spec that already has a table', async () => {
+    const ships = '# ships\nHulls.\n\n1. Catalog: Hulls.\n  | id | Mass |\n  |---|---|\n  | m60 | 25 |\n';
+    write('openspec/specs/ships/spec.md', ships);
+    const r = await cli();
+    expect(r.exitCode).toBe(0);
+    expect(read('outline-spec/specs/ships/spec.md')).toBe(ships);
+  });
+
   it('writes nothing on --dry-run', async () => {
     const r = await cli('--dry-run', '--json');
 

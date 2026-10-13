@@ -1,8 +1,10 @@
 import { readFileSync, promises as fs } from 'fs';
 import path from 'path';
 import { ValidationReport, ValidationIssue } from './types.js';
-import { kindAt, labelFor, labelValue, parseSpec, reqName, type Node } from '../outline/outline.js';
-import { CHANGE_OUTLINE, planEdits, readChangeEdits } from '../outline/specs.js';
+import { kindAt, labelFor, labelValue, parseSpec, reqName, type Node, type Spec } from '../outline/outline.js';
+import { CHANGE_OUTLINE, planEdits, readChangeEdits, readLiveSpec, specNameProblem } from '../outline/specs.js';
+import { findItem } from '../outline/item.js';
+import { tableProblems } from '../outline/table.js';
 import { FileSystemUtils } from '../../utils/file-system.js';
 import {
   METADATA_FILENAME,
@@ -15,6 +17,8 @@ import { findTaskNumberingIssues } from './task-numbering.js';
 import { findMissingTaskCheckboxIssues } from './task-checkboxes.js';
 import { getPackageSchemasDir, getSchemaDir } from '../artifact-graph/index.js';
 
+// `(see \`spec\` Item, Column)`: Item is a requirement name or an item path as `show --item` takes it.
+const REFERENCE = /\(see `([^`]+)` ([^,()]+), ([^()]+)\)/g;
 const LABEL_SHAPE = { num: /^[1-9][0-9]*$/, alpha: /^[a-z]+$/, roman: /^[ivxlcdm]+$/ } as const;
 
 export class Validator {
@@ -32,11 +36,13 @@ export class Validator {
     } catch (error) {
       return this.createReport([{ level: 'ERROR', path: 'file', message: (error as Error).message }]);
     }
-    return this.validateSpecContent(specName, content);
+    // A nested id like `area/name` sits that many folders below specs/.
+    const specsDir = specId ? path.join(path.dirname(filePath), ...specId.split('/').map(() => '..')) : undefined;
+    return this.validateSpecContent(specName, content, specsDir);
   }
 
-  /** Checks a spec's text: it parses as an outline with a purpose and well-formed labels. */
-  async validateSpecContent(specName: string, content: string): Promise<ValidationReport> {
+  /** Checks a spec's text: it parses as an outline with a purpose and well-formed labels and tables; `specsDir` resolves cross-references. */
+  async validateSpecContent(specName: string, content: string, specsDir?: string): Promise<ValidationReport> {
     const issues: ValidationIssue[] = [];
     const src = content.replace(/\r\n/g, '\n');
     let spec;
@@ -70,7 +76,58 @@ export class Validator {
       names.add(name);
     }
     issues.push(...this.labelIssues(spec.items, 0, ''));
+    issues.push(...this.referenceIssues(spec, specsDir));
     return this.createReport(issues);
+  }
+
+  /** Warns on `(see \`spec\` Item, Column)` references whose spec, item, or column doesn't exist. */
+  private referenceIssues(spec: Spec, specsDir?: string): ValidationIssue[] {
+    const issues: ValidationIssue[] = [];
+    const cache = new Map<string, Spec | null>([[spec.name, spec]]);
+    const load = (name: string): Spec | null | undefined => {
+      if (cache.has(name)) return cache.get(name);
+      if (!specsDir || specNameProblem(name)) return undefined;
+      let found: Spec | null;
+      try {
+        found = readLiveSpec(specsDir, name);
+      } catch {
+        found = null;
+      }
+      cache.set(name, found);
+      return found;
+    };
+    const scan = (text: string, where: string) => {
+      for (const m of text.matchAll(REFERENCE)) {
+        const [ref, name] = m;
+        const [item, column] = [m[2].trim(), m[3].trim()];
+        const target = load(name);
+        if (target === undefined) continue;
+        let problem: string | null = null;
+        if (!target) problem = `no spec "${name}"`;
+        else {
+          try {
+            const found = findItem(target, item);
+            if (found.row) problem = `"${item}" is a table row, not an item`;
+            else if (!found.node.table) problem = `${name} › ${item} has no table`;
+            else if (!found.node.table.columns.includes(column)) problem = `${name} › ${item} has no column "${column}"`;
+          } catch {
+            problem = `${name} has no item "${item}"`;
+          }
+        }
+        if (problem) issues.push({ level: 'WARNING', path: where, message: `Reference ${ref}: ${problem}` });
+      }
+    };
+    scan(spec.purpose, 'purpose');
+    const walk = (nodes: Node[], prefix: string) => {
+      for (const n of nodes) {
+        const here = `${prefix}${n.label}`;
+        scan(n.text, here);
+        for (const r of n.table?.rows ?? []) r.forEach((c) => scan(c, `${here} › ${r[0]}`));
+        walk(n.children, `${here}.`);
+      }
+    };
+    walk(spec.items, '');
+    return issues;
   }
 
   private labelIssues(nodes: Node[], depth: number, prefix: string): ValidationIssue[] {
@@ -92,6 +149,7 @@ export class Validator {
       if (seen.has(n.label)) issues.push({ level: 'ERROR', path: here, message: `Duplicate label "${n.label}." among its siblings` });
       seen.add(n.label);
       if (!n.text.trim()) issues.push({ level: 'ERROR', path: here, message: `Item ${here} has no text` });
+      for (const p of n.table ? tableProblems(n.table) : []) issues.push({ level: p.level, path: here, message: `Table: ${p.message}` });
       issues.push(...this.labelIssues(n.children, depth + 1, `${here}.`));
     }
     return issues;

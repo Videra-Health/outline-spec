@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'fs';
 import path, { join } from 'path';
 import { parseSpec, type Spec } from '../core/outline/outline.js';
-import { findItem, writeItem } from '../core/outline/item.js';
+import { findItem, rowObject, writeItem } from '../core/outline/item.js';
 import { Validator } from '../core/validation/validator.js';
 import type { RootOutput } from '../core/root-selection.js';
 import { isInteractive } from '../utils/interactive.js';
@@ -93,7 +93,7 @@ export class SpecCommand {
       const spec = parseSpecFromFile(this.specsDir, specPath);
       const found = findItem(spec, options.item);
       if (options.json) {
-        const out = { name: spec.name, item: options.item, node: found.node, ...(options.rootOutput ? { root: options.rootOutput } : {}) };
+        const out = { name: spec.name, item: options.item, ...(found.row ? { row: rowObject(found) } : { node: found.node }), ...(options.rootOutput ? { root: options.rootOutput } : {}) };
         console.log(JSON.stringify(out, null, 2));
       } else {
         console.log(writeItem(found));

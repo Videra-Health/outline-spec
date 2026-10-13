@@ -65,6 +65,57 @@ describe('validateSpecContent', () => {
   });
 });
 
+describe('validateSpecContent tables', () => {
+  it('accepts a well-formed table', async () =>
+    expect(await check(spec('1. Radar: A.\n  | id | Range |\n  |---|---|\n  | short | 5 |\n  a. Detail.\n'))).toMatchObject({ valid: true, issues: [] }));
+
+  it('reports table problems as errors and a blank column as a warning', async () => {
+    expect(await messages(spec('1. Radar: A.\n  | id | Range | Note |\n  |---|---|---|\n  | short | 5 |  |\n  | Long | 9 |  |\n  | short | 1 |\n'))).toEqual([
+      'ERROR 1: Table: id "Long" must be lowercase letters, digits, "_", ".", or "-", starting with a letter or digit',
+      'ERROR 1: Table: row "short" has 2 cells; the header has 3',
+      'ERROR 1: Table: duplicate id "short"',
+      'WARNING 1: Table: column "Note" is blank in every row',
+    ]);
+    expect(await messages(spec('1. Radar: A.\n  | name |\n  |---|\n  | a |\n'))).toEqual(['ERROR 1: Table: a table\'s first column must be "id", not "name"']);
+    expect(await messages(spec('1. Radar: A.\n  |   |\n  |---|\n  |  |\n'))).toContain('ERROR 1: Table: row 1 has no id');
+  });
+
+  it('reports a misplaced or second table', async () => {
+    expect((await check(spec('1. Radar: A.\n    | id |\n    |---|\n'))).issues[0].message).toContain('directly under its item');
+    expect((await check(spec('1. Radar: A.\n  | id |\n  |---|\n\n  | id |\n  |---|\n'))).issues[0].message).toContain('at most one table');
+  });
+
+  describe('cross-references', () => {
+    let dir: string;
+    beforeEach(() => {
+      dir = mkdtempSync(path.join(os.tmpdir(), 'outline-spec-refs-'));
+      mkdirSync(path.join(dir, 'ships'));
+      writeFileSync(path.join(dir, 'ships', 'spec.md'), '# ships\nHulls.\n\n1. Catalog: Hulls.\n  | id | Mass |\n  |---|---|\n  | m60 | 25 |\n2. Plain: No table.\n');
+    });
+    afterEach(() => rmSync(dir, { recursive: true, force: true }));
+    const refs = async (text: string) =>
+      (await new Validator().validateSpecContent('radar', spec(text), dir)).issues.map((i) => `${i.level} ${i.path}: ${i.message}`);
+
+    it('accepts references that resolve, in other specs and its own', async () =>
+      expect(await refs('1. Radar: Range grows with mass (see `ships` Catalog, Mass).\n2. Range: Ranges.\n  | id | Km |\n  |---|---|\n  | a | 1 |\n  a. Uses (see `radar` Range, Km).\n')).toEqual([]));
+
+    it('warns on a missing spec, item, table, or column', async () =>
+      expect(await refs('1. Radar: A (see `nope` Catalog, Mass).\n  a. B (see `ships` Nope, Mass).\n  b. C (see `ships` Plain, Mass).\n  c. D (see `ships` Catalog, Speed).\n')).toEqual([
+        'WARNING 1: Reference (see `nope` Catalog, Mass): no spec "nope"',
+        'WARNING 1.a: Reference (see `ships` Nope, Mass): ships has no item "Nope"',
+        'WARNING 1.b: Reference (see `ships` Plain, Mass): ships › Plain has no table',
+        'WARNING 1.c: Reference (see `ships` Catalog, Speed): ships › Catalog has no column "Speed"',
+      ]));
+
+    it('finds references through validateSpec on a file', async () => {
+      mkdirSync(path.join(dir, 'radar'));
+      const f = path.join(dir, 'radar', 'spec.md');
+      writeFileSync(f, spec('1. Radar: A (see `ships` Catalog, Speed).\n'));
+      expect((await new Validator().validateSpec(f, 'radar')).issues).toEqual([expect.objectContaining({ level: 'WARNING', path: '1' })]);
+    });
+  });
+});
+
 describe('validateChange', () => {
   let root: string;
   const changesDir = () => path.join(root, 'outline-spec', 'changes');
