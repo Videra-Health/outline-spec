@@ -1,27 +1,8 @@
 # Contributing
 
-Thanks for helping improve OpenSpec.
+Open an issue first for anything beyond a small fix, so we can agree on the approach before you build it.
 
-## 1. Open a discussion or an issue first
-
-Every change starts here, including small ones.
-
-- [Start a discussion](https://github.com/Fission-AI/OpenSpec/discussions) if it affects OpenSpec's core design.
-- [Open an issue](https://github.com/Fission-AI/OpenSpec/issues) for bugs and everything else.
-
-This is so we can agree on the approach before you spend time building. PRs without a linked issue or a prior discussion may be closed.
-
-## 2. Decide whether it needs a change proposal
-
-A bug fix, a typo, or a small improvement goes straight to a PR.
-
-A new feature, a significant refactor, or anything that changes OpenSpec's architecture needs an OpenSpec change proposal first, so we can align on intent and goals before implementation begins. Open it as a PR containing only `openspec/changes/<name>/` and wait for it to be approved before you write the code.
-
-When writing a proposal, keep the OpenSpec philosophy in mind: we serve a wide variety of users across different coding agents, models, and use cases. Changes should work well for everyone.
-
-If you are not sure which side of the line your change falls on, ask in the discussion or issue from step 1.
-
-## 3. Make your change
+## Setup
 
 You need Node 20.19+ and pnpm.
 
@@ -33,24 +14,23 @@ pnpm exec tsc --noEmit
 pnpm lint
 ```
 
-Those four commands are what CI runs, so a green local run means a green CI run.
+CI runs the same four checks.
 
-Run `pnpm changeset` if your change affects users, and commit the file it generates.
+## Changing behavior
 
-### Keep the CLI's startup fast
+This repo plans its own changes with outline-spec: specs live in `outline-spec/specs/`, and a larger change starts as `outline-spec/changes/<name>/` ([Workflows](docs/workflows.md)). Update `docs/` in the same change when behavior a user can see changes.
 
-Editors, agents and OpenSpec Desktop run the CLI many times, and each call pays for every module it loads before the command runs. Before this rule, `openspec --version` loaded 485 modules: about 0.5 s per call on a Windows machine. So a command loads only the command definitions and its own code:
+After editing a workflow template in `src/core/templates/`, run `pnpm build && pnpm generate:skills && pnpm regen:parity-hashes` and commit the regenerated `skills/` and hashes.
 
-- **Definitions** (name, options, help text) go in `src/cli/index.ts` or `src/cli/commands/<name>.ts`. Import nothing heavy there: no zod, yaml, fast-glob, ora, and no other command's code.
-- **The command's code** goes in `src/commands/<name>.ts` or `src/core/`, loaded inside the action with `await import()`.
+## Keep the CLI's startup fast
 
-`test/cli-e2e/startup-modules.test.ts` checks which modules each command loads, and fails if a definition starts pulling in an implementation. When you add a command, add it to that test's list.
+Each command loads only its definition and its own code:
 
-## 4. Open the PR
+- Definitions (name, options, help) go in `src/cli/index.ts` or `src/cli/commands/<name>.ts`, with no heavy imports.
+- The implementation goes in `src/commands/<name>.ts` or `src/core/`, loaded inside the action with `await import()`.
 
-- Branch off `main` in your fork.
-- Title it as a conventional commit: `type(scope): subject`, for example `fix(archive): keep authored Purpose`.
-- Link what you opened in step 1: `Closes #123` for an issue, or a link to the discussion when there is no issue.
-- If a coding agent wrote the code, say which agent and model, and confirm you tested it. AI-generated code is welcome when it has been verified.
+`test/cli-e2e/startup-modules.test.ts` checks which modules each command loads. Add new commands to its list.
 
-Maintainers are listed in [MAINTAINERS.md](MAINTAINERS.md).
+## Pull requests
+
+Branch off `main`, link the issue, and say how you verified the change. If a coding agent wrote it, name the agent and model and confirm you tested the result.

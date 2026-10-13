@@ -11,7 +11,8 @@ project. The skills drive the `outline-spec` CLI, so for the full setup (CLI +
 `outline-spec/` project scaffolding + slash commands) run:
 
 ```bash
-npx outline-spec@latest init
+npm install -g github:heneryville/outline-spec
+outline-spec init
 ```
 
 > These files are generated from the skill templates — do not edit by hand. Run

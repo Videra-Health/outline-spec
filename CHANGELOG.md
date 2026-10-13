@@ -1,4 +1,19 @@
-# @fission-ai/openspec
+# Changelog
+
+## 0.1.0
+
+First release of outline-spec, forked from OpenSpec 1.14.1.
+
+- **Outline specs.** Specs are labeled outlines (`1.` / `a.` / `i.`) whose labels never shift. A change's `outline.md` lists only the items it adds, edits, or removes, marked with `~~removed~~` and `**added**`, and merges by label, so parallel changes to different details of one requirement no longer overwrite each other. Format: [docs/outlines.md](docs/outlines.md).
+- **New commands.** `land` applies a change's outline to the live specs and deletes the change folder; `pending` lists what open changes touch and where they overlap; `relabel` closes label gaps; `migrate-specs` converts old `### Requirement:` specs; `adopt` moves an OpenSpec project's `openspec/` to `outline-spec/` and converts its specs. `show --item` and `show --diff` read single items and a change's landed result.
+- **One schema.** The built-in `outline` schema: `outline.md`, an optional `design.md`, and `tasks.md`. `spec-driven` is gone.
+- **Workflows.** `land` replaces archive; `archive` is kept as an old name for it. `sync` and `bulk-archive` are removed.
+- **Renamed** to outline-spec: package, `outline-spec` CLI, `outline-spec/` project folder, `OUTLINE_SPEC_*` environment variables, `outline-spec-*` skills, and `/outline-spec:` commands. outline-spec leaves OpenSpec's files alone, so both can be installed in one project.
+- **Removed:** delta specs, scenarios and SHALL/MUST checks, spec sync, the `changes/archive/` folder and `list --archived`, telemetry, the npm update check, cleanup of legacy OpenSpec files, the docs site, and npm release automation.
+
+# OpenSpec history before the fork
+
+The entries below are OpenSpec's changelog (`@fission-ai/openspec`) up to 1.14.1, kept as published upstream.
 
 ## 1.14.1
 
