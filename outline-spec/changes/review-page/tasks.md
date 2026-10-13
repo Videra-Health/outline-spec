@@ -10,9 +10,9 @@
 
 ## 2. Page data
 
-- [ ] 2.1 Build the banner from `validateChange` and `collectPending` overlaps; test a clean change, an invalid one, and two overlapping changes.
-- [ ] 2.2 Build the `spec-changes` view from `planChange`: per spec new/removed, per requirement added/edited/removed, edited ones as `diffWords` segments of live vs planned text, table edits from pending; test each case against fixture specs.
-- [ ] 2.3 Build markdown tabs from `from` files in order, skipping missing files and dropping all-missing tabs; test both.
+- [x] 2.1 Build the banner from `validateChange` and `collectPending` overlaps; test a clean change, an invalid one, and two overlapping changes.
+- [x] 2.2 Build the `spec-changes` view from `planChange`: per spec new/removed, per requirement added/edited/removed, edited ones as `diffWords` segments of live vs planned text, table edits from pending; test each case against fixture specs.
+- [x] 2.3 Build markdown tabs from `from` files in order, skipping missing files and dropping all-missing tabs; test both.
 
 ## 3. Template and command
 

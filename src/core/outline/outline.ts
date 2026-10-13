@@ -390,15 +390,20 @@ function applyTable(node: Node, edit: Table, here: string, errors: string[]) {
   for (const p of tableProblems(t)) if (p.level === "ERROR") err(`: ${p.message}`);
 }
 
-/** Every requirement › label path an edit touches, for spotting overlap between pending changes. Pass the live spec to tell new table rows from edited ones. */
-export function touches(edit: SpecEdit, live?: Spec | null): string[] {
+/** Every requirement › label path an edit touches, for spotting overlap between pending changes. Pass the live spec to tell new table rows from edited ones; `tablePaths` collects the table ones. */
+export function touches(edit: SpecEdit, live?: Spec | null, tablePaths?: string[]): string[] {
   const out: string[] = [];
   const known = live !== undefined;
+  const tableTouchesOf = (...args: Parameters<typeof tableTouches>) => {
+    const from = out.length;
+    tableTouches(...args);
+    tablePaths?.push(...out.slice(from));
+  };
   const walk = (nodes: Node[], liveNodes: Node[] | undefined, prefix: string) =>
     nodes.forEach((n) => {
       const ln = liveNodes?.find((l) => l.label === n.label);
       if (marksOf(n.text) !== "none" || (n.text && !n.children.length && !n.table)) out.push(`${prefix}${n.label}`);
-      if (n.table && marksOf(n.text) === "none" && (!known || ln)) tableTouches(n.table, ln?.table, known, `${prefix}${n.label}`, out);
+      if (n.table && marksOf(n.text) === "none" && (!known || ln)) tableTouchesOf(n.table, ln?.table, known, `${prefix}${n.label}`, out);
       walk(n.children, ln?.children, `${prefix}${n.label}.`);
     });
   for (const req of edit.node.children) {
@@ -408,7 +413,7 @@ export function touches(edit: SpecEdit, live?: Spec | null): string[] {
     const name = sides(line.name).old || sides(line.name).new;
     if (whole || !line.patch || marksOf(line.sentence) !== "none" || marksOf(line.name) !== "none") out.push(`${edit.spec} › ${name}`);
     const liveReq = live?.items.find((n) => reqName(n.text) === name);
-    if (req.table && !whole && line.patch) tableTouches(req.table, liveReq?.table, known && !!liveReq, `${edit.spec} › ${name}`, out);
+    if (req.table && !whole && line.patch) tableTouchesOf(req.table, liveReq?.table, known && !!liveReq, `${edit.spec} › ${name}`, out);
     walk(req.children, liveReq?.children, `${edit.spec} › ${name} › `);
   }
   return out;
