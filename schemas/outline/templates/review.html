@@ -160,25 +160,32 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
 .req-head .was { color: var(--muted); font-size: var(--step--1); }
 .req-head .was s { color: var(--del-fg); }
 .req-body { display: grid; grid-template-columns: minmax(0, 1fr); }
-.req-body.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.req-body.two > .side + .side { border-left: 1px solid var(--rule); }
-@media (max-width: 44rem) {
-  .req-body.two { grid-template-columns: minmax(0, 1fr); }
-  .req-body.two > .side + .side { border-left: 0; border-top: 1px solid var(--rule); }
-}
 .side { padding: 0.75rem 1rem 0.9rem; min-width: 0; display: grid; gap: 0.35rem; align-content: start; }
 .side-label { font: 500 0.6875rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .req-text { min-width: 0; overflow-x: auto; }
 .req-text .line { white-space: pre-wrap; overflow-wrap: anywhere; }
 .req-text .line + .line { margin-top: 0.2rem; }
-.req-text .line.item { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); padding-left: calc(var(--depth, 0) * 1.4rem); }
+.req-text .line.item { display: grid; grid-template-columns: minmax(1.6rem, max-content) minmax(0, 1fr); column-gap: 0.3rem; padding-left: calc(var(--depth, 0) * 1.4rem); }
 .req-text .line > .label { font: 500 var(--step--1)/1.6 var(--font-mono); color: var(--muted); }
 .req-text .line > .label.seg-add, .req-text .line > .label.seg-del { justify-self: start; }
 .req-text code { font: 0.86em var(--font-mono); background: var(--sunk); padding: 0.05em 0.25em; border-radius: 3px; }
 .req-text .seg-add code, .req-text .seg-del code { background: transparent; }
 .req.removed .req-text { color: var(--muted); }
-.edits { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; padding: 0.6rem 1rem; border-top: 1px solid var(--rule); background: var(--sunk); border-radius: 0 0 6px 6px; }
-.edits .side-label { margin-right: 0.25rem; }
+.req-text .table-wrap { margin: 0.35rem 0 0.35rem calc(var(--depth, 0) * 1.4rem + 1.6rem); }
+.req-text .seg-del + .seg-add { margin-left: 0.3em; }
+.req-text td .seg-del, .req-text td .seg-add { white-space: nowrap; }
+.req-text tr.row-add td { background: var(--add-bg); color: var(--add-fg); }
+.req-text tr.row-del td { background: var(--del-bg); color: var(--del-fg); text-decoration: line-through; text-decoration-thickness: 1px; }
+.req-text th.col-add, .req-text td.col-add { background: var(--add-bg); color: var(--add-fg); }
+.req-text th.col-del, .req-text td.col-del { background: var(--del-bg); color: var(--del-fg); text-decoration: line-through; text-decoration-thickness: 1px; }
+.req-text tr.fold td { background: var(--sunk); padding: 0; }
+.unfold { appearance: none; display: block; width: 100%; margin: 0.2rem 0; padding: 0.3rem 0.6rem; border: 1px dashed var(--rule); border-radius: 4px; background: none; color: var(--muted); font: 500 var(--step--1)/1.3 var(--font-mono); text-align: left; cursor: pointer; }
+.req-text tr.fold .unfold { margin: 0; border: 0; border-radius: 0; }
+.unfold:hover { color: var(--ink); border-color: var(--ink); }
+.unfold:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+.edits { padding: 0.6rem 1rem; border-top: 1px solid var(--rule); background: var(--sunk); border-radius: 0 0 6px 6px; }
+.edits summary { cursor: pointer; }
+.edits .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.5rem; }
 .chip { padding: 0.15rem 0.4rem; border-radius: 3px; background: var(--surface); border: 1px solid var(--rule); }
 .empty { color: var(--muted); padding: 1rem 0; }
 .notice { border: 1px solid var(--fail); border-radius: 6px; padding: 0.85rem 1rem; display: grid; gap: 0.4rem; }
@@ -246,13 +253,15 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
 
   // Outline rendering: "## Requirements" items become a labeled tree instead of Markdown lists
   const ITEM = /^( *)([0-9]+|[a-z]+)\.(?: (.*))?$/;
+  // Outline marks become tags first: Markdown won't open bold mid-word before punctuation, as in `space**, its`
+  const outlineInline = (s) => inline(s.replace(/~~(.+?)~~/g, '<del>$1</del>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'));
   function renderTable(lines) {
     const cells = (l) => l.trim().replace(/^\|/, '').replace(/\|$/, '').split(/(?<!\\)\|/).map((c) => c.trim().replace(/\\\|/g, '|'));
     const head = cells(lines[0]);
     const rows = lines.slice(2).map(cells);
     return el('div', { class: 'table-wrap' }, el('table', {},
-      el('thead', {}, el('tr', {}, head.map((h) => el('th', { html: inline(h) })))),
-      el('tbody', {}, rows.map((r) => el('tr', {}, r.map((c) => el('td', { html: inline(c) })))))));
+      el('thead', {}, el('tr', {}, head.map((h) => el('th', { html: outlineInline(h) })))),
+      el('tbody', {}, rows.map((r) => el('tr', {}, r.map((c) => el('td', { html: outlineInline(c) })))))));
   }
   function renderOutline(text) {
     const root = el('ol', { class: 'outline depth-0' });
@@ -276,7 +285,7 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
       const m = ITEM.exec(line);
       if (!m) continue;
       const depth = Math.min(Math.floor(m[1].length / 2), items.length);
-      const li = el('li', {}, el('span', { class: 'label' }, `${m[2]}.`), el('span', { class: 'item-text', html: inline(m[3] || '') }));
+      const li = el('li', {}, el('span', { class: 'label' }, `${m[2]}.`), el('span', { class: 'item-text', html: outlineInline(m[3] || '') }));
       (depth === 0 ? root : sublist(items[depth - 1], depth)).append(li);
       items[depth] = li;
       items.length = depth + 1;
@@ -325,61 +334,95 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
   // Backtick spans become code only within one piece, so a span never crosses a diff mark
   const code = (s) => escapeHtml(s).replace(/`([^`]+)`/g, '<code>$1</code>');
   const piece = (p) => (p.cls ? `<span class="${p.cls}">${code(p.text)}</span>` : code(p.text));
-  const segsHtml = (segs, side) => segs
-    .filter((s) => (side === 'live' ? !s.added : !s.removed))
-    .map((s) => piece({ text: s.text, cls: s.added ? 'seg-add' : s.removed ? 'seg-del' : '' }))
-    .join('');
-  // Splits segments into lines of pieces, so each line is its own element
-  function segLines(segs, side) {
-    const lines = [[]];
-    for (const s of segs) {
-      if (side === 'live' ? s.added : s.removed) continue;
-      const cls = s.added ? 'seg-add' : s.removed ? 'seg-del' : '';
-      s.text.split('\n').forEach((t, i) => {
-        if (i > 0) lines.push([]);
-        if (t) lines[lines.length - 1].push({ text: t, cls });
-      });
-    }
-    return lines;
-  }
   const LABEL = /^( *)([0-9]+|[a-z]+)\. /;
-  function textBlock(lines) {
-    const box = el('div', { class: 'req-text' });
-    for (const pieces of lines) {
-      const line = el('div', { class: 'line' });
-      const first = pieces[0];
-      const m = first && LABEL.exec(first.text);
-      if (m) {
-        line.classList.add('item');
-        line.style.setProperty('--depth', String(m[1].length / 2));
-        line.append(el('span', { class: `label ${first.cls}` }, `${m[2]}.`));
-        pieces[0] = { text: first.text.slice(m[0].length), cls: first.cls };
-      }
-      line.append(el('span', { class: 'text', html: pieces.map(piece).join('') || (m ? '' : '&nbsp;') }));
-      box.append(line);
+  const pieces = (segs) => segs.map((s) => ({ text: s.text, cls: s.added ? 'seg-add' : s.removed ? 'seg-del' : '' }));
+  const depthOf = (l) => ('table' in l ? l.depth : Math.floor(((l.segments[0] || { text: '' }).text.match(/^ */)[0].length) / 2));
+  function textLine(segs) {
+    const parts = pieces(segs);
+    const line = el('div', { class: 'line' });
+    const first = parts[0];
+    const m = first && LABEL.exec(first.text);
+    if (m) {
+      line.classList.add('item');
+      line.style.setProperty('--depth', String(m[1].length / 2));
+      line.append(el('span', { class: `label ${first.cls}` }, `${m[2]}.`));
+      parts[0] = { text: first.text.slice(m[0].length), cls: first.cls };
     }
+    line.append(el('span', { class: 'text', html: parts.map(piece).join('') || (m ? '' : '&nbsp;') }));
+    return line;
+  }
+  const cellHtml = (segs) => pieces(segs).map(piece).join('');
+  // Unchanged rows of a changed table fold behind a row that shows them
+  function diffTable(t, depth, fold) {
+    const cls = (s) => (s.added ? 'col-add' : s.removed ? 'col-del' : '');
+    const rowEl = (r) => el('tr', { class: r.added ? 'row-add' : r.removed ? 'row-del' : '' },
+      r.cells.map((c, i) => el('td', { class: cls(t.columns[i]), html: cellHtml(c) })));
+    const body = el('tbody');
+    let hidden = [];
+    const flush = () => {
+      if (hidden.length < 2) { body.append(...hidden.map(rowEl)); hidden = []; return; }
+      const rows = hidden.map(rowEl);
+      const btn = el('button', { type: 'button', class: 'unfold' }, `Show ${rows.length} unchanged ${rows.length === 1 ? 'row' : 'rows'}`);
+      const tr = el('tr', { class: 'fold' }, el('td', { colspan: String(t.columns.length) }, btn));
+      btn.addEventListener('click', () => tr.replaceWith(...rows));
+      body.append(tr);
+      hidden = [];
+    };
+    for (const r of t.rows) {
+      if (fold && !r.changed) { hidden.push(r); continue; }
+      flush();
+      body.append(rowEl(r));
+    }
+    flush();
+    const wrap = el('div', { class: 'table-wrap' }, el('table', {},
+      el('thead', {}, el('tr', {}, t.columns.map((c) => el('th', { class: cls(c), html: cellHtml([c]) })))), body));
+    wrap.style.setProperty('--depth', String(depth));
+    return wrap;
+  }
+  const lineEl = (l, fold) => ('table' in l ? diffTable(l.table, l.depth, fold && l.changed) : textLine(l.segments));
+  // An edited requirement keeps its first sentence, each changed line, and the items each sits under; the rest folds
+  function diffBlock(lines, fold) {
+    const box = el('div', { class: 'req-text' });
+    const keep = lines.map((l, i) => !fold || i === 0 || !!l.changed);
+    lines.forEach((l, i) => {
+      if (!l.changed || !fold) return;
+      let d = depthOf(l);
+      for (let j = i - 1; j >= 0 && d > 0; j--) {
+        if ('table' in lines[j]) continue;
+        const dj = depthOf(lines[j]);
+        if (dj < d) { keep[j] = true; d = dj; }
+      }
+    });
+    let hidden = [];
+    const flush = () => {
+      const els = hidden.map((l) => lineEl(l, false));
+      hidden = [];
+      if (els.length < 2) { box.append(...els); return; }
+      const btn = el('button', { type: 'button', class: 'unfold' }, `Show ${els.length} unchanged ${els.length === 1 ? 'line' : 'lines'}`);
+      btn.addEventListener('click', () => btn.replaceWith(...els));
+      box.append(btn);
+    };
+    lines.forEach((l, i) => {
+      if (!keep[i]) { hidden.push(l); return; }
+      flush();
+      box.append(lineEl(l, fold));
+    });
+    flush();
     return box;
   }
-  const plainLines = (text) => text.split('\n').map((t) => (t ? [{ text: t, cls: '' }] : []));
   function renderRequirement(spec, r) {
     const head = el('div', { class: 'req-head' },
       el('span', { class: 'label' }, `${r.label}.`),
       el('h3', {}, r.name),
       r.renamedFrom ? el('span', { class: 'was' }, 'renamed from ', el('s', {}, r.renamedFrom)) : null,
       el('span', { class: `tag ${r.kind}` }, r.kind));
-    const body = el('div', { class: 'req-body' });
-    const side = (label, lines) => el('div', { class: 'side' }, el('span', { class: 'side-label' }, label), textBlock(lines));
-    if (r.kind === 'edited') {
-      body.classList.add('two');
-      body.append(side('Live', segLines(r.segments, 'live')), side('After archive', segLines(r.segments, 'after')));
-    } else if (r.kind === 'added') {
-      body.append(side('After archive', plainLines(r.after || '')));
-    } else {
-      body.append(side('Live, dropped on archive', plainLines(r.live || '')));
-    }
+    const label = { edited: 'Changes on archive', added: 'After archive', removed: 'Live, dropped on archive' }[r.kind];
+    const body = el('div', { class: 'req-body' },
+      el('div', { class: 'side' }, el('span', { class: 'side-label' }, label), diffBlock(r.lines || [], r.kind === 'edited')));
     const card = el('article', { class: `req ${r.kind}`, id: `req-${spec}-${r.label}` }, head, body);
     if (r.tableEdits && r.tableEdits.length) {
-      card.append(el('div', { class: 'edits' }, el('span', { class: 'side-label' }, 'Table edits'), r.tableEdits.map((t) => el('span', { class: 'chip' }, t))));
+      card.append(el('details', { class: 'edits' }, el('summary', { class: 'side-label' }, `${r.tableEdits.length} table ${r.tableEdits.length === 1 ? 'edit' : 'edits'}`),
+        el('div', { class: 'chips' }, r.tableEdits.map((t) => el('span', { class: 'chip' }, t)))));
     }
     return card;
   }
@@ -399,7 +442,7 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
         s.status !== 'changed' ? el('span', { class: `tag ${s.status}` }, s.status === 'new' ? 'new spec' : 'removed spec') : null,
         el('span', { class: 'summary' }, counts.map(([k, n]) => `${n} ${k}`).join(' · ')));
       const section = el('section', { class: 'spec', id: `spec-${s.name}` }, head);
-      if (s.purpose && s.status === 'changed') section.append(el('div', { class: 'purpose', html: `Purpose: ${segsHtml(s.purpose, 'live')} → ${segsHtml(s.purpose, 'after')}` }));
+      if (s.purpose && s.status === 'changed') section.append(el('div', { class: 'purpose', html: `Purpose: ${cellHtml(s.purpose)}` }));
       else if (s.purpose) section.append(el('div', { class: 'purpose' }, s.purpose.map((p) => p.text).join('')));
       section.append(...s.requirements.map((r) => renderRequirement(s.name, r)));
       wrap.append(section);

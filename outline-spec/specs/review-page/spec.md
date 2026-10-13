@@ -18,9 +18,11 @@ A rendered page a developer reads to check a change before approving it.
   e. A view tab shows a view the CLI computes; `spec-changes` is the one view.
 3. Spec changes view: The `spec-changes` view SHALL list every spec the change touches, and under each, every requirement it adds, edits, or removes.
   a. Each requirement is tagged added, edited, or removed, and each spec is tagged new or removed when the change creates or deletes it.
-  b. An edited requirement shows its live text beside the text it will have after archive, with the changed words marked.
-  c. An added requirement shows its full text, and a removed one shows the live text it drops.
-  d. Table edits show the changed cells, rows, and columns, as `outline-spec pending` reports them.
+  b. An edited requirement shows one diff: each changed line with its removed words struck and its added words bold, matched line by line so a word is only ever compared with the line it replaced.
+  c. An added requirement shows its full text, and a removed one shows the live text it drops, with tables drawn as tables.
+  d. Table edits list, behind a toggle, the changed cells, rows, and columns, as `outline-spec pending` reports them.
+  e. A table in an edited requirement renders as a table: a changed cell shows its old value struck beside its new value in bold, an added or removed row or column is marked whole, and cells are compared only with the same row and column.
+  f. Runs of two or more unchanged lines or table rows fold behind a control that shows them, leaving each changed line with the items it sits under and the requirement's first sentence in view.
 4. Banner: The page SHALL open with a banner stating whether the change passes `outline-spec validate`, listing each error when it fails.
   a. The banner names every other open change that touches the same requirements, with the requirements they share.
   b. A change that validates and overlaps nothing shows a one-line passing banner.
