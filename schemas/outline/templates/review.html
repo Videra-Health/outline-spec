@@ -110,8 +110,17 @@ body {
 .md table, .req-text table { border-collapse: collapse; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
 .md th, .md td, .req-text th, .req-text td { border: 1px solid var(--rule); padding: 0.3rem 0.6rem; text-align: left; vertical-align: top; }
 .md th, .req-text th { background: var(--sunk); font-weight: 600; }
-.diagram { overflow-x: auto; margin: 0 0 1rem; padding: 1rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; }
-.diagram svg { max-width: 100%; height: auto; }
+/* Designs: each runs in a sandboxed frame; the box pads below it so its resize grip stays outside the frame */
+.design { resize: vertical; overflow: hidden; height: 80vh; min-height: 12rem; padding-bottom: 0.75rem; background: var(--sunk); border: 1px solid var(--rule); border-radius: 6px; }
+.design iframe { display: block; width: 100%; height: 100%; border: 0; border-bottom: 1px solid var(--rule); background: #fff; }
+.diagram { position: relative; overflow: hidden; margin: 0 0 1rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; cursor: grab; touch-action: none; }
+.diagram.dragging { cursor: grabbing; }
+.diagram > pre { margin: 0; padding: 1rem; cursor: auto; }
+.diagram .stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.diagram .stage svg { display: block; max-width: none; }
+.diagram .zoom { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem; }
+.diagram .zoom button { min-width: 2rem; padding: 0.2rem 0.5rem; font: 500 var(--step--1)/1.4 var(--font-body); color: var(--fg); background: var(--sunk); border: 1px solid var(--rule); border-radius: 4px; cursor: pointer; }
+.diagram .zoom button:hover { border-color: var(--ink); }
 
 /* Outline requirements: labeled items, with marks read as a diff */
 .outline { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: 0.3rem; }
@@ -264,6 +273,12 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     }
     return root;
   }
+  // No allow-same-origin, so a design's scripts run but can't reach this page
+  function renderDesign(name, html) {
+    const frame = el('iframe', { title: name, sandbox: 'allow-scripts allow-forms allow-modals allow-popups', loading: 'lazy' });
+    frame.srcdoc = html;
+    return el('div', { class: 'design' }, frame);
+  }
   function renderMarkdown(name, text) {
     const wrap = el('div', { class: 'md' });
     const req = name === 'outline.md' ? /^## Requirements\s*$/m.exec(text) : null;
@@ -394,7 +409,9 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     panel.hidden = true;
     if (tab.kind === 'spec-changes') panel.append(renderSpecChanges(tab));
     else panel.append(el('div', { class: 'files' }, tab.files.map((f) =>
-      el('div', { class: 'file' }, tab.files.length > 1 ? el('span', { class: 'file-name' }, f.name) : null, renderMarkdown(f.name, f.markdown)))));
+      f.kind === 'html'
+        ? el('div', { class: 'file' }, el('span', { class: 'file-name' }, f.name), renderDesign(f.name, f.markdown))
+        : el('div', { class: 'file' }, tab.files.length > 1 ? el('span', { class: 'file-name' }, f.name) : null, renderMarkdown(f.name, f.markdown)))));
     btn.addEventListener('click', () => select(i, true));
     btn.addEventListener('keydown', (e) => {
       const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
@@ -419,6 +436,78 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     panels.append(el('p', { class: 'empty' }, 'This change has none of the files the review page shows.'));
   }
 
+  // Drag to pan; pinch, Ctrl/⌘-scroll, or the buttons to zoom; double-click to fit
+  function panZoom(d) {
+    const svg = d.querySelector('svg');
+    const stage = d.querySelector('.stage');
+    const box = svg.viewBox.baseVal;
+    const w = box && box.width ? box.width : svg.getBBox().width;
+    const h = box && box.height ? box.height : svg.getBBox().height;
+    svg.removeAttribute('style');
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+    const z = d.zoom || (d.zoom = { s: 1, x: 0, y: 0, fitted: false });
+    const apply = () => { stage.style.transform = `translate(${z.x}px, ${z.y}px) scale(${z.s})`; };
+    const zoomAt = (f, cx, cy) => {
+      const s = Math.min(8, Math.max(0.1, z.s * f));
+      z.x = cx - (cx - z.x) * (s / z.s);
+      z.y = cy - (cy - z.y) * (s / z.s);
+      z.s = s;
+      apply();
+    };
+    // Fit to width, but no smaller than 75% so labels stay readable; pan for the rest.
+    const fit = () => {
+      const cw = d.clientWidth;
+      if (!cw) return;
+      z.s = Math.max(0.75, Math.min(1.25, (cw - 32) / w));
+      z.x = Math.max(16, (cw - w * z.s) / 2);
+      z.y = 16;
+      d.style.height = `${Math.min(h * z.s + 32, innerHeight * 0.75)}px`;
+      z.fitted = true;
+      apply();
+    };
+    const bar = el('div', { class: 'zoom' });
+    [['−', 'Zoom out', () => zoomAt(1 / 1.25, d.clientWidth / 2, d.clientHeight / 2)],
+     ['+', 'Zoom in', () => zoomAt(1.25, d.clientWidth / 2, d.clientHeight / 2)],
+     ['Fit', 'Fit to width', fit]].forEach(([label, title, fn]) => {
+      const b = el('button', { type: 'button', title, 'aria-label': title }, label);
+      b.addEventListener('click', fn);
+      b.addEventListener('pointerdown', (e) => e.stopPropagation());
+      bar.append(b);
+    });
+    d.append(bar);
+    d.fit = fit;
+    d.zoomAt = zoomAt;
+    if (z.fitted) { d.style.height || fit(); apply(); } else fit();
+    if (d.dataset.panZoom) return;
+    d.dataset.panZoom = '1';
+    let drag = null;
+    d.addEventListener('pointerdown', (e) => {
+      if (!d.zoom || e.button !== 0) return;
+      drag = { px: e.clientX, py: e.clientY, x: d.zoom.x, y: d.zoom.y };
+      d.setPointerCapture(e.pointerId);
+      d.classList.add('dragging');
+    });
+    d.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      d.zoom.x = drag.x + e.clientX - drag.px;
+      d.zoom.y = drag.y + e.clientY - drag.py;
+      d.querySelector('.stage').style.transform = `translate(${d.zoom.x}px, ${d.zoom.y}px) scale(${d.zoom.s})`;
+    });
+    const end = () => { drag = null; d.classList.remove('dragging'); };
+    d.addEventListener('pointerup', end);
+    d.addEventListener('pointercancel', end);
+    d.addEventListener('wheel', (e) => {
+      if (!d.zoom || !(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      const r = d.getBoundingClientRect();
+      d.zoomAt(Math.exp(-e.deltaY * 0.002), e.clientX - r.left, e.clientY - r.top);
+    }, { passive: false });
+    d.addEventListener('dblclick', (e) => { if (!e.target.closest('.zoom')) d.fit(); });
+    // A diagram drawn in a hidden tab has no width yet; fit it once it shows.
+    new ResizeObserver(() => { if (d.clientWidth && d.zoom && !d.zoom.fitted) d.fit(); }).observe(d);
+  }
+
   // Mermaid, themed from the page tokens and redrawn when the theme flips
   async function drawDiagrams() {
     if (!diagrams.length) return;
@@ -434,6 +523,7 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
       theme: 'base',
       fontFamily: v('--font-body'),
       themeVariables: {
+        fontSize: '18px',
         background: v('--surface'), primaryColor: v('--ink-soft'), primaryTextColor: v('--fg'), primaryBorderColor: v('--ink'),
         secondaryColor: v('--sunk'), tertiaryColor: v('--surface'), lineColor: v('--muted'), textColor: v('--fg'),
         actorBkg: v('--ink-soft'), actorBorder: v('--ink'), actorTextColor: v('--fg'), signalColor: v('--fg'), signalTextColor: v('--fg'),
@@ -444,8 +534,11 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     for (const [i, d] of diagrams.entries()) {
       try {
         const { svg } = await mermaid.render(`diagram-${i}-${Date.now()}`, d.dataset.source);
-        d.innerHTML = svg;
+        d.innerHTML = `<div class="stage">${svg}</div>`;
+        panZoom(d);
       } catch (e) {
+        d.zoom = null;
+        d.style.height = '';
         d.innerHTML = `<pre>${escapeHtml(d.dataset.source)}</pre>`;
       }
     }
