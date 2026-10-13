@@ -152,7 +152,7 @@ export async function runCLI(args: string[] = [], options: RunCLIOptions = {}): 
       env: mergeEnv(
         process.env,
         {
-          OPEN_SPEC_INTERACTIVE: '0',
+          OUTLINE_SPEC_INTERACTIVE: '0',
           XDG_CONFIG_HOME: explicitConfigHome ?? isolatedConfigHome,
         },
         options.env

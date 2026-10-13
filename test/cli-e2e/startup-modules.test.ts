@@ -66,7 +66,7 @@ function loadedModules(args: string[]): {
     cwd: workDir,
     env: {
       ...process.env,
-      OPEN_SPEC_INTERACTIVE: '0',
+      OUTLINE_SPEC_INTERACTIVE: '0',
       XDG_CONFIG_HOME: path.join(workDir, 'config'),
       XDG_DATA_HOME: path.join(workDir, 'data'),
       OUTLINE_SPEC_TEST_MODULE_LOG: logFile,

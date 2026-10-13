@@ -37,7 +37,7 @@ describe('workset journey (7.1 e2e)', () => {
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
       XDG_CONFIG_HOME: path.join(tempDir, 'config'),
-      OPEN_SPEC_INTERACTIVE: '0',
+      OUTLINE_SPEC_INTERACTIVE: '0',
       PATH: path.dirname(process.execPath),
     };
     globalDataDir = getGlobalDataDir({ env });

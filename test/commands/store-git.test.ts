@@ -63,7 +63,7 @@ describe('store git lifecycle', () => {
     env = {
       XDG_DATA_HOME: dataHome,
       XDG_CONFIG_HOME: configHome,
-      OPEN_SPEC_INTERACTIVE: '0',
+      OUTLINE_SPEC_INTERACTIVE: '0',
     };
     globalDataDir = getGlobalDataDir({ env });
 
@@ -108,7 +108,7 @@ describe('store git lifecycle', () => {
       XDG_CONFIG_HOME: configHome,
       ...isolatedGitEnv(tempDir),
     };
-    delete process.env.OPEN_SPEC_INTERACTIVE;
+    delete process.env.OUTLINE_SPEC_INTERACTIVE;
     delete process.env.CI;
     process.chdir(tempDir);
     (process.stdin as NodeJS.ReadStream & { isTTY?: boolean }).isTTY = true;

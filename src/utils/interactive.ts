@@ -24,7 +24,7 @@ export function resolveNoInteractive(value?: boolean | InteractiveOptions): bool
 
 export function isInteractive(value?: boolean | InteractiveOptions): boolean {
   if (resolveNoInteractive(value)) return false;
-  if (process.env.OPEN_SPEC_INTERACTIVE === '0') return false;
+  if (process.env.OUTLINE_SPEC_INTERACTIVE === '0') return false;
   // Respect the standard CI environment variable (set by GitHub Actions, GitLab CI, Travis, etc.)
   if ('CI' in process.env) return false;
   return !!process.stdin.isTTY;
@@ -49,7 +49,7 @@ export function isInteractive(value?: boolean | InteractiveOptions): boolean {
  *   terminal, so the SIGINT signal - not the terminal - is what proves
  *   somebody was there and chose to quit.
  *
- * Beyond that it defers to `isInteractive()`, so `CI`, `OPEN_SPEC_INTERACTIVE=0`
+ * Beyond that it defers to `isInteractive()`, so `CI`, `OUTLINE_SPEC_INTERACTIVE=0`
  * and `--no-interactive` count even when a runner allocated a pty. It also
  * counts a redirected stdout: `confirmPrompt` drops to the plain reader whenever
  * *either* stream is not a TTY, so a stdin-TTY-but-stdout-redirected run

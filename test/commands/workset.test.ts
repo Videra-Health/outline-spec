@@ -37,7 +37,7 @@ describe('outline-spec workset (7.1)', () => {
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
       XDG_CONFIG_HOME: path.join(tempDir, 'config'),
-      OPEN_SPEC_INTERACTIVE: '0',
+      OUTLINE_SPEC_INTERACTIVE: '0',
       // Fully controlled PATH: node (for the fake-tool shims) plus
       // whatever fakes each test prepends. Real editors/agents on the
       // host machine must never be reachable from these tests.
@@ -861,7 +861,7 @@ describe('interactive compose cancellation (in-process)', () => {
     process.env.XDG_DATA_HOME = path.join(tempDir, 'data');
     process.env.XDG_CONFIG_HOME = path.join(tempDir, 'config');
     delete process.env.CI;
-    delete process.env.OPEN_SPEC_INTERACTIVE;
+    delete process.env.OUTLINE_SPEC_INTERACTIVE;
     process.env.OUTLINE_SPEC_ENABLE_CLI_AGENT_OPENERS = '1';
     // Deterministic tool availability for the wizard's [3/3] step:
     // exactly one fake claude on PATH, regardless of the host machine.
@@ -1061,12 +1061,12 @@ describe('interactive compose cancellation (in-process)', () => {
     const setup = new Command();
     setup.exitOverride();
     registerWorksetCommand(setup);
-    process.env.OPEN_SPEC_INTERACTIVE = '0';
+    process.env.OUTLINE_SPEC_INTERACTIVE = '0';
     await setup.parseAsync(
       ['workset', 'create', 'platform', '--member', memberDir],
       { from: 'user' }
     );
-    delete process.env.OPEN_SPEC_INTERACTIVE;
+    delete process.env.OUTLINE_SPEC_INTERACTIVE;
     process.exitCode = undefined;
 
     const program = new Command();

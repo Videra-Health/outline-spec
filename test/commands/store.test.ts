@@ -63,7 +63,7 @@ describe('store command', () => {
     env = {
       XDG_DATA_HOME: dataHome,
       XDG_CONFIG_HOME: configHome,
-      OPEN_SPEC_INTERACTIVE: '0',
+      OUTLINE_SPEC_INTERACTIVE: '0',
     };
     globalDataDir = getGlobalDataDir({ env });
 
@@ -190,7 +190,7 @@ describe('store command', () => {
       XDG_DATA_HOME: dataHome,
       XDG_CONFIG_HOME: configHome,
     };
-    delete process.env.OPEN_SPEC_INTERACTIVE;
+    delete process.env.OUTLINE_SPEC_INTERACTIVE;
     delete process.env.CI;
     process.chdir(tempDir);
     (process.stdin as NodeJS.ReadStream & { isTTY?: boolean }).isTTY = true;
@@ -455,7 +455,7 @@ describe('store command', () => {
       XDG_DATA_HOME: dataHome,
       XDG_CONFIG_HOME: configHome,
     };
-    delete process.env.OPEN_SPEC_INTERACTIVE;
+    delete process.env.OUTLINE_SPEC_INTERACTIVE;
     delete process.env.CI;
     process.chdir(tempDir);
     (process.stdin as NodeJS.ReadStream & { isTTY?: boolean }).isTTY = true;
@@ -499,7 +499,7 @@ describe('store command', () => {
       XDG_DATA_HOME: dataHome,
       XDG_CONFIG_HOME: configHome,
     };
-    delete process.env.OPEN_SPEC_INTERACTIVE;
+    delete process.env.OUTLINE_SPEC_INTERACTIVE;
     delete process.env.CI;
     process.chdir(tempDir);
     (process.stdin as NodeJS.ReadStream & { isTTY?: boolean }).isTTY = true;
@@ -637,7 +637,7 @@ describe('store command', () => {
       XDG_DATA_HOME: dataHome,
       XDG_CONFIG_HOME: configHome,
     };
-    delete process.env.OPEN_SPEC_INTERACTIVE;
+    delete process.env.OUTLINE_SPEC_INTERACTIVE;
     delete process.env.CI;
     process.chdir(tempDir);
     (process.stdin as NodeJS.ReadStream & { isTTY?: boolean }).isTTY = true;

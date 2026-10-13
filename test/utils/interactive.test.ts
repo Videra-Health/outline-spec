@@ -16,22 +16,22 @@ describe('interactive utilities', () => {
 
   beforeEach(() => {
     // Save original environment
-    originalOutlineSpecInteractive = process.env.OPEN_SPEC_INTERACTIVE;
+    originalOutlineSpecInteractive = process.env.OUTLINE_SPEC_INTERACTIVE;
     originalCI = process.env.CI;
     originalStdinIsTTY = process.stdin.isTTY;
     originalStdoutIsTTY = process.stdout.isTTY;
 
     // Clear environment for clean testing
-    delete process.env.OPEN_SPEC_INTERACTIVE;
+    delete process.env.OUTLINE_SPEC_INTERACTIVE;
     delete process.env.CI;
   });
 
   afterEach(() => {
     // Restore original environment
     if (originalOutlineSpecInteractive !== undefined) {
-      process.env.OPEN_SPEC_INTERACTIVE = originalOutlineSpecInteractive;
+      process.env.OUTLINE_SPEC_INTERACTIVE = originalOutlineSpecInteractive;
     } else {
-      delete process.env.OPEN_SPEC_INTERACTIVE;
+      delete process.env.OUTLINE_SPEC_INTERACTIVE;
     }
     if (originalCI !== undefined) {
       process.env.CI = originalCI;
@@ -103,8 +103,8 @@ describe('interactive utilities', () => {
       expect(isInteractive({ interactive: false })).toBe(false);
     });
 
-    it('should return false when OPEN_SPEC_INTERACTIVE env var is 0', () => {
-      process.env.OPEN_SPEC_INTERACTIVE = '0';
+    it('should return false when OUTLINE_SPEC_INTERACTIVE env var is 0', () => {
+      process.env.OUTLINE_SPEC_INTERACTIVE = '0';
       Object.defineProperty(process.stdin, 'isTTY', { value: true, writable: true, configurable: true });
       expect(isInteractive({})).toBe(false);
     });
@@ -197,9 +197,9 @@ describe('interactive utilities', () => {
       expect(isNonInteractivePromptError(failure)).toBe(true);
       delete process.env.CI;
 
-      process.env.OPEN_SPEC_INTERACTIVE = '0';
+      process.env.OUTLINE_SPEC_INTERACTIVE = '0';
       expect(isNonInteractivePromptError(failure)).toBe(true);
-      delete process.env.OPEN_SPEC_INTERACTIVE;
+      delete process.env.OUTLINE_SPEC_INTERACTIVE;
 
       expect(isNonInteractivePromptError(failure, { interactive: false })).toBe(true);
     });

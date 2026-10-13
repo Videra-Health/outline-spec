@@ -56,7 +56,7 @@ describe('store root selection for normal commands', () => {
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
       XDG_CONFIG_HOME: path.join(tempDir, 'config'),
-      OPEN_SPEC_INTERACTIVE: '0',
+      OUTLINE_SPEC_INTERACTIVE: '0',
     };
     globalDataDir = getGlobalDataDir({ env });
     appRepo = path.join(tempDir, 'app-repo');

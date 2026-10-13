@@ -27,7 +27,7 @@ describe('store canonical remote (3.3)', () => {
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
       XDG_CONFIG_HOME: path.join(tempDir, 'config'),
-      OPEN_SPEC_INTERACTIVE: '0',
+      OUTLINE_SPEC_INTERACTIVE: '0',
       ...isolatedGitEnv(tempDir),
     };
     globalDataDir = getGlobalDataDir({ env });
