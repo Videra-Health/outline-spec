@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- **Designs.** The `outline` schema adds an optional `designs` artifact: self-contained HTML pages in `designs/`, written only when a change adds or changes something a person sees. The review page shows them in a Designs tab, each running in a sandboxed, resizable frame; a change without designs has no Designs tab. Review tab `from` entries accept globs, and `update` republishes the page when a design changes.
+- **Designs.** The `outline` schema adds an optional `designs` artifact: self-contained HTML pages in `designs/`, written only when a change adds or changes something a person sees. The review page shows them in a Designs tab, each running in a sandboxed frame the full width and height of the window, with a Full screen button; a change without designs has no Designs tab. Review tab `from` entries accept globs, and `update` republishes the page when a design changes.
 - **Optional artifacts.** A schema artifact with `optional: true` doesn't block dependents or planning completion while missing, is left out of the `status` count and next step, and shows as `(optional)` in `status` and `view`. Status JSON marks it `optional: true`.
 - **Diagram checks.** `validate` reports each Mermaid block in a change's Markdown files that Mermaid can't parse, by file and line, using the Mermaid version the review page draws with. The review page draws diagrams at column width; clicking one opens a lightbox to zoom and pan.
 - **Review page only with a developer present.** `propose` and `update` skip the review page for subagents, headless or scripted runs, and CI.

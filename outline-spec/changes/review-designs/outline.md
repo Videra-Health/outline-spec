@@ -14,9 +14,9 @@ A change that adds or changes something a person sees can carry visual designs a
     b. Update renders the page after a revision that changes `outline.md` **or a design**, and skips it when only other artifacts changed.
   d. Designs: A change that adds or changes something a person sees can carry visual designs, which the review page shows as working pages.
     a. The `outline` schema has an optional `designs` artifact (see `artifact-graph`), written only when the change has a visual surface, as one self-contained HTML page per design in the change's `designs/` folder.
-    b. Each design shows the full tab width in its own frame, labeled with its file name, running its own styles and scripts as it would on its own.
+    b. Each design shows the full window width in its own frame, labeled with its file name, running its own styles and scripts as it would on its own.
     c. A design's scripts cannot read or change the review page around it.
-    d. A frame starts most of the window tall, scrolls on its own, and the developer can drag it taller or shorter.
+    d. A frame fills the window's height below the tab bar and scrolls on its own, and a Full screen button beside its file name shows it full screen.
     e. A change with no designs shows no Designs tab (see Tabs).
     f. Designs are planning files, so archive deletes them with the change folder and they never reach the live specs.
 2. artifact-graph:

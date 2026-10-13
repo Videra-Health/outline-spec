@@ -14,7 +14,7 @@ flowchart LR
     any -- no --> drop["tab left off"]
     any -- yes --> ext{"extension"}
     ext -- ".md" --> md["Markdown, Mermaid drawn"]
-    ext -- ".html" --> frame["sandboxed frame, resizable"]
+    ext -- ".html" --> frame["sandboxed frame, full window"]
 ```
 
 Where a design lives across a change's life.

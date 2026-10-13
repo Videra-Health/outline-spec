@@ -111,8 +111,13 @@ body {
 .md th, .md td, .req-text th, .req-text td { border: 1px solid var(--rule); padding: 0.3rem 0.6rem; text-align: left; vertical-align: top; }
 .md th, .req-text th { background: var(--sunk); font-weight: 600; }
 /* Designs: each runs in a sandboxed frame; the box pads below it so its resize grip stays outside the frame */
-.design { resize: vertical; overflow: hidden; height: 80vh; min-height: 12rem; padding-bottom: 0.75rem; background: var(--sunk); border: 1px solid var(--rule); border-radius: 6px; }
-.design iframe { display: block; width: 100%; height: 100%; border: 0; border-bottom: 1px solid var(--rule); background: #fff; }
+/* Designs break out of the page column to the full window width, and fill the window below the tab bar */
+body { overflow-x: clip; }
+.design { width: 100vw; margin-inline: calc(50% - 50vw); height: calc(100dvh - 3rem); min-height: 20rem; background: #fff; border-block: 1px solid var(--rule); }
+.design iframe { display: block; width: 100%; height: 100%; border: 0; }
+.design-head { display: flex; align-items: baseline; gap: 0.75rem; }
+.design-head button { appearance: none; border: 1px solid var(--rule); background: var(--surface); color: var(--fg); font: 500 var(--step--1)/1.3 var(--font-body); padding: 0.2rem 0.55rem; border-radius: 4px; cursor: pointer; }
+.design-head button:hover { border-color: var(--ink); }
 .diagram { overflow-x: auto; margin: 0 0 1rem; padding: 1rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; cursor: zoom-in; }
 .diagram:hover, .diagram:focus-visible { border-color: var(--ink); outline: none; }
 .diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
@@ -282,7 +287,10 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
   function renderDesign(name, html) {
     const frame = el('iframe', { title: name, sandbox: 'allow-scripts allow-forms allow-modals allow-popups', loading: 'lazy' });
     frame.srcdoc = html;
-    return el('div', { class: 'design' }, frame);
+    const box = el('div', { class: 'design' }, frame);
+    const full = el('button', { type: 'button', title: 'Show this design full screen' }, 'Full screen');
+    full.addEventListener('click', () => box.requestFullscreen?.());
+    return el('div', { class: 'file' }, el('div', { class: 'design-head' }, el('span', { class: 'file-name' }, name), full), box);
   }
   function renderMarkdown(name, text) {
     const wrap = el('div', { class: 'md' });
@@ -415,7 +423,7 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     if (tab.kind === 'spec-changes') panel.append(renderSpecChanges(tab));
     else panel.append(el('div', { class: 'files' }, tab.files.map((f) =>
       f.kind === 'html'
-        ? el('div', { class: 'file' }, el('span', { class: 'file-name' }, f.name), renderDesign(f.name, f.markdown))
+        ? renderDesign(f.name, f.markdown)
         : el('div', { class: 'file' }, tab.files.length > 1 ? el('span', { class: 'file-name' }, f.name) : null, renderMarkdown(f.name, f.markdown)))));
     btn.addEventListener('click', () => select(i, true));
     btn.addEventListener('keydown', (e) => {
