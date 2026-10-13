@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Review page.** `outline-spec review <change>` renders one HTML page to check a change before approving it: a validation and overlap banner, then tabs for the outline, the diagrams and design, and the spec changes, with live and after-archive text side by side and changed words marked. `propose` and `update` publish it when the agent can publish a page, and record its link with `--url`. A schema's `review` block sets the template and tabs; `review-on` and `review.tabs` in `config.yaml` turn it off or swap the tabs.
+
 ## 0.4.0
 
 - **Sync.** `outline-spec sync <change>` (`outl sync`) applies a change's `## Requirements` edits to the live specs now and keeps the change open. It selects, checks, and writes all or nothing like `archive`, but doesn't check tasks. It then moves the applied section verbatim into `applied/<YYYY-MM-DD>-<n>.md` in the change folder and leaves `## Requirements` empty. Flags: `--dry-run`, `--yes`, `--json`, `--store`. Format: [docs/outlines.md](docs/outlines.md#applied-records).

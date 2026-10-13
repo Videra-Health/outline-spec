@@ -21,7 +21,7 @@
 - [x] 3.3 Add `outline-spec review <change>` with `--json`, `--for <workflow>`, `--url <link>`, `--out <path>` (relative to cwd, parents created); default temp path via `path.join(os.tmpdir(), 'outline-spec-review', <hash>-<basename>, '<change>.html')`; payload escaped against `</script>`. CLI e2e tests for render, `--out`, `--for` gated off, `--url` recorded, unknown change, and a schema with no review block.
 - [ ] 3.4 Assert expected paths with `path.join` in tests so they pass on the Windows CI job; check the `windows-pwsh` job is green.
 - [ ] 3.5 Render this change's page, publish it as a private artifact, and check each tab, the banner, and both themes by eye.
-- [ ] 3.6 Add `review` to `docs/cli.md` and a CHANGELOG entry.
+- [x] 3.6 Add `review` to `docs/cli.md` and a CHANGELOG entry.
 
 ## 4. Workflows
 

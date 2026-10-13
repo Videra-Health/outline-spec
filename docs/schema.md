@@ -179,7 +179,7 @@ Pause if you hit blockers or need clarification.
 
 ## review
 
-The review page `outline-spec review <change>` renders ([CLI](cli.md#review)). The schema's `review` block names the page template, in `templates/`, and its tabs:
+The review page `outline-spec review <change>` renders ([CLI](cli.md#outline-spec-review-change)). The schema's `review` block names the page template, in `templates/`, and its tabs:
 
 ```yaml
 review:
