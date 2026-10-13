@@ -3,6 +3,7 @@
 ## Unreleased
 
 - **Shorter prefix.** Skills are `outl-*` (`outl-propose`) and commands are `/outl:propose` or `/outl-propose`, in `outl/` command folders. `init` and `update` remove the old `outline-spec-*` skills and `outline-spec/` commands they generated. The CLI, package, and `outline-spec/` project folder keep their names.
+- **`outl` command.** `outl` runs the CLI too: `outl archive <change>` is `outline-spec archive <change>`.
 
 ## 0.2.0
 

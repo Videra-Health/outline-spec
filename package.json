@@ -31,7 +31,8 @@
     }
   },
   "bin": {
-    "outline-spec": "./bin/outline-spec.js"
+    "outline-spec": "./bin/outline-spec.js",
+    "outl": "./bin/outline-spec.js"
   },
   "files": [
     "dist",
