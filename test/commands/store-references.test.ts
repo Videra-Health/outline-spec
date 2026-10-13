@@ -21,7 +21,6 @@ describe('store references in instructions (3.1)', () => {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
       XDG_CONFIG_HOME: path.join(tempDir, 'config'),
       OPEN_SPEC_INTERACTIVE: '0',
-      OPENSPEC_TELEMETRY: '0',
     };
     globalDataDir = getGlobalDataDir({ env });
 

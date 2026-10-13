@@ -202,7 +202,7 @@ describe('core/completion-tip', () => {
     fs.mkdirSync(path.dirname(configPath), { recursive: true });
     fs.writeFileSync(
       configPath,
-      JSON.stringify({ defaultStore: 'acme', telemetry: { anonymousId: 'abc' } }, null, 2)
+      JSON.stringify({ defaultStore: 'acme', workflows: ['propose'] }, null, 2)
     );
 
     await maybeShowCompletionTip();
@@ -210,6 +210,6 @@ describe('core/completion-tip', () => {
     const raw = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
     expect(raw.completionTipSeen).toBe(true);
     expect(raw.defaultStore).toBe('acme');
-    expect(raw.telemetry.anonymousId).toBe('abc');
+    expect(raw.workflows).toEqual(['propose']);
   });
 });

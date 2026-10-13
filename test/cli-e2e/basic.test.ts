@@ -103,7 +103,7 @@ describe('openspec CLI e2e basics', () => {
   });
 
   describe('version command', () => {
-    it('reports local version and source install details outside an OpenSpec project', async () => {
+    it('reports the local version', async () => {
       const cwd = await fs.mkdtemp(path.join(tmpdir(), 'openspec-version-empty-'));
       tempRoots.push(cwd);
       const pkgRaw = await fs.readFile(path.join(cliProjectRoot, 'package.json'), 'utf-8');
@@ -112,53 +112,22 @@ describe('openspec CLI e2e basics', () => {
       const result = await runCLI(['version'], { cwd });
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toBe(`OpenSpec ${pkg.version} (source)\n`);
+      expect(result.stdout).toBe(`OpenSpec ${pkg.version}\n`);
       expect(result.stderr).toBe('');
     });
 
-    it('prints one schema-versioned JSON document without checking the network', async () => {
+    it('prints one schema-versioned JSON document', async () => {
       const result = await runCLI(['version', '--json']);
 
       expectJsonOnlyOutput(result);
-      expect(result.stdout).not.toMatch(/\u001b\[/);
-      const output = JSON.parse(result.stdout);
-      expect(output).toEqual({
-        schemaVersion: 1,
-        version: expect.any(String),
-        install: {
-          location: expect.any(String),
-          packageManager: null,
-          scope: 'source',
-        },
-      });
-      expect(await fs.realpath(output.install.location)).toBe(await fs.realpath(cliProjectRoot));
+      expect(JSON.parse(result.stdout)).toEqual({ schemaVersion: 1, version: expect.any(String) });
     });
 
-    it('reports a disabled update check as data and exits successfully', async () => {
-      const result = await runCLI(['version', '--check', '--json'], {
-        env: { OPENSPEC_NO_UPDATE_CHECK: '1' },
-      });
+    it('has no update check', async () => {
+      const result = await runCLI(['version', '--check']);
 
-      expectJsonOnlyOutput(result);
-      expect(JSON.parse(result.stdout)).toMatchObject({
-        schemaVersion: 1,
-        update: {
-          status: 'disabled',
-          latest: null,
-          command: null,
-          canSelfUpgrade: false,
-        },
-      });
-    });
-
-    it('renders the disabled check for people', async () => {
-      const result = await runCLI(['version', '--check'], {
-        env: { OPENSPEC_NO_UPDATE_CHECK: '1' },
-      });
-
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toMatch(/^OpenSpec \S+ \(source\)\nUpdate check disabled\.\n$/);
-      expect(result.stderr).toBe('');
+      expect(result.exitCode).toBe(1);
+      expect(result.stderr).toContain("error: unknown option '--check'");
     });
 
     it('rejects upgrades without invoking a package manager', async () => {

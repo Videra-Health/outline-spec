@@ -192,7 +192,7 @@ describe('command completion registry', () => {
     }
   });
 
-  it('tracks store subcommands under the store: telemetry path', () => {
+  it('tracks store subcommands under the store: command path', () => {
     const storeGroup = program.commands.find((child) => child.name() === 'store');
     expect(storeGroup).toBeDefined();
     const setup = storeGroup?.commands.find((child) => child.name() === 'setup');

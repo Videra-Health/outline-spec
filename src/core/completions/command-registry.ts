@@ -57,14 +57,8 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
   },
   {
     name: 'version',
-    description: 'Report the installed OpenSpec version and update availability',
-    flags: [
-      COMMON_FLAGS.json,
-      {
-        name: 'check',
-        description: 'Check the registry for a newer version',
-      },
-    ],
+    description: 'Report the installed OpenSpec version',
+    flags: [COMMON_FLAGS.json],
   },
   {
     name: 'list',

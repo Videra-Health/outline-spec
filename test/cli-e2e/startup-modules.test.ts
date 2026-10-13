@@ -65,7 +65,6 @@ function loadedModules(args: string[]): {
     cwd: workDir,
     env: {
       ...process.env,
-      OPENSPEC_TELEMETRY: '0',
       OPEN_SPEC_INTERACTIVE: '0',
       XDG_CONFIG_HOME: path.join(workDir, 'config'),
       XDG_DATA_HOME: path.join(workDir, 'data'),
