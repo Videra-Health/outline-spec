@@ -14,8 +14,8 @@ import { nearestMatches } from '../utils/match.js';
 
 type ItemType = 'change' | 'spec';
 
-const CHANGE_FLAG_KEYS = new Set(['deltasOnly', 'requirementsOnly', 'diff']);
-const SPEC_FLAG_KEYS = new Set(['requirements', 'scenarios', 'requirement']);
+const CHANGE_FLAG_KEYS = new Set(['diff']);
+const SPEC_FLAG_KEYS = new Set(['item']);
 
 interface ShowExecuteOptions {
   json?: boolean;
@@ -203,10 +203,7 @@ export class ShowCommand {
 
   private warnIrrelevantFlags(type: ItemType, options: { [k: string]: any }): boolean {
     const irrelevant: string[] = [];
-    // --no-scenarios makes commander default `scenarios` to true, so its
-    // presence alone does not mean the user passed it — only false does.
-    const isUserProvided = (k: string) =>
-      k === 'scenarios' ? options[k] === false : k in options;
+    const isUserProvided = (k: string) => options[k] !== undefined;
     if (type === 'change') {
       for (const k of SPEC_FLAG_KEYS) if (isUserProvided(k)) irrelevant.push(k);
     } else {

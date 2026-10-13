@@ -7,7 +7,6 @@ import {
 } from '../utils/nested-change.js';
 import { Validator } from '../core/validation/validator.js';
 import type { ValidationIssue } from '../core/validation/types.js';
-import { VALIDATION_MESSAGES } from '../core/validation/constants.js';
 import {
   resolveRootForCommand,
   toRootOutput,
@@ -19,9 +18,6 @@ import { isInteractive, resolveNoInteractive } from '../utils/interactive.js';
 import { getSpecIds } from '../utils/item-discovery.js';
 import { getAvailableChanges } from './workflow/shared.js';
 import { nearestMatches } from '../utils/match.js';
-import { promises as fs } from 'fs';
-import { getTaskProgressDetailForChange, type SchemaGlobCache } from '../utils/task-progress.js';
-import { FileSystemUtils } from '../utils/file-system.js';
 import { folderStyleNameProblem } from '../core/id.js';
 
 type ItemType = 'change' | 'spec';
@@ -30,7 +26,6 @@ interface ExecuteOptions {
   all?: boolean;
   changes?: boolean;
   specs?: boolean;
-  archived?: boolean;
   report?: string;
   type?: string;
   strict?: boolean;
@@ -50,7 +45,7 @@ interface BulkItemResult {
   durationMs: number;
 }
 
-type BulkScope = 'all' | 'changes' | 'specs' | 'archived';
+type BulkScope = 'all' | 'changes' | 'specs';
 
 interface BulkValidationResult<T extends BulkItemResult = BulkItemResult> {
   items: T[];
@@ -87,13 +82,11 @@ export class ValidateCommand {
         ? `Unknown validation report '${options.report}'.`
         : itemName !== undefined
           ? 'A validation report cannot be combined with an item name.'
-          : options.archived && bulk
-            ? 'A validation report cannot combine archived and active scopes.'
-            : !options.archived && !bulk
-              ? 'A validation report requires an explicit bulk scope.'
-              : undefined;
+          : !bulk
+            ? 'A validation report requires an explicit bulk scope.'
+            : undefined;
       if (message) {
-        const fix = 'Use --report full|findings with --all, --changes, --specs, or --archived, without an item name. Do not combine archived and active scopes.';
+        const fix = 'Use --report full|findings with --all, --changes, or --specs, without an item name.';
         if (options.json) {
           console.log(JSON.stringify({ status: [{ severity: 'error', code: 'invalid_validation_report_request', message, fix }] }, null, 2));
         } else {
@@ -104,8 +97,7 @@ export class ValidateCommand {
         return;
       }
       if (options.report === 'findings') {
-        findingsScope = options.archived ? 'archived'
-          : options.all || (options.changes && options.specs) ? 'all'
+        findingsScope = options.all || (options.changes && options.specs) ? 'all'
             : options.changes ? 'changes' : 'specs';
       }
     }
@@ -118,19 +110,6 @@ export class ValidateCommand {
     }
 
     const interactive = isInteractive(options);
-
-    // Archived-task linting is its own scope: it checks task completion of
-    // already-archived changes, not delta specs (whose operations are already
-    // applied). Handled before the other bulk flags so `--archived` is explicit
-    // and never alters an existing invocation's behavior (#205).
-    if (options.archived) {
-      await this.runArchivedTaskValidation(root, {
-        json: !!options.json,
-        noInteractive: resolveNoInteractive(options),
-        findingsScope,
-      });
-      return;
-    }
 
     // Handle bulk flags first
     if (bulk) {
@@ -334,8 +313,8 @@ export class ValidateCommand {
         process.exitCode = 1;
         return;
       }
-      const report = await validator.validateChangeDeltaSpecs(changeDir, {
-        mainSpecsDir: root.specsDir,
+      const report = await validator.validateChange(changeDir, {
+        specsDir: root.specsDir,
         projectRoot: root.path,
       });
       const durationMs = Date.now() - start;
@@ -346,7 +325,7 @@ export class ValidateCommand {
     }
     const file = path.join(root.specsDir, id, 'spec.md');
     const start = Date.now();
-    const report = await validator.validateSpec(file);
+    const report = await validator.validateSpec(file, id);
     const durationMs = Date.now() - start;
     this.printReport('spec', id, report, durationMs, opts.json, root);
     process.exitCode = report.valid ? 0 : 1;
@@ -374,36 +353,17 @@ export class ValidateCommand {
 
   private printNextSteps(type: ItemType, id: string, root: ResolvedOpenSpecRoot, issues: Array<{ message: string }> = []): void {
     const bullets: string[] = [];
-    // The delta-authoring bullets contradict a marker-related error ("add
-    // deltas" vs "remove skip_specs or the files"), so branch on the exact
-    // marker messages - the generic no-deltas guidance also mentions
-    // skip_specs, which must not trigger this.
-    const conflictIssue = issues.some(i =>
-      i.message.includes(VALIDATION_MESSAGES.CHANGE_SKIP_SPECS_CONFLICT)
-    );
-    const invalidMarkerIssue = issues.some(i =>
-      i.message.includes(VALIDATION_MESSAGES.CHANGE_SKIP_SPECS_INVALID_METADATA)
-    );
-    // A namespace folder has no deltas to author, so the delta-authoring
-    // bullets below would point at a directory that is not the change (#1846).
+    // A namespace folder has nothing to land, so outline advice would point at the wrong directory (#1846).
     const nestedIssue = issues.some(i => i.message.includes(NESTED_CHANGE_ISSUE_MARKER));
     if (type === 'change' && nestedIssue) {
       bullets.push('- Move each nested change directly under openspec/changes/, folding the namespace into its name');
       bullets.push('- Only specs may be nested by domain; change directories are always flat');
-    } else if (type === 'change' && conflictIssue) {
-      bullets.push('- This change declares skip_specs (no spec deltas): delete the files under specs/, or remove skip_specs from .openspec.yaml if requirements do change');
-      bullets.push('- skip_specs is only honored when .openspec.yaml is valid change metadata (schema: <name> naming a known schema is required)');
-    } else if (type === 'change' && invalidMarkerIssue) {
-      bullets.push('- Fix .openspec.yaml so the skip_specs marker can be honored (schema: <name> naming a known schema is required)');
-      bullets.push('- Or remove skip_specs from .openspec.yaml and add delta specs instead');
     } else if (type === 'change') {
-      bullets.push('- Ensure change has deltas in specs/: use headers ## ADDED/MODIFIED/REMOVED/RENAMED Requirements');
-      bullets.push('- Each requirement MUST include at least one #### Scenario: block');
-      bullets.push(`- Debug parsed deltas: ${withStoreFlag(root, `openspec show ${id} --json --deltas-only`)}`);
+      bullets.push('- Edit outline.md so its "## Requirements" items match the live specs (struck text, labels, "(patch)")');
+      bullets.push(`- Preview the result: ${withStoreFlag(root, `openspec land ${id} --dry-run`)}`);
     } else {
-      bullets.push('- Ensure spec includes ## Purpose and ## Requirements sections');
-      bullets.push('- Each requirement MUST include at least one #### Scenario: block');
-      bullets.push('- Re-run with --json to see structured report');
+      bullets.push('- A spec is "# <name>", a purpose line, then numbered requirements with a./i./1. details');
+      bullets.push('- Convert old-format specs with: openspec migrate-specs');
     }
     console.error('Next steps:');
     bullets.forEach(b => console.error(`  ${b}`));
@@ -427,7 +387,7 @@ export class ValidateCommand {
     }
     const totals = findings.summary.totals;
     console.log(`Totals: ${totals.passed} passed, ${totals.failed} failed (${totals.items} items)`);
-    if (scope !== 'archived') this.printBulkDetails(full.items, root);
+    this.printBulkDetails(full.items, root);
   }
 
   private printBulkDetails(results: BulkItemResult[], root: ResolvedOpenSpecRoot): void {
@@ -467,8 +427,8 @@ export class ValidateCommand {
             durationMs: Date.now() - start,
           };
         }
-        const report = await validator.validateChangeDeltaSpecs(changeDir, {
-          mainSpecsDir: root.specsDir,
+        const report = await validator.validateChange(changeDir, {
+          specsDir: root.specsDir,
           projectRoot: root.path,
         });
         const durationMs = Date.now() - start;
@@ -479,7 +439,7 @@ export class ValidateCommand {
       queue.push(async () => {
         const start = Date.now();
         const file = path.join(root.specsDir, id, 'spec.md');
-        const report = await validator.validateSpec(file);
+        const report = await validator.validateSpec(file, id);
         const durationMs = Date.now() - start;
         return { id, type: 'spec' as const, valid: report.valid, issues: report.issues, durationMs };
       });
@@ -572,136 +532,6 @@ export class ValidateCommand {
       this.printBulkDetails(results, root);
     }
 
-    process.exitCode = failed > 0 ? 1 : 0;
-  }
-
-  /**
-   * Lists archived change ids from the resolved root's archive directory,
-   * mirroring `getArchivedChangeIds` but store-aware (uses `root.archiveDir`
-   * rather than a cwd-relative path). Directories only, hidden entries skipped.
-   *
-   * Only a missing archive directory (ENOENT) is an empty list; a permission
-   * error, an I/O error, or an `archive` path that is a file (ENOTDIR) is a real
-   * failure and must not read as "no archived changes" — that would let a
-   * pre-commit lint pass without inspecting anything (#205).
-   */
-  private async listArchivedChangeIds(root: ResolvedOpenSpecRoot): Promise<string[]> {
-    try {
-      const entries = await fs.readdir(root.archiveDir, { withFileTypes: true });
-      return entries
-        .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
-        .map((entry) => entry.name)
-        .sort();
-    } catch (error: any) {
-      if (error?.code === 'ENOENT') return [];
-      throw error;
-    }
-  }
-
-  /**
-   * Validates that every archived change has all of its tasks completed.
-   *
-   * An archived change is expected to be finished; an archived change with
-   * unchecked tasks is a real integrity problem the normal validate flow never
-   * surfaces, because active-change discovery excludes the archive directory
-   * (#205). Reuses the same task-progress counting `status`, `list`, and
-   * `archive` rely on, so what counts as a task never forks. Changes with no
-   * tasks pass (nothing to complete).
-   */
-  private async runArchivedTaskValidation(
-    root: ResolvedOpenSpecRoot,
-    opts: { json: boolean; noInteractive?: boolean; findingsScope?: BulkScope }
-  ): Promise<void> {
-    // List first (may throw on a real archive-read failure), then start the
-    // spinner so a thrown error never leaves a spinner spinning.
-    const ids = await this.listArchivedChangeIds(root);
-    const spinner = !opts.json && !opts.noInteractive ? ora('Validating archived changes...').start() : undefined;
-
-    // The archive is append-only and can hold thousands of changes; a single
-    // run resolves them all under one constant projectRoot (root.path), so
-    // memoize the schema→glob lookup to avoid re-parsing the same schema.yaml
-    // once per change. The loop is intentionally sequential: the per-change work
-    // is dominated by synchronous schema/config resolution, which a promise pool
-    // cannot overlap on Node's single thread — a pool would add complexity for
-    // no real gain here.
-    const schemaGlobCache: SchemaGlobCache = new Map();
-    const results: BulkItemResult[] = [];
-    let passed = 0;
-    let failed = 0;
-    for (const id of ids) {
-      const start = Date.now();
-      const issues: BulkItemResult['issues'] = [];
-      try {
-        // The explicit root.path override is load-bearing: an archived change
-        // lives one directory deeper (changes/archive/<id>), so the default
-        // "../../.." projectRoot derivation would be wrong without it.
-        const progress = await getTaskProgressDetailForChange(root.archiveDir, id, root.path, schemaGlobCache);
-        // A tasks file that exists but cannot be read must fail loudly, not be
-        // silently counted as "no tasks" and pass. Report one issue per file,
-        // pathed like every other validate issue (POSIX, root-relative).
-        for (const file of progress.unreadable) {
-          issues.push({
-            level: 'ERROR',
-            path: FileSystemUtils.toPosixPath(path.relative(root.path, file)),
-            message: 'could not read task file',
-          });
-        }
-        const incomplete = Math.max(progress.total - progress.completed, 0);
-        if (incomplete > 0) {
-          issues.push({
-            level: 'ERROR',
-            path: 'tasks.md',
-            message: `${incomplete} incomplete task${incomplete === 1 ? '' : 's'} (${progress.completed}/${progress.total} completed)`,
-          });
-        }
-      } catch (error: any) {
-        issues.push({ level: 'ERROR', path: 'tasks.md', message: error?.message || 'Unknown error' });
-      }
-      const valid = issues.length === 0;
-      if (valid) passed++; else failed++;
-      results.push({ id, type: 'change', valid, issues, durationMs: Date.now() - start });
-    }
-
-    spinner?.stop();
-
-    const summary = {
-      totals: { items: results.length, passed, failed },
-      byType: { change: summarizeType(results, 'change') },
-    } as const;
-
-    if (opts.findingsScope) {
-      this.printFindingsReport({ items: results, summary, root: toRootOutput(root) }, opts.findingsScope, opts.json, root);
-      process.exitCode = failed > 0 ? 1 : 0;
-      return;
-    }
-
-    if (opts.json) {
-      const out = { items: results, summary, version: '1.0', root: toRootOutput(root) };
-      console.log(JSON.stringify(out, null, 2));
-      process.exitCode = failed > 0 ? 1 : 0;
-      return;
-    }
-
-    if (results.length === 0) {
-      console.log('No archived changes found.');
-      process.exitCode = 0;
-      return;
-    }
-
-    // Use the same `<type>/<id>` prefix bulk validation prints, so the plain
-    // output maps to the JSON `type` ('change') and stays greppable the same way.
-    for (const res of results) {
-      if (res.valid) {
-        console.log(`✓ change/${res.id}`);
-      } else {
-        console.error(`✗ change/${res.id}`);
-        for (const issue of res.issues) {
-          const prefix = issue.level === 'ERROR' ? '✗' : issue.level === 'WARNING' ? '⚠' : 'ℹ';
-          console.error(`  ${prefix} ${issue.message}`);
-        }
-      }
-    }
-    console.log(`Totals: ${summary.totals.passed} passed, ${summary.totals.failed} failed (${summary.totals.items} items)`);
     process.exitCode = failed > 0 ? 1 : 0;
   }
 }

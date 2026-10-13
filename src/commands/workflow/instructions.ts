@@ -15,8 +15,6 @@ import {
   resolveArtifactOutputs,
   type ArtifactInstructions,
 } from '../../core/artifact-graph/index.js';
-import { isSpecsArtifactPath } from '../../core/artifact-graph/outputs.js';
-import { findUnreadDeltaFiles } from '../../utils/spec-discovery.js';
 import {
   getChangeDir,
   resolveCurrentPlanningHomeSync,
@@ -49,10 +47,10 @@ import {
   validateSchemaExists,
   type TaskItem,
   type ApplyInstructions,
-  type ArchiveInstructions,
+  type LandInstructions,
 } from './shared.js';
 import { parseTaskLines, type ParsedTask } from '../../utils/task-progress.js';
-import { METADATA_FILENAME } from '../../utils/change-metadata.js';
+import { hasChangeOutline, planChange } from '../../core/outline/specs.js';
 
 // -----------------------------------------------------------------------------
 // Types
@@ -74,7 +72,7 @@ export interface ApplyInstructionsOptions {
   json?: boolean;
 }
 
-export type ArchiveInstructionsOptions = ApplyInstructionsOptions;
+export type LandInstructionsOptions = ApplyInstructionsOptions;
 
 // -----------------------------------------------------------------------------
 // Artifact Instructions Command
@@ -220,18 +218,6 @@ export function printInstructionsText(instructions: ArtifactInstructions, isBloc
     }
   }
 
-  // Artifacts skipped via skip_specs get no creation directive: emitting the
-  // task/template anyway would prompt an agent to write spec files that
-  // validate then rejects as conflicting with the marker.
-  if (instructions.skipped) {
-    console.log('<warning>');
-    console.log(instructions.warning ?? 'This artifact is skipped (skip_specs is set in .openspec.yaml).');
-    console.log('</warning>');
-    console.log();
-    console.log('</artifact>');
-    return;
-  }
-
   // Warning for blocked artifacts
   if (isBlocked) {
     const missing = dependencies.filter((d) => !d.done).map((d) => d.id);
@@ -285,15 +271,6 @@ export function printInstructionsText(instructions: ArtifactInstructions, isBloc
     console.log('Read the current contents of these files before creating this artifact (re-read them from disk even if you saw them earlier - they may have been edited):');
     console.log();
     for (const dep of dependencies) {
-      // A dependency satisfied via skip_specs has no files by design: telling
-      // the agent to read them (or calling them "done") would send it hunting
-      // for spec files that must not exist.
-      if (dep.skipped) {
-        console.log(`<dependency id="${dep.id}" status="skipped">`);
-        console.log(`  <description>Skipped: the change declares skip_specs, so this artifact has no files to read.</description>`);
-        console.log('</dependency>');
-        continue;
-      }
       const status = dep.done ? 'done' : 'missing';
       const fullPath = path.join(changeDir, dep.path);
       console.log(`<dependency id="${dep.id}" status="${status}">`);
@@ -467,63 +444,22 @@ function collectMissingPrerequisites(input: {
   );
 }
 
-/**
- * Warnings apply reports alongside its instruction.
- *
- * Apply gates on the schema's `apply.requires` only, so a change whose tasks
- * file was written ahead of its specs reads as ready even though no delta spec
- * exists - the state `openspec validate` rejects. Blocking here would be a
- * policy change; naming the gap is not, and it is what keeps apply from being
- * the one surface that green-lights a change every other surface flags.
- *
- * Only reported once apply is past its own gate: for a change that has not
- * reached tasks yet, the missing specs are the next step rather than a warning.
- * Schemas that declare no spec-producing artifact carry `skip_specs` from
- * creation, so this never fires on them.
- *
- * A delta file the merge path never reads (specs/<capability>.md, a note
- * beside spec.md) still satisfies the specs glob, so it reads as written here
- * while validate rejects it and archive would drop it. Each one is named.
- */
-async function collectApplyWarnings(input: {
+/** Apply warns, without blocking, when the change's outline.md would not land on the live specs. */
+function collectApplyWarnings(input: {
   state: ApplyInstructions['state'];
-  schema: { artifacts: { id: string; generates: string }[] };
   changeDir: string;
   changeName: string;
-  skippedArtifacts?: Set<string>;
-}): Promise<string[]> {
-  const { state, schema, changeDir, changeName, skippedArtifacts } = input;
+}): string[] {
+  const { state, changeDir, changeName } = input;
   if (state === 'blocked') return [];
-
-  const specArtifacts = schema.artifacts.filter((artifact) =>
-    isSpecsArtifactPath(artifact.generates)
-  );
-  if (specArtifacts.length === 0) return [];
-  if (specArtifacts.some((artifact) => skippedArtifacts?.has(artifact.id))) return [];
-  const warnings = (await findUnreadDeltaFiles(path.join(changeDir, 'specs'))).map(
-    (file) =>
-      `specs/${file.path} is not a capability's spec.md, so \`openspec validate ${changeName}\` rejects it and archive never merges it. ` +
-      `Move its requirements into specs/${file.expected}.`
-  );
-  const hasDeltas = specArtifacts.some(
-    (artifact) => resolveArtifactOutputs(changeDir, artifact.generates).length > 0
-  );
-  if (hasDeltas) return warnings;
-
-  const metadataPath = path.join(changeDir, METADATA_FILENAME);
-  // The command names the artifact this schema actually declares, never the
-  // literal `specs`. A schema whose spec-producing artifact is `contracts` was
-  // told to run `openspec instructions specs`, an artifact it does not have,
-  // so the warning dead-ended at the exact step meant to resolve it. With more
-  // than one such artifact there is no single right answer, so the id becomes
-  // a placeholder rather than a guess.
-  const specTarget = specArtifacts.length === 1 ? specArtifacts[0].id : '<artifact-id>';
-  return [
-    ...warnings,
-    `This change has no delta specs and does not declare \`skip_specs: true\`, so \`openspec validate ${changeName}\` fails on it. ` +
-      `Write the delta specs before implementing (\`openspec instructions ${specTarget} --change ${changeName}\`), ` +
-      `or add \`skip_specs: true\` to ${metadataPath} if this change really changes no specified behavior.`,
-  ];
+  const changesDir = path.dirname(changeDir);
+  if (!hasChangeOutline(changesDir, changeName)) return [];
+  try {
+    planChange(path.join(path.dirname(changesDir), 'specs'), changesDir, changeName);
+    return [];
+  } catch (error) {
+    return [`outline.md would not land on the live specs (\`openspec validate ${changeName}\`):\n${(error as Error).message}`];
+  }
 }
 
 export interface GenerateApplyInstructionsOptions {
@@ -565,14 +501,9 @@ export async function generateApplyInstructions(
   const schemaInstruction = applyConfig?.instruction ?? null;
   const operationInputs = loadOperationInputs(options.projectConfig ?? null, 'apply');
 
-  // Check which required artifacts are missing. Artifacts the change skips
-  // via skip_specs count as present - their files must not exist, and
-  // status already reports them complete, so apply cannot block on them.
+  // Check which required artifacts are missing.
   const missingArtifacts: string[] = [];
   for (const artifactId of requiredArtifactIds) {
-    if (context.skippedArtifacts?.has(artifactId)) {
-      continue;
-    }
     const artifact = schema.artifacts.find((a) => a.id === artifactId);
     if (artifact && resolveArtifactOutputs(changeDir, artifact.generates).length === 0) {
       missingArtifacts.push(artifactId);
@@ -691,13 +622,7 @@ export async function generateApplyInstructions(
 
   const warnings = [
     ...(context.warnings ?? []),
-    ...(await collectApplyWarnings({
-      state,
-      schema,
-      changeDir,
-      changeName,
-      skippedArtifacts: context.skippedArtifacts,
-    })),
+    ...collectApplyWarnings({ state, changeDir, changeName }),
   ];
 
   return {
@@ -844,25 +769,25 @@ export function printApplyInstructionsText(instructions: ApplyInstructions): voi
   printOperationInputsText(instructions);
 }
 
-export function generateArchiveInstructions(
+export function generateLandInstructions(
   changeName: string,
   projectConfig: ProjectConfig | null
-): ArchiveInstructions {
+): LandInstructions {
   return {
     changeName,
-    ...loadOperationInputs(projectConfig, 'archive'),
+    ...loadOperationInputs(projectConfig, 'land'),
   };
 }
 
-export async function archiveInstructionsCommand(
-  options: ArchiveInstructionsOptions
+export async function landInstructionsCommand(
+  options: LandInstructionsOptions
 ): Promise<void> {
   const root = await resolveRootForCommand(options, { json: options.json });
   if (!root) {
     return;
   }
 
-  const spinner = options.json ? undefined : ora('Loading archive inputs...').start();
+  const spinner = options.json ? undefined : ora('Loading land inputs...').start();
 
   try {
     const changeName = await validateChangeExists(
@@ -872,7 +797,7 @@ export async function archiveInstructionsCommand(
       { newChangeHint: withStoreFlag(root, 'openspec new change <name>') }
     );
     const projectConfig = readProjectConfig(root.path);
-    const instructions = generateArchiveInstructions(changeName, projectConfig);
+    const instructions = generateLandInstructions(changeName, projectConfig);
 
     spinner?.stop();
 
@@ -881,15 +806,15 @@ export async function archiveInstructionsCommand(
       return;
     }
 
-    printArchiveInstructionsText(instructions);
+    printLandInstructionsText(instructions);
   } catch (error) {
     spinner?.stop();
     throw error;
   }
 }
 
-export function printArchiveInstructionsText(instructions: ArchiveInstructions): void {
-  console.log(`## Archive Inputs: ${instructions.changeName}`);
+export function printLandInstructionsText(instructions: LandInstructions): void {
+  console.log(`## Land Inputs: ${instructions.changeName}`);
   console.log();
   printOperationInputsText(instructions);
 }

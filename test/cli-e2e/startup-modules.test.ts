@@ -22,7 +22,10 @@ const COMMAND_IMPLEMENTATIONS: Record<string, string[]> = {
   update: ['core/update.js'],
   list: ['core/list.js'],
   view: ['core/view.js'],
-  archive: ['core/archive.js'],
+  land: ['core/land.js'],
+  pending: ['commands/pending.js'],
+  relabel: ['commands/relabel.js'],
+  'migrate-specs': ['commands/migrate-specs.js'],
   change: ['commands/change.js'],
   spec: ['commands/spec.js'],
   validate: ['commands/validate.js'],
@@ -125,6 +128,8 @@ describe('CLI startup loads only what the command needs', () => {
     ['doctor --json', 'doctor'],
     ['schemas --json', 'schemas'],
     ['list --json', 'list'],
+    ['pending --json', 'pending'],
+    ['migrate-specs --dry-run --json', 'migrate-specs'],
   ])('`openspec %s` loads only the %s implementation', async (invocation, command) => {
     await ensureCliBuilt();
     const { own } = loadedModules(invocation.split(' '));

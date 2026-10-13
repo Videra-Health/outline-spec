@@ -246,8 +246,7 @@ export interface PrintStatusTextOptions {
 
 export function printStatusText(status: ChangeStatus, options: PrintStatusTextOptions = {}): void {
   const doneCount = status.artifacts.filter((a) => a.status === 'done').length;
-  const skippedCount = status.artifacts.filter((a) => a.status === 'skipped').length;
-  const total = status.artifacts.length - skippedCount;
+  const total = status.artifacts.length;
 
   console.log(`Change: ${status.changeName}`);
   console.log(`Schema: ${status.schemaName}`);
@@ -259,18 +258,13 @@ export function printStatusText(status: ChangeStatus, options: PrintStatusTextOp
   if (status.changeRoot) {
     console.log(`Change root: ${status.changeRoot}`);
   }
-  const skippedSuffix = skippedCount > 0 ? ` (${skippedCount} skipped)` : '';
-  console.log(`Progress: ${doneCount}/${total} artifacts complete${skippedSuffix}`);
+  console.log(`Progress: ${doneCount}/${total} artifacts complete`);
   console.log();
 
   for (const artifact of status.artifacts) {
     const indicator = getStatusIndicator(artifact.status);
     const color = getStatusColor(artifact.status);
     let line = `${indicator} ${artifact.id}`;
-
-    if (artifact.status === 'skipped') {
-      line += color(' (skipped: change declares skip_specs)');
-    }
 
     if (artifact.status === 'blocked' && artifact.missingDeps && artifact.missingDeps.length > 0) {
       line += color(` (blocked by: ${artifact.missingDeps.join(', ')})`);

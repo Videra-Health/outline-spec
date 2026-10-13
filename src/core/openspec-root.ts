@@ -13,13 +13,12 @@ export const OPENSPEC_CONFIG_YAML = 'openspec/config.yaml';
 export const OPENSPEC_CONFIG_YML = 'openspec/config.yml';
 export const OPENSPEC_SPECS_DIR = 'openspec/specs';
 export const OPENSPEC_CHANGES_DIR = 'openspec/changes';
-export const OPENSPEC_ARCHIVE_DIR = 'openspec/changes/archive';
 export const DEFAULT_OPENSPEC_SCHEMA = 'spec-driven';
 export const DIRECTORY_ANCHOR_FILE_NAME = '.gitkeep';
 
 // Git cannot track empty directories, so setup anchors otherwise-empty
 // conventional store directories for teammates who clone the repo later.
-export const ANCHORED_OPENSPEC_DIRS = [OPENSPEC_SPECS_DIR, OPENSPEC_ARCHIVE_DIR] as const;
+export const ANCHORED_OPENSPEC_DIRS = [OPENSPEC_SPECS_DIR, OPENSPEC_CHANGES_DIR] as const;
 
 type PathKind = 'missing' | 'directory' | 'file' | 'other';
 
@@ -39,9 +38,6 @@ export interface OpenSpecRootInspection {
     present: boolean | null;
   };
   changes: {
-    present: boolean | null;
-  };
-  archive: {
     present: boolean | null;
   };
   healthy: boolean;
@@ -85,7 +81,6 @@ function unresolvedInspection(): OpenSpecRootInspection {
     config: { present: null },
     specs: { present: null },
     changes: { present: null },
-    archive: { present: null },
     healthy: false,
     diagnostics: [],
   };
@@ -99,7 +94,7 @@ function missingDirectoryDiagnostic(
   return makeStoreDiagnostic('error', code, message, { target });
 }
 
-type OptionalPlanningDirectoryKey = 'specs' | 'changes' | 'archive';
+type OptionalPlanningDirectoryKey = 'specs' | 'changes';
 
 async function inspectOptionalPlanningDirectory(
   inspection: OpenSpecRootInspection,
@@ -196,7 +191,7 @@ export async function inspectOpenSpecRoot(storeRoot: string): Promise<OpenSpecRo
     'openspec_specs_not_directory',
     'openspec.specs'
   );
-  const changesKind = await inspectOptionalPlanningDirectory(
+  await inspectOptionalPlanningDirectory(
     inspection,
     storeRoot,
     'changes',
@@ -204,18 +199,6 @@ export async function inspectOpenSpecRoot(storeRoot: string): Promise<OpenSpecRo
     'openspec_changes_not_directory',
     'openspec.changes'
   );
-  if (changesKind === 'directory') {
-    await inspectOptionalPlanningDirectory(
-      inspection,
-      storeRoot,
-      'archive',
-      OPENSPEC_ARCHIVE_DIR,
-      'openspec_archive_not_directory',
-      'openspec.archive'
-    );
-  } else {
-    inspection.archive = { present: false };
-  }
 
   inspection.healthy =
     inspection.present === true &&
@@ -315,7 +298,6 @@ export async function ensureOpenSpecRoot(
   await ensureDirectory(storeRoot, OPENSPEC_ROOT_DIR, ledger);
   await ensureDirectory(storeRoot, OPENSPEC_SPECS_DIR, ledger);
   await ensureDirectory(storeRoot, OPENSPEC_CHANGES_DIR, ledger);
-  await ensureDirectory(storeRoot, OPENSPEC_ARCHIVE_DIR, ledger);
   await ensureDefaultConfig(storeRoot, ledger);
 
   if (options.anchorEmptyDirectories) {

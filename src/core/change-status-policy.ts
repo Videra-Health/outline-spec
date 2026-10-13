@@ -19,7 +19,7 @@ export interface ActionContext {
 
 export interface ChangeStatusPolicyArtifact {
   id: string;
-  status: 'done' | 'skipped' | 'ready' | 'blocked';
+  status: 'done' | 'ready' | 'blocked';
 }
 
 export interface ChangeNextStepsInput {

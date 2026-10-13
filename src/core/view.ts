@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 import { getTaskProgressForChange, formatTaskStatus } from '../utils/task-progress.js';
-import { MarkdownParser } from './parsers/markdown-parser.js';
+import { parseSpec } from './outline/outline.js';
 import { discoverSpecFiles } from '../utils/spec-discovery.js';
 import { loadChangeContext, formatChangeStatus, type ChangeStatus } from './artifact-graph/index.js';
 
@@ -160,11 +160,8 @@ export class ViewCommand {
 
     for (const { id, specFile } of await discoverSpecFiles(specsDir)) {
       try {
-        const content = fs.readFileSync(specFile, 'utf-8');
-        const parser = new MarkdownParser(content);
-        const spec = parser.parseSpec(id);
-        const requirementCount = spec.requirements.length;
-        specs.push({ name: id, requirementCount });
+        const spec = parseSpec(fs.readFileSync(specFile, 'utf-8').replace(/\r\n/g, '\n'), specFile);
+        specs.push({ name: id, requirementCount: spec.items.length });
       } catch (error) {
         // If spec cannot be parsed, include with 0 count
         specs.push({ name: id, requirementCount: 0 });
@@ -230,8 +227,6 @@ export class ViewCommand {
           return `${id}${chalk.green('✓')}`;
         case 'ready':
           return `${id}${chalk.cyan('→')}`;
-        case 'skipped':
-          return chalk.dim(`${id} (skipped)`);
         case 'blocked':
           return chalk.dim(id);
       }

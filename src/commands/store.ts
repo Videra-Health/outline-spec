@@ -173,7 +173,6 @@ function toOpenSpecRootOutput(root: StoreInspection['openspecRoot']): OpenSpecRo
     config: root.config,
     specs: root.specs,
     changes: root.changes,
-    archive: root.archive,
     healthy: root.healthy,
     status: root.diagnostics,
   };

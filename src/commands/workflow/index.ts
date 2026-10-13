@@ -10,7 +10,7 @@ export type { StatusOptions } from './status.js';
 export {
   instructionsCommand,
   applyInstructionsCommand,
-  archiveInstructionsCommand,
+  landInstructionsCommand,
 } from './instructions.js';
 export type { InstructionsOptions } from './instructions.js';
 

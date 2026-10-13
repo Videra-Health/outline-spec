@@ -4,7 +4,7 @@ import { discoverSpecFiles } from './spec-discovery.js';
 
 /**
  * Returns the ids of active changes: every directory under openspec/changes/
- * except the archive and hidden directories.
+ * except hidden ones and an `archive` folder left by older projects.
  *
  * A change is resolved by its directory alone - the same rule `list`,
  * `status`, `instructions` and `validate` use (`getAvailableChanges`).
@@ -31,25 +31,3 @@ export async function getSpecIds(root: string = process.cwd()): Promise<string[]
   const discovered = await discoverSpecFiles(specsPath);
   return discovered.map((spec) => spec.id);
 }
-
-/**
- * Returns the ids of archived changes: every directory under
- * openspec/changes/archive/ except hidden directories.
- *
- * Resolved by directory for the same reason as `getActiveChangeIds`: a change
- * archived from a schema without a proposal artifact has no proposal.md, and
- * gating on it hid those entries from shell completion.
- */
-export async function getArchivedChangeIds(root: string = process.cwd()): Promise<string[]> {
-  const archivePath = path.join(root, 'openspec', 'changes', 'archive');
-  try {
-    const entries = await fs.readdir(archivePath, { withFileTypes: true });
-    return entries
-      .filter((entry) => entry.isDirectory() && !entry.name.startsWith('.'))
-      .map((entry) => entry.name)
-      .sort();
-  } catch {
-    return [];
-  }
-}
-

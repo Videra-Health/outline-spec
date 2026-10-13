@@ -3,7 +3,6 @@ import { CompletionFactory } from '../core/completions/factory.js';
 import { COMMAND_REGISTRY } from '../core/completions/command-registry.js';
 import { detectShell, SupportedShell } from '../utils/shell-detection.js';
 import { CompletionProvider } from '../core/completions/completion-provider.js';
-import { getArchivedChangeIds } from '../utils/item-discovery.js';
 
 interface GenerateOptions {
   shell?: string;
@@ -283,13 +282,6 @@ export class CompletionCommand {
           const schemaNames = await this.completionProvider.getSchemaNames();
           for (const name of schemaNames) {
             console.log(`${name}\tschema`);
-          }
-          break;
-        }
-        case 'archived-changes': {
-          const archivedIds = await getArchivedChangeIds();
-          for (const id of archivedIds) {
-            console.log(`${id}\tarchived change`);
           }
           break;
         }

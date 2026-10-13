@@ -5,7 +5,8 @@ import { z } from 'zod';
 
 import { getStoreMetadataPath } from './store/foundation.js';
 
-export const OPERATION_IDS = ['apply', 'archive'] as const;
+// `archive` is the old name for `land`, still read so existing configs keep their guidance.
+export const OPERATION_IDS = ['apply', 'land', 'archive'] as const;
 export type OperationId = (typeof OPERATION_IDS)[number];
 
 export interface OperationConfig {
@@ -58,6 +59,7 @@ export const ProjectConfigSchema = z.object({
   operations: z
     .object({
       apply: OperationConfigSchema.optional(),
+      land: OperationConfigSchema.optional(),
       archive: OperationConfigSchema.optional(),
     })
     .optional()
@@ -111,7 +113,9 @@ export function loadOperationInputs(
     projectConfig?.context !== undefined && projectConfig.context.trim().length > 0
       ? projectConfig.context
       : undefined;
-  const guidance = projectConfig?.operations?.[operationId]?.guidance;
+  const operations = projectConfig?.operations;
+  const guidance =
+    operations?.[operationId]?.guidance ?? (operationId === 'land' ? operations?.archive?.guidance : undefined);
   const operationGuidance = guidance && guidance.length > 0 ? guidance : undefined;
 
   return {

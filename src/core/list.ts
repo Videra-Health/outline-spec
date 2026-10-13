@@ -2,7 +2,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { getTaskProgressForChange, formatTaskStatus } from '../utils/task-progress.js';
 import { readFileSync, type Dirent } from 'fs';
-import { MarkdownParser } from './parsers/markdown-parser.js';
+import { parseSpec } from './outline/outline.js';
 import type { RootOutput } from './root-selection.js';
 import { discoverSpecFiles } from '../utils/spec-discovery.js';
 import {
@@ -16,7 +16,6 @@ interface ChangeInfo {
   completedTasks: number;
   totalTasks: number;
   lastModified: Date;
-  archived: boolean;
   /** Set when the entry is a namespace folder rather than a change (#1846). */
   nested?: string[];
 }
@@ -25,8 +24,6 @@ interface ListOptions {
   sort?: 'recent' | 'name';
   json?: boolean;
   root?: RootOutput;
-  archived?: boolean;
-  all?: boolean;
 }
 
 function isMissingPathError(error: unknown): boolean {
@@ -61,9 +58,8 @@ async function readChangeDirectoryEntries(changesDir: string): Promise<Dirent[]>
 /**
  * Get the most recent modification time of any file in a directory (recursive).
  * Falls back to the directory's own mtime if no files are found.
- * Archived links use their own mtime: moving a change can break relative targets.
  */
-async function getLastModified(dirPath: string, archived: boolean = false): Promise<Date> {
+async function getLastModified(dirPath: string): Promise<Date> {
   let latest: Date | null = null;
 
   async function walk(dir: string): Promise<void> {
@@ -74,9 +70,7 @@ async function getLastModified(dirPath: string, archived: boolean = false): Prom
         if (entry.isDirectory()) {
           await walk(fullPath);
         } else {
-          const stat = archived && entry.isSymbolicLink()
-            ? await fs.lstat(fullPath)
-            : await fs.stat(fullPath);
+          const stat = await fs.stat(fullPath);
           if (latest === null || stat.mtime > latest) {
             latest = stat.mtime;
           }
@@ -125,34 +119,20 @@ function formatRelativeTime(date: Date): string {
 
 export class ListCommand {
   async execute(targetPath: string = '.', mode: 'changes' | 'specs' = 'changes', options: ListOptions = {}): Promise<void> {
-    const { sort = 'recent', json = false, root, archived = false, all = false } = options;
-
-    if (mode === 'specs' && (archived || all)) {
-      throw new Error('--archived and --all can only be used when listing changes.');
-    }
+    const { sort = 'recent', json = false, root } = options;
 
     if (mode === 'changes') {
       const changesDir = path.join(targetPath, 'openspec', 'changes');
-      const archiveDir = path.join(changesDir, 'archive');
-      const includeArchived = archived || all;
-
-      // Read the parent even for --archived: Windows can report ENOENT for
-      // changes/archive when changes is a file, hiding a malformed root.
-      const entries = await readChangeDirectoryEntries(changesDir);
-      const activeDirs = !archived || all ? entries
+      // An `archive` folder left by older projects is not a change.
+      const changeDirs = (await readChangeDirectoryEntries(changesDir))
         .filter(entry => entry.isDirectory() && entry.name !== 'archive')
-        .map(entry => ({ name: entry.name, parent: changesDir, archived: false })) : [];
-      const archiveEntries = includeArchived ? await readChangeDirectoryEntries(archiveDir) : [];
-      const archivedDirs = archiveEntries
-        .filter(entry => entry.isDirectory() && !entry.name.startsWith('.'))
-        .map(entry => ({ name: entry.name, parent: archiveDir, archived: true }));
-      const changeDirs = [...activeDirs, ...archivedDirs];
+        .map(entry => ({ name: entry.name, parent: changesDir }));
 
       if (changeDirs.length === 0) {
         if (json) {
           console.log(JSON.stringify({ changes: [], ...(root ? { root } : {}) }, null, 2));
         } else {
-          console.log(all ? 'No changes found.' : archived ? 'No archived changes found.' : 'No active changes found.');
+          console.log('No active changes found.');
         }
         return;
       }
@@ -165,7 +145,7 @@ export class ListCommand {
       // is listed as what it is, so the nesting stops failing silently (#1846).
       const nestedFindings = await findNestedChanges(
         changesDir,
-        activeDirs.map((changeDir) => changeDir.name)
+        changeDirs.map((changeDir) => changeDir.name)
       );
       const nestedByName = new Map<string, NestedChangeFinding>(
         nestedFindings.map((finding) => [finding.name, finding])
@@ -174,14 +154,13 @@ export class ListCommand {
       for (const changeDir of changeDirs) {
         const progress = await getTaskProgressForChange(changeDir.parent, changeDir.name, targetPath);
         const changePath = path.join(changeDir.parent, changeDir.name);
-        const lastModified = await getLastModified(changePath, changeDir.archived);
+        const lastModified = await getLastModified(changePath);
         changes.push({
           name: changeDir.name,
           completedTasks: progress.completed,
           totalTasks: progress.total,
           lastModified,
-          archived: changeDir.archived,
-          ...(!changeDir.archived && nestedByName.has(changeDir.name)
+          ...(nestedByName.has(changeDir.name)
             ? { nested: nestedByName.get(changeDir.name)!.nested }
             : {})
         });
@@ -202,7 +181,6 @@ export class ListCommand {
           totalTasks: c.totalTasks,
           lastModified: c.lastModified.toISOString(),
           status: c.totalTasks === 0 ? 'no-tasks' : c.completedTasks === c.totalTasks ? 'complete' : 'in-progress',
-          ...(includeArchived ? { archived: c.archived } : {}),
           ...(c.nested ? { nested: c.nested } : {})
         }));
         // Additive: the entries keep their shape so existing consumers are
@@ -221,24 +199,16 @@ export class ListCommand {
         return;
       }
 
-      // Display results
-      const groups = [
-        { heading: 'Changes:', changes: changes.filter(change => !change.archived) },
-        { heading: 'Archived Changes:', changes: changes.filter(change => change.archived) }
-      ].filter(group => group.changes.length > 0);
-      for (const [index, group] of groups.entries()) {
-        if (index > 0) console.log('');
-        console.log(group.heading);
-        const padding = '  ';
-        const nameWidth = Math.max(...group.changes.map(c => c.name.length));
-        for (const change of group.changes) {
-          const paddedName = change.name.padEnd(nameWidth);
-          const status = change.nested
-            ? 'not a change'
-            : formatTaskStatus({ total: change.totalTasks, completed: change.completedTasks });
-          const timeAgo = formatRelativeTime(change.lastModified);
-          console.log(`${padding}${paddedName}     ${status.padEnd(12)}  ${timeAgo}`);
-        }
+      console.log('Changes:');
+      const padding = '  ';
+      const nameWidth = Math.max(...changes.map(c => c.name.length));
+      for (const change of changes) {
+        const paddedName = change.name.padEnd(nameWidth);
+        const status = change.nested
+          ? 'not a change'
+          : formatTaskStatus({ total: change.totalTasks, completed: change.completedTasks });
+        const timeAgo = formatRelativeTime(change.lastModified);
+        console.log(`${padding}${paddedName}     ${status.padEnd(12)}  ${timeAgo}`);
       }
       for (const finding of nestedFindings) {
         console.log('');
@@ -274,10 +244,8 @@ export class ListCommand {
     const specs: SpecInfo[] = [];
     for (const { id, specFile } of discovered) {
       try {
-        const content = readFileSync(specFile, 'utf-8');
-        const parser = new MarkdownParser(content);
-        const spec = parser.parseSpec(id);
-        specs.push({ id, requirementCount: spec.requirements.length });
+        const spec = parseSpec(readFileSync(specFile, 'utf-8').replace(/\r\n/g, '\n'), specFile);
+        specs.push({ id, requirementCount: spec.items.length });
       } catch {
         // If spec cannot be read or parsed, include with 0 count
         specs.push({ id, requirementCount: 0 });

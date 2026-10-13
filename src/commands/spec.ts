@@ -1,8 +1,8 @@
 import { existsSync, readFileSync } from 'fs';
 import path, { join } from 'path';
-import { MarkdownParser } from '../core/parsers/markdown-parser.js';
+import { parseSpec, type Spec } from '../core/outline/outline.js';
+import { findItem, writeItem } from '../core/outline/item.js';
 import { Validator } from '../core/validation/validator.js';
-import type { Spec } from '../core/schemas/index.js';
 import type { RootOutput } from '../core/root-selection.js';
 import { isInteractive } from '../utils/interactive.js';
 import { getSpecIds } from '../utils/item-discovery.js';
@@ -33,51 +33,15 @@ function assertSpecPath(specsDir: string, specPath: string): void {
 
 export interface ShowOptions {
   json?: boolean;
-  // JSON-only filters (raw-first text has no filters)
-  requirements?: boolean;
-  scenarios?: boolean; // --no-scenarios sets this to false (JSON only)
-  requirement?: string; // JSON only
+  /** One item: a requirement name or label, then labels, e.g. "Catalog.n.ii". */
+  item?: string;
   noInteractive?: boolean;
   rootOutput?: RootOutput;
 }
 
-function parseSpecFromFile(specsDir: string, specPath: string, specId: string): Spec {
+function parseSpecFromFile(specsDir: string, specPath: string): Spec {
   assertSpecPath(specsDir, specPath);
-  const content = readFileSync(specPath, 'utf-8');
-  const parser = new MarkdownParser(content);
-  return parser.parseSpec(specId);
-}
-
-function validateRequirementIndex(spec: Spec, requirementOpt?: string): number | undefined {
-  if (!requirementOpt) return undefined;
-  const index = Number.parseInt(requirementOpt, 10);
-  if (!Number.isInteger(index) || index < 1 || index > spec.requirements.length) {
-    throw new Error(`Requirement ${requirementOpt} not found`);
-  }
-  return index - 1; // convert to 0-based
-}
-
-function filterSpec(spec: Spec, options: ShowOptions): Spec {
-  const requirementIndex = validateRequirementIndex(spec, options.requirement);
-  const includeScenarios = options.scenarios !== false && !options.requirements;
-
-  const filteredRequirements = (requirementIndex !== undefined
-    ? [spec.requirements[requirementIndex]]
-    : spec.requirements
-  ).map(req => ({
-    name: req.name,
-    text: req.text,
-    scenarios: includeScenarios ? req.scenarios : [],
-  }));
-
-  const metadata = spec.metadata ?? { version: '1.0.0', format: 'openspec' as const };
-
-  return {
-    name: spec.name,
-    overview: spec.overview,
-    requirements: filteredRequirements,
-    metadata,
-  };
+  return parseSpec(readFileSync(specPath, 'utf-8').replace(/\r\n/g, '\n'), specPath);
 }
 
 /**
@@ -125,22 +89,21 @@ export class SpecCommand {
       throw new Error(`Spec '${specId}' not found at ${displayPath}`);
     }
 
-    if (options.json) {
-      if (options.requirements && options.requirement) {
-        throw new Error('Options --requirements and --requirement cannot be used together');
+    if (options.item !== undefined) {
+      const spec = parseSpecFromFile(this.specsDir, specPath);
+      const found = findItem(spec, options.item);
+      if (options.json) {
+        const out = { name: spec.name, item: options.item, node: found.node, ...(options.rootOutput ? { root: options.rootOutput } : {}) };
+        console.log(JSON.stringify(out, null, 2));
+      } else {
+        console.log(writeItem(found));
       }
-      const parsed = parseSpecFromFile(this.specsDir, specPath, specId);
-      const filtered = filterSpec(parsed, options);
-      const output = {
-        id: specId,
-        title: parsed.name,
-        overview: parsed.overview,
-        requirementCount: filtered.requirements.length,
-        requirements: filtered.requirements,
-        metadata: parsed.metadata ?? { version: '1.0.0', format: 'openspec' as const },
-        ...(options.rootOutput ? { root: options.rootOutput } : {}),
-      };
-      console.log(JSON.stringify(output, null, 2));
+      return;
+    }
+    if (options.json) {
+      const spec = parseSpecFromFile(this.specsDir, specPath);
+      const out = { name: spec.name, purpose: spec.purpose, items: spec.items, ...(options.rootOutput ? { root: options.rootOutput } : {}) };
+      console.log(JSON.stringify(out, null, 2));
       return;
     }
     printSpecTextRaw(this.specsDir, specPath);
@@ -172,12 +135,12 @@ export async function specListCommand(options: { json?: boolean; long?: boolean 
       .map(({ id, specFile }) => {
         try {
           assertSpecPath(SPECS_DIR, specFile);
-          const spec = parseSpecFromFile(SPECS_DIR, specFile, id);
+          const spec = parseSpecFromFile(SPECS_DIR, specFile);
 
           return {
             id,
             title: spec.name,
-            requirementCount: spec.requirements.length
+            requirementCount: spec.items.length
           };
         } catch {
           return {
@@ -238,7 +201,7 @@ export async function specValidateCommand(
 
     const validator = new Validator(options.strict);
     assertSpecPath(SPECS_DIR, specPath);
-    const report = await validator.validateSpec(specPath);
+    const report = await validator.validateSpec(specPath, specId);
 
     if (options.json) {
       console.log(JSON.stringify(report, null, 2));

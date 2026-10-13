@@ -53,9 +53,9 @@ export function serializeConfig(config: Partial<ProjectConfig>): string {
   lines.push('#     apply:');
   lines.push('#       guidance:');
   lines.push('#         - Keep test summaries concise');
-  lines.push('#     archive:');
+  lines.push('#     land:');
   lines.push('#       guidance:');
-  lines.push('#         - Summarize the archive outcome before finishing');
+  lines.push('#         - Summarize the landed spec edits before finishing');
 
   return lines.join('\n') + '\n';
 }

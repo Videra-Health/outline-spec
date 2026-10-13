@@ -4,8 +4,6 @@ import { writeChangeMetadata, validateSchemaName } from './change-metadata.js';
 import { formatLocalDate } from './date.js';
 import { readProjectConfig } from '../core/project-config.js';
 import { isKebabId } from '../core/id.js';
-import { resolveSchema } from '../core/artifact-graph/resolver.js';
-import { isSpecsArtifactPath } from '../core/artifact-graph/outputs.js';
 import type { ChangeMetadata } from '../core/change-metadata/index.js';
 
 const DEFAULT_SCHEMA = 'spec-driven';
@@ -53,8 +51,7 @@ export interface ValidationResult {
  * - Not contain consecutive hyphens
  *
  * A leading digit is allowed so ordering conventions like `100-add-feature` or
- * `00001-add-auth` work; archive already treats such prefixes as a supported
- * convention (see ARCHIVE_DATE_PREFIX_PATTERN).
+ * `00001-add-auth` work.
  *
  * @param name - The change name to validate
  * @returns Validation result with `valid: true` or `valid: false` with an error message
@@ -69,9 +66,8 @@ export function validateChangeName(name: string): ValidationResult {
     return { valid: false, error: 'Change name cannot be empty' };
   }
 
-  // Filesystem directory components cap at 255 bytes and archive prepends a
-  // date prefix; bounding here turns the failure into a validation message
-  // instead of a raw ENAMETOOLONG from mkdir.
+  // Filesystem directory components cap at 255 bytes; bounding here turns the
+  // failure into a validation message instead of a raw ENAMETOOLONG from mkdir.
   if (name.length > 200) {
     return { valid: false, error: 'Change name is too long (200 characters max)' };
   }
@@ -167,15 +163,10 @@ export async function createChange(
     throw new Error(`Change '${name}' already exists at ${changeDir}`);
   }
 
-  const schema = resolveSchema(schemaName, projectRoot);
-  const skipsSpecs = !schema.artifacts.some(artifact =>
-    isSpecsArtifactPath(artifact.generates)
-  );
-
   // Creating a change may scaffold or complete the root itself (an
   // implicit root, or a config-only/incomplete clone). Never leave a
   // half-root behind that doctor immediately calls unhealthy: ensure
-  // specs/ and changes/archive/ exist, and write a config only when
+  // specs/ exists, and write a config only when
   // none exists. The config records the PROJECT default schema, never
   // a one-change --schema override.
   const openspecDir = path.join(projectRoot, 'openspec');
@@ -183,7 +174,6 @@ export async function createChange(
   // Create the directory (including parent directories if needed)
   await FileSystemUtils.createDirectory(changeDir);
   await FileSystemUtils.createDirectory(path.join(openspecDir, 'specs'));
-  await FileSystemUtils.createDirectory(path.join(openspecDir, 'changes', 'archive'));
   const configPath = path.join(openspecDir, 'config.yaml');
   const configYmlPath = path.join(openspecDir, 'config.yml');
   if (
@@ -197,7 +187,6 @@ export async function createChange(
   writeChangeMetadata(changeDir, {
     schema: schemaName,
     created: formatLocalDate(),
-    ...(skipsSpecs ? { skip_specs: true } : {}),
     ...options.metadata,
   }, projectRoot);
 

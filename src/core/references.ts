@@ -125,14 +125,17 @@ function parseHeadingTitle(line: string): string | null {
 }
 
 /**
- * Tolerant first-Purpose-line extraction. parseSpec() throws on specs
- * without Purpose/Requirements sections; the index must never fail on an
- * imperfect upstream spec, so this scans for the heading directly —
- * fence-aware, so `## Purpose` inside a code block never matches, and
- * tolerant of CommonMark closing hashes (`## Purpose ##`).
+ * Tolerant first-Purpose-line extraction: the line after an outline spec's
+ * title, or the first line under an old-format `## Purpose` heading. The
+ * heading scan is fence-aware and tolerant of closing hashes (`## Purpose ##`).
  */
 export function extractFirstPurposeLine(markdown: string): string {
   const lines = markdown.split(/\r?\n/);
+  // An outline spec is "# name" with its purpose on the next line and no other headings.
+  if (/^# \S+\s*$/.test(lines[0] ?? '') && !lines.slice(1).some((l) => /^#{1,6} /.test(l))) {
+    const purpose = lines.slice(1).find((l) => l.trim().length > 0);
+    return purpose && !/^\s*(?:[0-9]+|[a-z]+)\. /.test(purpose) ? purpose.trim() : '';
+  }
   let inPurpose = false;
   let fenceMarker: string | null = null;
 

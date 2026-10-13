@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, promises as fs } from 'fs';
 import { AI_TOOLS, TOOL_ID_ALIASES } from '../core/config.js';
-import type { ArchiveOptions } from '../core/archive.js';
+import type { LandOptions } from '../core/land.js';
 import { registerSpecCommand } from './commands/spec.js';
 import { registerConfigCommand } from './commands/config.js';
 import { registerSchemaCommand } from './commands/schema.js';
@@ -393,17 +393,12 @@ program
   .description('List items (changes by default). Use --specs to list specs.')
   .option('--specs', 'List specs instead of changes')
   .option('--changes', 'List changes explicitly (default)')
-  .option('--archived', 'Show only archived changes')
-  .option('--all', 'Show both active and archived changes')
   .option('--sort <order>', 'Sort order: "recent" (default) or "name"', 'recent')
   .option('--json', 'Output as JSON (for programmatic use)')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   .addOption(hiddenStorePathOption())
-  .action(async (options?: { specs?: boolean; changes?: boolean; archived?: boolean; all?: boolean; sort?: string; json?: boolean; store?: string; storePath?: string }) => {
+  .action(async (options?: { specs?: boolean; changes?: boolean; sort?: string; json?: boolean; store?: string; storePath?: string }) => {
     try {
-      if (options?.specs && (options.archived || options.all)) {
-        throw new Error('--archived and --all can only be used when listing changes.');
-      }
       const [{ resolveRootForCommand, toRootOutput }, { ListCommand }] = await Promise.all([
         import('../core/root-selection.js'),
         import('../core/list.js'),
@@ -424,8 +419,6 @@ program
       await listCommand.execute(root.path, mode, {
         sort,
         json: options?.json,
-        archived: options?.archived,
-        all: options?.all,
         ...(options?.json ? { root: toRootOutput(root) } : {}),
       });
     } catch (error) {
@@ -476,13 +469,11 @@ changeCmd.hook('preAction', () => {
 
 changeCmd
   .command('show [change-name]')
-  .description('Show a change proposal in JSON or markdown format')
+  .description("Show a change's outline.md")
   .option('--json', 'Output as JSON')
-  .option('--deltas-only', 'Show only deltas (JSON only)')
-  .option('--requirements-only', 'Alias for --deltas-only (deprecated)')
-  .option('--diff', 'Show per-requirement diffs for delta specs')
+  .option('--diff', 'Show the spec text the change would land')
   .option('--no-interactive', 'Disable interactive prompts')
-  .action(async (changeName?: string, options?: { json?: boolean; requirementsOnly?: boolean; deltasOnly?: boolean; diff?: boolean; noInteractive?: boolean }) => {
+  .action(async (changeName?: string, options?: { json?: boolean; diff?: boolean; noInteractive?: boolean }) => {
     try {
       const { ChangeCommand } = await import('../commands/change.js');
       const changeCommand = new ChangeCommand();
@@ -532,22 +523,84 @@ changeCmd
     }
   });
 
+function addLandOptions(command: Command): Command {
+  return command
+    .option('-y, --yes', 'Skip confirmation prompts')
+    .option('--dry-run', 'Print the resulting spec text and write nothing')
+    .option('--json', 'Output as JSON (non-interactive)')
+    .option('--store <id>', STORE_OPTION_DESCRIPTION)
+    .addOption(hiddenStorePathOption());
+}
+
+async function runLand(changeName: string | undefined, options: LandOptions): Promise<void> {
+  try {
+    const { LandCommand } = await import('../core/land.js');
+    await new LandCommand().execute(changeName, options);
+  } catch (error) {
+    await failWithError(error);
+    process.exit(1);
+  }
+}
+
+addLandOptions(
+  program
+    .command('land [change-name]')
+    .description("Apply a change's outline to the specs and remove the change")
+).action(runLand);
+
+addLandOptions(
+  program
+    .command('archive [change-name]')
+    .description('Renamed to "land"; kept as an alias')
+).action(async (changeName: string | undefined, options: LandOptions) => {
+  console.error('Note: "openspec archive" is now "openspec land".');
+  await runLand(changeName, options);
+});
+
 program
-  .command('archive [change-name]')
-  .description('Archive a completed change and update main specs')
-  .option('-y, --yes', 'Skip confirmation prompts')
-  .option('--skip-specs', 'Skip spec update operations (useful for infrastructure, tooling, or doc-only changes)')
-  .option('--no-validate', 'Skip validation (not recommended, requires confirmation)')
-  .option('--json', 'Output as JSON (non-interactive)')
+  .command('pending')
+  .description('List what each open change touches and where changes overlap')
+  .option('--json', 'Output as JSON')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   .addOption(hiddenStorePathOption())
-  .action(async (changeName?: string, options?: ArchiveOptions) => {
+  .action(async (options: { json?: boolean; store?: string; storePath?: string }) => {
     try {
-      const { ArchiveCommand } = await import('../core/archive.js');
-      const archiveCommand = new ArchiveCommand();
-      await archiveCommand.execute(changeName, options);
+      const { pendingCommand } = await import('../commands/pending.js');
+      await pendingCommand(options);
+    } catch (error) {
+      await failWithError(error, { enabled: options.json, payload: { changes: [], overlaps: [] }, fallbackCode: 'pending_error' });
+      process.exit(1);
+    }
+  });
+
+program
+  .command('relabel <spec>')
+  .description("Close gaps in a spec's labels (refused while a change edits it)")
+  .option('--store <id>', STORE_OPTION_DESCRIPTION)
+  .addOption(hiddenStorePathOption())
+  .action(async (spec: string, options: { store?: string; storePath?: string }) => {
+    try {
+      const { relabelCommand } = await import('../commands/relabel.js');
+      await relabelCommand(spec, options);
     } catch (error) {
       await failWithError(error);
+      process.exit(1);
+    }
+  });
+
+program
+  .command('migrate-specs')
+  .description('Convert old-format specs (### Requirement: / #### Scenario:) to outlines')
+  .option('--dry-run', 'Print the converted specs and write nothing')
+  .option('--json', 'Output as JSON')
+  .option('--store <id>', STORE_OPTION_DESCRIPTION)
+  .addOption(hiddenStorePathOption())
+  .action(async (options: { dryRun?: boolean; json?: boolean; store?: string; storePath?: string }) => {
+    try {
+      const { migrateSpecsCommand } = await import('../commands/migrate-specs.js');
+      await migrateSpecsCommand(options);
+    } catch (error) {
+      await failWithError(error, { enabled: options.json, payload: { specs: [] }, fallbackCode: 'migrate_specs_error' });
       process.exit(1);
     }
   });
@@ -567,7 +620,6 @@ program
   .option('--all', 'Validate all changes and specs')
   .option('--changes', 'Validate all changes')
   .option('--specs', 'Validate all specs')
-  .option('--archived', 'Validate that archived changes have all tasks completed (for pre-commit linting)')
   .option('--report <full|findings>', 'Select bulk report content: full|findings; combine with --json for JSON')
   .option('--type <type>', 'Specify item type when ambiguous: change|spec')
   .option('--strict', 'Enable strict validation mode')
@@ -576,7 +628,7 @@ program
   .option('--no-interactive', 'Disable interactive prompts')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   .addOption(hiddenStorePathOption())
-  .action(async (itemName?: string, options?: { all?: boolean; changes?: boolean; specs?: boolean; archived?: boolean; report?: string; type?: string; strict?: boolean; json?: boolean; noInteractive?: boolean; concurrency?: string; store?: string; storePath?: string }) => {
+  .action(async (itemName?: string, options?: { all?: boolean; changes?: boolean; specs?: boolean; report?: string; type?: string; strict?: boolean; json?: boolean; noInteractive?: boolean; concurrency?: string; store?: string; storePath?: string }) => {
     try {
       const { ValidateCommand } = await import('../commands/validate.js');
       const validateCommand = new ValidateCommand();
@@ -594,14 +646,8 @@ program
   .option('--json', 'Output as JSON')
   .option('--type <type>', 'Specify item type when ambiguous: change|spec')
   .option('--no-interactive', 'Disable interactive prompts')
-  // change-only flags
-  .option('--deltas-only', 'Show only deltas (JSON only, change)')
-  .option('--requirements-only', 'Alias for --deltas-only (deprecated, change)')
-  .option('--diff', 'Show per-requirement diffs for delta specs (change)')
-  // spec-only flags
-  .option('--requirements', 'JSON only: Show only requirements (exclude scenarios)')
-  .option('--no-scenarios', 'JSON only: Exclude scenario content')
-  .option('-r, --requirement <id>', 'JSON only: Show specific requirement by ID (1-based)')
+  .option('--diff', 'Show the spec text the change would land (change)')
+  .option('--item <path>', 'Show one item, e.g. "Catalog" or "Catalog.n.ii" (spec)')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   // Explicit registration required: allowUnknownOption would otherwise
   // silently swallow --store-path instead of rejecting it deliberately.
@@ -734,7 +780,7 @@ program
 // Instructions command
 program
   .command('instructions [artifact]')
-  .description('Output enriched instructions for artifacts, apply, or archive')
+  .description('Output enriched instructions for artifacts, apply, or land')
   .option('--change <id>', 'Change name')
   .option('--schema <name>', 'Schema override (auto-detected from config.yaml)')
   .option('--json', 'Output as JSON')
@@ -742,13 +788,13 @@ program
   .addOption(hiddenStorePathOption())
   .action(async (artifactId: string | undefined, options: InstructionsOptions) => {
     try {
-      const { applyInstructionsCommand, archiveInstructionsCommand, instructionsCommand } =
+      const { applyInstructionsCommand, landInstructionsCommand, instructionsCommand } =
         await import('../commands/workflow/instructions.js');
       // Workflow instruction surfaces are reserved command branches, not artifacts.
       if (artifactId === 'apply') {
         await applyInstructionsCommand(options);
-      } else if (artifactId === 'archive') {
-        await archiveInstructionsCommand(options);
+      } else if (artifactId === 'land' || artifactId === 'archive') {
+        await landInstructionsCommand(options);
       } else {
         await instructionsCommand(artifactId, options);
       }

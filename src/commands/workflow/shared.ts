@@ -71,11 +71,11 @@ export interface ApplyInstructions {
   operationGuidance?: string[];
 }
 
-export interface ArchiveInstructions {
+export interface LandInstructions {
   changeName: string;
   /** Current project background from the selected root. */
   context?: string;
-  /** Current advisory guidance for archive. */
+  /** Current advisory guidance for land. */
   operationGuidance?: string[];
 }
 
@@ -115,15 +115,13 @@ export function isColorDisabled(): boolean {
 /**
  * Gets the color function based on status.
  */
-export function getStatusColor(status: 'done' | 'skipped' | 'ready' | 'blocked'): (text: string) => string {
+export function getStatusColor(status: 'done' | 'ready' | 'blocked'): (text: string) => string {
   if (isColorDisabled()) {
     return (text: string) => text;
   }
   switch (status) {
     case 'done':
       return chalk.green;
-    case 'skipped':
-      return chalk.gray;
     case 'ready':
       return chalk.yellow;
     case 'blocked':
@@ -134,13 +132,11 @@ export function getStatusColor(status: 'done' | 'skipped' | 'ready' | 'blocked')
 /**
  * Gets the status indicator for an artifact.
  */
-export function getStatusIndicator(status: 'done' | 'skipped' | 'ready' | 'blocked'): string {
+export function getStatusIndicator(status: 'done' | 'ready' | 'blocked'): string {
   const color = getStatusColor(status);
   switch (status) {
     case 'done':
       return color('[x]');
-    case 'skipped':
-      return color('[~]');
     case 'ready':
       return color('[ ]');
     case 'blocked':
@@ -191,7 +187,7 @@ function validateChangeLookupName(changeName: string): string | undefined {
     return 'Change name cannot start with a dot';
   }
   if (changeName === 'archive') {
-    return "'archive' is reserved for archived changes";
+    return "'archive' is reserved: older projects keep archived changes there";
   }
   return undefined;
 }

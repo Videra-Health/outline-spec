@@ -21,6 +21,7 @@ import { hasAnyFileUnder } from './spec-discovery.js';
  */
 const CHANGE_ROOT_MARKERS = [
   METADATA_FILENAME,
+  'outline.md',
   'proposal.md',
   'tasks.md',
   'design.md',

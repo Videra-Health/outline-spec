@@ -79,14 +79,6 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
         description: 'List changes explicitly (default)',
       },
       {
-        name: 'archived',
-        description: 'Show only archived changes',
-      },
-      {
-        name: 'all',
-        description: 'Show both active and archived changes',
-      },
-      {
         name: 'sort',
         description: 'Sort order: "recent" (default) or "name"',
         takesValue: true,
@@ -123,10 +115,6 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
         description: 'Validate all specs',
       },
       {
-        name: 'archived',
-        description: 'Validate that archived changes have all tasks completed (for pre-commit linting)',
-      },
-      {
         name: 'report',
         description: 'Select bulk report content',
         takesValue: true,
@@ -155,37 +143,20 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
       COMMON_FLAGS.type,
       COMMON_FLAGS.noInteractive,
       {
-        name: 'deltas-only',
-        description: 'Show only deltas (JSON only, change-specific)',
-      },
-      {
-        name: 'requirements-only',
-        description: 'Alias for --deltas-only (deprecated, change-specific)',
-      },
-      {
         name: 'diff',
-        description: 'Show per-requirement diffs for delta specs (change-specific)',
+        description: 'Show the spec text the change would land (change-specific)',
       },
       {
-        name: 'requirements',
-        description: 'Show only requirements, exclude scenarios (JSON only, spec-specific)',
-      },
-      {
-        name: 'no-scenarios',
-        description: 'Exclude scenario content (JSON only, spec-specific)',
-      },
-      {
-        name: 'requirement',
-        short: 'r',
-        description: 'Show specific requirement by ID (JSON only, spec-specific)',
+        name: 'item',
+        description: 'Show one item, e.g. "Catalog.n.ii" (spec-specific)',
         takesValue: true,
       },
       COMMON_FLAGS.store,
     ],
   },
   {
-    name: 'archive',
-    description: 'Archive a completed change and update main specs',
+    name: 'land',
+    description: "Apply a change's outline to the specs and remove the change",
     acceptsPositional: true,
     positionalType: 'change-id',
     positionals: [{ name: 'change-name', type: 'change-id', optional: true }],
@@ -196,17 +167,66 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
         description: 'Skip confirmation prompts',
       },
       {
-        name: 'skip-specs',
-        description: 'Skip spec update operations',
-      },
-      {
-        name: 'no-validate',
-        description: 'Skip validation (not recommended)',
+        name: 'dry-run',
+        description: 'Print the resulting spec text and write nothing',
       },
       {
         name: 'json',
         description: 'Output as JSON (non-interactive)',
       },
+      COMMON_FLAGS.store,
+    ],
+  },
+  {
+    name: 'archive',
+    description: 'Renamed to "land"; kept as an alias',
+    acceptsPositional: true,
+    positionalType: 'change-id',
+    positionals: [{ name: 'change-name', type: 'change-id', optional: true }],
+    flags: [
+      {
+        name: 'yes',
+        short: 'y',
+        description: 'Skip confirmation prompts',
+      },
+      {
+        name: 'dry-run',
+        description: 'Print the resulting spec text and write nothing',
+      },
+      {
+        name: 'json',
+        description: 'Output as JSON (non-interactive)',
+      },
+      COMMON_FLAGS.store,
+    ],
+  },
+  {
+    name: 'pending',
+    description: 'List what each open change touches and where changes overlap',
+    flags: [
+      COMMON_FLAGS.json,
+      COMMON_FLAGS.store,
+    ],
+  },
+  {
+    name: 'relabel',
+    description: "Close gaps in a spec's labels (refused while a change edits it)",
+    acceptsPositional: true,
+    positionalType: 'spec-id',
+    positionals: [{ name: 'spec', type: 'spec-id' }],
+    flags: [
+      COMMON_FLAGS.store,
+    ],
+  },
+  {
+    name: 'migrate-specs',
+    description: 'Convert old-format specs (### Requirement: / #### Scenario:) to outlines',
+    flags: [
+      {
+        name: 'dry-run',
+        description: 'Print the converted specs and write nothing',
+      },
+      COMMON_FLAGS.json,
       COMMON_FLAGS.store,
     ],
   },
@@ -234,7 +254,7 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
   },
   {
     name: 'instructions',
-    description: 'Output enriched instructions for artifacts, apply, or archive',
+    description: 'Output enriched instructions for artifacts, apply, or land',
     acceptsPositional: true,
     positionals: [{ name: 'artifact', optional: true }],
     flags: [
@@ -514,23 +534,15 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
     subcommands: [
       {
         name: 'show',
-        description: 'Show a change proposal',
+        description: "Show a change's outline.md",
         acceptsPositional: true,
         positionalType: 'change-id',
         positionals: [{ name: 'change-name', type: 'change-id', optional: true }],
         flags: [
           COMMON_FLAGS.json,
           {
-            name: 'deltas-only',
-            description: 'Show only deltas (JSON only)',
-          },
-          {
-            name: 'requirements-only',
-            description: 'Alias for --deltas-only (deprecated)',
-          },
-          {
             name: 'diff',
-            description: 'Show per-requirement diffs for delta specs',
+            description: 'Show the spec text the change would land',
           },
           COMMON_FLAGS.noInteractive,
         ],
@@ -574,17 +586,8 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
         flags: [
           COMMON_FLAGS.json,
           {
-            name: 'requirements',
-            description: 'Show only requirements, exclude scenarios (JSON only)',
-          },
-          {
-            name: 'no-scenarios',
-            description: 'Exclude scenario content (JSON only)',
-          },
-          {
-            name: 'requirement',
-            short: 'r',
-            description: 'Show specific requirement by ID (JSON only)',
+            name: 'item',
+            description: 'Show one item, e.g. "Catalog.n.ii"',
             takesValue: true,
           },
           COMMON_FLAGS.noInteractive,

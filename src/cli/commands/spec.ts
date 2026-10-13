@@ -15,9 +15,7 @@ export function registerSpecCommand(rootProgram: Command) {
     .command('show [spec-id]')
     .description('Display a specific specification')
     .option('--json', 'Output as JSON')
-    .option('--requirements', 'JSON only: Show only requirements (exclude scenarios)')
-    .option('--no-scenarios', 'JSON only: Exclude scenario content')
-    .option('-r, --requirement <id>', 'JSON only: Show specific requirement by ID (1-based)')
+    .option('--item <path>', 'Show one item, e.g. "Catalog" or "Catalog.n.ii"')
     .option('--no-interactive', 'Disable interactive prompts')
     .action(async (specId: string | undefined, options: ShowOptions & { noInteractive?: boolean }) => {
       const { specShowCommand } = await import('../../commands/spec.js');

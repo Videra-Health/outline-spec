@@ -54,7 +54,12 @@ export function labelFor(kind: Kind, n: number): string {
   if (kind === "num") return String(n);
   if (kind === "roman") {
     let s = "";
-    for (const [v, r] of ROMAN) while (n >= v) (s += r), (n -= v);
+    for (const [v, r] of ROMAN) {
+      while (n >= v) {
+        s += r;
+        n -= v;
+      }
+    }
     return s;
   }
   let s = "";
