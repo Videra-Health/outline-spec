@@ -9,9 +9,9 @@ import {
 
 /**
  * Apply blocks on the schema's `apply.requires` alone, so its own list stops at
- * the first hop: "Missing artifacts: tasks" for a change that has nothing but a
- * proposal. Taken literally that is an instruction to write the tracking file
- * straight from the proposal, skipping the artifacts in between.
+ * the first hop: "Missing artifacts: tasks" for a change that has nothing yet.
+ * Taken literally that is an instruction to write the tracking file without
+ * the outline it is built from.
  */
 describe('generateApplyInstructions blocked prerequisites', () => {
   let tempDir: string;
@@ -21,8 +21,7 @@ describe('generateApplyInstructions blocked prerequisites', () => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-apply-blocked-'));
     changeDir = path.join(tempDir, 'openspec', 'changes', 'my-change');
     fs.mkdirSync(changeDir, { recursive: true });
-    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: spec-driven\n');
-    fs.writeFileSync(path.join(changeDir, 'proposal.md'), '## Why\nx\n');
+    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: outline\n');
   });
 
   afterEach(() => {
@@ -30,12 +29,8 @@ describe('generateApplyInstructions blocked prerequisites', () => {
     vi.restoreAllMocks();
   });
 
-  function writeSpecs(): void {
-    fs.mkdirSync(path.join(changeDir, 'specs', 'demo'), { recursive: true });
-    fs.writeFileSync(
-      path.join(changeDir, 'specs', 'demo', 'spec.md'),
-      '## ADDED Requirements\n\n### Requirement: Demo\nThe system SHALL demo.\n\n#### Scenario: Works\n- **WHEN** run\n- **THEN** works\n'
-    );
+  function writeOutline(): void {
+    fs.writeFileSync(path.join(changeDir, 'outline.md'), '## Proposal\nx\n\n## Requirements\n1. demo: A demo.\n  a. Demo: It demos.\n');
   }
 
   it('names the whole chain, not just the artifact apply blocks on', async () => {
@@ -43,9 +38,9 @@ describe('generateApplyInstructions blocked prerequisites', () => {
 
     expect(instructions.state).toBe('blocked');
     expect(instructions.missingArtifacts).toEqual(['tasks']);
-    expect(instructions.missingPrerequisites).toEqual(['specs', 'design', 'tasks']);
+    expect(instructions.missingPrerequisites).toEqual(['outline', 'tasks']);
     expect(instructions.instruction).toContain(
-      'Not created yet, in build order: specs, design, tasks'
+      'Not created yet, in build order: outline, tasks'
     );
   });
 
@@ -53,13 +48,12 @@ describe('generateApplyInstructions blocked prerequisites', () => {
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
 
     expect(instructions.instruction).toContain('the schema says which are conditional');
-    // Naming the first of several would point at design as often as at specs.
+    // Naming one artifact would skip the ones it depends on.
     expect(instructions.instruction).toContain('openspec instructions <artifact>');
   });
 
   it('drops the chain line once only the required artifact is left', async () => {
-    writeSpecs();
-    fs.writeFileSync(path.join(changeDir, 'design.md'), '# Design\n');
+    writeOutline();
 
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
 
@@ -80,8 +74,7 @@ describe('generateApplyInstructions blocked prerequisites', () => {
   });
 
   it('reports no prerequisites once the change is ready to apply', async () => {
-    writeSpecs();
-    fs.writeFileSync(path.join(changeDir, 'design.md'), '# Design\n');
+    writeOutline();
     fs.writeFileSync(path.join(changeDir, 'tasks.md'), '## 1. W\n- [ ] 1.1 Do it\n');
 
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
@@ -102,7 +95,7 @@ describe('generateApplyInstructions blocked prerequisites', () => {
     const output = lines.join('\n');
 
     expect(output).toContain('Missing artifacts: tasks');
-    expect(output).toContain('Not created yet, in build order: specs, design, tasks');
+    expect(output).toContain('Not created yet, in build order: outline, tasks');
     expect(output).not.toContain('openspec-continue-change');
   });
 });

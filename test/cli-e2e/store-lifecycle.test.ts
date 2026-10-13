@@ -109,37 +109,6 @@ async function writeCompletedChangeArtifacts(
   capability: string
 ): Promise<void> {
   await fs.writeFile(
-    path.join(changeDir, 'proposal.md'),
-    [
-      '# Proposal',
-      '',
-      '## Why',
-      '',
-      'Prove the standalone store lifecycle end to end.',
-      '',
-      '## What Changes',
-      '',
-      `- Add the ${capability} capability.`,
-      '',
-      '## Capabilities',
-      '',
-      '### New Capabilities',
-      '',
-      `- \`${capability}\`: lifecycle proof capability.`,
-      '',
-      '### Modified Capabilities',
-      '',
-      '(none)',
-      '',
-      '## Impact',
-      '',
-      '- Test-only.',
-      '',
-    ].join('\n'),
-    'utf-8'
-  );
-
-  await fs.writeFile(
     path.join(changeDir, 'outline.md'),
     [
       '## Proposal',
@@ -281,12 +250,12 @@ describe('standalone store lifecycle journey', () => {
     expect(status.stdout).not.toContain('Planning home');
 
     const instructions = await runCLI(
-      ['instructions', 'proposal', '--change', changeId, '--store', STORE_ID],
+      ['instructions', 'outline', '--change', changeId, '--store', STORE_ID],
       { env: machineA, cwd: projectDir }
     );
     expect(instructions.exitCode).toBe(0);
     expect(instructions.stdout).toContain(
-      path.join(canonical(storeRoot), 'openspec', 'changes', changeId, 'proposal.md')
+      path.join(canonical(storeRoot), 'openspec', 'changes', changeId, 'outline.md')
     );
 
     // The test acts as the agent and writes the artifacts.
@@ -397,12 +366,12 @@ describe('standalone store lifecycle journey', () => {
     expect(created.stdout).toContain(`--store ${STORE_ID}`);
 
     const instructions = await runCLI(
-      ['instructions', 'proposal', '--change', changeId, '--store', STORE_ID],
+      ['instructions', 'outline', '--change', changeId, '--store', STORE_ID],
       { env: machineB, cwd: base }
     );
     expect(instructions.exitCode).toBe(0);
     expect(instructions.stdout).toContain(
-      path.join(canonical(cloneRoot), 'openspec', 'changes', changeId, 'proposal.md')
+      path.join(canonical(cloneRoot), 'openspec', 'changes', changeId, 'outline.md')
     );
 
     const changeDir = path.join(cloneRoot, 'openspec', 'changes', changeId);

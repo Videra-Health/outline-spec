@@ -39,7 +39,7 @@ describe('status actionContext for store-selected roots (#2013)', () => {
     fs.mkdirSync(path.join(appRepo, 'openspec'), { recursive: true });
     fs.writeFileSync(
       path.join(appRepo, 'openspec', 'config.yaml'),
-      'schema: spec-driven\nstore: plans\n'
+      'schema: outline\nstore: plans\n'
     );
   });
 
@@ -145,7 +145,7 @@ describe('status actionContext for store-selected roots (#2013)', () => {
     expect(JSON.stringify(context)).toBe(JSON.stringify({
       mode: 'repo-local',
       sourceOfTruth: 'repo',
-      planningArtifacts: ['proposal', 'specs', 'design', 'tasks'],
+      planningArtifacts: ['outline', 'design', 'tasks'],
       linkedContext: [],
       allowedEditRoots: [repo],
       requiresAffectedAreaSelection: false,

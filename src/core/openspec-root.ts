@@ -13,7 +13,7 @@ export const OPENSPEC_CONFIG_YAML = 'openspec/config.yaml';
 export const OPENSPEC_CONFIG_YML = 'openspec/config.yml';
 export const OPENSPEC_SPECS_DIR = 'openspec/specs';
 export const OPENSPEC_CHANGES_DIR = 'openspec/changes';
-export const DEFAULT_OPENSPEC_SCHEMA = 'spec-driven';
+export const DEFAULT_OPENSPEC_SCHEMA = 'outline';
 export const DIRECTORY_ANCHOR_FILE_NAME = '.gitkeep';
 
 // Git cannot track empty directories, so setup anchors otherwise-empty

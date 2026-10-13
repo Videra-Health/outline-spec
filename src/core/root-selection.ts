@@ -62,7 +62,7 @@ export interface ResolvedOpenSpecRoot {
   path: string;
   changesDir: string;
   specsDir: string;
-  defaultSchema: 'spec-driven';
+  defaultSchema: 'outline';
   source: OpenSpecRootSource;
   storeId?: string;
 }
@@ -122,7 +122,7 @@ function makeRoot(
     path: rootPath,
     changesDir: path.join(rootPath, 'openspec', 'changes'),
     specsDir: path.join(rootPath, 'openspec', 'specs'),
-    defaultSchema: 'spec-driven',
+    defaultSchema: 'outline',
     source,
     ...(storeId ? { storeId } : {}),
   };

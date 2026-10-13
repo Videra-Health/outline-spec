@@ -8,12 +8,7 @@ import {
   ChangeMetadataSchema,
 } from '../../src/core/change-metadata/schema.js';
 
-const PROPOSAL = `# Test Change
-
-## Why
-This is a sufficiently long explanation to pass the why length requirement for validation purposes.
-
-## What Changes
+const OUTLINE = `## Proposal
 Pure internal refactor with no spec-level behavior change.`;
 
 describe('unrecognized keys in .openspec.yaml', () => {
@@ -34,10 +29,10 @@ describe('status/instructions report unrecognized change metadata keys', () => {
     tempDir = await fs.mkdtemp(path.join(process.cwd(), 'test-status-unknown-metadata-'));
     changeDir = path.join(tempDir, 'openspec', 'changes', 'probe');
     await fs.mkdir(changeDir, { recursive: true });
-    await fs.writeFile(path.join(changeDir, 'proposal.md'), PROPOSAL, 'utf-8');
+    await fs.writeFile(path.join(changeDir, 'outline.md'), OUTLINE, 'utf-8');
     await fs.writeFile(
       path.join(changeDir, METADATA_FILENAME),
-      'schema: spec-driven\nskip_specs: true\nskip_design: true\n',
+      'schema: outline\nskip_specs: true\nskip_design: true\n',
       'utf-8'
     );
   });

@@ -7,7 +7,6 @@ import { FileSystemUtils } from '../../../src/utils/file-system.js';
 import {
   artifactOutputExists,
   isGlobPattern,
-  isSpecsArtifactPath,
   resolveArtifactOutputs,
 } from '../../../src/core/artifact-graph/outputs.js';
 
@@ -22,18 +21,6 @@ describe('artifact-graph/outputs', () => {
 
   afterEach(() => {
     fs.rmSync(tempDir, { recursive: true, force: true });
-  });
-
-  it.each([
-    ['specs/**/*.md', true],
-    ['./specs/**/*.md', true],
-    ['.//specs/**/*.md', true],
-    [String.raw`specs\**\*.md`, true],
-    [String.raw`.\specs\**\*.md`, true],
-    ['docs/specs/**/*.md', false],
-    ['specs-note.md', false],
-  ])('classifies specs artifact path %s', (generates, expected) => {
-    expect(isSpecsArtifactPath(generates)).toBe(expected);
   });
 
   it.each([

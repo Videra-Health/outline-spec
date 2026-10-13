@@ -151,7 +151,7 @@ describe('legacy command groups are removed', () => {
     fs.mkdirSync(changeDir, { recursive: true });
     fs.writeFileSync(
       path.join(changeDir, '.openspec.yaml'),
-      ['schema: spec-driven', 'initiative:', '  store: team-context', '  id: billing-launch'].join(
+      ['schema: outline', 'initiative:', '  store: team-context', '  id: billing-launch'].join(
         '\n'
       ) + '\n'
     );
@@ -173,7 +173,7 @@ describe('legacy command groups are removed', () => {
     writeWorkspaceViewFixture(projectDir);
     const changeDir = path.join(projectDir, 'openspec', 'changes', 'mode-check');
     fs.mkdirSync(changeDir, { recursive: true });
-    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: spec-driven\n');
+    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: outline\n');
 
     const result = await runCLI(['status', '--change', 'mode-check', '--json'], {
       cwd: projectDir,

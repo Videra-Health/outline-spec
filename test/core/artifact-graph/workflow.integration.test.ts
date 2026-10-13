@@ -5,7 +5,25 @@ import * as os from 'node:os';
 import { resolveSchema } from '../../../src/core/artifact-graph/resolver.js';
 import { ArtifactGraph } from '../../../src/core/artifact-graph/graph.js';
 import { detectCompleted } from '../../../src/core/artifact-graph/state.js';
+import { parseSchema } from '../../../src/core/artifact-graph/schema.js';
 import type { BlockedArtifacts } from '../../../src/core/artifact-graph/types.js';
+
+// A schema with a multi-file glob artifact; the built-in outline schema has none.
+function globSchema() {
+  return parseSchema(`name: glob-test
+version: 1
+artifacts:
+  - id: outline
+    generates: outline.md
+    description: Outline
+    template: outline.md
+  - id: notes
+    generates: "notes/**/*.md"
+    description: Notes
+    template: notes.md
+    requires: [outline]
+`);
+}
 
 /**
  * Normalize BlockedArtifacts for comparison by sorting dependency arrays.
@@ -34,133 +52,84 @@ describe('artifact-graph workflow integration', () => {
     }
   });
 
-  describe('spec-driven workflow', () => {
-    it('preserves existing flat or nested capability organization in its instructions (#1459)', () => {
-      const schema = resolveSchema('spec-driven');
-      const proposal = schema.artifacts.find(artifact => artifact.id === 'proposal');
-      const specs = schema.artifacts.find(artifact => artifact.id === 'specs');
-
-      expect(proposal?.instruction).toContain('`user-auth` or `identity/user-auth`');
-      expect(proposal?.instruction).toContain('follow the project\'s existing spec organization');
-      expect(specs?.instruction).toContain(
-        '`<capability-path>` is the spec directory relative to `specs/`'
-      );
-      expect(specs?.instruction).toContain(
-        'do not add a new domain level when the project uses a flat layout'
-      );
-      expect(specs?.instruction).toContain('Do not move or rename the capability');
-    });
-
+  describe('outline workflow', () => {
     it('should progress through complete workflow', () => {
-      // 1. Resolve the real built-in schema
-      const schema = resolveSchema('spec-driven');
+      const schema = resolveSchema('outline');
       const graph = ArtifactGraph.fromSchema(schema);
 
-      // Verify schema structure
-      expect(graph.getName()).toBe('spec-driven');
-      expect(graph.getAllArtifacts()).toHaveLength(4);
+      expect(graph.getName()).toBe('outline');
+      expect(graph.getAllArtifacts()).toHaveLength(3);
 
-      // 2. Initial state - nothing complete, only proposal is ready
+      // Nothing complete: only outline is ready
       let completed = detectCompleted(graph, tempDir);
       expect(completed.size).toBe(0);
-      expect(graph.getNextArtifacts(completed)).toEqual(['proposal']);
+      expect(graph.getNextArtifacts(completed)).toEqual(['outline']);
       expect(graph.isComplete(completed)).toBe(false);
       expect(normalizeBlocked(graph.getBlocked(completed))).toEqual({
-        specs: ['proposal'],
-        design: ['proposal'],
-        tasks: ['design', 'specs'],
+        design: ['outline'],
+        tasks: ['outline'],
       });
 
-      // 3. Create proposal.md - now specs and design become ready
-      fs.writeFileSync(path.join(tempDir, 'proposal.md'), '# Proposal\n\nInitial proposal content.');
+      // outline.md unlocks design and tasks
+      fs.writeFileSync(path.join(tempDir, 'outline.md'), '## Proposal\n\nInitial content.');
       completed = detectCompleted(graph, tempDir);
-      expect(completed).toEqual(new Set(['proposal']));
-      expect(graph.getNextArtifacts(completed).sort()).toEqual(['design', 'specs']);
-      expect(normalizeBlocked(graph.getBlocked(completed))).toEqual({
-        tasks: ['design', 'specs'],
-      });
-
-      // 4. Create design.md - specs still needed for tasks
-      fs.writeFileSync(path.join(tempDir, 'design.md'), '# Design\n\nTechnical design content.');
-      completed = detectCompleted(graph, tempDir);
-      expect(completed).toEqual(new Set(['proposal', 'design']));
-      expect(graph.getNextArtifacts(completed)).toEqual(['specs']);
-      expect(graph.getBlocked(completed)).toEqual({
-        tasks: ['specs'],
-      });
-
-      // 5. Create specs directory with a spec file - tasks becomes ready
-      const specsDir = path.join(tempDir, 'specs');
-      fs.mkdirSync(specsDir, { recursive: true });
-      fs.writeFileSync(path.join(specsDir, 'feature-auth.md'), '# Auth Spec\n\nAuthentication specification.');
-      completed = detectCompleted(graph, tempDir);
-      expect(completed).toEqual(new Set(['proposal', 'design', 'specs']));
-      expect(graph.getNextArtifacts(completed)).toEqual(['tasks']);
+      expect(completed).toEqual(new Set(['outline']));
+      expect(graph.getNextArtifacts(completed)).toEqual(['design', 'tasks']);
       expect(graph.getBlocked(completed)).toEqual({});
 
-      // 6. Create tasks.md - workflow complete
-      fs.writeFileSync(path.join(tempDir, 'tasks.md'), '# Tasks\n\n- [ ] Implement feature');
+      fs.writeFileSync(path.join(tempDir, 'tasks.md'), '## 1. Work\n\n- [ ] 1.1 Implement feature');
       completed = detectCompleted(graph, tempDir);
-      expect(completed).toEqual(new Set(['proposal', 'design', 'specs', 'tasks']));
+      expect(completed).toEqual(new Set(['outline', 'tasks']));
+      expect(graph.getNextArtifacts(completed)).toEqual(['design']);
+
+      fs.writeFileSync(path.join(tempDir, 'design.md'), '# Design');
+      completed = detectCompleted(graph, tempDir);
+      expect(completed).toEqual(new Set(['outline', 'design', 'tasks']));
       expect(graph.getNextArtifacts(completed)).toEqual([]);
       expect(graph.isComplete(completed)).toBe(true);
-      expect(graph.getBlocked(completed)).toEqual({});
     });
 
     it('should handle out-of-order file creation', () => {
-      const schema = resolveSchema('spec-driven');
+      const schema = resolveSchema('outline');
       const graph = ArtifactGraph.fromSchema(schema);
 
-      // Create files in wrong order - design before proposal
       fs.writeFileSync(path.join(tempDir, 'design.md'), '# Design');
-
       let completed = detectCompleted(graph, tempDir);
-      // design file exists but it's still marked complete (filesystem-based)
+      // Completion is filesystem-based, so design counts even before outline
       expect(completed).toEqual(new Set(['design']));
-      // proposal is still the only "ready" artifact since it has no deps
-      expect(graph.getNextArtifacts(completed)).toEqual(['proposal']);
+      expect(graph.getNextArtifacts(completed)).toEqual(['outline']);
 
-      // Now create proposal
-      fs.writeFileSync(path.join(tempDir, 'proposal.md'), '# Proposal');
+      fs.writeFileSync(path.join(tempDir, 'outline.md'), '## Proposal');
       completed = detectCompleted(graph, tempDir);
-      expect(completed).toEqual(new Set(['proposal', 'design']));
-      // specs is the only thing ready now (design already done)
-      expect(graph.getNextArtifacts(completed)).toEqual(['specs']);
+      expect(completed).toEqual(new Set(['outline', 'design']));
+      expect(graph.getNextArtifacts(completed)).toEqual(['tasks']);
     });
 
-    it('should handle multiple spec files in glob pattern', () => {
-      const schema = resolveSchema('spec-driven');
-      const graph = ArtifactGraph.fromSchema(schema);
-
-      // Complete prerequisites
-      fs.writeFileSync(path.join(tempDir, 'proposal.md'), '# Proposal');
-
-      // Create specs directory with multiple files
-      const specsDir = path.join(tempDir, 'specs');
-      fs.mkdirSync(specsDir, { recursive: true });
-      fs.writeFileSync(path.join(specsDir, 'auth.md'), '# Auth');
-      fs.writeFileSync(path.join(specsDir, 'api.md'), '# API');
-      fs.writeFileSync(path.join(specsDir, 'database.md'), '# Database');
+    it('should handle multiple files in a glob artifact', () => {
+      const graph = ArtifactGraph.fromSchema(globSchema());
+      fs.writeFileSync(path.join(tempDir, 'outline.md'), '## Proposal');
+      const notesDir = path.join(tempDir, 'notes');
+      fs.mkdirSync(notesDir, { recursive: true });
+      fs.writeFileSync(path.join(notesDir, 'auth.md'), '# Auth');
+      fs.writeFileSync(path.join(notesDir, 'api.md'), '# API');
 
       const completed = detectCompleted(graph, tempDir);
-      expect(completed.has('specs')).toBe(true);
+      expect(completed.has('notes')).toBe(true);
     });
   });
 
   describe('build order consistency', () => {
-    it('should follow the documented proposal -> specs -> design -> tasks sequence', () => {
-      // specs and design are siblings (both require only proposal). Ordering
-      // them alphabetically put design first, contradicting the schema's own
-      // documented sequence and sending agents to design before specs existed.
-      const schema = resolveSchema('spec-driven');
+    it('should follow the declared outline -> design -> tasks sequence', () => {
+      // design and tasks are siblings (both require only outline); ties break by declaration order.
+      const schema = resolveSchema('outline');
       const graph = ArtifactGraph.fromSchema(schema);
 
-      expect(graph.getBuildOrder()).toEqual(['proposal', 'specs', 'design', 'tasks']);
-      expect(graph.getNextArtifacts(new Set(['proposal']))).toEqual(['specs', 'design']);
+      expect(graph.getBuildOrder()).toEqual(['outline', 'design', 'tasks']);
+      expect(graph.getNextArtifacts(new Set(['outline']))).toEqual(['design', 'tasks']);
     });
 
     it('should return consistent build order across multiple calls', () => {
-      const schema = resolveSchema('spec-driven');
+      const schema = resolveSchema('outline');
       const graph = ArtifactGraph.fromSchema(schema);
 
       const order1 = graph.getBuildOrder();
@@ -174,17 +143,17 @@ describe('artifact-graph workflow integration', () => {
 
   describe('empty and edge cases', () => {
     it('should handle empty change directory gracefully', () => {
-      const schema = resolveSchema('spec-driven');
+      const schema = resolveSchema('outline');
       const graph = ArtifactGraph.fromSchema(schema);
 
       // Directory exists but is empty
       const completed = detectCompleted(graph, tempDir);
       expect(completed.size).toBe(0);
-      expect(graph.getNextArtifacts(completed)).toEqual(['proposal']);
+      expect(graph.getNextArtifacts(completed)).toEqual(['outline']);
     });
 
     it('should handle non-existent change directory', () => {
-      const schema = resolveSchema('spec-driven');
+      const schema = resolveSchema('outline');
       const graph = ArtifactGraph.fromSchema(schema);
 
       const nonExistentDir = path.join(tempDir, 'does-not-exist');
@@ -193,17 +162,15 @@ describe('artifact-graph workflow integration', () => {
     });
 
     it('should not count non-matching files in glob directories', () => {
-      const schema = resolveSchema('spec-driven');
-      const graph = ArtifactGraph.fromSchema(schema);
+      const graph = ArtifactGraph.fromSchema(globSchema());
 
-      // Create specs directory with wrong file types
-      const specsDir = path.join(tempDir, 'specs');
-      fs.mkdirSync(specsDir, { recursive: true });
-      fs.writeFileSync(path.join(specsDir, 'notes.txt'), 'not a markdown file');
-      fs.writeFileSync(path.join(specsDir, 'data.json'), '{}');
+      const notesDir = path.join(tempDir, 'notes');
+      fs.mkdirSync(notesDir, { recursive: true });
+      fs.writeFileSync(path.join(notesDir, 'notes.txt'), 'not a markdown file');
+      fs.writeFileSync(path.join(notesDir, 'data.json'), '{}');
 
       const completed = detectCompleted(graph, tempDir);
-      expect(completed.has('specs')).toBe(false);
+      expect(completed.has('notes')).toBe(false);
     });
   });
 });

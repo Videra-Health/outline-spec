@@ -16,8 +16,7 @@ describe('generateApplyInstructions warnings', () => {
     fs.mkdirSync(changeDir, { recursive: true });
     fs.mkdirSync(path.join(tempDir, 'openspec', 'specs', 'demo'), { recursive: true });
     fs.writeFileSync(path.join(tempDir, 'openspec', 'specs', 'demo', 'spec.md'), '# demo\nA demo.\n\n1. Demo: It demos.\n');
-    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: spec-driven\n');
-    fs.writeFileSync(path.join(changeDir, 'proposal.md'), '## Why\nx\n');
+    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: outline\n');
     fs.writeFileSync(path.join(changeDir, 'tasks.md'), '## 1. Implementation\n- [ ] 1.1 Write the code\n');
   });
 

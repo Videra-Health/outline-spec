@@ -186,7 +186,7 @@ describe('openspec schemas root selection', () => {
     const result = await runCLI(['schemas', '--json'], { cwd: rootlessDir, env: rootlessEnv });
 
     expect(result.exitCode).toBe(0);
-    expect(schemaNames(parseSchemas(result))).toContain('spec-driven');
+    expect(schemaNames(parseSchemas(result))).toContain('outline');
   });
 
   it('fails closed with one JSON document when stores exist but none is selected', async () => {

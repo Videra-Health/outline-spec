@@ -6,13 +6,13 @@ import { readProjectConfig } from '../core/project-config.js';
 import { isKebabId } from '../core/id.js';
 import type { ChangeMetadata } from '../core/change-metadata/index.js';
 
-const DEFAULT_SCHEMA = 'spec-driven';
+const DEFAULT_SCHEMA = 'outline';
 
 /**
  * Options for creating a change.
  */
 export interface CreateChangeOptions {
-  /** The workflow schema to use (default: 'spec-driven') */
+  /** The workflow schema to use (default: 'outline') */
   schema?: string;
   /** Default schema to use when no explicit schema or project config is present */
   defaultSchema?: string;
@@ -117,7 +117,7 @@ export function validateChangeName(name: string): ValidationResult {
  * @example
  * // Creates openspec/changes/add-auth/ with default schema
  * const result = await createChange('/path/to/project', 'add-auth')
- * console.log(result.schema) // 'spec-driven' or value from config
+ * console.log(result.schema) // 'outline' or value from config
  *
  * @example
  * // Creates openspec/changes/add-auth/ with custom schema

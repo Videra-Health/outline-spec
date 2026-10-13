@@ -57,7 +57,7 @@ describe('capstone persona journeys (6.1)', () => {
     createOpenSpecRoot(appRepo);
     fs.writeFileSync(
       path.join(appRepo, 'openspec', 'config.yaml'),
-      'schema: spec-driven\nreferences:\n  - product-requirements\n'
+      'schema: outline\nreferences:\n  - product-requirements\n'
     );
 
     // Discovery: the relationship comes from config, not insider
@@ -117,7 +117,7 @@ describe('capstone persona journeys (6.1)', () => {
 
     // The whole lifecycle from the code repo, zero --store flags.
     const created = await runCLI(
-      ['new', 'change', 'add-rate-limits', '--schema', 'spec-driven', '--json'],
+      ['new', 'change', 'add-rate-limits', '--schema', 'outline', '--json'],
       { cwd: codeRepo, env }
     );
     expect(created.exitCode).toBe(0);
@@ -132,7 +132,7 @@ describe('capstone persona journeys (6.1)', () => {
     expect(JSON.parse(status.stdout).changeName).toBe('add-rate-limits');
 
     const instructions = await runCLI(
-      ['instructions', 'proposal', '--change', 'add-rate-limits', '--json'],
+      ['instructions', 'outline', '--change', 'add-rate-limits', '--json'],
       { cwd: codeRepo, env }
     );
     expect(instructions.exitCode).toBe(0);
@@ -146,7 +146,6 @@ describe('capstone persona journeys (6.1)', () => {
         { cwd: codeRepo, env }
       );
       expect(artifactStatus.exitCode).toBe(0);
-      if (artifact.id === 'specs') continue;
       fs.writeFileSync(path.join(changeDir, `${artifact.id}.md`), `# ${artifact.id}\n\nDone.\n`);
     }
     fs.writeFileSync(
@@ -156,7 +155,7 @@ describe('capstone persona journeys (6.1)', () => {
 
     // Everything written landed inside the store's change dir.
     const writtenArtifacts = fs.readdirSync(changeDir).sort();
-    expect(writtenArtifacts).toEqual(['.openspec.yaml', 'design.md', 'outline.md', 'proposal.md', 'tasks.md']);
+    expect(writtenArtifacts).toEqual(['.openspec.yaml', 'design.md', 'outline.md', 'tasks.md']);
 
     // Land completes the lifecycle, still without --store.
     const landed = await runCLI(['land', 'add-rate-limits', '--yes', '--json'], {

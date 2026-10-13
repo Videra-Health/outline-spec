@@ -4,6 +4,7 @@ import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
 
 import { getStoreMetadataPath } from './store/foundation.js';
+import { removedSchemaHint } from './artifact-graph/resolver.js';
 
 // `archive` is the old name for `land`, still read so existing configs keep their guidance.
 export const OPERATION_IDS = ['apply', 'land', 'archive'] as const;
@@ -33,11 +34,11 @@ const OperationConfigSchema = z.object({
  * - Consistent with other OpenSpec schemas
  */
 export const ProjectConfigSchema = z.object({
-  // Required: which schema to use (e.g., "spec-driven", or project-local schema name)
+  // Required: which schema to use (e.g., "outline", or project-local schema name)
   schema: z
     .string()
     .min(1)
-    .describe('The workflow schema to use (e.g., "spec-driven")'),
+    .describe('The workflow schema to use (e.g., "outline")'),
 
   // Optional: project context (injected into all artifact instructions)
   // Max size: 50KB (enforced during parsing)
@@ -558,6 +559,7 @@ export function suggestSchemas(
   }
 
   message += `\nFix: Edit openspec/config.yaml and change 'schema: ${invalidSchemaName}' to a valid schema name`;
+  message += removedSchemaHint(invalidSchemaName);
 
   return message;
 }

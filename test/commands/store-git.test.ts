@@ -207,7 +207,7 @@ describe('store git lifecycle', () => {
       XDG_CONFIG_HOME: path.join(tempDir, 'empty-teammate-config'),
     };
     fs.mkdirSync(path.join(storeRoot, 'openspec'), { recursive: true });
-    fs.writeFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
+    fs.writeFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), 'schema: outline\n');
     await writeStoreMetadataState(storeRoot, { version: 1, id: 'empty-team-context' });
     execFileSync('git', ['init'], { cwd: storeRoot, stdio: 'ignore' });
     execFileSync('git', ['add', '-A'], { cwd: storeRoot, env: gitExecEnv });
@@ -243,7 +243,7 @@ describe('store git lifecycle', () => {
       XDG_CONFIG_HOME: path.join(tempDir, 'teammate-config'),
     };
     fs.mkdirSync(path.join(storeRoot, 'openspec', 'changes', 'add-widget'), { recursive: true });
-    fs.writeFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
+    fs.writeFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), 'schema: outline\n');
     fs.writeFileSync(
       path.join(storeRoot, 'openspec', 'changes', 'add-widget', 'proposal.md'),
       '# Proposal\n'

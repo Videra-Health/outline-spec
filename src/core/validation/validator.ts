@@ -148,7 +148,7 @@ export class Validator {
    * from whatever the change's own schema declares as its tracked task output,
    * because every schema's progress, apply and archive behavior is computed by
    * counting checkboxes in exactly those files. Numbering stays scoped to the
-   * built-in `spec-driven` schema, whose template is the one that numbers tasks
+   * built-in `outline` schema, whose template is the one that numbers tasks
    * in the first place.
    *
    * The checkbox check never falls back to a bare top-level `tasks.md`: a file
@@ -182,7 +182,7 @@ export class Validator {
     if (trackedFiles.length > 0 && unreadable === 0) {
       issues.push(...findMissingTaskCheckboxIssues(documents).map(toWarning));
     }
-    if (this.usesBuiltInSpecDrivenSchema(changeDir, projectRoot)) {
+    if (this.usesBuiltInOutlineSchema(changeDir, projectRoot)) {
       issues.push(...findTaskNumberingIssues(documents).map(toWarning));
     }
     return issues;
@@ -244,20 +244,20 @@ export class Validator {
   }
 
   /**
-   * True when the change resolves to the package's own `spec-driven` schema. A
+   * True when the change resolves to the package's own `outline` schema. A
    * project schema that merely reuses the name is not it, so checks written
    * against the built-in template never fire on someone else's task format.
    */
-  private usesBuiltInSpecDrivenSchema(changeDir: string, projectRoot: string): boolean {
+  private usesBuiltInOutlineSchema(changeDir: string, projectRoot: string): boolean {
     try {
       const schemaName = resolveSchemaForChange(changeDir, undefined, projectRoot).replace(
         /\.ya?ml$/,
         ''
       );
-      if (schemaName !== 'spec-driven') return false;
+      if (schemaName !== 'outline') return false;
       const schemaDir = getSchemaDir(schemaName, projectRoot);
       if (schemaDir === null) return false;
-      const builtInSchemaDir = path.join(getPackageSchemasDir(), 'spec-driven');
+      const builtInSchemaDir = path.join(getPackageSchemasDir(), 'outline');
       return (
         FileSystemUtils.canonicalizeExistingPath(schemaDir) ===
         FileSystemUtils.canonicalizeExistingPath(builtInSchemaDir)

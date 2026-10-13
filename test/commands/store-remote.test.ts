@@ -373,7 +373,7 @@ describe('store canonical remote (3.3)', () => {
       fs.mkdirSync(path.join(appRepo, 'openspec'), { recursive: true });
       fs.writeFileSync(
         path.join(appRepo, 'openspec', 'config.yaml'),
-        'schema: spec-driven\nreferences:\n' +
+        'schema: outline\nreferences:\n' +
           `  - { id: team-context, remote: ${originRemote} }\n`
       );
       fs.mkdirSync(path.join(appRepo, 'openspec', 'specs'), { recursive: true });
@@ -387,7 +387,7 @@ describe('store canonical remote (3.3)', () => {
 
       // First run degrades with the clone-source fix.
       const degraded = await runCLI(
-        ['instructions', 'proposal', '--change', 'onboard-check', '--json'],
+        ['instructions', 'outline', '--change', 'onboard-check', '--json'],
         { cwd: appRepo, env: e2eEnv }
       );
       const entry = parseJson(degraded).references[0];
@@ -415,7 +415,7 @@ describe('store canonical remote (3.3)', () => {
 
       // The rerun resolves the index from the fresh checkout.
       const resolved = await runCLI(
-        ['instructions', 'proposal', '--change', 'onboard-check', '--json'],
+        ['instructions', 'outline', '--change', 'onboard-check', '--json'],
         { cwd: appRepo, env: e2eEnv }
       );
       const resolvedEntry = parseJson(resolved).references[0];

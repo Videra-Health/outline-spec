@@ -147,7 +147,7 @@ describe('top-level validate command', () => {
   it('resolves and validates a scaffolded change without proposal.md (#1182)', async () => {
     const changeDir = path.join(changesDir, 'scaffolded');
     await fs.mkdir(changeDir, { recursive: true });
-    await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: spec-driven\n', 'utf-8');
+    await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: outline\n', 'utf-8');
     await fs.writeFile(path.join(changeDir, 'outline.md'), changeOutline('alpha'), 'utf-8');
 
     const result = await runCLI(['validate', 'scaffolded'], { cwd: testDir });
@@ -159,7 +159,7 @@ describe('top-level validate command', () => {
     // Resolves by directory existence, then fails validation (no outline.md).
     const changeDir = path.join(changesDir, 'scaffolded-empty');
     await fs.mkdir(changeDir, { recursive: true });
-    await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: spec-driven\n', 'utf-8');
+    await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: outline\n', 'utf-8');
 
     const result = await runCLI(['validate', 'scaffolded-empty'], { cwd: testDir });
     expect(result.stderr).not.toContain('Unknown item');
@@ -171,7 +171,7 @@ describe('top-level validate command', () => {
     const isoChanges = path.join(isoRoot, 'openspec', 'changes');
     await fs.mkdir(path.join(isoChanges, 'only'), { recursive: true });
     try {
-      await fs.writeFile(path.join(isoChanges, 'only', '.openspec.yaml'), 'schema: spec-driven\n', 'utf-8');
+      await fs.writeFile(path.join(isoChanges, 'only', '.openspec.yaml'), 'schema: outline\n', 'utf-8');
       await fs.writeFile(
         path.join(isoChanges, 'only', 'outline.md'),
         '## Requirements\n1. alpha: A brand-new spec.\n  a. First requirement: It exists.\n',

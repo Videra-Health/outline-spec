@@ -31,6 +31,7 @@ export {
   getSchemaDir,
   getPackageSchemasDir,
   getUserSchemasDir,
+  removedSchemaHint,
   SchemaLoadError,
   type SchemaInfo,
 } from './resolver.js';

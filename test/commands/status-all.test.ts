@@ -26,25 +26,16 @@ describe('status --all', () => {
 
   async function createTestChange(
     changeName: string,
-    artifacts: ('design' | 'specs' | 'tasks')[] = []
+    artifacts: ('design' | 'tasks')[] = []
   ): Promise<string> {
     const changeDir = path.join(changesDir, changeName);
     await fs.mkdir(changeDir, { recursive: true });
 
-    // proposal.md marks the change as active
-    await fs.writeFile(
-      path.join(changeDir, 'proposal.md'),
-      '## Why\nMinimal proposal.\n\n## What Changes\n- **test:** Placeholder'
-    );
+    // outline.md marks the change as active
+    await fs.writeFile(path.join(changeDir, 'outline.md'), '## Proposal\nMinimal proposal.\n');
 
     if (artifacts.includes('design')) {
       await fs.writeFile(path.join(changeDir, 'design.md'), '# Design\n\nTechnical design.');
-    }
-
-    if (artifacts.includes('specs')) {
-      const specsDir = path.join(changeDir, 'specs');
-      await fs.mkdir(specsDir, { recursive: true });
-      await fs.writeFile(path.join(specsDir, 'test-spec.md'), '## Purpose\nTest spec.');
     }
 
     if (artifacts.includes('tasks')) {
@@ -58,7 +49,7 @@ describe('status --all', () => {
     // Created out of order to prove the output sort is not readdir order
     await createTestChange('zebra-change', ['design']);
     await createTestChange('alpha-change');
-    await createTestChange('mid-change', ['design', 'specs', 'tasks']);
+    await createTestChange('mid-change', ['design', 'tasks']);
 
     const result = await runCLI(['status', '--all', '--json'], { cwd: tempDir });
     expect(result.exitCode).toBe(0);
@@ -96,10 +87,10 @@ describe('status --all', () => {
     const entry = json.changes[0];
     // Full ChangeStatus shape, same as the single-change payload
     expect(entry.changeName).toBe('json-change');
-    expect(entry.schemaName).toBe('spec-driven');
+    expect(entry.schemaName).toBe('outline');
     expect(entry.isComplete).toBe(false);
     expect(Array.isArray(entry.artifacts)).toBe(true);
-    expect(entry.artifacts).toHaveLength(4);
+    expect(entry.artifacts).toHaveLength(3);
     expect(Array.isArray(entry.nextSteps)).toBe(true);
     expect(entry.actionContext).toBeDefined();
     expect(entry.artifactPaths).toBeDefined();
@@ -187,8 +178,8 @@ describe('status --all', () => {
     expect(broken.artifacts).toBeUndefined();
 
     const good = json.changes.find((c: any) => c.changeName === 'good-change');
-    expect(good.schemaName).toBe('spec-driven');
-    expect(good.artifacts).toHaveLength(4);
+    expect(good.schemaName).toBe('outline');
+    expect(good.artifacts).toHaveLength(3);
   });
 
   it('prints one text block per change with --all', async () => {
@@ -199,8 +190,8 @@ describe('status --all', () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('Change: first-change');
     expect(result.stdout).toContain('Change: second-change');
-    expect(result.stdout).toContain('1/4 artifacts complete');
-    expect(result.stdout).toContain('2/4 artifacts complete');
+    expect(result.stdout).toContain('1/3 artifacts complete');
+    expect(result.stdout).toContain('2/3 artifacts complete');
   });
 
   it('gives every change in the sweep its own next-step line', async () => {
@@ -213,10 +204,10 @@ describe('status --all', () => {
     // The point of the batch view is one screen saying what each change needs
     // next - a single shared line, or a line for only one change, would not.
     expect(result.stdout).toContain(
-      'Next: openspec instructions specs --change "first-change" --json'
+      'Next: openspec instructions design --change "first-change" --json'
     );
     expect(result.stdout).toContain(
-      'Next: openspec instructions specs --change "second-change" --json'
+      'Next: openspec instructions tasks --change "second-change" --json'
     );
   });
 
@@ -230,7 +221,7 @@ describe('status --all', () => {
     // A failed entry has no artifact statuses to reason about, so it must not
     // be given a next step alongside its diagnostic.
     expect(getOutput(result)).toContain('✗ broken-change');
-    expect(result.stdout).toContain('Next: openspec instructions specs --change "good-change"');
+    expect(result.stdout).toContain('Next: openspec instructions tasks --change "good-change"');
     expect(result.stdout).not.toContain('--change "broken-change"');
   });
 
@@ -246,14 +237,14 @@ describe('status --all', () => {
     expect(result.exitCode).toBe(1);
     expect(result.stdout).toContain('✗ broken-change:');
     expect(result.stdout).toContain('Change: good-change');
-    expect(result.stdout).toContain('2/4 artifacts complete');
+    expect(result.stdout).toContain('2/3 artifacts complete');
   });
 
   describe('a namespace folder holding nested changes (#1846)', () => {
     async function seedNamespaceFolder(): Promise<void> {
       const nested = path.join(changesDir, 'mobile', 'refresh-token');
       await fs.mkdir(nested, { recursive: true });
-      await fs.writeFile(path.join(nested, 'proposal.md'), '## Why\nNested.\n');
+      await fs.writeFile(path.join(nested, 'outline.md'), '## Proposal\nNested.\n');
     }
 
     it('reports the nesting instead of an artifact plan for work that is not there', async () => {
@@ -372,7 +363,7 @@ describe('status --all', () => {
       );
 
       const result = await runCLI(
-        ['status', '--all', '--schema', 'spec-driven', '--json'],
+        ['status', '--all', '--schema', 'outline', '--json'],
         { cwd: tempDir }
       );
       expect(result.exitCode).toBe(1);
@@ -382,7 +373,7 @@ describe('status --all', () => {
       expect(broken.status[0].code).toBe('change_error');
 
       const good = json.changes.find((c: any) => c.changeName === 'good-change');
-      expect(good.schemaName).toBe('spec-driven');
+      expect(good.schemaName).toBe('outline');
     });
   });
 });

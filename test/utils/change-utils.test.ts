@@ -176,7 +176,7 @@ describe('createChange', () => {
 
       const metaPath = path.join(testDir, 'openspec', 'changes', 'add-auth', '.openspec.yaml');
       const content = await fs.readFile(metaPath, 'utf-8');
-      expect(content).toContain('schema: spec-driven');
+      expect(content).toContain('schema: outline');
       expect(content).toMatch(/created: \d{4}-\d{2}-\d{2}/);
     });
 
@@ -205,11 +205,11 @@ describe('createChange', () => {
     });
 
     it('should create .openspec.yaml with custom schema', async () => {
-      await createChange(testDir, 'add-auth', { schema: 'spec-driven' });
+      await createChange(testDir, 'add-auth', { schema: 'outline' });
 
       const metaPath = path.join(testDir, 'openspec', 'changes', 'add-auth', '.openspec.yaml');
       const content = await fs.readFile(metaPath, 'utf-8');
-      expect(content).toContain('schema: spec-driven');
+      expect(content).toContain('schema: outline');
     });
   });
 

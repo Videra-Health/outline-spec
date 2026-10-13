@@ -29,7 +29,7 @@ describe('item discovery', () => {
   describe('getActiveChangeIds', () => {
     it('resolves a scaffolded change that has no proposal.md', async () => {
       // What `openspec new change <name>` leaves on disk: metadata only.
-      await makeChange('scaffolded', { '.openspec.yaml': 'schema: spec-driven\n' });
+      await makeChange('scaffolded', { '.openspec.yaml': 'schema: outline\n' });
       await makeChange('with-proposal', { 'proposal.md': '# With proposal' });
 
       expect(await getActiveChangeIds(root)).toEqual(['scaffolded', 'with-proposal']);

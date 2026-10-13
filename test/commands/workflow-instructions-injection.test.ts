@@ -239,7 +239,7 @@ describe('printLandInstructionsText markdown injection', () => {
     fs.writeFileSync(
       path.join(tempDir, 'openspec', 'config.yaml'),
       [
-        'schema: spec-driven',
+        'schema: outline',
         'context: |',
         '  ok',
         '',

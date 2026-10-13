@@ -73,7 +73,7 @@ describe('validate findings reports', () => {
       path: directory,
       changesDir: path.join(directory, 'openspec', 'changes'),
       specsDir: path.join(directory, 'openspec', 'specs'),
-      defaultSchema: 'spec-driven',
+      defaultSchema: 'outline',
       source: 'nearest',
     };
     await fs.mkdir(root.changesDir, { recursive: true });

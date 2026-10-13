@@ -17,7 +17,7 @@ export interface ResolvePlanningHomeOptions {
   allowImplicitRepoRoot?: boolean;
 }
 
-const REPO_DEFAULT_SCHEMA = 'spec-driven';
+const REPO_DEFAULT_SCHEMA = 'outline';
 
 function pathExistsAsDirectory(candidatePath: string): boolean {
   try {

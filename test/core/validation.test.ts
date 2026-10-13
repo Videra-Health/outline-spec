@@ -111,7 +111,7 @@ describe('validateChange metadata keys', () => {
     const dir = path.join(root, 'openspec', 'changes', 'c1');
     mkdirSync(dir, { recursive: true });
     writeFileSync(path.join(dir, 'outline.md'), '## Proposal\nx\n');
-    writeFileSync(path.join(dir, '.openspec.yaml'), 'schema: spec-driven\nskip_specs: true\n');
+    writeFileSync(path.join(dir, '.openspec.yaml'), 'schema: outline\nskip_specs: true\n');
     const r = await new Validator(true).validateChange(dir);
     rmSync(root, { recursive: true, force: true });
     expect(r.valid).toBe(false);

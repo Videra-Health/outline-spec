@@ -15,7 +15,7 @@ const root = {
   changesDir: '/team/store/openspec/changes',
   specsDir: '/team/store/openspec/specs',
   archiveDir: '/team/store/openspec/changes/archive',
-  defaultSchema: 'spec-driven',
+  defaultSchema: 'outline',
 } as ResolvedOpenSpecRoot;
 
 const warn = (code: string): StoreDiagnostic => ({

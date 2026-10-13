@@ -31,7 +31,7 @@ describe('project-config', () => {
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: |
   Tech stack: TypeScript, React
   API style: RESTful
@@ -47,7 +47,7 @@ rules:
         const config = readProjectConfig(tempDir);
 
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           context: 'Tech stack: TypeScript, React\nAPI style: RESTful\n',
           rules: {
             proposal: ['Include rollback plan', 'Identify affected teams'],
@@ -81,12 +81,12 @@ rules:
       it('should parse minimal config with schema only', () => {
         const configDir = path.join(tempDir, 'openspec');
         fs.mkdirSync(configDir, { recursive: true });
-        fs.writeFileSync(path.join(configDir, 'config.yaml'), 'schema: spec-driven\n');
+        fs.writeFileSync(path.join(configDir, 'config.yaml'), 'schema: outline\n');
 
         const config = readProjectConfig(tempDir);
 
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
         });
         expect(consoleWarnSpy).not.toHaveBeenCalled();
       });
@@ -96,7 +96,7 @@ rules:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 rules:
   specs:
     - Preserve requirement IDs
@@ -113,7 +113,7 @@ operations:
         const config = readProjectConfig(tempDir);
 
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           rules: { specs: ['Preserve requirement IDs'] },
           operations: {
             apply: { guidance: ['Keep test summaries concise'] },
@@ -126,7 +126,7 @@ operations:
       it('should omit operations when the field is absent', () => {
         const configDir = path.join(tempDir, 'openspec');
         fs.mkdirSync(configDir, { recursive: true });
-        fs.writeFileSync(path.join(configDir, 'config.yaml'), 'schema: spec-driven\n');
+        fs.writeFileSync(path.join(configDir, 'config.yaml'), 'schema: outline\n');
 
         expect(readProjectConfig(tempDir)?.operations).toBeUndefined();
       });
@@ -136,7 +136,7 @@ operations:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: Valid context
 operations:
   apply:
@@ -150,7 +150,7 @@ operations:
         const config = readProjectConfig(tempDir);
 
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           context: 'Valid context',
           operations: {
             apply: { guidance: ['Run focused tests first'] },
@@ -166,7 +166,7 @@ operations:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: Valid context
 operations:
   - apply
@@ -174,7 +174,7 @@ operations:
         );
 
         expect(readProjectConfig(tempDir)).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           context: 'Valid context',
         });
         expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -187,7 +187,7 @@ operations:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 githubCopilot:
   cloudAgent: true
 `
@@ -202,14 +202,14 @@ githubCopilot:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 githubCopilot:
   cloudAgent: "yes"
 `
         );
 
         const config = readProjectConfig(tempDir);
-        expect(config?.schema).toBe('spec-driven');
+        expect(config?.schema).toBe('outline');
         expect(config?.githubCopilot).toBeUndefined();
         expect(consoleWarnSpy).toHaveBeenCalledWith(
           expect.stringContaining("Invalid 'githubCopilot.cloudAgent' field")
@@ -221,12 +221,12 @@ githubCopilot:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 githubCopilot: true
 `
         );
 
-        expect(readProjectConfig(tempDir)?.schema).toBe('spec-driven');
+        expect(readProjectConfig(tempDir)?.schema).toBe('outline');
         expect(consoleWarnSpy).toHaveBeenCalledWith(
           expect.stringContaining("Invalid 'githubCopilot' field")
         );
@@ -237,7 +237,7 @@ githubCopilot: true
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 operations:
   apply: invalid
   archive:
@@ -259,7 +259,7 @@ operations:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 operations:
   deploy:
     guidance:
@@ -287,7 +287,7 @@ operations:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 operations:
   apply:
     guidance:
@@ -316,7 +316,7 @@ operations:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 operations:
   apply:
     guidance:
@@ -365,7 +365,7 @@ rules:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: 123
 rules:
   proposal:
@@ -376,7 +376,7 @@ rules:
         const config = readProjectConfig(tempDir);
 
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           rules: {
             proposal: ['Valid rule'],
           },
@@ -391,7 +391,7 @@ rules:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: Valid context
 rules: ["not", "an", "object"]
 `
@@ -400,7 +400,7 @@ rules: ["not", "an", "object"]
         const config = readProjectConfig(tempDir);
 
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           context: 'Valid context',
         });
         expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -414,7 +414,7 @@ rules: ["not", "an", "object"]
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: Valid context
 rules:
 `
@@ -424,7 +424,7 @@ rules:
 
         // Should still parse schema and context despite null rules
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           context: 'Valid context',
         });
         expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -437,7 +437,7 @@ rules:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 rules:
   proposal:
     - Valid rule
@@ -450,7 +450,7 @@ rules:
         const config = readProjectConfig(tempDir);
 
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           rules: {
             proposal: ['Valid rule'],
             design: ['Another valid rule'],
@@ -470,7 +470,7 @@ rules:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 rules:
   proposal:
     - Valid rule
@@ -486,7 +486,7 @@ rules:
         // Unchanged behavior: the malformed artifact's whole rule set is still
         // dropped, and its well-formed siblings are untouched.
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           rules: {
             specs: ['Requirements are declarative SHALL statements'],
           },
@@ -509,7 +509,7 @@ rules:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 rules:
   proposal:
     - First: bad mapping
@@ -540,7 +540,7 @@ rules:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 rules:
   proposal:
     - Valid rule
@@ -553,7 +553,7 @@ rules:
         const config = readProjectConfig(tempDir);
 
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           rules: {
             proposal: ['Valid rule', 'Another valid rule'],
           },
@@ -568,7 +568,7 @@ rules:
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 rules:
   proposal:
     - ""
@@ -581,7 +581,7 @@ rules:
         const config = readProjectConfig(tempDir);
 
         expect(config).toEqual({
-          schema: 'spec-driven',
+          schema: 'outline',
           rules: {
             specs: ['Valid rule'],
           },
@@ -639,7 +639,7 @@ rules:
 
       it('keeps entries deduplicated and order-preserving, including invalid grammar', () => {
         writeConfig(
-          'schema: spec-driven\nreferences:\n  - team-context\n  - team-context\n  - "BAD ID"\n  - other-context\n  - 7\n'
+          'schema: outline\nreferences:\n  - team-context\n  - team-context\n  - "BAD ID"\n  - other-context\n  - 7\n'
         );
 
         const config = readProjectConfig(tempDir);
@@ -658,7 +658,7 @@ rules:
 
       it('ignores legacy targets declarations', () => {
         writeConfig(
-          'schema: spec-driven\n' +
+          'schema: outline\n' +
             'references:\n  - team-context\n  - { id: team-context, remote: https://192.0.2.1/a.git }\n  - 7\n' +
             'targets:\n  - api-server\n  - { id: api-server, remote: https://192.0.2.1/b.git }\n  - 7\n'
         );
@@ -676,7 +676,7 @@ rules:
 
       it('normalizes map entries and fills remotes across duplicates (3.3)', () => {
         writeConfig(
-          'schema: spec-driven\nreferences:\n' +
+          'schema: outline\nreferences:\n' +
             '  - team-context\n' +
             '  - { id: team-context, remote: https://192.0.2.1/team.git }\n' +
             '  - { id: team-context, remote: https://192.0.2.2/other.git }\n' +
@@ -701,10 +701,10 @@ rules:
       });
 
       it('omits the field when absent or empty and warns on non-arrays', () => {
-        writeConfig('schema: spec-driven\n');
+        writeConfig('schema: outline\n');
         expect(readProjectConfig(tempDir)?.references).toBeUndefined();
 
-        writeConfig('schema: spec-driven\nreferences: not-an-array\n');
+        writeConfig('schema: outline\nreferences: not-an-array\n');
         expect(readProjectConfig(tempDir)?.references).toBeUndefined();
         expect(consoleWarnSpy).toHaveBeenCalledWith(
           expect.stringContaining("Invalid 'references' field")
@@ -719,7 +719,7 @@ rules:
         const smallContext = 'a'.repeat(1000); // 1KB
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven\ncontext: "${smallContext}"\n`
+          `schema: outline\ncontext: "${smallContext}"\n`
         );
 
         const config = readProjectConfig(tempDir);
@@ -736,12 +736,12 @@ rules:
         const largeContext = 'a'.repeat(51 * 1024); // 51KB
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven\ncontext: "${largeContext}"\n`
+          `schema: outline\ncontext: "${largeContext}"\n`
         );
 
         const config = readProjectConfig(tempDir);
 
-        expect(config).toEqual({ schema: 'spec-driven' });
+        expect(config).toEqual({ schema: 'outline' });
         expect(config?.context).toBeUndefined();
         expect(consoleWarnSpy).toHaveBeenCalledWith(
           expect.stringContaining('Context too large (51.0KB, limit: 50KB)')
@@ -757,7 +757,7 @@ rules:
         const exactContext = 'a'.repeat(50 * 1024); // Exactly 50KB
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven\ncontext: "${exactContext}"\n`
+          `schema: outline\ncontext: "${exactContext}"\n`
         );
 
         const config = readProjectConfig(tempDir);
@@ -775,7 +775,7 @@ rules:
         const contextWithUnicode = '☃'.repeat(18000); // ~54KB in UTF-8 (18000 * 3 bytes)
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: |
   ${contextWithUnicode}
 `
@@ -796,7 +796,7 @@ context: |
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          'schema: spec-driven\ncontext: from yaml\n'
+          'schema: outline\ncontext: from yaml\n'
         );
         fs.writeFileSync(
           path.join(configDir, 'config.yml'),
@@ -805,7 +805,7 @@ context: |
 
         const config = readProjectConfig(tempDir);
 
-        expect(config?.schema).toBe('spec-driven');
+        expect(config?.schema).toBe('outline');
         expect(config?.context).toBe('from yaml');
       });
 
@@ -859,7 +859,7 @@ context: |
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: |
   Line 1: Tech stack
   Line 2: API conventions
@@ -879,7 +879,7 @@ context: |
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: |
   Special chars: : @ # $ % & * [ ] { }
   Quotes: "double" 'single'
@@ -900,7 +900,7 @@ context: |
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(
           path.join(configDir, 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 rules:
   proposal:
     - "Use <template> tags in docs"
@@ -923,7 +923,7 @@ rules:
   describe('loadOperationInputs', () => {
     it('matches only the requested operation and never exposes artifact rules', () => {
       const config = {
-        schema: 'spec-driven',
+        schema: 'outline',
         context: 'Project background',
         rules: { specs: ['Artifact-only rule'] },
         operations: {
@@ -964,7 +964,7 @@ rules:
       expect(
         loadOperationInputs(
           {
-            schema: 'spec-driven',
+            schema: 'outline',
             context: '',
             operations: {
               apply: {},
@@ -1008,10 +1008,10 @@ rules:
     });
 
     it('should not warn for keys valid in another schema (union across schemas)', () => {
-      // `issue` is not a spec-driven artifact but is valid for a lighter
+      // `issue` is not a outline artifact but is valid for a lighter
       // schema; the union set contains it, so it must not warn.
       const rules = {
-        proposal: ['Rule 1'], // spec-driven
+        proposal: ['Rule 1'], // outline
         issue: ['Rule 2'], // another schema
       };
       const unionIds = new Set(['proposal', 'specs', 'design', 'tasks', 'issue']);
@@ -1046,17 +1046,24 @@ rules:
 
   describe('suggestSchemas', () => {
     const availableSchemas = [
-      { name: 'spec-driven', isBuiltIn: true },
+      { name: 'outline', isBuiltIn: true },
       { name: 'custom-workflow', isBuiltIn: false },
       { name: 'team-process', isBuiltIn: false },
     ];
 
     it('should suggest close matches using fuzzy matching', () => {
-      const message = suggestSchemas('spec-drven', availableSchemas); // Missing 'i'
+      const message = suggestSchemas('outlin', availableSchemas); // Missing 'e'
 
-      expect(message).toContain("Schema 'spec-drven' not found");
+      expect(message).toContain("Schema 'outlin' not found");
       expect(message).toContain('Did you mean one of these?');
-      expect(message).toContain('spec-driven (built-in)');
+      expect(message).toContain('outline (built-in)');
+    });
+
+    it('points a config naming spec-driven at outline and migrate-specs', () => {
+      const message = suggestSchemas('spec-driven', availableSchemas);
+
+      expect(message).toContain("replaced by 'outline'");
+      expect(message).toContain('migrate-specs');
     });
 
     it('should suggest custom-workflow for workflow typo', () => {
@@ -1070,17 +1077,17 @@ rules:
       const message = suggestSchemas('nonexistent', availableSchemas);
 
       expect(message).toContain('Available schemas:');
-      expect(message).toContain('Built-in: spec-driven');
+      expect(message).toContain('Built-in: outline');
       expect(message).toContain('Project-local: custom-workflow, team-process');
     });
 
     it('should handle case when no project-local schemas exist', () => {
       const builtInOnly = [
-        { name: 'spec-driven', isBuiltIn: true },
+        { name: 'outline', isBuiltIn: true },
       ];
       const message = suggestSchemas('invalid', builtInOnly);
 
-      expect(message).toContain('Built-in: spec-driven');
+      expect(message).toContain('Built-in: outline');
       expect(message).toContain('Project-local: (none found)');
     });
 

@@ -667,7 +667,7 @@ describe('store command', () => {
   it('reports repeated setup and register as no-op success', async () => {
     const storeRoot = mkdir('team-context');
     createHealthyOpenSpecRoot(storeRoot);
-    fs.writeFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), 'schema: spec-driven\n# user edit\n');
+    fs.writeFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), 'schema: outline\n# user edit\n');
 
     const firstSetup = await runCLI(
       ['store', 'setup', 'team-context', '--path', storeRoot, '--no-init-git', '--json'],
@@ -717,7 +717,7 @@ describe('store command', () => {
       })
     );
     expect(fs.readFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), 'utf-8')).toBe(
-      'schema: spec-driven\n# user edit\n'
+      'schema: outline\n# user edit\n'
     );
     await expect(readStoreRegistryState({ globalDataDir })).resolves.toEqual({
       version: 1,

@@ -117,6 +117,12 @@ function getSchemaCandidateDir(schemasDir: string, name: string): string | null 
   }
 }
 
+/** Extra guidance when a config or change still names the removed `spec-driven` schema. */
+export function removedSchemaHint(name: string): string {
+  if (name.replace(/\.ya?ml$/, '') !== 'spec-driven') return '';
+  return "\nThe 'spec-driven' schema was replaced by 'outline'. Set 'schema: outline' in openspec/config.yaml (and any change's .openspec.yaml), then run 'openspec migrate-specs' to convert old specs and changes.";
+}
+
 /**
  * Resolves a schema name to its directory path.
  *
@@ -128,7 +134,7 @@ function getSchemaCandidateDir(schemasDir: string, name: string): string | null 
  * When projectRoot is not provided, only user override and package built-in are checked
  * (backward compatible behavior).
  *
- * @param name - Schema name (e.g., "spec-driven")
+ * @param name - Schema name (e.g., "outline")
  * @param projectRoot - Optional project root directory for project-local schema resolution
  * @returns The path to the schema directory, or null if not found
  */
@@ -182,7 +188,7 @@ export function getSchemaDir(
  * When projectRoot is not provided, only user override and package built-in are checked
  * (backward compatible behavior).
  *
- * @param name - Schema name (e.g., "spec-driven")
+ * @param name - Schema name (e.g., "outline")
  * @param projectRoot - Optional project root directory for project-local schema resolution
  * @returns The resolved schema object
  * @throws Error if schema is not found in any location
@@ -195,7 +201,8 @@ export function resolveSchema(name: string, projectRoot?: string): SchemaYaml {
   if (!schemaDir) {
     const availableSchemas = listSchemas(projectRoot);
     throw new Error(
-      `Schema '${normalizedName}' not found. Available schemas: ${availableSchemas.join(', ')}`
+      `Schema '${normalizedName}' not found. Available schemas: ${availableSchemas.join(', ')}` +
+        removedSchemaHint(normalizedName)
     );
   }
 

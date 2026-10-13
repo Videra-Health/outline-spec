@@ -17,12 +17,12 @@ describe('ChangeMetadataSchema', () => {
   describe('valid metadata', () => {
     it('should accept valid schema with created date', () => {
       const result = ChangeMetadataSchema.safeParse({
-        schema: 'spec-driven',
+        schema: 'outline',
         created: '2025-01-05',
       });
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.schema).toBe('spec-driven');
+        expect(result.data.schema).toBe('outline');
         expect(result.data.created).toBe('2025-01-05');
       }
     });
@@ -40,7 +40,7 @@ describe('ChangeMetadataSchema', () => {
 
     it('should accept a portable initiative link', () => {
       const result = ChangeMetadataSchema.safeParse({
-        schema: 'spec-driven',
+        schema: 'outline',
         initiative: {
           store: 'platform',
           id: 'billing-launch',
@@ -74,7 +74,7 @@ describe('ChangeMetadataSchema', () => {
 
     it('should reject invalid date format', () => {
       const result = ChangeMetadataSchema.safeParse({
-        schema: 'spec-driven',
+        schema: 'outline',
         created: '01/05/2025', // Wrong format
       });
       expect(result.success).toBe(false);
@@ -82,7 +82,7 @@ describe('ChangeMetadataSchema', () => {
 
     it('should reject non-ISO date format', () => {
       const result = ChangeMetadataSchema.safeParse({
-        schema: 'spec-driven',
+        schema: 'outline',
         created: '2025-1-5', // Missing leading zeros
       });
       expect(result.success).toBe(false);
@@ -90,7 +90,7 @@ describe('ChangeMetadataSchema', () => {
 
     it('should reject initiative links with local paths or copied content', () => {
       const result = ChangeMetadataSchema.safeParse({
-        schema: 'spec-driven',
+        schema: 'outline',
         initiative: {
           store: 'platform',
           id: 'billing-launch',
@@ -104,7 +104,7 @@ describe('ChangeMetadataSchema', () => {
 
     it('strips unrecognized top-level keys instead of rejecting the file', () => {
       const result = ChangeMetadataSchema.safeParse({
-        schema: 'spec-driven',
+        schema: 'outline',
         skip_specs: true,
         skip_design: true,
         bogus_key: 1,
@@ -126,7 +126,7 @@ describe('ChangeMetadataSchema', () => {
         { store: 'platform', id: 'billing launch' },
       ]) {
         const result = ChangeMetadataSchema.safeParse({
-          schema: 'spec-driven',
+          schema: 'outline',
           initiative,
         });
 
@@ -140,7 +140,7 @@ describe('listUnknownChangeMetadataKeys', () => {
   it('names extra top-level keys and ignores known ones', () => {
     expect(
       listUnknownChangeMetadataKeys({
-        schema: 'spec-driven',
+        schema: 'outline',
         skip_specs: true,
         retire_capabilities: true,
         bogus_key: 1,
@@ -151,7 +151,7 @@ describe('listUnknownChangeMetadataKeys', () => {
   it('returns nothing for a known-keys-only object', () => {
     expect(
       listUnknownChangeMetadataKeys({
-        schema: 'spec-driven',
+        schema: 'outline',
         created: '2026-09-19',
         goal: 'Ship it',
       })
@@ -200,14 +200,14 @@ describe('writeChangeMetadata', () => {
 
   it('should write valid YAML metadata file', async () => {
     writeChangeMetadata(changeDir, {
-      schema: 'spec-driven',
+      schema: 'outline',
       created: '2025-01-05',
     });
 
     const metaPath = path.join(changeDir, '.openspec.yaml');
     const content = await fs.readFile(metaPath, 'utf-8');
 
-    expect(content).toContain('schema: spec-driven');
+    expect(content).toContain('schema: outline');
     expect(content).toContain('created: 2025-01-05');
   });
 
@@ -244,13 +244,13 @@ describe('readChangeMetadata', () => {
     const metaPath = path.join(changeDir, '.openspec.yaml');
     await fs.writeFile(
       metaPath,
-      'schema: spec-driven\ncreated: "2025-01-05"\n',
+      'schema: outline\ncreated: "2025-01-05"\n',
       'utf-8'
     );
 
     const result = readChangeMetadata(changeDir);
     expect(result).toEqual({
-      schema: 'spec-driven',
+      schema: 'outline',
       created: '2025-01-05',
     });
   });
@@ -260,7 +260,7 @@ describe('readChangeMetadata', () => {
     await fs.writeFile(
       metaPath,
       [
-        'schema: spec-driven',
+        'schema: outline',
         'initiative:',
         '  store: platform',
         '  id: billing-launch',
@@ -315,7 +315,7 @@ describe('resolveSchemaForChange', () => {
   it('should return explicit schema when provided', async () => {
     // Even with metadata file, explicit schema wins
     const metaPath = path.join(changeDir, '.openspec.yaml');
-    await fs.writeFile(metaPath, 'schema: spec-driven\n', 'utf-8');
+    await fs.writeFile(metaPath, 'schema: outline\n', 'utf-8');
 
     const result = resolveSchemaForChange(changeDir, 'custom-schema');
     expect(result).toBe('custom-schema');
@@ -323,15 +323,15 @@ describe('resolveSchemaForChange', () => {
 
   it('should return schema from metadata when no explicit schema', async () => {
     const metaPath = path.join(changeDir, '.openspec.yaml');
-    await fs.writeFile(metaPath, 'schema: spec-driven\n', 'utf-8');
+    await fs.writeFile(metaPath, 'schema: outline\n', 'utf-8');
 
     const result = resolveSchemaForChange(changeDir);
-    expect(result).toBe('spec-driven');
+    expect(result).toBe('outline');
   });
 
   it('should return default when no metadata and no explicit schema', () => {
     const result = resolveSchemaForChange(changeDir);
-    expect(result).toBe('spec-driven');
+    expect(result).toBe('outline');
   });
 
   it('should fail when metadata exists but cannot be read', async () => {
@@ -368,10 +368,10 @@ describe('resolveSchemaForChange', () => {
 
     // Create change metadata with different schema
     const metaPath = path.join(changeDir, '.openspec.yaml');
-    await fs.writeFile(metaPath, 'schema: spec-driven\n', 'utf-8');
+    await fs.writeFile(metaPath, 'schema: outline\n', 'utf-8');
 
     const result = resolveSchemaForChange(changeDir);
-    expect(result).toBe('spec-driven'); // Change metadata wins
+    expect(result).toBe('outline'); // Change metadata wins
   });
 
   it('should prefer explicit schema over all config sources', async () => {
@@ -386,7 +386,7 @@ describe('resolveSchemaForChange', () => {
 
     // Create change metadata
     const metaPath = path.join(changeDir, '.openspec.yaml');
-    await fs.writeFile(metaPath, 'schema: spec-driven\n', 'utf-8');
+    await fs.writeFile(metaPath, 'schema: outline\n', 'utf-8');
 
     // Explicit schema should win
     const result = resolveSchemaForChange(changeDir, 'custom-schema');
@@ -404,11 +404,11 @@ describe('resolveSchemaForChange', () => {
     );
 
     const metaPath = path.join(changeDir, '.openspec.yaml');
-    await fs.writeFile(metaPath, 'schema: spec-driven\n', 'utf-8');
+    await fs.writeFile(metaPath, 'schema: outline\n', 'utf-8');
 
     // Test each level
     expect(resolveSchemaForChange(changeDir, 'custom-schema')).toBe('custom-schema'); // CLI wins
-    expect(resolveSchemaForChange(changeDir)).toBe('spec-driven'); // Metadata wins when no CLI
+    expect(resolveSchemaForChange(changeDir)).toBe('outline'); // Metadata wins when no CLI
 
     // Remove metadata, config should win
     await fs.unlink(metaPath);
@@ -416,13 +416,17 @@ describe('resolveSchemaForChange', () => {
 
     // Remove config, default should win
     await fs.unlink(path.join(configDir, 'config.yaml'));
-    expect(resolveSchemaForChange(changeDir)).toBe('spec-driven'); // Default wins
+    expect(resolveSchemaForChange(changeDir)).toBe('outline'); // Default wins
   });
 });
 
 describe('validateSchemaName', () => {
   it('should accept valid schema name', () => {
-    expect(() => validateSchemaName('spec-driven')).not.toThrow();
+    expect(() => validateSchemaName('outline')).not.toThrow();
+  });
+
+  it('points a change naming spec-driven at outline and migrate-specs', () => {
+    expect(() => validateSchemaName('spec-driven')).toThrow(/replaced by 'outline'[\s\S]*migrate-specs/);
   });
 
   it('should throw for unknown schema', () => {

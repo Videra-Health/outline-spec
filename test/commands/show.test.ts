@@ -147,7 +147,7 @@ describe('top-level show command', () => {
     // `openspec new change <name>` writes only .openspec.yaml, so `show` must
     // resolve the change the same way `list` and `status` already do.
     await fs.mkdir(path.join(changesDir, 'scaffolded'), { recursive: true });
-    await fs.writeFile(path.join(changesDir, 'scaffolded', '.openspec.yaml'), 'schema: spec-driven\n', 'utf-8');
+    await fs.writeFile(path.join(changesDir, 'scaffolded', '.openspec.yaml'), 'schema: outline\n', 'utf-8');
 
     const originalCwd = process.cwd();
     try {
@@ -221,7 +221,7 @@ describe('top-level show command', () => {
 
   it('offers a scaffolded change when "change show" is called without a name', async () => {
     await fs.mkdir(path.join(changesDir, 'scaffolded'), { recursive: true });
-    await fs.writeFile(path.join(changesDir, 'scaffolded', '.openspec.yaml'), 'schema: spec-driven\n', 'utf-8');
+    await fs.writeFile(path.join(changesDir, 'scaffolded', '.openspec.yaml'), 'schema: outline\n', 'utf-8');
 
     const originalCwd = process.cwd();
     const originalEnv = { ...process.env };

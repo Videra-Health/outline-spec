@@ -187,7 +187,7 @@ export interface ArtifactPathSummary {
 /**
  * Loads a template from a schema's templates directory.
  *
- * @param schemaName - Schema name (e.g., "spec-driven")
+ * @param schemaName - Schema name (e.g., "outline")
  * @param templatePath - Relative path within the templates directory (e.g., "proposal.md")
  * @param projectRoot - Optional project root for project-local schema resolution
  * @returns The template content
@@ -244,7 +244,7 @@ export function loadTemplate(
  * Schema resolution order:
  * 1. Explicit schemaName parameter (if provided)
  * 2. Schema from .openspec.yaml metadata (if exists in change directory)
- * 3. Default 'spec-driven'
+ * 3. Default 'outline'
  *
  * @param projectRoot - Project root directory
  * @param changeName - Change name

@@ -56,7 +56,7 @@ describe('workset journey (7.1 e2e)', () => {
     createOpenSpecRoot(appRepo);
     fs.writeFileSync(
       path.join(appRepo, 'openspec', 'config.yaml'),
-      'schema: spec-driven\nreferences:\n  - team-context\n'
+      'schema: outline\nreferences:\n  - team-context\n'
     );
 
     scratchFolder = path.join(tempDir, 'notes');

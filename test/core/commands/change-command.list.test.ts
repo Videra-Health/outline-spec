@@ -94,7 +94,7 @@ describe('ChangeCommand.list with a change that has no outline.md', () => {
     // What `openspec new change` leaves behind, plus tasks: no outline.md.
     const scaffolded = path.join(tempRoot, 'openspec', 'changes', 'scaffolded');
     await fs.mkdir(scaffolded, { recursive: true });
-    await fs.writeFile(path.join(scaffolded, '.openspec.yaml'), 'schema: spec-driven\n', 'utf-8');
+    await fs.writeFile(path.join(scaffolded, '.openspec.yaml'), 'schema: outline\n', 'utf-8');
     await fs.writeFile(path.join(scaffolded, 'tasks.md'), '- [x] Task 1\n- [ ] Task 2\n', 'utf-8');
     process.chdir(tempRoot);
   });

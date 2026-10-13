@@ -115,7 +115,7 @@ beforeAll(async () => {
   await fs.mkdir(path.join(pointerProject, 'openspec'), { recursive: true });
   await fs.writeFile(
     path.join(pointerProject, 'openspec', 'config.yaml'),
-    `store: ${STORE_ID}\nschema: spec-driven\n`
+    `store: ${STORE_ID}\nschema: outline\n`
   );
 }, TIMEOUT_MS);
 

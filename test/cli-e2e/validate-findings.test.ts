@@ -11,7 +11,7 @@ describe('validation report CLI contract', () => {
   beforeAll(async () => {
     projectDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-findings-e2e-'));
     await fs.mkdir(path.join(projectDir, 'openspec', 'specs'), { recursive: true });
-    await fs.writeFile(path.join(projectDir, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
+    await fs.writeFile(path.join(projectDir, 'openspec', 'config.yaml'), 'schema: outline\n');
     // "unfinished" patches a requirement no spec has, so it fails to land.
     for (const [id, requirement] of [['done', 'Work: It works.'], ['unfinished', 'Missing (patch):']]) {
       const dir = path.join(projectDir, 'openspec', 'changes', id);

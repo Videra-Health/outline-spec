@@ -95,7 +95,7 @@ describe('nested change detection (#1846)', () => {
 
   describe('leaves real changes alone', () => {
     it('ignores a scaffolded change with only .openspec.yaml', async () => {
-      await write(path.join('add-auth', '.openspec.yaml'), 'schema: spec-driven\n');
+      await write(path.join('add-auth', '.openspec.yaml'), 'schema: outline\n');
 
       expect(await findNestedChangesIn(changesDir, 'add-auth')).toBeUndefined();
     });

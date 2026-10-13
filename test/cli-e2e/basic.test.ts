@@ -298,7 +298,7 @@ describe('openspec CLI e2e basics', () => {
 
   it('keeps instructions --json free of spinner output', async () => {
     const projectDir = await prepareFixture('tmp-init');
-    const result = await runCLI(['instructions', 'proposal', '--change', 'c1', '--json'], {
+    const result = await runCLI(['instructions', 'outline', '--change', 'c1', '--json'], {
       cwd: projectDir,
     });
     expectJsonOnlyOutput(result);
@@ -343,14 +343,14 @@ describe('openspec CLI e2e basics', () => {
       );
       expect(config).toContain('Language: French');
       expect(config).toContain('All artifacts must be written in French.');
-      expect(config).toContain('Keep OpenSpec structural headings and SHALL/MUST keywords in English.');
+      expect(config).toContain('Keep OpenSpec structural headings (such as ## Requirements) in English.');
 
       const created = await runCLI(['new', 'change', 'language-check'], {
         cwd: emptyProjectDir,
       });
       expect(created.exitCode).toBe(0);
       const instructions = await runCLI(
-        ['instructions', 'proposal', '--change', 'language-check', '--json'],
+        ['instructions', 'outline', '--change', 'language-check', '--json'],
         { cwd: emptyProjectDir },
       );
       expect(instructions.exitCode).toBe(0);

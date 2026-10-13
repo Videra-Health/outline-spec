@@ -39,32 +39,22 @@ describe('artifact-workflow CLI commands', () => {
 
   /**
    * Creates a test change with the specified artifacts completed.
-   * Note: An "active" change requires at least a proposal.md file to be detected.
-   * If no artifacts are specified, we create an empty proposal to make it detectable.
+   * outline.md is always written so the change is detectable as active.
    */
   async function createTestChange(
     changeName: string,
-    artifacts: ('proposal' | 'design' | 'specs' | 'tasks')[] = []
+    artifacts: ('outline' | 'design' | 'tasks')[] = []
   ): Promise<string> {
     const changeDir = path.join(changesDir, changeName);
     await fs.mkdir(changeDir, { recursive: true });
 
-    // Always create proposal.md for the change to be detected as active
-    // Content varies based on whether 'proposal' is in artifacts list
-    const proposalContent = artifacts.includes('proposal')
-      ? '## Why\nTest proposal content that is long enough.\n\n## What Changes\n- **test:** Something'
-      : '## Why\nMinimal proposal.\n\n## What Changes\n- **test:** Placeholder';
-    await fs.writeFile(path.join(changeDir, 'proposal.md'), proposalContent);
+    const outlineContent = artifacts.includes('outline')
+      ? '## Proposal\nTest proposal content that is long enough.\n\n## Requirements\n1. test: A test spec.\n  a. Thing: The system does a thing.\n'
+      : '## Proposal\nMinimal proposal.\n';
+    await fs.writeFile(path.join(changeDir, 'outline.md'), outlineContent);
 
     if (artifacts.includes('design')) {
       await fs.writeFile(path.join(changeDir, 'design.md'), '# Design\n\nTechnical design.');
-    }
-
-    if (artifacts.includes('specs')) {
-      // specs artifact uses glob pattern "specs/*.md" - files directly in specs/ directory
-      const specsDir = path.join(changeDir, 'specs');
-      await fs.mkdir(specsDir, { recursive: true });
-      await fs.writeFile(path.join(specsDir, 'test-spec.md'), '## Purpose\nTest spec.');
     }
 
     if (artifacts.includes('tasks')) {
@@ -75,39 +65,39 @@ describe('artifact-workflow CLI commands', () => {
   }
 
   describe('status command', () => {
-    it('shows status for scaffolded change without proposal.md', async () => {
-      // Create empty change directory (no proposal.md)
+    it('shows status for scaffolded change without outline.md', async () => {
+      // Create empty change directory (no outline.md)
       const changeDir = path.join(changesDir, 'scaffolded-change');
       await fs.mkdir(changeDir, { recursive: true });
 
       const result = await runCLI(['status', '--change', 'scaffolded-change'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('scaffolded-change');
-      expect(result.stdout).toContain('0/4 artifacts complete');
+      expect(result.stdout).toContain('0/3 artifacts complete');
     });
 
-    it('shows status for a change with proposal only', async () => {
-      // createTestChange always creates proposal.md, so this has 1 artifact complete
+    it('shows status for a change with outline only', async () => {
+      // createTestChange always creates outline.md, so this has 1 artifact complete
       await createTestChange('minimal-change');
 
       const result = await runCLI(['status', '--change', 'minimal-change'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('minimal-change');
-      expect(result.stdout).toContain('spec-driven');
-      expect(result.stdout).toContain('1/4 artifacts complete');
+      expect(result.stdout).toContain('outline');
+      expect(result.stdout).toContain('1/3 artifacts complete');
     });
 
-    it('shows status for a change with proposal and design', async () => {
-      await createTestChange('partial-change', ['proposal', 'design']);
+    it('shows status for a change with outline and design', async () => {
+      await createTestChange('partial-change', ['outline', 'design']);
 
       const result = await runCLI(['status', '--change', 'partial-change'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('2/4 artifacts complete');
+      expect(result.stdout).toContain('2/3 artifacts complete');
       expect(result.stdout).toContain('[x]');
     });
 
     it('outputs JSON when --json flag is used', async () => {
-      await createTestChange('json-change', ['proposal', 'design']);
+      await createTestChange('json-change', ['outline', 'design']);
 
       const result = await runCLI(['status', '--change', 'json-change', '--json'], {
         cwd: tempDir,
@@ -117,21 +107,21 @@ describe('artifact-workflow CLI commands', () => {
 
       const json = JSON.parse(result.stdout);
       expect(json.changeName).toBe('json-change');
-      expect(json.schemaName).toBe('spec-driven');
+      expect(json.schemaName).toBe('outline');
       expect(json.isPlanningComplete).toBe(false);
       expect(json.isComplete).toBe(false);
       expect(Array.isArray(json.artifacts)).toBe(true);
-      expect(json.artifacts).toHaveLength(4);
+      expect(json.artifacts).toHaveLength(3);
 
-      const proposalArtifact = json.artifacts.find((a: any) => a.id === 'proposal');
-      expect(proposalArtifact.status).toBe('done');
+      const outlineArtifact = json.artifacts.find((a: any) => a.id === 'outline');
+      expect(outlineArtifact.status).toBe('done');
     });
 
     it('keeps unknown metadata warnings inside status and instructions JSON', async () => {
-      const changeDir = await createTestChange('unknown-metadata-json', ['proposal']);
+      const changeDir = await createTestChange('unknown-metadata-json', ['outline']);
       await fs.writeFile(
         path.join(changeDir, '.openspec.yaml'),
-        'schema: spec-driven\nskip_design: true\n'
+        'schema: outline\nskip_design: true\n'
       );
 
       const statusResult = await runCLI(
@@ -155,7 +145,7 @@ describe('artifact-workflow CLI commands', () => {
       ]);
     });
 
-    it('recommends specs before design for a proposal-only change', async () => {
+    it('recommends design before tasks for an outline-only change', async () => {
       await createTestChange('order-change');
 
       const result = await runCLI(['status', '--change', 'order-change', '--json'], {
@@ -164,8 +154,8 @@ describe('artifact-workflow CLI commands', () => {
       expect(result.exitCode).toBe(0);
 
       const json = JSON.parse(result.stdout);
-      expect(json.artifacts.map((a: any) => a.id)).toEqual(['proposal', 'specs', 'design', 'tasks']);
-      expect(json.nextSteps[0]).toContain('openspec instructions specs');
+      expect(json.artifacts.map((a: any) => a.id)).toEqual(['outline', 'design', 'tasks']);
+      expect(json.nextSteps[0]).toContain('openspec instructions design');
     });
 
     // #906: the text surface reported state and no verb, so someone resuming a
@@ -190,12 +180,12 @@ describe('artifact-workflow CLI commands', () => {
 
         expect(result.exitCode).toBe(0);
         expect(lastLine(result)).toBe(
-          'Next: openspec instructions specs --change "resume-planning" --json'
+          'Next: openspec instructions design --change "resume-planning" --json'
         );
       });
 
       it('names the apply command once planning is complete', async () => {
-        await createTestChange('resume-apply', ['proposal', 'design', 'specs', 'tasks']);
+        await createTestChange('resume-apply', ['outline', 'design', 'tasks']);
 
         const result = await runCLI(['status', '--change', 'resume-apply'], { cwd: tempDir });
 
@@ -208,9 +198,9 @@ describe('artifact-workflow CLI commands', () => {
         );
       });
 
-      it('names artifacts from a custom schema, not spec-driven ones', async () => {
+      it('names artifacts from a custom schema, not outline ones', async () => {
         // The line is built from the resolved artifact id, so a project whose
-        // schema has no proposal/specs/design/tasks must still get a usable
+        // schema has no outline/design/tasks must still get a usable
         // command rather than a hard-coded default-schema one.
         const schemaDir = path.join(tempDir, 'openspec', 'schemas', 'lean');
         await fs.mkdir(path.join(schemaDir, 'templates'), { recursive: true });
@@ -273,7 +263,7 @@ describe('artifact-workflow CLI commands', () => {
       });
 
       it('prints the same command the JSON nextSteps sentence names', async () => {
-        for (const artifacts of [[], ['proposal', 'design', 'specs', 'tasks']] as const) {
+        for (const artifacts of [[], ['outline', 'design', 'tasks']] as const) {
           const changeName = `parity-${artifacts.length}`;
           await createTestChange(changeName, [...artifacts]);
 
@@ -292,17 +282,17 @@ describe('artifact-workflow CLI commands', () => {
     });
 
     it('shows planning completion when all artifacts exist', async () => {
-      await createTestChange('complete-change', ['proposal', 'design', 'specs', 'tasks']);
+      await createTestChange('complete-change', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(['status', '--change', 'complete-change'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('4/4 artifacts complete');
+      expect(result.stdout).toContain('3/3 artifacts complete');
       expect(result.stdout).toContain('All planning artifacts complete!');
       expect(result.stdout).not.toContain('All artifacts complete!');
     });
 
     it('distinguishes planning completion from implementation task completion', async () => {
-      await createTestChange('planned-change', ['proposal', 'design', 'specs', 'tasks']);
+      await createTestChange('planned-change', ['outline', 'design', 'tasks']);
 
       const statusResult = await runCLI(['status', '--change', 'planned-change', '--json'], {
         cwd: tempDir,
@@ -366,11 +356,11 @@ describe('artifact-workflow CLI commands', () => {
     it('supports --schema option', async () => {
       await createTestChange('schema-change');
 
-      const result = await runCLI(['status', '--change', 'schema-change', '--schema', 'spec-driven'], {
+      const result = await runCLI(['status', '--change', 'schema-change', '--schema', 'outline'], {
         cwd: tempDir,
       });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('spec-driven');
+      expect(result.stdout).toContain('outline');
     });
 
     it('errors for unknown schema', async () => {
@@ -422,14 +412,14 @@ describe('artifact-workflow CLI commands', () => {
     });
 
     it('accepts digit-leading change names that exist on disk (#1308)', async () => {
-      await createTestChange('2026-07-04-voice-copilot-v1', ['proposal', 'design']);
+      await createTestChange('2026-07-04-voice-copilot-v1', ['outline', 'design']);
 
       const result = await runCLI(['status', '--change', '2026-07-04-voice-copilot-v1'], {
         cwd: tempDir,
       });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('2026-07-04-voice-copilot-v1');
-      expect(result.stdout).toContain('2/4 artifacts complete');
+      expect(result.stdout).toContain('2/3 artifacts complete');
     });
   });
 
@@ -550,17 +540,17 @@ rules:
       ]);
     });
 
-    it('shows instructions for proposal on scaffolded change', async () => {
-      // Create empty change directory (no proposal.md)
+    it('shows instructions for outline on scaffolded change', async () => {
+      // Create empty change directory (no outline.md)
       const changeDir = path.join(changesDir, 'scaffolded-change');
       await fs.mkdir(changeDir, { recursive: true });
 
-      const result = await runCLI(['instructions', 'proposal', '--change', 'scaffolded-change'], {
+      const result = await runCLI(['instructions', 'outline', '--change', 'scaffolded-change'], {
         cwd: tempDir,
       });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('<artifact id="proposal"');
-      expect(result.stdout).toContain('proposal.md');
+      expect(result.stdout).toContain('<artifact id="outline"');
+      expect(result.stdout).toContain('outline.md');
       expect(result.stdout).toContain('<template>');
     });
 
@@ -577,8 +567,8 @@ rules:
     });
 
     it('shows blocked warning for artifact with unmet dependencies', async () => {
-      // tasks depends on design and specs, which are not done yet
-      await createTestChange('blocked-change');
+      // tasks depends on outline, which is not written yet
+      await fs.mkdir(path.join(changesDir, 'blocked-change'), { recursive: true });
 
       const result = await runCLI(['instructions', 'tasks', '--change', 'blocked-change'], {
         cwd: tempDir,
@@ -589,7 +579,7 @@ rules:
     });
 
     it('outputs JSON for instructions', async () => {
-      await createTestChange('json-instr', ['proposal']);
+      await createTestChange('json-instr', ['outline']);
 
       const result = await runCLI(['instructions', 'design', '--change', 'json-instr', '--json'], {
         cwd: tempDir,
@@ -627,7 +617,7 @@ rules:
     });
 
     it('accepts digit-leading change names that exist on disk (#1308)', async () => {
-      await createTestChange('2026-07-04-voice-copilot-v1', ['proposal']);
+      await createTestChange('2026-07-04-voice-copilot-v1', ['outline']);
 
       const result = await runCLI(
         ['instructions', 'design', '--change', '2026-07-04-voice-copilot-v1'],
@@ -642,18 +632,18 @@ rules:
     it('shows template paths for default schema', async () => {
       const result = await runCLI(['templates'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Schema: spec-driven');
-      expect(result.stdout).toContain('proposal:');
+      expect(result.stdout).toContain('Schema: outline');
+      expect(result.stdout).toContain('outline:');
       expect(result.stdout).toContain('design:');
-      expect(result.stdout).toContain('specs:');
       expect(result.stdout).toContain('tasks:');
+      expect(result.stdout).not.toContain('specs:');
     });
 
     it('shows template paths for specified schema', async () => {
-      const result = await runCLI(['templates', '--schema', 'spec-driven'], { cwd: tempDir });
+      const result = await runCLI(['templates', '--schema', 'outline'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Schema: spec-driven');
-      expect(result.stdout).toContain('proposal:');
+      expect(result.stdout).toContain('Schema: outline');
+      expect(result.stdout).toContain('outline:');
       expect(result.stdout).toContain('design:');
     });
 
@@ -663,9 +653,9 @@ rules:
       expect(result.stderr).toBe('');
 
       const json = JSON.parse(result.stdout);
-      expect(json.proposal).toBeDefined();
-      expect(json.proposal.path).toContain('proposal.md');
-      expect(json.proposal.source).toBe('package');
+      expect(json.outline).toBeDefined();
+      expect(json.outline.path).toContain('outline.md');
+      expect(json.outline.source).toBe('package');
     });
 
     it('errors for unknown schema', async () => {
@@ -689,49 +679,6 @@ rules:
 
       const metadata = await fs.readFile(path.join(changeDir, '.openspec.yaml'), 'utf-8');
       expect(metadata).not.toContain('skip_specs');
-    });
-
-    it('does not mark changes as skip_specs when their schema cannot generate specs', async () => {
-      const schemaDir = path.join(tempDir, 'openspec', 'schemas', 'no-specs');
-      await fs.mkdir(path.join(schemaDir, 'templates'), { recursive: true });
-      await fs.writeFile(
-        path.join(schemaDir, 'schema.yaml'),
-        `name: no-specs
-version: 1
-artifacts:
-  - id: proposal
-    generates: proposal.md
-    description: Proposal
-    template: proposal.md
-    requires: []
-  - id: tasks
-    generates: tasks.md
-    description: Tasks
-    template: tasks.md
-    requires: [proposal]
-apply:
-  requires: [tasks]
-  tracks: tasks.md
-`
-      );
-      await fs.writeFile(path.join(schemaDir, 'templates', 'proposal.md'), '# Proposal\n');
-      await fs.writeFile(path.join(schemaDir, 'templates', 'tasks.md'), '# Tasks\n');
-      await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
-        'schema: no-specs\n'
-      );
-
-      const result = await runCLI(['new', 'change', 'no-spec-change'], { cwd: tempDir });
-      expect(result.exitCode).toBe(0);
-
-      const metadata = await fs.readFile(
-        path.join(changesDir, 'no-spec-change', '.openspec.yaml'),
-        'utf-8'
-      );
-      expect(metadata).not.toContain('skip_specs');
-      await expect(
-        fs.stat(path.join(changesDir, 'archive'))
-      ).rejects.toMatchObject({ code: 'ENOENT' });
     });
 
     it('rejects --initiative and writes no change', async () => {
@@ -770,7 +717,7 @@ apply:
         path.join(changesDir, 'goal-change', '.openspec.yaml'),
         'utf-8'
       );
-      expect(metadata).toContain('schema: spec-driven');
+      expect(metadata).toContain('schema: outline');
       expect(metadata).toContain('goal: Improve billing');
       expect(metadata).not.toContain('affected_areas');
       expect(metadata).not.toContain('initiative');
@@ -812,15 +759,15 @@ apply:
   });
 
   describe('instructions apply command', () => {
-    it('shows apply instructions for spec-driven schema with tasks', async () => {
-      await createTestChange('apply-change', ['proposal', 'design', 'specs', 'tasks']);
+    it('shows apply instructions for outline schema with tasks', async () => {
+      await createTestChange('apply-change', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(['instructions', 'apply', '--change', 'apply-change'], {
         cwd: tempDir,
       });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('## Apply: apply-change');
-      expect(result.stdout).toContain('Schema: spec-driven');
+      expect(result.stdout).toContain('Schema: outline');
       expect(result.stdout).toContain('### Context Files');
       expect(result.stdout).toContain('### Instruction');
     });
@@ -828,7 +775,7 @@ apply:
     it('shows blocked state when required artifacts are missing', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
-        `schema: spec-driven
+        `schema: outline
 context: Required blocked-state context
 operations:
   apply:
@@ -836,8 +783,8 @@ operations:
       - Advisory blocked-state guidance
 `
       );
-      // Only create proposal - missing tasks (required by spec-driven apply block)
-      await createTestChange('blocked-apply', ['proposal']);
+      // Only create outline - missing tasks (required by outline apply block)
+      await createTestChange('blocked-apply', ['outline']);
 
       const result = await runCLI(['instructions', 'apply', '--change', 'blocked-apply'], {
         cwd: tempDir,
@@ -850,7 +797,7 @@ operations:
     });
 
     it('outputs JSON for apply instructions', async () => {
-      await createTestChange('json-apply', ['proposal', 'design', 'specs', 'tasks']);
+      await createTestChange('json-apply', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'json-apply', '--json'],
@@ -860,25 +807,25 @@ operations:
       expect(result.stderr).toBe('');
 
       const json = JSON.parse(result.stdout);
-      const expectedProposalPath = canonical(path.join(changesDir, 'json-apply', 'proposal.md'));
-      const expectedSpecPath = canonical(path.join(changesDir, 'json-apply', 'specs', 'test-spec.md'));
+      const expectedOutlinePath = canonical(path.join(changesDir, 'json-apply', 'outline.md'));
+      const expectedTasksPath = canonical(path.join(changesDir, 'json-apply', 'tasks.md'));
       expect(json.changeName).toBe('json-apply');
-      expect(json.schemaName).toBe('spec-driven');
+      expect(json.schemaName).toBe('outline');
       expect(json.state).toBe('ready');
       expect(json.contextFiles).toBeDefined();
       expect(typeof json.contextFiles).toBe('object');
-      expect(json.contextFiles.proposal).toEqual([expectedProposalPath]);
-      expect(json.contextFiles.specs).toEqual([expectedSpecPath]);
+      expect(json.contextFiles.outline).toEqual([expectedOutlinePath]);
+      expect(json.contextFiles.tasks).toEqual([expectedTasksPath]);
     });
 
     it('returns current context and matching apply guidance as separate JSON fields', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
-        `schema: spec-driven
+        `schema: outline
 context: |
   Current project context
 rules:
-  specs:
+  outline:
     - Artifact-only rule
 operations:
   apply:
@@ -889,7 +836,7 @@ operations:
       - Archive guidance
 `
       );
-      await createTestChange('apply-inputs', ['proposal', 'design', 'specs', 'tasks']);
+      await createTestChange('apply-inputs', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-inputs', '--json'],
@@ -920,7 +867,7 @@ operations:
     it('renders required context and advisory apply guidance as distinct text sections', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
-        `schema: spec-driven
+        `schema: outline
 context: Project background
 operations:
   apply:
@@ -928,7 +875,7 @@ operations:
       - Keep summaries concise
 `
       );
-      await createTestChange('apply-text-inputs', ['proposal', 'design', 'specs', 'tasks']);
+      await createTestChange('apply-text-inputs', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-text-inputs'],
@@ -947,13 +894,13 @@ operations:
     it('omits absent operation inputs without changing apply state behavior', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
-        `schema: spec-driven
+        `schema: outline
 rules:
-  specs:
+  outline:
     - Artifact-only rule
 `
       );
-      await createTestChange('apply-no-inputs', ['proposal', 'design', 'specs', 'tasks']);
+      await createTestChange('apply-no-inputs', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-no-inputs', '--json'],
@@ -970,10 +917,10 @@ rules:
 
     it('reads a fresh apply config snapshot on every command invocation', async () => {
       const configPath = path.join(tempDir, 'openspec', 'config.yaml');
-      await createTestChange('apply-fresh-inputs', ['proposal', 'design', 'specs', 'tasks']);
+      await createTestChange('apply-fresh-inputs', ['outline', 'design', 'tasks']);
       await fs.writeFile(
         configPath,
-        `schema: spec-driven
+        `schema: outline
 context: Initial context
 operations:
   apply:
@@ -988,7 +935,7 @@ operations:
       );
       await fs.writeFile(
         configPath,
-        `schema: spec-driven
+        `schema: outline
 context: Updated context
 operations:
   apply:
@@ -1014,13 +961,13 @@ operations:
     it('reads malformed operation config once and emits one warning per command', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
-        `schema: spec-driven
+        `schema: outline
 operations:
   apply:
     guidance: invalid
 `
       );
-      await createTestChange('apply-one-warning', ['proposal', 'design', 'specs', 'tasks']);
+      await createTestChange('apply-one-warning', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-one-warning', '--json'],
@@ -1093,20 +1040,20 @@ apply:
     });
 
     it('shows schema instruction from apply block', async () => {
-      await createTestChange('instr-apply', ['proposal', 'design', 'specs', 'tasks']);
+      await createTestChange('instr-apply', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(['instructions', 'apply', '--change', 'instr-apply'], {
         cwd: tempDir,
       });
       expect(result.exitCode).toBe(0);
-      // Should show the instruction from spec-driven schema apply block
+      // Should show the instruction from outline schema apply block
       expect(result.stdout).toContain('work through pending tasks');
     });
 
     it('shows all_done state when all tasks are complete', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
-        `schema: spec-driven
+        `schema: outline
 context: Required all-done context
 operations:
   apply:
@@ -1115,9 +1062,8 @@ operations:
 `
       );
       const changeDir = await createTestChange('done-apply', [
-        'proposal',
+        'outline',
         'design',
-        'specs',
         'tasks',
       ]);
       // Overwrite tasks with all completed
@@ -1132,7 +1078,7 @@ operations:
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('complete ✓');
       expect(result.stdout).toContain('All tracked tasks are complete');
-      expect(result.stdout).toContain('as appropriate before archiving');
+      expect(result.stdout).toContain('as appropriate before landing');
       expect(result.stdout).not.toContain('ready to be archived');
       expect(result.stdout).toContain('### Project Context (required instruction input)');
       expect(result.stdout).toContain('### Operation Guidance (advisory)');
@@ -1150,21 +1096,21 @@ operations:
       expect(json.instruction).toContain('All tracked tasks are complete');
     });
 
-    it('uses spec-driven schema apply configuration', async () => {
-      // Create a spec-driven style change with all artifacts
-      await createTestChange('apply-schema-test', ['proposal', 'design', 'specs', 'tasks']);
+    it('uses outline schema apply configuration', async () => {
+      // Create an outline-style change with all artifacts
+      await createTestChange('apply-schema-test', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(
-        ['instructions', 'apply', '--change', 'apply-schema-test', '--schema', 'spec-driven'],
+        ['instructions', 'apply', '--change', 'apply-schema-test', '--schema', 'outline'],
         { cwd: tempDir }
       );
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('Schema: spec-driven');
+      expect(result.stdout).toContain('Schema: outline');
     });
 
-    it('spec-driven schema uses apply block configuration', async () => {
-      // Verify that spec-driven schema uses its apply block (requires: [tasks])
-      await createTestChange('apply-config-test', ['proposal', 'design', 'specs', 'tasks']);
+    it('outline schema uses apply block configuration', async () => {
+      // Verify that outline schema uses its apply block (requires: [tasks])
+      await createTestChange('apply-config-test', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-config-test', '--json'],
@@ -1173,8 +1119,8 @@ operations:
       expect(result.exitCode).toBe(0);
 
       const json = JSON.parse(result.stdout);
-      // spec-driven schema has apply block with requires: [tasks], so should be ready
-      expect(json.schemaName).toBe('spec-driven');
+      // outline schema has apply block with requires: [tasks], so should be ready
+      expect(json.schemaName).toBe('outline');
       expect(json.state).toBe('ready');
     });
 
@@ -1275,10 +1221,10 @@ artifacts:
     it('returns current archive context, guidance, and the root envelope in JSON', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
-        `schema: spec-driven
+        `schema: outline
 context: Archive project context
 rules:
-  specs:
+  outline:
     - Artifact-only rule
 operations:
   apply:
@@ -1289,7 +1235,7 @@ operations:
       - Archive guidance
 `
       );
-      await createTestChange('archive-inputs', ['proposal', 'design', 'specs', 'tasks']);
+      await createTestChange('archive-inputs', ['outline', 'design', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'archive', '--change', 'archive-inputs', '--json'],
@@ -1315,7 +1261,7 @@ operations:
     it('renders required context and advisory land guidance as separate text sections', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
-        `schema: spec-driven
+        `schema: outline
 context: Archive background
 operations:
   archive:
@@ -1342,7 +1288,7 @@ operations:
     it('succeeds with valid empty inputs and omits optional JSON fields', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
-        'schema: spec-driven\n'
+        'schema: outline\n'
       );
       await createTestChange('archive-no-inputs');
 
@@ -1389,16 +1335,15 @@ operations:
     it('reads fresh archive inputs without mutating specs or the change', async () => {
       const configPath = path.join(tempDir, 'openspec', 'config.yaml');
       const changeDir = await createTestChange('archive-read-only', [
-        'proposal',
+        'outline',
         'design',
-        'specs',
         'tasks',
       ]);
-      const proposalPath = path.join(changeDir, 'proposal.md');
-      const proposalBefore = await fs.readFile(proposalPath, 'utf-8');
+      const outlinePath = path.join(changeDir, 'outline.md');
+      const outlineBefore = await fs.readFile(outlinePath, 'utf-8');
       await fs.writeFile(
         configPath,
-        `schema: spec-driven
+        `schema: outline
 context: First archive context
 operations:
   archive:
@@ -1413,7 +1358,7 @@ operations:
       );
       await fs.writeFile(
         configPath,
-        `schema: spec-driven
+        `schema: outline
 context: Second archive context
 operations:
   archive:
@@ -1434,8 +1379,7 @@ operations:
         context: 'Second archive context',
         operationGuidance: ['Second archive guidance'],
       });
-      expect(await fs.readFile(proposalPath, 'utf-8')).toBe(proposalBefore);
-      expect(await fs.readdir(path.join(changeDir, 'specs'))).toEqual(['test-spec.md']);
+      expect(await fs.readFile(outlinePath, 'utf-8')).toBe(outlineBefore);
       expect(
         await fs.readdir(path.join(tempDir, 'openspec', 'changes'))
       ).toContain('archive-read-only');
@@ -1556,34 +1500,34 @@ operations:
   describe('project config integration', () => {
     describe('new change uses config schema', () => {
       it('creates change with schema from project config', async () => {
-        // Create project config with spec-driven schema
+        // Create project config with outline schema
         // Note: changesDir is already at tempDir/openspec/changes (created in beforeEach)
         await fs.writeFile(
           path.join(tempDir, 'openspec', 'config.yaml'),
-          'schema: spec-driven\n'
+          'schema: outline\n'
         );
 
         // Create a new change without specifying schema
         const result = await runCLI(['new', 'change', 'test-change'], { cwd: tempDir, timeoutMs: 30000 });
         expect(result.exitCode).toBe(0);
 
-        // Verify the change was created with spec-driven schema
+        // Verify the change was created with outline schema
         const metadataPath = path.join(changesDir, 'test-change', '.openspec.yaml');
         const metadata = await fs.readFile(metadataPath, 'utf-8');
-        expect(metadata).toContain('schema: spec-driven');
+        expect(metadata).toContain('schema: outline');
       }, 60000);
 
       it('CLI schema overrides config schema', async () => {
-        // Create project config with spec-driven schema
+        // Create project config with outline schema
         // Note: openspec directory already exists (from changesDir creation in beforeEach)
         await fs.writeFile(
           path.join(tempDir, 'openspec', 'config.yaml'),
-          'schema: spec-driven\n'
+          'schema: outline\n'
         );
 
         // Create change with explicit schema
         const result = await runCLI(
-          ['new', 'change', 'override-test', '--schema', 'spec-driven'],
+          ['new', 'change', 'override-test', '--schema', 'outline'],
           { cwd: tempDir, timeoutMs: 30000 }
         );
         expect(result.exitCode).toBe(0);
@@ -1591,7 +1535,7 @@ operations:
         // Verify the change uses the CLI-specified schema
         const metadataPath = path.join(changesDir, 'override-test', '.openspec.yaml');
         const metadata = await fs.readFile(metadataPath, 'utf-8');
-        expect(metadata).toContain('schema: spec-driven');
+        expect(metadata).toContain('schema: outline');
       }, 60000);
     });
 
@@ -1601,12 +1545,12 @@ operations:
         // Note: openspec directory already exists (from changesDir creation in beforeEach)
         await fs.writeFile(
           path.join(tempDir, 'openspec', 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: |
   Tech stack: TypeScript, React
   API style: RESTful
 rules:
-  proposal:
+  outline:
     - Include rollback plan
     - Identify affected teams
 `
@@ -1615,9 +1559,9 @@ rules:
         // Create a test change
         await createTestChange('config-test');
 
-        // Get instructions for proposal
+        // Get instructions for outline
         const result = await runCLI(
-          ['instructions', 'proposal', '--change', 'config-test'],
+          ['instructions', 'outline', '--change', 'config-test'],
           { cwd: tempDir, timeoutMs: 30000 }
         );
         expect(result.exitCode).toBe(0);
@@ -1626,19 +1570,19 @@ rules:
         expect(result.stdout).toContain('Tech stack: TypeScript, React');
         expect(result.stdout).toContain('API style: RESTful');
 
-        // Verify rules are injected for proposal
+        // Verify rules are injected for outline
         expect(result.stdout).toContain('Include rollback plan');
         expect(result.stdout).toContain('Identify affected teams');
       }, 60000);
 
       it('does not inject rules for non-matching artifact', async () => {
-        // Create project config with rules only for proposal
+        // Create project config with rules only for outline
         // Note: openspec directory already exists (from changesDir creation in beforeEach)
         await fs.writeFile(
           path.join(tempDir, 'openspec', 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 rules:
-  proposal:
+  outline:
     - Include rollback plan
 `
         );
@@ -1646,7 +1590,7 @@ rules:
         // Create a test change
         await createTestChange('non-matching-test');
 
-        // Get instructions for design (not proposal)
+        // Get instructions for design (not outline)
         const result = await runCLI(
           ['instructions', 'design', '--change', 'non-matching-test'],
           { cwd: tempDir, timeoutMs: 30000 }
@@ -1661,7 +1605,7 @@ rules:
     describe('backwards compatibility', () => {
       it('existing changes work without config file', async () => {
         // Create change without any config file
-        await createTestChange('no-config-change', ['proposal']);
+        await createTestChange('no-config-change', ['outline']);
 
         // Status command should work
         const statusResult = await runCLI(
@@ -1670,7 +1614,7 @@ rules:
         );
         expect(statusResult.exitCode).toBe(0);
         expect(statusResult.stdout).toContain('no-config-change');
-        expect(statusResult.stdout).toContain('spec-driven'); // Default schema
+        expect(statusResult.stdout).toContain('outline'); // Default schema
 
         // Instructions command should work
         const instrResult = await runCLI(
@@ -1686,7 +1630,7 @@ rules:
         const changeDir = await createTestChange('metadata-only-change');
         await fs.writeFile(
           path.join(changeDir, '.openspec.yaml'),
-          'schema: spec-driven\ncreated: "2025-01-05"\n'
+          'schema: outline\ncreated: "2025-01-05"\n'
         );
 
         // Status should use schema from metadata
@@ -1695,7 +1639,7 @@ rules:
           { cwd: tempDir, timeoutMs: 30000 }
         );
         expect(result.exitCode).toBe(0);
-        expect(result.stdout).toContain('spec-driven');
+        expect(result.stdout).toContain('outline');
       }, 60000);
     });
 
@@ -1705,7 +1649,7 @@ rules:
         // Note: openspec directory already exists (from changesDir creation in beforeEach)
         await fs.writeFile(
           path.join(tempDir, 'openspec', 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: Initial context
 `
         );
@@ -1715,7 +1659,7 @@ context: Initial context
 
         // Get instructions - should have initial context
         const result1 = await runCLI(
-          ['instructions', 'proposal', '--change', 'immediate-test'],
+          ['instructions', 'outline', '--change', 'immediate-test'],
           { cwd: tempDir, timeoutMs: 30000 }
         );
         expect(result1.exitCode).toBe(0);
@@ -1724,14 +1668,14 @@ context: Initial context
         // Update config
         await fs.writeFile(
           path.join(tempDir, 'openspec', 'config.yaml'),
-          `schema: spec-driven
+          `schema: outline
 context: Updated context
 `
         );
 
         // Get instructions again - should have updated context
         const result2 = await runCLI(
-          ['instructions', 'proposal', '--change', 'immediate-test'],
+          ['instructions', 'outline', '--change', 'immediate-test'],
           { cwd: tempDir, timeoutMs: 30000 }
         );
         expect(result2.exitCode).toBe(0);

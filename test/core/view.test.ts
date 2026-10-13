@@ -37,15 +37,15 @@ describe('ViewCommand', () => {
       await fs.mkdir(path.join(changesDir, name), { recursive: true });
       await fs.writeFile(path.join(changesDir, name, 'tasks.md'), '- [x] Done\n- [ ] Pending\n');
     }
-    await fs.writeFile(path.join(changesDir, 'implementing', 'proposal.md'), '# Proposal\n');
+    await fs.writeFile(path.join(changesDir, 'implementing', 'outline.md'), '# Outline\n');
 
     await new ViewCommand().execute(tempDir);
 
     const lines = logOutput.map(stripAnsi);
     const planningIndex = lines.findIndex(line => line.includes('◉') && line.includes('planning'));
     const implementingIndex = lines.findIndex(line => line.includes('◉') && line.includes('implementing'));
-    expect(lines[planningIndex + 1]).toBe('    └─ [spec-driven] proposal→ specs design tasks✓');
-    expect(lines[implementingIndex + 1]).toBe('    └─ [spec-driven] proposal✓ specs→ design→ tasks✓');
+    expect(lines[planningIndex + 1]).toBe('    └─ [outline] outline→ design tasks✓');
+    expect(lines[implementingIndex + 1]).toBe('    └─ [outline] outline✓ design→ tasks✓');
     expect(lines[planningIndex]).toContain('50%');
     expect(lines[implementingIndex]).toContain('50%');
     expect(lines.join('\n')).toContain('Task Progress: 2/4 (50% complete)');
@@ -69,7 +69,7 @@ describe('ViewCommand', () => {
     const lines = logOutput.map(stripAnsi);
     expect(lines.filter(line => line.includes('◉'))).toHaveLength(2);
     expect(lines.filter(line => line.includes('└─'))).toEqual([
-      '    └─ [spec-driven] proposal→ specs design tasks✓',
+      '    └─ [outline] outline→ design tasks✓',
     ]);
     expect(warn).toHaveBeenCalledTimes(1);
     expect(stripAnsi(String(warn.mock.calls[0][0]))).toContain('Could not load workflow status for "broken":');
@@ -264,7 +264,7 @@ describe('ViewCommand', () => {
     await fs.mkdir(path.join(changeDir, 'frontend'), { recursive: true });
     if (schemaSource === 'metadata') {
       await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: glob-tasks\n');
-      await fs.writeFile(path.join(openspecDir, 'config.yaml'), 'schema: spec-driven\n');
+      await fs.writeFile(path.join(openspecDir, 'config.yaml'), 'schema: outline\n');
     } else {
       await fs.writeFile(path.join(openspecDir, 'config.yaml'), 'schema: glob-tasks\n');
     }

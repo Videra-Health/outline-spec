@@ -486,16 +486,10 @@ const DEFAULT_ARTIFACTS: Array<{
   template: string;
 }> = [
   {
-    id: 'proposal',
-    description: 'High-level description of the change, its motivation, and scope',
-    generates: 'proposal.md',
-    template: 'proposal.md',
-  },
-  {
-    id: 'specs',
-    description: 'Detailed specifications with requirements and scenarios',
-    generates: 'specs/**/*.md',
-    template: 'specs/spec.md',
+    id: 'outline',
+    description: 'The proposal and its spec edits as a labeled outline',
+    generates: 'outline.md',
+    template: 'outline.md',
   },
   {
     id: 'design',
@@ -1140,15 +1134,8 @@ export async function schemaInitCommand(
       };
 
       // Set up dependencies based on typical workflow
-      if (id === 'specs' && selectedArtifactIds.includes('proposal')) {
-        artifact.requires = ['proposal'];
-      } else if (id === 'design' && selectedArtifactIds.includes('specs')) {
-        artifact.requires = ['specs'];
-      } else if (id === 'tasks') {
-        const requires: string[] = [];
-        if (selectedArtifactIds.includes('design')) requires.push('design');
-        else if (selectedArtifactIds.includes('specs')) requires.push('specs');
-        artifact.requires = requires;
+      if (id !== 'outline' && selectedArtifactIds.includes('outline')) {
+        artifact.requires = ['outline'];
       }
 
       return artifact;
@@ -1386,42 +1373,20 @@ export async function schemaInitCommand(
  */
 function createDefaultTemplate(artifactId: string): string {
   switch (artifactId) {
-    case 'proposal':
-      return `# Proposal
+    case 'outline':
+      return `# Outline
 
-## Why
+## Proposal
 
-<!-- Describe the motivation for this change -->
+<!-- What the user has requested, stated concisely -->
 
-## What Changes
-
-<!-- Describe what will change -->
-
-## Capabilities
-
-### New Capabilities
-<!-- List new capabilities -->
-
-### Modified Capabilities
-<!-- List modified capabilities -->
-
-## Impact
-
-<!-- Describe the impact on existing functionality -->
-`;
-
-    case 'specs':
-      return `# Spec Delta
-
-## ADDED Requirements
-
-### Requirement: Example requirement
-
-Description of the requirement.
-
-#### Scenario: Example scenario
-- **WHEN** some condition
-- **THEN** some outcome
+## Requirements
+1. example-spec: What this spec is for, when the spec is new.
+  a. Example requirement: One sentence stating the behavior.
+    a. A detail of that behavior.
+  b. Existing requirement (patch):
+    b. Kept words ~~dropped words~~ **added words**.
+    d. ~~A removed detail, with its live text.~~
 `;
 
     case 'design':
@@ -1430,14 +1395,6 @@ Description of the requirement.
 ## Context
 
 <!-- Background and context -->
-
-## Goals / Non-Goals
-
-**Goals:**
-<!-- List goals -->
-
-**Non-Goals:**
-<!-- List non-goals -->
 
 ## Decisions
 

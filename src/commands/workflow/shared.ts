@@ -12,7 +12,7 @@ import {
   findNestedChangesIn,
 } from '../../utils/nested-change.js';
 import * as fs from 'fs';
-import { getSchemaDir, listSchemas } from '../../core/artifact-graph/index.js';
+import { getSchemaDir, listSchemas, removedSchemaHint } from '../../core/artifact-graph/index.js';
 import type { ReferenceIndexEntry } from '../../core/references.js';
 import { isRootSelectionError } from '../../core/root-selection.js';
 
@@ -260,7 +260,8 @@ export function validateSchemaExists(schemaName: string, projectRoot?: string): 
   if (!schemaDir) {
     const availableSchemas = listSchemas(projectRoot);
     throw new Error(
-      `Schema '${schemaName}' not found. Available schemas:\n  ${availableSchemas.join('\n  ')}`
+      `Schema '${schemaName}' not found. Available schemas:\n  ${availableSchemas.join('\n  ')}` +
+        removedSchemaHint(schemaName)
     );
   }
   return schemaName;

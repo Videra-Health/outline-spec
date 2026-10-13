@@ -6,7 +6,7 @@ import {
   ChangeMetadataSchema,
   type ChangeMetadata,
 } from '../core/change-metadata/index.js';
-import { listSchemas } from '../core/artifact-graph/resolver.js';
+import { listSchemas, removedSchemaHint } from '../core/artifact-graph/resolver.js';
 import { readProjectConfig, type ProjectConfig } from '../core/project-config.js';
 import { sanitizeInline } from '../core/references.js';
 
@@ -96,7 +96,8 @@ export function validateSchemaName(
   const availableSchemas = listSchemas(projectRoot);
   if (!availableSchemas.includes(schemaName)) {
     throw new Error(
-      `Unknown schema '${schemaName}'. Available: ${availableSchemas.join(', ')}`
+      `Unknown schema '${schemaName}'. Available: ${availableSchemas.join(', ')}` +
+        removedSchemaHint(schemaName)
     );
   }
   return schemaName;
@@ -198,7 +199,8 @@ export function readChangeMetadata(
   const availableSchemas = listSchemas(projectRoot);
   if (!availableSchemas.includes(parseResult.data.schema)) {
     throw new ChangeMetadataError(
-      `Unknown schema '${parseResult.data.schema}'. Available: ${availableSchemas.join(', ')}`,
+      `Unknown schema '${parseResult.data.schema}'. Available: ${availableSchemas.join(', ')}` +
+        removedSchemaHint(parseResult.data.schema),
       metaPath
     );
   }
@@ -219,7 +221,7 @@ export interface ResolveSchemaForChangeOptions {
  * 1. Explicit schema (if provided)
  * 2. Schema from .openspec.yaml metadata (if exists)
  * 3. Schema from openspec/config.yaml (if exists)
- * 4. Default 'spec-driven'
+ * 4. Default 'outline'
  *
  * @param changeDir - The path to the change directory
  * @param explicitSchema - Optional explicit schema override
@@ -262,6 +264,6 @@ export function resolveSchemaForChange(
   }
 
   // 4. Default
-  return 'spec-driven';
+  return 'outline';
 }
 

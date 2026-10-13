@@ -34,7 +34,7 @@ describe('store references in instructions (3.1)', () => {
     createOpenSpecRoot(appRepo);
     fs.writeFileSync(
       path.join(appRepo, 'openspec', 'config.yaml'),
-      'schema: spec-driven\nreferences:\n  - team-context\n'
+      'schema: outline\nreferences:\n  - team-context\n'
     );
   });
 
@@ -55,7 +55,7 @@ describe('store references in instructions (3.1)', () => {
     await createChange(appRepo, 'billing-rework');
 
     const artifactJson = await runCLI(
-      ['instructions', 'proposal', '--change', 'billing-rework', '--json'],
+      ['instructions', 'outline', '--change', 'billing-rework', '--json'],
       { cwd: appRepo, env }
     );
     expect(artifactJson.exitCode).toBe(0);
@@ -73,7 +73,7 @@ describe('store references in instructions (3.1)', () => {
     expect(artifactJson.stdout).not.toContain('The system meters usage.');
 
     const artifactHuman = await runCLI(
-      ['instructions', 'proposal', '--change', 'billing-rework'],
+      ['instructions', 'outline', '--change', 'billing-rework'],
       { cwd: appRepo, env }
     );
     expect(artifactHuman.stdout).toContain('<referenced_stores>');
@@ -97,7 +97,7 @@ describe('store references in instructions (3.1)', () => {
 
     writeSpec(storeRoot, 'billing', '# billing\nRewritten upstream truth.\n\n1. Metering: The system meters usage.\n');
     const result = await runCLI(
-      ['instructions', 'proposal', '--change', 'billing-rework', '--json'],
+      ['instructions', 'outline', '--change', 'billing-rework', '--json'],
       { cwd: appRepo, env }
     );
 
@@ -105,11 +105,11 @@ describe('store references in instructions (3.1)', () => {
   });
 
   it('omits the references field entirely when none are declared', async () => {
-    fs.writeFileSync(path.join(appRepo, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
+    fs.writeFileSync(path.join(appRepo, 'openspec', 'config.yaml'), 'schema: outline\n');
     await createChange(appRepo, 'plain-change');
 
     const result = await runCLI(
-      ['instructions', 'proposal', '--change', 'plain-change', '--json'],
+      ['instructions', 'outline', '--change', 'plain-change', '--json'],
       { cwd: appRepo, env }
     );
 
@@ -121,12 +121,12 @@ describe('store references in instructions (3.1)', () => {
     // contract must hold so field presence stays a reliable signal.
     fs.writeFileSync(
       path.join(storeRoot, 'openspec', 'config.yaml'),
-      'schema: spec-driven\nreferences:\n  - team-context\n'
+      'schema: outline\nreferences:\n  - team-context\n'
     );
     await createChange(appRepo, 'self-ref-change', ['--store', 'team-context']);
 
     const result = await runCLI(
-      ['instructions', 'proposal', '--change', 'self-ref-change', '--store', 'team-context', '--json'],
+      ['instructions', 'outline', '--change', 'self-ref-change', '--store', 'team-context', '--json'],
       { cwd: appRepo, env }
     );
 
@@ -143,12 +143,12 @@ describe('store references in instructions (3.1)', () => {
     await registerStore({ id: 'upstream-context', localPath: upstreamRoot, globalDataDir });
     fs.writeFileSync(
       path.join(storeRoot, 'openspec', 'config.yaml'),
-      'schema: spec-driven\nreferences:\n  - upstream-context\n'
+      'schema: outline\nreferences:\n  - upstream-context\n'
     );
 
     await createChange(appRepo, 'store-scoped', ['--store', 'team-context']);
     const result = await runCLI(
-      ['instructions', 'proposal', '--change', 'store-scoped', '--store', 'team-context', '--json'],
+      ['instructions', 'outline', '--change', 'store-scoped', '--store', 'team-context', '--json'],
       { cwd: appRepo, env }
     );
 
@@ -164,12 +164,12 @@ describe('store references in instructions (3.1)', () => {
     // only team-context. upstream-context must not appear.
     fs.writeFileSync(
       path.join(storeRoot, 'openspec', 'config.yaml'),
-      'schema: spec-driven\nreferences:\n  - upstream-context\n'
+      'schema: outline\nreferences:\n  - upstream-context\n'
     );
 
     await createChange(appRepo, 'billing-rework');
     const result = await runCLI(
-      ['instructions', 'proposal', '--change', 'billing-rework', '--json'],
+      ['instructions', 'outline', '--change', 'billing-rework', '--json'],
       { cwd: appRepo, env }
     );
 
@@ -229,7 +229,7 @@ describe('store references in instructions (3.1)', () => {
 
     // The agent reads the index and runs the printed fetch verbatim.
     const instructions = await runCLI(
-      ['instructions', 'proposal', '--change', 'billing-rework', '--json'],
+      ['instructions', 'outline', '--change', 'billing-rework', '--json'],
       { cwd: appRepo, env }
     );
     const fetch = parseJson(instructions).references[0].fetch.replace('<spec-id>', 'billing');

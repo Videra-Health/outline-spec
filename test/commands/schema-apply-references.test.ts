@@ -9,7 +9,7 @@ import { runCLI, cliProjectRoot } from '../helpers/run-cli.js';
  * End to end: a project schema whose `apply` block names an artifact that does
  * not exist. `schema validate` used to call it valid, and `instructions apply`
  * then either skipped the unknown requirement (reporting `ready` with only a
- * proposal written) or blocked forever on a file nothing generates.
+ * outline written) or blocked forever on a file nothing generates.
  */
 const temps: string[] = [];
 afterAll(async () => {
@@ -18,7 +18,7 @@ afterAll(async () => {
 const T = 120_000;
 
 /**
- * A project on a copy of spec-driven named `myflow`, whose apply block is
+ * A project on a copy of the outline schema named `myflow`, whose apply block is
  * replaced. `generates` optionally overrides an artifact's `generates` value,
  * keyed by artifact id, so a test can make one artifact emit a glob.
  */
@@ -42,7 +42,7 @@ async function projectWithApply(
   expect((await cli(['init', '--tools', 'claude'])).exitCode).toBe(0);
 
   const schemaDir = path.join(project, 'openspec', 'schemas', 'myflow');
-  await fs.cp(path.join(cliProjectRoot, 'schemas', 'spec-driven'), schemaDir, { recursive: true });
+  await fs.cp(path.join(cliProjectRoot, 'schemas', 'outline'), schemaDir, { recursive: true });
   const schemaFile = path.join(schemaDir, 'schema.yaml');
   const schema = parse(await fs.readFile(schemaFile, 'utf-8'));
   schema.name = 'myflow';
@@ -61,8 +61,8 @@ async function projectWithApply(
   await fs.mkdir(changeDir, { recursive: true });
   await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: myflow\n');
   await fs.writeFile(
-    path.join(changeDir, 'proposal.md'),
-    '# C\n\n## Why\nWe need this for a real reason that is long enough to pass.\n\n## What Changes\n- **billing**: y\n'
+    path.join(changeDir, 'outline.md'),
+    '## Proposal\nWe need this for a real reason.\n\n## Requirements\n1. billing: Bills customers.\n  a. Invoices: Each order gets an invoice.\n'
   );
   return { cli, changeDir };
 }
@@ -127,7 +127,7 @@ describe('schema apply references (CLI)', () => {
   // A hand-written tracked file no artifact generates worked before this check
   // existed; the schema must keep loading so apply keeps working on it.
   it('instructions apply still works on a tracked file no artifact generates', async () => {
-    const p = await projectWithApply({ requires: ['proposal'], tracks: 'TODO.md' });
+    const p = await projectWithApply({ requires: ['outline'], tracks: 'TODO.md' });
     await fs.writeFile(path.join(p.changeDir, 'TODO.md'), '- [ ] 1.1 do it\n- [x] 1.2 done\n');
     const applied = await p.cli(['instructions', 'apply', '--change', 'c', '--json']);
     expect(applied.exitCode).toBe(0);

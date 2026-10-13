@@ -4,7 +4,7 @@ import { serializeConfig } from '../../src/core/config-prompts.js';
 
 describe('config prompts', () => {
   it('guides agents toward context they cannot infer from the codebase', () => {
-    const config = serializeConfig({ schema: 'spec-driven' });
+    const config = serializeConfig({ schema: 'outline' });
 
     expect(config).toContain('constraints that should guide OpenSpec artifacts and workflows');
     expect(config).toContain('constraints an agent cannot infer by reading the code');

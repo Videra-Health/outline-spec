@@ -176,7 +176,7 @@ describe('getTaskProgressForChange (#1202 tracked-tasks resolution)', () => {
   });
 
   it('counts a single top-level tasks.md unchanged under the default schema', async () => {
-    // No project-local schema, no .openspec.yaml -> default spec-driven (tracks tasks.md).
+    // No project-local schema, no .openspec.yaml -> default outline (tracks tasks.md).
     await writeChange('plain', { 'tasks.md': '- [x] a\n- [x] b\n- [ ] c\n' }, '');
 
     const progress = await getTaskProgressForChange(changesDir, 'plain', projectRoot);

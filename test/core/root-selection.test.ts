@@ -65,7 +65,7 @@ describe('resolveOpenSpecRoot', () => {
   function createOpenSpecRoot(rootDir: string): void {
     fs.mkdirSync(path.join(rootDir, 'openspec', 'specs'), { recursive: true });
     fs.mkdirSync(path.join(rootDir, 'openspec', 'changes'), { recursive: true });
-    fs.writeFileSync(path.join(rootDir, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
+    fs.writeFileSync(path.join(rootDir, 'openspec', 'config.yaml'), 'schema: outline\n');
   }
 
   async function registerStore(
@@ -131,7 +131,7 @@ describe('resolveOpenSpecRoot', () => {
     expect(root.changesDir).toBe(path.join(storeRoot, 'openspec', 'changes'));
     expect(root.specsDir).toBe(path.join(storeRoot, 'openspec', 'specs'));
     expect(root).not.toHaveProperty('archiveDir');
-    expect(root.defaultSchema).toBe('spec-driven');
+    expect(root.defaultSchema).toBe('outline');
   });
 
   it('rejects an unknown store id and lists registered ids', async () => {
@@ -233,7 +233,7 @@ describe('resolveOpenSpecRoot', () => {
     expect(root.source).toBe('nearest');
     expect(root.path).toBe(repoRoot);
     expect(root.changesDir).toBe(path.join(repoRoot, 'openspec', 'changes'));
-    expect(root.defaultSchema).toBe('spec-driven');
+    expect(root.defaultSchema).toBe('outline');
   });
 
   it('treats workspace state alone as no root at all', async () => {
@@ -341,7 +341,7 @@ describe('resolveOpenSpecRoot', () => {
       createOpenSpecRoot(repo);
       fs.writeFileSync(
         path.join(repo, 'openspec', 'config.yaml'),
-        'schema: spec-driven\nstore: team-context\n'
+        'schema: outline\nstore: team-context\n'
       );
 
       const warnings: string[] = [];
@@ -363,7 +363,7 @@ describe('resolveOpenSpecRoot', () => {
 
     it('keeps config-only directories without a pointer as plain roots', async () => {
       await registerStore('team-context');
-      const dir = createPointerDir('plain-config-only', 'schema: spec-driven\n');
+      const dir = createPointerDir('plain-config-only', 'schema: outline\n');
 
       const warnings: string[] = [];
       const original = console.error;
@@ -473,7 +473,7 @@ describe('resolveOpenSpecRoot', () => {
       const storeRoot = await registerStore('team-context');
       fs.writeFileSync(
         path.join(storeRoot, 'openspec', 'config.yaml'),
-        'schema: spec-driven\nstore: somewhere-else\n'
+        'schema: outline\nstore: somewhere-else\n'
       );
       const pointerDir = createPointerDir('app-repo', 'store: team-context\n');
 

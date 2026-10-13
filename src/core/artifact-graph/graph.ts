@@ -20,12 +20,9 @@ export class ArtifactGraph {
   /**
    * Orders artifact ids by where the schema declares them.
    *
-   * The dependency graph leaves siblings tied - spec-driven's `specs` and
-   * `design` both require only `proposal`, so both become ready at the same
-   * time. Ties used to be broken alphabetically, which put `design` ahead of
-   * `specs` and made the CLI recommend the artifacts in an order that
-   * contradicted the schema's own documented sequence
-   * (proposal -> specs -> design -> tasks). Breaking ties by declaration order
+   * The dependency graph leaves siblings tied - the outline schema's `design`
+   * and `tasks` both require only `outline`, so both become ready at the same
+   * time. Breaking ties by declaration order
    * follows the sequence the schema author wrote, for built-in and custom
    * schemas alike, and stays just as deterministic. Ids not in the schema sort
    * last so the comparator stays total.

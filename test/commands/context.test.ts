@@ -39,7 +39,7 @@ describe('openspec context (4.1)', () => {
 
     fs.writeFileSync(
       path.join(storeRoot, 'openspec', 'config.yaml'),
-      'schema: spec-driven\n' +
+      'schema: outline\n' +
         'references:\n  - upstream-context\n  - { id: design-system, remote: https://192.0.2.1/ds.git }\n'
     );
   });
@@ -126,7 +126,7 @@ describe('openspec context (4.1)', () => {
   it('distinguishes self-reference omission from nothing declared', async () => {
     fs.writeFileSync(
       path.join(storeRoot, 'openspec', 'config.yaml'),
-      'schema: spec-driven\nreferences:\n  - team-context\n'
+      'schema: outline\nreferences:\n  - team-context\n'
     );
     const human = await runCLI(['context', '--store', 'team-context'], { cwd: tempDir, env });
     expect(human.stdout).toContain('Declared references all resolve to this root');
@@ -134,7 +134,7 @@ describe('openspec context (4.1)', () => {
   });
 
   it('says so plainly when nothing is declared', async () => {
-    fs.writeFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
+    fs.writeFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), 'schema: outline\n');
     const human = await runCLI(['context', '--store', 'team-context'], { cwd: tempDir, env });
     expect(human.stdout).toContain('the working set is this root alone');
     const json = await runCLI(['context', '--json', '--store', 'team-context'], {
@@ -250,9 +250,9 @@ describe('openspec context (4.1)', () => {
   });
 
   it.each(['nested local', 'legacy local', 'pointer', 'explicit store', 'global default'])(
-    'preserves the %s root through context, change creation, and proposal instructions (#1651)',
+    'preserves the %s root through context, change creation, and outline instructions (#1651)',
     async (selection) => {
-      const project = path.join(tempDir, 'proposal-project');
+      const project = path.join(tempDir, 'outline-project');
       const cwd = path.join(project, 'src', 'nested');
       fs.mkdirSync(cwd, { recursive: true });
       let selectedRoot = storeRoot;
@@ -262,7 +262,7 @@ describe('openspec context (4.1)', () => {
 
       fs.writeFileSync(
         path.join(storeRoot, 'openspec', 'config.yaml'),
-        'schema: spec-driven\ncontext: Selected store context\n'
+        'schema: outline\ncontext: Selected store context\n'
       );
 
       if (selection === 'nested local' || selection === 'legacy local') {
@@ -278,7 +278,7 @@ describe('openspec context (4.1)', () => {
           expectedContext = 'Selected local context';
           fs.writeFileSync(
             path.join(project, 'openspec', 'config.yaml'),
-            'schema: spec-driven\ncontext: Selected local context\n'
+            'schema: outline\ncontext: Selected local context\n'
           );
         }
       } else if (selection === 'pointer') {
@@ -309,7 +309,7 @@ describe('openspec context (4.1)', () => {
       const created = await runCLI(['new', 'change', 'add-auth', '--json', ...storeArgs], { cwd, env });
       expect(created.exitCode).toBe(0);
       const instructions = await runCLI(
-        ['instructions', 'proposal', '--change', 'add-auth', '--json', ...storeArgs],
+        ['instructions', 'outline', '--change', 'add-auth', '--json', ...storeArgs],
         { cwd, env }
       );
       expect(instructions.exitCode).toBe(0);

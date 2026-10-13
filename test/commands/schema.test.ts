@@ -1,3 +1,4 @@
+import { parse as parseYaml } from 'yaml';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Command } from 'commander';
 import * as fs from 'node:fs';
@@ -100,24 +101,24 @@ describe('schema command', () => {
         '../../src/core/artifact-graph/resolver.js'
       );
 
-      // Verify spec-driven exists in package
+      // Verify outline exists in package
       const schemas = listSchemas(tempDir);
-      expect(schemas).toContain('spec-driven');
+      expect(schemas).toContain('outline');
 
-      const schemaDir = getSchemaDir('spec-driven', tempDir);
+      const schemaDir = getSchemaDir('outline', tempDir);
       expect(schemaDir).not.toBeNull();
       expect(schemaDir).toContain('schemas');
     });
 
     it('should detect project schema shadowing package', async () => {
-      // Create a project-local spec-driven schema
-      const projectSchemaDir = path.join(tempDir, 'openspec', 'schemas', 'spec-driven');
+      // Create a project-local outline schema
+      const projectSchemaDir = path.join(tempDir, 'openspec', 'schemas', 'outline');
       fs.mkdirSync(projectSchemaDir, { recursive: true });
       fs.writeFileSync(
         path.join(projectSchemaDir, 'schema.yaml'),
-        `name: spec-driven
+        `name: outline
 version: 1
-description: Custom spec-driven
+description: Custom outline
 artifacts:
   - id: proposal
     generates: proposal.md
@@ -130,7 +131,7 @@ artifacts:
       const { getSchemaDir } = await import('../../src/core/artifact-graph/resolver.js');
 
       // Should resolve to project
-      const schemaDir = getSchemaDir('spec-driven', tempDir);
+      const schemaDir = getSchemaDir('outline', tempDir);
       expect(schemaDir).toBe(projectSchemaDir);
     });
 
@@ -139,7 +140,7 @@ artifacts:
 
       const schemas = listSchemas(tempDir);
       expect(schemas.length).toBeGreaterThan(0);
-      expect(schemas).toContain('spec-driven');
+      expect(schemas).toContain('outline');
     });
   });
 
@@ -278,8 +279,8 @@ artifacts:
     it('should copy schema to project directory', async () => {
       const { getSchemaDir } = await import('../../src/core/artifact-graph/resolver.js');
 
-      // Get the package spec-driven schema
-      const sourceDir = getSchemaDir('spec-driven', tempDir);
+      // Get the package outline schema
+      const sourceDir = getSchemaDir('outline', tempDir);
       expect(sourceDir).not.toBeNull();
 
       // Copy manually to simulate fork
@@ -445,7 +446,7 @@ artifacts:
           'my-workflow',
           ...(force ? ['--force'] : []),
           '--artifacts',
-          'proposal,specs,tasks',
+          'outline,tasks',
           '--default',
           '--json',
         ]
@@ -459,7 +460,7 @@ artifacts:
           'init',
           'my-workflow',
           '--artifacts',
-          'proposal,specs,tasks',
+          'outline,tasks',
           '--default',
           '--json',
         ],
@@ -486,7 +487,7 @@ artifacts:
           'init',
           'lint-clean',
           '--artifacts',
-          'proposal,specs,design,tasks',
+          'outline,design,tasks',
           '--json',
         ],
         { cwd: tempDir }
@@ -507,8 +508,7 @@ artifacts:
         .sort();
       expect(templates).toEqual([
         'design.md',
-        'proposal.md',
-        path.join('specs', 'spec.md'),
+        'outline.md',
         'tasks.md',
       ].sort());
 
@@ -516,8 +516,7 @@ artifacts:
       // opens with a title and a blank line, not a section header (#1138).
       const headings: Record<string, string> = {
         'design.md': '# Design',
-        'proposal.md': '# Proposal',
-        [path.join('specs', 'spec.md')]: '# Spec Delta',
+        'outline.md': '# Outline',
         'tasks.md': '# Tasks',
       };
       for (const template of templates) {
@@ -655,7 +654,7 @@ artifacts:
         'init',
         'my-workflow',
         '--artifacts',
-        'proposal,specs,tasks',
+        'outline,tasks',
         '--default',
         '--json',
       ]);
@@ -670,13 +669,13 @@ artifacts:
     it('keeps the rest of an existing config when --default rewrites it', async () => {
       const { readProjectConfig } = await import('../../src/core/project-config.js');
       const configPath = path.join(tempDir, 'openspec', 'config.yaml');
-      fs.writeFileSync(configPath, 'schema: spec-driven\ncontext: keep me\n');
+      fs.writeFileSync(configPath, 'schema: outline\ncontext: keep me\n');
 
       await runSchemaCommand([
         'init',
         'my-workflow',
         '--artifacts',
-        'proposal,specs,tasks',
+        'outline,tasks',
         '--default',
         '--json',
       ]);
@@ -691,14 +690,14 @@ artifacts:
       const configPath = path.join(tempDir, 'openspec', 'config.yml');
       fs.writeFileSync(
         configPath,
-        '# project context\nschema: spec-driven\ncontext: keep me\n'
+        '# project context\nschema: outline\ncontext: keep me\n'
       );
 
       await runSchemaCommand([
         'init',
         'my-workflow',
         '--artifacts',
-        'proposal,specs,tasks',
+        'outline,tasks',
         '--default',
         '--json',
       ]);
@@ -723,7 +722,7 @@ artifacts:
           'init',
           'my-workflow',
           '--artifacts',
-          'proposal,specs,tasks',
+          'outline,tasks',
           '--default',
           '--json',
         ]);
@@ -743,7 +742,7 @@ artifacts:
         'init',
         'my-workflow',
         '--artifacts',
-        'proposal,specs,tasks',
+        'outline,tasks',
         '--default',
         '--json',
       ]);
@@ -771,7 +770,7 @@ artifacts:
         'tdd-driven',
         '--force',
         '--artifacts',
-        'proposal,specs,design,task',
+        'outline,design,task',
         '--json',
       ]);
 
@@ -781,7 +780,7 @@ artifacts:
       expect(JSON.parse(output as string)).toEqual({
         created: false,
         error: "Unknown artifact 'task'",
-        valid: ['proposal', 'specs', 'design', 'tasks'],
+        valid: ['outline', 'design', 'tasks'],
       });
       expect(fs.readFileSync(schemaPath, 'utf-8')).toBe(existingSchema);
       expect(fs.readFileSync(sentinelPath)).toEqual(sentinel);
@@ -799,7 +798,7 @@ artifacts:
         'tdd-driven',
         '--force',
         '--artifacts',
-        'proposal,specs,design,tasks',
+        'outline,design,tasks',
         '--json',
       ]);
 
@@ -809,12 +808,17 @@ artifacts:
       expect(JSON.parse(output as string)).toMatchObject({
         created: true,
         schema: 'tdd-driven',
-        artifacts: ['proposal', 'specs', 'design', 'tasks'],
+        artifacts: ['outline', 'design', 'tasks'],
       });
       expect(fs.existsSync(sentinelPath)).toBe(false);
       expect(fs.existsSync(path.join(schemaDir, 'schema.yaml'))).toBe(true);
-      expect(fs.existsSync(path.join(schemaDir, 'templates', 'proposal.md'))).toBe(true);
-      expect(fs.existsSync(path.join(schemaDir, 'templates', 'specs', 'spec.md'))).toBe(true);
+      expect(fs.existsSync(path.join(schemaDir, 'templates', 'outline.md'))).toBe(true);
+      const written = parseYaml(fs.readFileSync(path.join(schemaDir, 'schema.yaml'), 'utf-8'));
+      expect(written.artifacts.map((a: { id: string; requires: string[] }) => [a.id, a.requires])).toEqual([
+        ['outline', []],
+        ['design', ['outline']],
+        ['tasks', ['outline']],
+      ]);
       expect(fs.existsSync(path.join(schemaDir, 'templates', 'design.md'))).toBe(true);
       expect(fs.existsSync(path.join(schemaDir, 'templates', 'tasks.md'))).toBe(true);
     });
@@ -974,7 +978,7 @@ artifacts:
     it('should include expected fields in fork JSON', () => {
       const forkResult = {
         forked: true,
-        source: 'spec-driven',
+        source: 'outline',
         sourcePath: '/path/to/source',
         sourceLocation: 'package',
         destination: 'my-custom',

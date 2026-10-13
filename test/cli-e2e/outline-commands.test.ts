@@ -34,7 +34,7 @@ const cli = (...args: string[]) => runCLI(args, { cwd: root });
 
 beforeEach(() => {
   root = mkdtempSync(path.join(os.tmpdir(), 'openspec-outline-'));
-  write('config.yaml', 'schema: spec-driven\n');
+  write('config.yaml', 'schema: outline\n');
   write('specs/outfitting/spec.md', OUTFITTING);
   write('specs/hull/spec.md', HULL);
 });
@@ -151,7 +151,7 @@ describe('openspec archive', () => {
 describe('openspec instructions land', () => {
   it('serves land inputs under both names', async () => {
     change('c1', '');
-    write('config.yaml', 'schema: spec-driven\noperations:\n  archive:\n    guidance:\n      - Say what landed\n');
+    write('config.yaml', 'schema: outline\noperations:\n  archive:\n    guidance:\n      - Say what landed\n');
     for (const name of ['land', 'archive']) {
       const r = await cli('instructions', name, '--change', 'c1', '--json');
       expect(JSON.parse(r.stdout)).toMatchObject({ changeName: 'c1', operationGuidance: ['Say what landed'] });

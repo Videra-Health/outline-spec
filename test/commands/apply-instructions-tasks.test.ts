@@ -17,13 +17,9 @@ describe('generateApplyInstructions task list', () => {
   beforeEach(() => {
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-apply-tasks-'));
     changeDir = path.join(tempDir, 'openspec', 'changes', 'my-change');
-    fs.mkdirSync(path.join(changeDir, 'specs', 'demo'), { recursive: true });
-    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: spec-driven\n');
-    fs.writeFileSync(path.join(changeDir, 'proposal.md'), '## Why\nx\n');
-    fs.writeFileSync(
-      path.join(changeDir, 'specs', 'demo', 'spec.md'),
-      '## ADDED Requirements\n\n### Requirement: Demo\nThe system SHALL demo.\n\n#### Scenario: Works\n- **WHEN** run\n- **THEN** works\n'
-    );
+    fs.mkdirSync(changeDir, { recursive: true });
+    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: outline\n');
+    fs.writeFileSync(path.join(changeDir, 'outline.md'), '## Proposal\nx\n\n## Requirements\n1. demo: A demo.\n  a. Demo: It demos.\n');
   });
 
   afterEach(() => {
@@ -213,16 +209,16 @@ ${tracked ? '  tracks: checklist.md\n' : ''}`
     expect(instructions.instruction).toContain(tasksPath);
   });
 
-  it('returns existing spec and design paths even when their files contain no evidence', async () => {
+  it('returns existing outline and design paths even when their files contain no evidence', async () => {
     writeTasks('- [x] Finished task\n');
-    const spec = path.join(changeDir, 'specs', 'demo', 'spec.md');
+    const outline = path.join(changeDir, 'outline.md');
     const design = path.join(changeDir, 'design.md');
-    fs.writeFileSync(spec, '');
+    fs.writeFileSync(outline, '');
     fs.writeFileSync(design, '');
 
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
 
-    expect(instructions.contextFiles.specs).toEqual([fs.realpathSync.native(spec)]);
+    expect(instructions.contextFiles.outline).toEqual([fs.realpathSync.native(outline)]);
     expect(instructions.contextFiles.design).toEqual([fs.realpathSync.native(design)]);
     expect(instructions.state).toBe('all_done');
   });

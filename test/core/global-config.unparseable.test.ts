@@ -362,7 +362,7 @@ describe('an unparseable global config', () => {
     const project = path.join(tempDir, 'project');
     fs.mkdirSync(path.join(project, 'openspec', 'specs'), { recursive: true });
     fs.mkdirSync(path.join(project, 'openspec', 'changes'), { recursive: true });
-    fs.writeFileSync(path.join(project, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
+    fs.writeFileSync(path.join(project, 'openspec', 'config.yaml'), 'schema: outline\n');
     fs.writeFileSync(configPath, TYPO);
 
     const result = await runCLI(['list'], {

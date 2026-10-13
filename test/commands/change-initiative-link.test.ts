@@ -57,7 +57,7 @@ describe('legacy repo-local change initiative metadata', () => {
     );
     fs.writeFileSync(
       path.join(dir, '.openspec.yaml'),
-      'schema: spec-driven\ninitiative:\n  store: platform\n  id: billing-launch\n'
+      'schema: outline\ninitiative:\n  store: platform\n  id: billing-launch\n'
     );
     return dir;
   }

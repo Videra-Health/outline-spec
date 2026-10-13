@@ -72,7 +72,7 @@ describe('store root selection for normal commands', () => {
   function createOpenSpecRoot(rootDir: string): void {
     fs.mkdirSync(path.join(rootDir, 'openspec', 'specs'), { recursive: true });
     fs.mkdirSync(path.join(rootDir, 'openspec', 'changes'), { recursive: true });
-    fs.writeFileSync(path.join(rootDir, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
+    fs.writeFileSync(path.join(rootDir, 'openspec', 'config.yaml'), 'schema: outline\n');
   }
 
   async function registerStoreFixture(id: string): Promise<string> {
@@ -89,10 +89,6 @@ describe('store root selection for normal commands', () => {
   ): string {
     const changeDir = path.join(rootDir, 'openspec', 'changes', name);
     fs.mkdirSync(changeDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(changeDir, 'proposal.md'),
-      '## Why\nBilling needs work.\n\n## What Changes\n- **billing:** Add billing\n'
-    );
     fs.writeFileSync(
       path.join(changeDir, 'tasks.md'),
       options.tasksDone === false ? '- [ ] Task 1\n' : '- [x] Task 1\n'
@@ -242,7 +238,7 @@ describe('store root selection for normal commands', () => {
       fs.mkdirSync(path.join(blankStoreRoot, 'openspec'), { recursive: true });
       fs.writeFileSync(
         path.join(blankStoreRoot, 'openspec', 'config.yaml'),
-        'schema: spec-driven\n'
+        'schema: outline\n'
       );
       await writeStoreMetadataState(blankStoreRoot, {
         version: 1,
@@ -278,7 +274,7 @@ describe('store root selection for normal commands', () => {
       expect(status.exitCode).toBe(0);
       const statusJson = parseJson(status);
       expect(statusJson.changeName).toBe('store-change');
-      expect(statusJson.schemaName).toBe('spec-driven');
+      expect(statusJson.schemaName).toBe('outline');
       expect(statusJson.root).toEqual({
         path: storeRoot,
         source: 'store',
@@ -335,7 +331,7 @@ describe('store root selection for normal commands', () => {
       createChange(storeRoot, 'store-change');
       fs.writeFileSync(
         path.join(storeRoot, 'openspec', 'config.yaml'),
-        `schema: spec-driven
+        `schema: outline
 context: Store context
 operations:
   apply:
@@ -610,7 +606,7 @@ operations:
       });
       expect(result.exitCode).toBe(0);
       const json = parseJson(result);
-      expect(json.schemaName).toBe('spec-driven');
+      expect(json.schemaName).toBe('outline');
       expect(json.root.source).toBe('nearest');
       expect(json.root.store_id).toBeUndefined();
     });
@@ -874,7 +870,7 @@ operations:
       fs.mkdirSync(path.join(blankStoreRoot, 'openspec'), { recursive: true });
       fs.writeFileSync(
         path.join(blankStoreRoot, 'openspec', 'config.yaml'),
-        'schema: spec-driven\n'
+        'schema: outline\n'
       );
       await writeStoreMetadataState(blankStoreRoot, {
         version: 1,
