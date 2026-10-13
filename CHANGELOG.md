@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0
+
+- **Sync.** `outline-spec sync <change>` (`outl sync`) applies a change's `## Requirements` edits to the live specs now and keeps the change open. It selects, checks, and writes all or nothing like `archive`, but doesn't check tasks. It then moves the applied section verbatim into `applied/<YYYY-MM-DD>-<n>.md` in the change folder and leaves `## Requirements` empty. Flags: `--dry-run`, `--yes`, `--json`, `--store`. Format: [docs/outlines.md](docs/outlines.md#applied-records).
+- **`applied/` is a record only.** `validate`, `pending`, `status`, `instructions`, and `archive` ignore it; `show` lists its files. `archive` applies what's left in `outline.md` and deletes the change folder, `applied/` included.
+- **Sync workflow.** The `outl-sync-specs` skill and `/outl:sync` command validate, dry-run, then sync, and fix `outline.md` on a mismatch. `sync` joins the core profile (propose, explore, apply, update, sync, archive). The other workflows and the outline schema mention syncing to apply spec edits early and archiving to finish.
+
 ## 0.3.0
 
 - **Diagrams artifact.** The built-in `outline` schema adds `diagrams.md` after `design`: the few views (sequence diagram, call tree, state machine, data shapes, table, and so on) that explain the change, chosen from the candidates in its template. It requires `outline`; apply still requires only `tasks`, so it never blocks apply. `propose`, `ff`, and onboarding write it before `tasks`. A project that forked the schema only to add it can drop its fork.
