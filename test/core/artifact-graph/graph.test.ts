@@ -248,6 +248,43 @@ artifacts:
     });
   });
 
+  describe('optional artifacts', () => {
+    const graph = () => ArtifactGraph.fromSchema(createSchema([
+      { id: 'A', generates: 'a.md', description: 'A', template: 't.md', requires: [] },
+      { id: 'D', generates: 'd/*.html', description: 'D', template: 't.md', requires: ['A'], optional: true },
+      { id: 'T', generates: 't.md', description: 'T', template: 't.md', requires: ['A', 'D'] },
+    ]));
+
+    it('completes without a missing optional artifact', () => {
+      expect(graph().isComplete(new Set(['A', 'T']))).toBe(true);
+      expect(graph().isComplete(new Set(['A']))).toBe(false);
+    });
+
+    it('counts a missing optional dependency as met', () => {
+      expect(graph().getNextArtifacts(new Set(['A']))).toEqual(['D', 'T']);
+      expect(graph().getBlocked(new Set())).toEqual({ D: ['A'], T: ['A'] });
+    });
+
+    it('loads optional: true from YAML and leaves other artifacts required', () => {
+      const g = ArtifactGraph.fromYamlContent(`
+name: s
+version: 1
+artifacts:
+  - id: a
+    generates: a.md
+    description: A
+    template: t.md
+  - id: d
+    generates: d.md
+    description: D
+    template: t.md
+    optional: true
+`);
+      expect(g.isOptional('d')).toBe(true);
+      expect(g.isOptional('a')).toBe(false);
+    });
+  });
+
   describe('getBlocked', () => {
     it('should return empty object when nothing is blocked', () => {
       const schema = createSchema([

@@ -33,6 +33,8 @@ export const ArtifactSchema = z.object({
   template: relativePathSchema('template field'),
   instruction: z.string().optional(),
   requires: z.array(z.string()).default([]),
+  // Missing optional artifacts don't block dependents or planning completion
+  optional: z.boolean().optional(),
 });
 
 // Apply phase configuration for schema-aware apply instructions

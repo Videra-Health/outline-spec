@@ -89,11 +89,11 @@ const EXPECTED_FUNCTION_HASHES: Record<string, string> = {
   getOutlineSpecArchiveCommandTemplate: 'ae5a8da0ca3210a298b98c54b1e708150b56a9495be9c74a7e6a148c038c38f2',
   getOutlineSpecOnboardCommandTemplate: '811031a3cf313ce1ca8c87c63854b6521ac00b7abb9387d29fd9185fee35a109',
   getOutlineSpecVerifyCommandTemplate: '87c6fccf9336804db377003cae34f408a82261990cc35d9c93026d5ceb36e586',
-  getOutlineSpecProposeSkillTemplate: 'a3ea03a7e5d0257cba2c76118b6d3cebccc47764ccc02e124cf8e46866b4682f',
-  getOutlineSpecProposeCommandTemplate: 'c03480583c04b9009f647b070a9a6bd16318367cd2b6528389cb1e1a60345f11',
+  getOutlineSpecProposeSkillTemplate: '525314208e6474a2405b0e4c382e32b03a9111793d0b797e4fa5a08f8caa069c',
+  getOutlineSpecProposeCommandTemplate: 'a0b6373de99da2b94302d6a05785d08b358ae15b67ad6c8283846df09e467044',
   getFeedbackSkillTemplate: '84032cbc59ea51005dcf80a20978b4755ea636e6746bcbd1aa0cba06814c36db',
-  getUpdateChangeSkillTemplate: '622b4432b25636c19328e3aafbed5679178793d71be80b273e3b0cb3d5cf0c6e',
-  getOutlineSpecUpdateCommandTemplate: '51ea401d73fbd588c8be9e4ffea9d800babebd118b5d1c0b1bc4de0f39c77421',
+  getUpdateChangeSkillTemplate: 'd6c54f70d963b5115da0eb2790f18323590d2c92140810e5e8fcb1f7aee3b36c',
+  getOutlineSpecUpdateCommandTemplate: '4f69faafc2c243da0199a083762c211315c06ca8a6393921038934e2635e6a8b',
 };
 
 const EXPECTED_GENERATED_SKILL_CONTENT_HASHES: Record<string, string> = {
@@ -106,8 +106,8 @@ const EXPECTED_GENERATED_SKILL_CONTENT_HASHES: Record<string, string> = {
   'outl-archive-change': 'f80b3ef0474a88bf0e077214606077cdcff3cf1a8344d4ef62da960c139160ba',
   'outl-verify-change': '43a37f3f05c16a8616b5e28e3d4560b54d5f14908c32f8bef21836e3ae0275b8',
   'outl-onboard': 'd83f2e7123ea5cee856fd1c06fea60e00d96621c5dc8f8340d87401c5f8c1d82',
-  'outl-propose': '4a2cf07749dd0b2209533196446ee67903522b1d569235b4a264813585740370',
-  'outl-update-change': 'be1320cc7ce14185c3cb6681774ef54461c2e73c63db3147b0f4808af396b403',
+  'outl-propose': 'f71049a511434365b820918aa50b024f98eded025670fc4dbe598e6a05085493',
+  'outl-update-change': 'e59665c66f76c353b34c999f5d1c5a4132707b7a8d34381588e9ab48830dea4d',
 };
 
 // Intentionally excludes getFeedbackSkillTemplate: this list only models templates

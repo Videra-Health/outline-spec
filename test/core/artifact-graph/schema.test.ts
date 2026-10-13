@@ -295,6 +295,21 @@ ${review}`;
       });
     });
 
+    it('accepts a glob entry in from', () => {
+      const schema = parseSchema(withReview(`  tabs:
+    - title: Designs
+      from: [designs/*.html]
+`));
+      expect(schema.review?.tabs).toEqual([{ title: 'Designs', from: ['designs/*.html'] }]);
+    });
+
+    it.each(['../designs/*.html', '/designs/*.html', 'C:\\designs\\*.html'])('rejects the from entry %s outside the change', (entry) => {
+      expect(() => parseSchema(withReview(`  tabs:
+    - title: Designs
+      from: ['${entry}']
+`))).toThrow(/must be a relative path inside its allowed directory/);
+    });
+
     it('rejects a tab with neither from nor view', () => {
       expect(() => parseSchema(withReview(`  tabs:
     - title: Empty

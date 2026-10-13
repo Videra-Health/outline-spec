@@ -84,6 +84,28 @@ artifacts:
     requires:
       - outline
 
+  - id: designs
+    generates: designs/*.html
+    description: Visual designs for what the change shows people
+    template: design.html
+    optional: true
+    instruction: |
+      Create only when the change adds or changes something a person sees: a screen,
+      page, panel, dialog, HUD, or other visual surface. Skip it for changes with no
+      visual surface.
+
+      Write one self-contained HTML page per design in the change's `designs/` folder,
+      named for what it shows, as `designs/settings-panel.html`. Each page carries its
+      own CSS and JS inline and may load scripts and fonts from a CDN. The review page
+      runs each one in a sandboxed frame, so a design can't read the page around it.
+
+      Draw the design as it should look and behave when built, using the project's
+      real colors, type, and copy, not placeholder boxes. Show each state the outline
+      describes (empty, loading, error, hover) side by side or with controls to switch.
+      Where the outline offers alternatives, show each option labeled.
+    requires:
+      - outline
+
   - id: tasks
     generates: tasks.md
     description: Implementation checklist with trackable tasks
@@ -123,5 +145,7 @@ review:
       from: [outline.md]
     - title: Diagrams
       from: [diagrams.md]
+    - title: Designs
+      from: [designs/*.html]
     - title: Spec changes
       view: spec-changes

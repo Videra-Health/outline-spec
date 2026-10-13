@@ -222,6 +222,7 @@ export class ViewCommand {
   private formatWorkflowArtifacts(artifacts: ChangeStatus['artifacts']): string {
     return artifacts.map((artifact) => {
       const id = this.sanitizeWorkflowText(artifact.id);
+      if (artifact.optional && artifact.status !== 'done') return chalk.dim(`${id} (optional)`);
       switch (artifact.status) {
         case 'done':
           return `${id}${chalk.green('✓')}`;

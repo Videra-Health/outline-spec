@@ -144,7 +144,7 @@ describe('status actionContext for store-selected roots (#2013)', () => {
     expect(JSON.stringify(context)).toBe(JSON.stringify({
       mode: 'repo-local',
       sourceOfTruth: 'repo',
-      planningArtifacts: ['outline', 'diagrams', 'tasks'],
+      planningArtifacts: ['outline', 'diagrams', 'designs', 'tasks'],
       linkedContext: [],
       allowedEditRoots: [repo],
       requiresAffectedAreaSelection: false,

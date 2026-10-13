@@ -39,7 +39,7 @@ review:
 |---|---|
 | `schema` | The workflow schema for new changes: `outline` or a custom schema's name. |
 | `context` | Free text added to every artifact's instructions and to apply and archive. Up to 50 KB. |
-| `rules` | Extra rules for one artifact, keyed by artifact id (`outline`, `diagrams`, `tasks`, or a custom schema's ids). |
+| `rules` | Extra rules for one artifact, keyed by artifact id (`outline`, `diagrams`, `designs`, `tasks`, or a custom schema's ids). |
 | `operations` | Advisory guidance for `apply` and `archive`. |
 | `store` | A store id to use as the root when this `outline-spec/` folder has no `specs/` or `changes/` ([Stores](stores.md)). |
 | `review-on` | The workflows that render the review page: `propose`, `update`, or both (the default). `review-on: []` turns the page off. |
@@ -85,5 +85,7 @@ outline-spec schema fork outline my-flow
 This writes `outline-spec/schemas/my-flow/` with `schema.yaml` and `templates/`. Set `schema: my-flow` in `config.yaml` to use it for new changes, or pass `--schema my-flow` to `new change`. `outline-spec schema init <name>` starts a schema from scratch instead.
 
 Schemas resolve from the project (`outline-spec/schemas/`), then your user data folder (`~/.local/share/outline-spec/schemas/`, or `$XDG_DATA_HOME/outline-spec/schemas/`), then the built-in ones. `outline-spec schema which --all` shows where each comes from, and `outline-spec schema validate <name>` checks one.
+
+An artifact with `optional: true` is written only when its instruction says it applies. While it doesn't exist it doesn't block what requires it, doesn't count toward planning completion or the `status` total, and is never named as the next step; `status` marks its line `(optional)`.
 
 Keep an `outline` artifact that writes `outline.md` if you want `archive`, `pending`, and `validate` to work: they read the change's `outline.md`, whatever the schema.

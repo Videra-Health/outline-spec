@@ -94,7 +94,7 @@ This workflow revises artifacts that already exist; `/outl-continue-change` is w
 
 7. **Republish the review page**
 
-   Only when this revision changed the artifact holding the spec edits (the outline under `## Requirements`), render the page the developer reads to check the change. Skip this step, and don't mention the page, when no developer is in the session: you are a subagent, or running headless or scripted (such as `claude -p` or the SDK), or in CI.
+   Only when this revision changed the artifact holding the spec edits (the outline under `## Requirements`) or a design in the change's `designs/` folder, render the page the developer reads to check the change. Skip this step, and don't mention the page, when no developer is in the session: you are a subagent, or running headless or scripted (such as `claude -p` or the SDK), or in CI.
    ```bash
    outline-spec review "<name>" --for update --out "<folder>/review-<name>.html" --json
    ```

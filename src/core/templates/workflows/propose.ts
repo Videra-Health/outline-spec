@@ -42,6 +42,7 @@ export function getOutlineSpecProposeSkillTemplate(): SkillTemplate {
 I'll create a change with the artifacts your schema defines. With the default outline schema that is:
 - outline.md (the proposal and its spec edits, as a labeled outline)
 - diagrams.md (the few views that explain the change)
+- designs/*.html (optional: visual designs, only when the change has something people see)
 - tasks.md (implementation steps, ending with archiving the change)
 
 outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done; syncing it first applies the spec edits early and keeps the change open.
@@ -212,6 +213,7 @@ export function getOutlineSpecProposeCommandTemplate(): CommandTemplate {
 I'll create a change with the artifacts your schema defines. With the default outline schema that is:
 - outline.md (the proposal and its spec edits, as a labeled outline)
 - diagrams.md (the few views that explain the change)
+- designs/*.html (optional: visual designs, only when the change has something people see)
 - tasks.md (implementation steps, ending with archiving the change)
 
 outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done; syncing it first applies the spec edits early and keeps the change open.

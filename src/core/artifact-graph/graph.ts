@@ -146,7 +146,7 @@ export class ArtifactGraph {
         continue; // Already completed
       }
 
-      const allDepsCompleted = artifact.requires.every(req => completed.has(req));
+      const allDepsCompleted = artifact.requires.every(req => this.isMet(req, completed));
       if (allDepsCompleted) {
         ready.push(artifact.id);
       }
@@ -158,15 +158,25 @@ export class ArtifactGraph {
   }
 
   /**
-   * Checks if all artifacts in the graph are completed.
+   * Checks if every required artifact in the graph is completed.
    */
   isComplete(completed: CompletedSet): boolean {
     for (const artifact of this.artifacts.values()) {
-      if (!completed.has(artifact.id)) {
+      if (!completed.has(artifact.id) && !artifact.optional) {
         return false;
       }
     }
     return true;
+  }
+
+  /** Whether an artifact is declared `optional: true`. */
+  isOptional(id: string): boolean {
+    return this.artifacts.get(id)?.optional === true;
+  }
+
+  /** A dependency is met when it exists or is optional. */
+  private isMet(id: string, completed: CompletedSet): boolean {
+    return completed.has(id) || this.isOptional(id);
   }
 
   /**
@@ -180,7 +190,7 @@ export class ArtifactGraph {
         continue; // Already completed
       }
 
-      const unmetDeps = artifact.requires.filter(req => !completed.has(req));
+      const unmetDeps = artifact.requires.filter(req => !this.isMet(req, completed));
       if (unmetDeps.length > 0) {
         blocked[artifact.id] = unmetDeps.sort((a, b) => this.compareByDeclarationOrder(a, b));
       }

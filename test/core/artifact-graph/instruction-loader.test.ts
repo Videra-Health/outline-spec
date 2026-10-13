@@ -48,7 +48,8 @@ describe('instruction-loader', () => {
     // starts the document with an `# ` title instead of a section header.
     // Without it every generated outline.md, diagrams.md and tasks.md
     // trips markdownlint MD041 (#1138).
-    it.each(packagedArtifacts())(
+    // An HTML template is a page, not a Markdown document, so MD041 doesn't apply.
+    it.each(packagedArtifacts().filter(([, , templateName]) => templateName.endsWith('.md')))(
       'opens the %s schema\'s %s template with a title',
       (schemaName, _artifactId, templateName) => {
         const [firstLine, secondLine] = openingLines(loadTemplate(schemaName, templateName));
@@ -62,6 +63,7 @@ describe('instruction-loader', () => {
       const TITLES: Record<string, string> = {
         outline: '# Outline',
         diagrams: '# Diagrams',
+        designs: '<!doctype html>',
         tasks: '# Tasks',
       };
 
@@ -268,8 +270,8 @@ describe('instruction-loader', () => {
       const context = loadChangeContext(tempDir, 'my-change');
       const instructions = generateInstructions(context, 'outline');
 
-      // outline unlocks diagrams and tasks, in the schema's declared order
-      expect(instructions.unlocks).toEqual(['diagrams', 'tasks']);
+      // outline unlocks diagrams, designs, and tasks, in the schema's declared order
+      expect(instructions.unlocks).toEqual(['diagrams', 'designs', 'tasks']);
     });
 
     it('should have empty dependencies for root artifact', () => {
@@ -682,7 +684,9 @@ rules:
       expect(status.isPlanningComplete).toBe(true);
       expect(status.isComplete).toBe(true);
       expect(status.isComplete).toBe(status.isPlanningComplete);
-      expect(status.artifacts.every(a => a.status === 'done')).toBe(true);
+      expect(status.artifacts.filter(a => !a.optional).every(a => a.status === 'done')).toBe(true);
+      expect(status.artifacts.find(a => a.id === 'designs')).toMatchObject({ status: 'ready', optional: true });
+      expect(status.artifacts.find(a => a.id === 'tasks')).not.toHaveProperty('optional');
     });
 
     it('should show blocked artifacts with missing dependencies', () => {
@@ -724,7 +728,7 @@ rules:
       const status = formatChangeStatus(context);
 
       const ids = status.artifacts.map(a => a.id);
-      expect(ids).toEqual(['outline', 'diagrams', 'tasks']);
+      expect(ids).toEqual(['outline', 'diagrams', 'designs', 'tasks']);
     });
   });
 });

@@ -111,7 +111,7 @@ describe('artifact-workflow CLI commands', () => {
       expect(json.isPlanningComplete).toBe(false);
       expect(json.isComplete).toBe(false);
       expect(Array.isArray(json.artifacts)).toBe(true);
-      expect(json.artifacts).toHaveLength(3);
+      expect(json.artifacts).toHaveLength(4);
 
       const outlineArtifact = json.artifacts.find((a: any) => a.id === 'outline');
       expect(outlineArtifact.status).toBe('done');
@@ -154,7 +154,7 @@ describe('artifact-workflow CLI commands', () => {
       expect(result.exitCode).toBe(0);
 
       const json = JSON.parse(result.stdout);
-      expect(json.artifacts.map((a: any) => a.id)).toEqual(['outline', 'diagrams', 'tasks']);
+      expect(json.artifacts.map((a: any) => a.id)).toEqual(['outline', 'diagrams', 'designs', 'tasks']);
       expect(json.nextSteps[0]).toContain('outline-spec instructions diagrams');
     });
 
@@ -289,6 +289,29 @@ describe('artifact-workflow CLI commands', () => {
       expect(result.stdout).toContain('3/3 artifacts complete');
       expect(result.stdout).toContain('All planning artifacts complete!');
       expect(result.stdout).not.toContain('All artifacts complete!');
+    });
+
+    it('marks the optional designs artifact and leaves it out of the count until it exists', async () => {
+      const changeDir = await createTestChange('optional-designs', ['outline', 'diagrams', 'tasks']);
+
+      let result = await runCLI(['status', '--change', 'optional-designs'], { cwd: tempDir });
+      expect(result.stdout).toContain('[ ] designs (optional)');
+      expect(result.stdout).toContain('Next: outline-spec instructions apply --change "optional-designs" --json');
+
+      await fs.mkdir(path.join(changeDir, 'designs'), { recursive: true });
+      await fs.writeFile(path.join(changeDir, 'designs', 'panel.html'), '<!doctype html><p>panel</p>');
+      result = await runCLI(['status', '--change', 'optional-designs'], { cwd: tempDir });
+      expect(result.stdout).toContain('4/4 artifacts complete');
+      expect(result.stdout).toContain('[x] designs (optional)');
+    });
+
+    it('never recommends the optional designs artifact as the next step', async () => {
+      await createTestChange('outline-diagrams', ['outline', 'diagrams']);
+
+      const result = await runCLI(['status', '--change', 'outline-diagrams', '--json'], { cwd: tempDir });
+      const json = JSON.parse(result.stdout);
+      expect(json.nextSteps[0]).toContain('instructions tasks');
+      expect(json.artifacts.find((a: any) => a.id === 'designs')).toMatchObject({ status: 'ready', optional: true });
     });
 
     it('distinguishes planning completion from implementation task completion', async () => {

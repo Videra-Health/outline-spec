@@ -10,6 +10,8 @@ import { marksOf, reqName, sides, touches, writeOutline, type Node, type Spec, t
 import { planChange, readChangeEdits, readLiveSpec } from './outline/specs.js';
 import { writeTable } from './outline/table.js';
 import { Validator } from './validation/validator.js';
+import { isGlobPattern, resolveArtifactOutputs } from './artifact-graph/outputs.js';
+import { FileSystemUtils } from '../utils/file-system.js';
 
 export type Segment = { text: string; added?: true; removed?: true };
 
@@ -41,8 +43,15 @@ export interface Banner {
   overlaps: Array<{ change: string; requirements: string[] }>;
 }
 
+/** A file tab's file; `markdown` holds the file text whatever its kind, so older templates still read it. */
+export interface ReviewFile {
+  name: string;
+  kind: 'markdown' | 'html';
+  markdown: string;
+}
+
 export type ReviewPageTab =
-  | { title: string; kind: 'markdown'; files: Array<{ name: string; markdown: string }> }
+  | { title: string; kind: 'markdown'; files: ReviewFile[] }
   | { title: string; kind: 'spec-changes'; specs: SpecChange[]; error?: string };
 
 export interface ReviewPayload {
@@ -137,6 +146,16 @@ export function buildSpecChanges(changesDir: string, specsDir: string, change: s
   return [...plan].map(([name, after]) => compareSpecs(name, readLiveSpec(specsDir, name), after, edits, tablePaths));
 }
 
+const HTML_EXTENSIONS = ['.html', '.htm'];
+
+/** An entry's files as change-relative `/` paths: a glob's matches by name, or the plain file if present. */
+function tabFileNames(changeDir: string, entry: string): string[] {
+  if (!isGlobPattern(entry)) return existsSync(path.join(changeDir, entry)) ? [entry] : [];
+  if (!existsSync(changeDir)) return [];
+  const base = FileSystemUtils.canonicalizeExistingPath(changeDir);
+  return resolveArtifactOutputs(changeDir, entry).map((file) => FileSystemUtils.toPosixPath(path.relative(base, file)));
+}
+
 export function buildTabs(changesDir: string, specsDir: string, change: string, tabs: ReviewTab[]): ReviewPageTab[] {
   const changeDir = path.join(changesDir, change);
   const out: ReviewPageTab[] = [];
@@ -150,8 +169,12 @@ export function buildTabs(changesDir: string, specsDir: string, change: string, 
       continue;
     }
     const files = (tab.from ?? [])
-      .filter((name) => existsSync(path.join(changeDir, name)))
-      .map((name) => ({ name, markdown: readFileSync(path.join(changeDir, name), 'utf-8').replace(/\r\n/g, '\n') }));
+      .flatMap((entry) => tabFileNames(changeDir, entry))
+      .map((name): ReviewFile => ({
+        name,
+        kind: HTML_EXTENSIONS.includes(path.extname(name).toLowerCase()) ? 'html' : 'markdown',
+        markdown: readFileSync(path.join(changeDir, name), 'utf-8').replace(/\r\n/g, '\n'),
+      }));
     if (files.length) out.push({ title: tab.title, kind: 'markdown', files });
   }
   return out;

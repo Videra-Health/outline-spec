@@ -495,8 +495,8 @@ export async function generateApplyInstructions(
   const applyConfig = schema.apply;
 
   // Determine required artifacts and tracking file from schema
-  // Fallback: if no apply block, require all artifacts
-  const requiredArtifactIds = applyConfig?.requires ?? schema.artifacts.map((a) => a.id);
+  // Fallback: if no apply block, require all required artifacts
+  const requiredArtifactIds = applyConfig?.requires ?? schema.artifacts.filter((a) => !a.optional).map((a) => a.id);
   const tracksFile = applyConfig?.tracks ?? null;
   const schemaInstruction = applyConfig?.instruction ?? null;
   const operationInputs = loadOperationInputs(options.projectConfig ?? null, 'apply');

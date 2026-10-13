@@ -143,8 +143,8 @@ describe('buildTabs', () => {
         title: 'Diagrams',
         kind: 'markdown',
         files: [
-          { name: 'diagrams.md', markdown: '# Diagrams' },
-          { name: 'design.md', markdown: '# Design' },
+          { name: 'diagrams.md', kind: 'markdown', markdown: '# Diagrams' },
+          { name: 'design.md', kind: 'markdown', markdown: '# Design' },
         ],
       },
     ]);
@@ -158,6 +158,30 @@ describe('buildTabs', () => {
       { title: 'Spec changes', view: 'spec-changes' },
     ]);
     expect(tabs.map((t) => t.title)).toEqual(['Outline', 'Spec changes']);
+  });
+
+  it('expands a glob entry into its matches by name, as / paths, and marks html files', () => {
+    write(path.join('changes', 'c1', 'designs', 'b-panel.html'), '<p>b</p>');
+    write(path.join('changes', 'c1', 'designs', 'a-hud.HTML'), '<p>a</p>');
+    write(path.join('changes', 'c1', 'designs', 'notes.md'), '# notes');
+    const [tab] = buildTabs(changesDir(), specsDir(), 'c1', [{ title: 'Designs', from: ['designs/*.{html,HTML}'] }]);
+    expect(tab).toEqual({
+      title: 'Designs',
+      kind: 'markdown',
+      files: [
+        { name: 'designs/a-hud.HTML', kind: 'html', markdown: '<p>a</p>' },
+        { name: 'designs/b-panel.html', kind: 'html', markdown: '<p>b</p>' },
+      ],
+    });
+  });
+
+  it('drops a tab whose glob matches nothing', () => {
+    change('c1', '1. cargo:\n  a. Holds (patch): A ship has ~~one hold~~ **two holds**.\n');
+    const tabs = buildTabs(changesDir(), specsDir(), 'c1', [
+      { title: 'Outline', from: ['outline.md'] },
+      { title: 'Designs', from: ['designs/*.html'] },
+    ]);
+    expect(tabs.map((t) => t.title)).toEqual(['Outline']);
   });
 
   it('carries the error when spec changes cannot be computed', () => {

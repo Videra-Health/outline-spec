@@ -246,7 +246,7 @@ export interface PrintStatusTextOptions {
 
 export function printStatusText(status: ChangeStatus, options: PrintStatusTextOptions = {}): void {
   const doneCount = status.artifacts.filter((a) => a.status === 'done').length;
-  const total = status.artifacts.length;
+  const total = status.artifacts.filter((a) => a.status === 'done' || !a.optional).length;
 
   console.log(`Change: ${status.changeName}`);
   console.log(`Schema: ${status.schemaName}`);
@@ -265,6 +265,7 @@ export function printStatusText(status: ChangeStatus, options: PrintStatusTextOp
     const indicator = getStatusIndicator(artifact.status);
     const color = getStatusColor(artifact.status);
     let line = `${indicator} ${artifact.id}`;
+    if (artifact.optional) line += ' (optional)';
 
     if (artifact.status === 'blocked' && artifact.missingDeps && artifact.missingDeps.length > 0) {
       line += color(` (blocked by: ${artifact.missingDeps.join(', ')})`);

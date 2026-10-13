@@ -58,7 +58,7 @@ describe('artifact-graph workflow integration', () => {
       const graph = ArtifactGraph.fromSchema(schema);
 
       expect(graph.getName()).toBe('outline');
-      expect(graph.getAllArtifacts()).toHaveLength(3);
+      expect(graph.getAllArtifacts()).toHaveLength(4);
 
       // Nothing complete: only outline is ready
       let completed = detectCompleted(graph, tempDir);
@@ -67,25 +67,27 @@ describe('artifact-graph workflow integration', () => {
       expect(graph.isComplete(completed)).toBe(false);
       expect(normalizeBlocked(graph.getBlocked(completed))).toEqual({
         diagrams: ['outline'],
+        designs: ['outline'],
         tasks: ['outline'],
       });
 
-      // outline.md unlocks diagrams and tasks
+      // outline.md unlocks diagrams, designs, and tasks
       fs.writeFileSync(path.join(tempDir, 'outline.md'), '## Proposal\n\nInitial content.');
       completed = detectCompleted(graph, tempDir);
       expect(completed).toEqual(new Set(['outline']));
-      expect(graph.getNextArtifacts(completed)).toEqual(['diagrams', 'tasks']);
+      expect(graph.getNextArtifacts(completed)).toEqual(['diagrams', 'designs', 'tasks']);
       expect(graph.getBlocked(completed)).toEqual({});
 
       fs.writeFileSync(path.join(tempDir, 'tasks.md'), '## 1. Work\n\n- [ ] 1.1 Implement feature');
       completed = detectCompleted(graph, tempDir);
       expect(completed).toEqual(new Set(['outline', 'tasks']));
-      expect(graph.getNextArtifacts(completed)).toEqual(['diagrams']);
+      expect(graph.getNextArtifacts(completed)).toEqual(['diagrams', 'designs']);
 
       fs.writeFileSync(path.join(tempDir, 'diagrams.md'), '# Diagrams');
       completed = detectCompleted(graph, tempDir);
       expect(completed).toEqual(new Set(['outline', 'diagrams', 'tasks']));
-      expect(graph.getNextArtifacts(completed)).toEqual([]);
+      // designs is optional, so planning is complete without it
+      expect(graph.getNextArtifacts(completed)).toEqual(['designs']);
       expect(graph.isComplete(completed)).toBe(true);
     });
 
@@ -102,7 +104,7 @@ describe('artifact-graph workflow integration', () => {
       fs.writeFileSync(path.join(tempDir, 'outline.md'), '## Proposal');
       completed = detectCompleted(graph, tempDir);
       expect(completed).toEqual(new Set(['outline', 'diagrams']));
-      expect(graph.getNextArtifacts(completed)).toEqual(['tasks']);
+      expect(graph.getNextArtifacts(completed)).toEqual(['designs', 'tasks']);
     });
 
     it('should handle multiple files in a glob artifact', () => {
@@ -119,13 +121,13 @@ describe('artifact-graph workflow integration', () => {
   });
 
   describe('build order consistency', () => {
-    it('should follow the declared outline -> diagrams -> tasks sequence', () => {
+    it('should follow the declared outline -> diagrams -> designs -> tasks sequence', () => {
       // diagrams and tasks are siblings (both require only outline); ties break by declaration order.
       const schema = resolveSchema('outline');
       const graph = ArtifactGraph.fromSchema(schema);
 
-      expect(graph.getBuildOrder()).toEqual(['outline', 'diagrams', 'tasks']);
-      expect(graph.getNextArtifacts(new Set(['outline']))).toEqual(['diagrams', 'tasks']);
+      expect(graph.getBuildOrder()).toEqual(['outline', 'diagrams', 'designs', 'tasks']);
+      expect(graph.getNextArtifacts(new Set(['outline']))).toEqual(['diagrams', 'designs', 'tasks']);
     });
 
     it('should return consistent build order across multiple calls', () => {

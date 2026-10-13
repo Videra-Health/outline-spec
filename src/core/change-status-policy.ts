@@ -20,6 +20,7 @@ export interface ActionContext {
 export interface ChangeStatusPolicyArtifact {
   id: string;
   status: 'done' | 'ready' | 'blocked';
+  optional?: true;
 }
 
 export interface ChangeNextStepsInput {
@@ -116,7 +117,7 @@ export interface ChangeNextStep {
 }
 
 export function resolveNextStep(input: ChangeNextStepsInput): ChangeNextStep | undefined {
-  const readyArtifact = input.artifactStatuses.find((artifact) => artifact.status === 'ready');
+  const readyArtifact = input.artifactStatuses.find((artifact) => artifact.status === 'ready' && !artifact.optional);
   const storeFlag = input.storeId ? ` --store ${input.storeId}` : '';
 
   if (readyArtifact) {

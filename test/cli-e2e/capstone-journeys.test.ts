@@ -138,8 +138,8 @@ describe('capstone persona journeys (6.1)', () => {
 
     // Work the change: write each document artifact the schema names, and
     // the spec edits as outline.md (delta specs no longer exist).
-    const artifacts = JSON.parse(status.stdout).artifacts as Array<{ id: string }>;
-    for (const artifact of artifacts) {
+    const artifacts = JSON.parse(status.stdout).artifacts as Array<{ id: string; optional?: true }>;
+    for (const artifact of artifacts.filter((a) => !a.optional)) {
       const artifactStatus = await runCLI(
         ['instructions', artifact.id, '--change', 'add-rate-limits', '--json'],
         { cwd: codeRepo, env }

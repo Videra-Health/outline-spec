@@ -1,14 +1,15 @@
 # The outline schema
 
-`outline` is the built-in workflow schema. A change has three artifacts, written in this order:
+`outline` is the built-in workflow schema. A change has four artifacts, written in this order:
 
 | Artifact | File | Requires |
 |---|---|---|
 | `outline` | `outline.md` | nothing |
 | `diagrams` | `diagrams.md` | `outline` |
+| `designs` (optional) | `designs/*.html` | `outline` |
 | `tasks` | `tasks.md` | `outline` |
 
-`diagrams` holds the views that explain the change (sequence diagrams, call trees, state machines, data shapes, and so on); its template lists the candidate views and when each fits. Apply needs only `tasks`, so `diagrams` never blocks it, and tracks progress in `tasks.md`.
+`diagrams` holds the views that explain the change (sequence diagrams, call trees, state machines, data shapes, and so on); its template lists the candidate views and when each fits. `designs` holds visual designs as self-contained HTML pages, one per design, and is written only when the change adds or changes something a person sees. It is `optional: true`, so a change without it is still fully planned ([Custom schemas](configuration.md#custom-schemas)). Apply needs only `tasks`, so `diagrams` and `designs` never block it, and tracks progress in `tasks.md`.
 
 The templates are in [`schemas/outline/templates/`](../schemas/outline/templates/). To change any of this for a project, fork the schema ([Configuration](configuration.md#custom-schemas)).
 
@@ -103,6 +104,30 @@ The instruction sent to the agent when it writes this artifact.
 Use diagrams to describe the proposed change. Each section in the template is a candidate visualization to explain the change. Some visualizations are applicable for certain changes, while others are not. Pick the smallest number of views that makes the point. Put each view right after the one-line text it supports. Before each visualization include a small muted text with the label of the visualization. (e.g. <sub>GraphQL Contract</sub>)
 ```
 
+## designs
+
+Visual designs for what the change shows people.
+
+### Instructions
+
+The instruction sent to the agent when it writes this artifact.
+
+```md
+Create only when the change adds or changes something a person sees: a screen,
+page, panel, dialog, HUD, or other visual surface. Skip it for changes with no
+visual surface.
+
+Write one self-contained HTML page per design in the change's `designs/` folder,
+named for what it shows, as `designs/settings-panel.html`. Each page carries its
+own CSS and JS inline and may load scripts and fonts from a CDN. The review page
+runs each one in a sandboxed frame, so a design can't read the page around it.
+
+Draw the design as it should look and behave when built, using the project's
+real colors, type, and copy, not placeholder boxes. Show each state the outline
+describes (empty, loading, error, hover) side by side or with controls to switch.
+Where the outline offers alternatives, show each option labeled.
+```
+
 ## tasks
 
 Implementation checklist with trackable tasks.
@@ -156,10 +181,12 @@ review:
       from: [outline.md]
     - title: Diagrams
       from: [diagrams.md]
+    - title: Designs
+      from: [designs/*.html]
     - title: Spec changes
       view: spec-changes
 ```
 
-Each tab has a `title` and exactly one of `from`, change files rendered as Markdown in order, or `view`, a view the CLI computes. `spec-changes` is the one view: every spec the change touches and every requirement it adds, edits, or removes, with live and after-archive text side by side. A file tab skips files the change doesn't have and is left off when it has none. `template` defaults to `review.html`; a forked schema can replace the file. A schema with no `review` block has no review page. `outline-spec schema validate` reports a bad tab or a missing template, and a project can swap the tabs with `review.tabs` in `config.yaml` ([Configuration](configuration.md)).
+Each tab has a `title` and exactly one of `from`, change files in order, or `view`, a view the CLI computes. A `from` entry can be a glob such as `designs/*.html`, written with `/` on every platform; its matches come in file-name order. Markdown files render as Markdown, with Mermaid blocks drawn, and `.html` or `.htm` files run in a sandboxed frame labeled with the file name, which the developer can drag taller or shorter; a design's scripts can't reach the review page. `spec-changes` is the one view: every spec the change touches and every requirement it adds, edits, or removes, with live and after-archive text side by side. A file tab skips files the change doesn't have and is left off when it has none. `template` defaults to `review.html`; a forked schema can replace the file. A schema with no `review` block has no review page. `outline-spec schema validate` reports a bad tab or a missing template, and a project can swap the tabs with `review.tabs` in `config.yaml` ([Configuration](configuration.md)).
 
-The template holds one `<script type="application/json" id="outline-spec-review"></script>` that the CLI fills with the page's data: `change`, `generatedAt`, `banner` (`valid`, `errors`, `overlaps`), and `tabs`, each `{ title, kind: "markdown", files: [{ name, markdown }] }` or `{ title, kind: "spec-changes", specs }`.
+The template holds one `<script type="application/json" id="outline-spec-review"></script>` that the CLI fills with the page's data: `change`, `generatedAt`, `banner` (`valid`, `errors`, `overlaps`), and `tabs`, each `{ title, kind: "markdown", files: [{ name, kind, markdown }] }` or `{ title, kind: "spec-changes", specs }`. A file's `kind` is `markdown` or `html`, and `markdown` holds its text either way.

@@ -145,6 +145,8 @@ export interface ArtifactStatus {
   requires: string[];
   /** Missing dependencies (only for blocked) */
   missingDeps?: string[];
+  /** Present and true only for an artifact the schema declares optional */
+  optional?: true;
 }
 
 /**
@@ -435,14 +437,19 @@ export function formatChangeStatus(
 ): ChangeStatus {
   // Load schema to get apply phase configuration
   const schema = resolveSchema(context.schemaName, context.projectRoot);
-  const applyRequires = schema.apply?.requires ?? schema.artifacts.map(a => a.id);
+  const applyRequires = schema.apply?.requires ?? schema.artifacts.filter(a => !a.optional).map(a => a.id);
 
   const artifacts = context.graph.getAllArtifacts();
   const ready = new Set(context.graph.getNextArtifacts(context.completed));
   const blocked = context.graph.getBlocked(context.completed);
 
   const artifactPaths: Record<string, ArtifactPathSummary> = {};
-  const artifactStatuses: ArtifactStatus[] = artifacts.map(artifact => {
+  const artifactStatuses: ArtifactStatus[] = artifacts.map((artifact): ArtifactStatus => {
+    const status = artifactStatus(artifact);
+    return artifact.optional ? { ...status, optional: true } : status;
+  });
+
+  function artifactStatus(artifact: (typeof artifacts)[number]): ArtifactStatus {
     artifactPaths[artifact.id] = {
       outputPath: artifact.generates,
       resolvedOutputPath: resolveArtifactOutputPath(context.changeDir, artifact.generates),
@@ -474,7 +481,7 @@ export function formatChangeStatus(
       requires: artifact.requires,
       missingDeps: blocked[artifact.id] ?? [],
     };
-  });
+  }
 
   // Sort by build order for consistent output
   const buildOrder = context.graph.getBuildOrder();

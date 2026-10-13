@@ -149,7 +149,7 @@ ${CONTINUE_SCOPE_NOTE}
 
 7. **Republish the review page**
 
-   Only when this revision changed the artifact holding the spec edits (the outline under \`## Requirements\`), ${reviewPageStep('update')}
+   Only when this revision changed the artifact holding the spec edits (the outline under \`## Requirements\`) or a design in the change's \`designs/\` folder, ${reviewPageStep('update')}
 
 **Output**
 
