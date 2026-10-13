@@ -4,7 +4,7 @@
  * Generate the static skills.sh distribution of the outline-spec workflow skills.
  *
  * skills.sh installs skills by reading committed `SKILL.md` files straight from
- * a GitHub repo (`npx skills add heneryville/outline-spec`). outline-spec normally
+ * a GitHub repo (`npx skills add Videra-Health/outline-spec`). outline-spec normally
  * *generates* these skills into a user's project via `outline-spec init`, so this
  * script mirrors that same output into a committed `skills/<name>/SKILL.md`
  * tree that skills.sh can discover.

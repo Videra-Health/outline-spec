@@ -61,7 +61,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install outline-spec CLI
-        run: npm install -g github:heneryville/outline-spec
+        run: npm install -g github:Videra-Health/outline-spec
 
       - name: Verify outline-spec CLI
         run: outline-spec --version
@@ -116,7 +116,7 @@ tools:
 
 ${managedMarker}# outline-spec Agent
 
-You are a specialized agent for managing outline-spec workflows. Before using the \`outline-spec\` CLI, run \`outline-spec --version\`. If it is unavailable, install it with \`npm install -g github:heneryville/outline-spec\`.
+You are a specialized agent for managing outline-spec workflows. Before using the \`outline-spec\` CLI, run \`outline-spec --version\`. If it is unavailable, install it with \`npm install -g github:Videra-Health/outline-spec\`.
 
 ## What is outline-spec?
 
@@ -183,7 +183,7 @@ function generatePreviousCopilotAgentFileBody(includeManagedMarker = false): str
   let content = generateArchiveAgentFileBody();
   content = replaceRequired(
     content,
-    'You are a specialized agent for managing outline-spec workflows. Before using the `outline-spec` CLI, run `outline-spec --version`. If it is unavailable, install it with `npm install -g github:heneryville/outline-spec`.',
+    'You are a specialized agent for managing outline-spec workflows. Before using the `outline-spec` CLI, run `outline-spec --version`. If it is unavailable, install it with `npm install -g github:Videra-Health/outline-spec`.',
     'You are a specialized agent for managing outline-spec workflows. You have access to the `outline-spec` CLI through shell commands, pre-installed in the development environment via `copilot-setup-steps.yml`.',
     'previous CLI access sentence'
   );

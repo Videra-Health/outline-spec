@@ -5,13 +5,13 @@
 outline-spec needs Node.js 20.19 or later. It isn't published to npm; install it from GitHub:
 
 ```bash
-npm install -g github:heneryville/outline-spec
+npm install -g github:Videra-Health/outline-spec
 ```
 
 Or from a clone:
 
 ```bash
-git clone https://github.com/heneryville/outline-spec.git
+git clone https://github.com/Videra-Health/outline-spec.git
 cd outline-spec
 pnpm install && pnpm build && npm install -g .
 ```

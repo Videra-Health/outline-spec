@@ -127,7 +127,7 @@ function formatBody(message: string, bodyText?: string): string {
  * Generate a pre-filled GitHub issue URL for manual submission
  */
 function generateManualSubmissionUrl(title: string, body: string): string {
-  const repo = 'heneryville/outline-spec';
+  const repo = 'Videra-Health/outline-spec';
   const encodedTitle = encodeURIComponent(title);
   const encodedBody = encodeURIComponent(body);
   const encodedLabels = encodeURIComponent('feedback');
@@ -193,7 +193,7 @@ function createIssue(title: string, body: string, labels: string[]): string {
     'issue',
     'create',
     '--repo',
-    'heneryville/outline-spec',
+    'Videra-Health/outline-spec',
     '--title',
     title,
     '--body',

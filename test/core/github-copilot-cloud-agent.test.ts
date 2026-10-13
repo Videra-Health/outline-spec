@@ -175,7 +175,7 @@ describe('GitHub Copilot Cloud Agent', () => {
       expect(Object.keys(workflow.jobs)).toEqual(['copilot-setup-steps']);
       expect(workflow.jobs['copilot-setup-steps'].steps).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ run: 'npm install -g github:heneryville/outline-spec' }),
+          expect.objectContaining({ run: 'npm install -g github:Videra-Health/outline-spec' }),
           expect.objectContaining({ run: 'outline-spec --version' }),
         ])
       );
@@ -254,7 +254,7 @@ describe('GitHub Copilot Cloud Agent', () => {
       await expect(fs.readFile(setupStepsPath, 'utf8')).resolves.toBe(customSetup);
       const agentContent = await fs.readFile(agentPath, 'utf8');
       expect(agentContent).toContain('run `outline-spec --version`');
-      expect(agentContent).toContain('install it with `npm install -g github:heneryville/outline-spec`');
+      expect(agentContent).toContain('install it with `npm install -g github:Videra-Health/outline-spec`');
       expect(agentContent).not.toContain('pre-installed in the development environment');
     });
 
@@ -352,7 +352,7 @@ describe('GitHub Copilot Cloud Agent', () => {
       const agentPath = path.join(tempDir, COPILOT_CLOUD_FILES.agent);
       const previousAgent = toArchiveEra(generateCopilotAgentFile())
         .replace(
-          'You are a specialized agent for managing outline-spec workflows. Before using the `outline-spec` CLI, run `outline-spec --version`. If it is unavailable, install it with `npm install -g github:heneryville/outline-spec`.',
+          'You are a specialized agent for managing outline-spec workflows. Before using the `outline-spec` CLI, run `outline-spec --version`. If it is unavailable, install it with `npm install -g github:Videra-Health/outline-spec`.',
           'You are a specialized agent for managing outline-spec workflows. You have access to the `outline-spec` CLI through shell commands, pre-installed in the development environment via `copilot-setup-steps.yml`.'
         )
         .replace(

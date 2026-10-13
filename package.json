@@ -9,13 +9,13 @@
     "ai",
     "development"
   ],
-  "homepage": "https://github.com/heneryville/outline-spec",
+  "homepage": "https://github.com/Videra-Health/outline-spec",
   "repository": {
     "type": "git",
-    "url": "https://github.com/heneryville/outline-spec"
+    "url": "https://github.com/Videra-Health/outline-spec"
   },
   "bugs": {
-    "url": "https://github.com/heneryville/outline-spec/issues"
+    "url": "https://github.com/Videra-Health/outline-spec/issues"
   },
   "license": "MIT",
   "author": "outline-spec contributors",

@@ -1298,8 +1298,8 @@ export class InitCommand {
 
     // Links
     console.log();
-    console.log(`Learn more: ${chalk.cyan('https://github.com/heneryville/outline-spec')}`);
-    console.log(`Feedback:   ${chalk.cyan('https://github.com/heneryville/outline-spec/issues')}`);
+    console.log(`Learn more: ${chalk.cyan('https://github.com/Videra-Health/outline-spec')}`);
+    console.log(`Feedback:   ${chalk.cyan('https://github.com/Videra-Health/outline-spec/issues')}`);
 
     // Restart instruction for successfully configured IDE/editor-resident tools
     // with a supported surface under the active delivery. The rule and wording live in

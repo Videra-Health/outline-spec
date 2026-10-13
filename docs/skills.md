@@ -72,7 +72,7 @@ outline-spec only writes and removes its own files: `outl-*` skills, `outline-sp
 The repo's `skills/` folder holds the same skills for [skills.sh](https://skills.sh):
 
 ```bash
-npx skills add heneryville/outline-spec
+npx skills add Videra-Health/outline-spec
 ```
 
 They drive the CLI, so install `outline-spec` too ([Getting started](getting-started.md#install)).

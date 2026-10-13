@@ -15,7 +15,7 @@ Run `outline-spec --version`. If it prints a version, the CLI is installed; skip
 outline-spec isn't on the npm registry. Show the user this command and get confirmation before running it, since it installs software outside the project:
 
 ```bash
-npm install -g github:heneryville/outline-spec
+npm install -g github:Videra-Health/outline-spec
 ```
 
 Stop and ask if the install needs sudo or admin rights, or fails with a permissions error. Never edit shell startup files.

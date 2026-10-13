@@ -89,7 +89,7 @@
 
           meta = with final.lib; {
             description = "AI-native system for spec-driven development";
-            homepage = "https://github.com/heneryville/outline-spec";
+            homepage = "https://github.com/Videra-Health/outline-spec";
             license = licenses.mit;
             maintainers = [ ];
             mainProgram = "outline-spec";

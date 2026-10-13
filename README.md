@@ -20,7 +20,7 @@ outline-spec is a fork of [OpenSpec](https://github.com/Fission-AI/OpenSpec) by 
 Node.js 20.19 or later.
 
 ```bash
-npm install -g github:heneryville/outline-spec
+npm install -g github:Videra-Health/outline-spec
 ```
 
 Or from a clone:
