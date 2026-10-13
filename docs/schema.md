@@ -79,7 +79,8 @@ Tables:
 
 A spec describes observable behavior, not implementation: no internal
 function names, library choices, or step-by-step plans. Those belong in
-tasks.md.
+tasks.md. It doesn't describe tests either: tests are written from the
+requirements, so how a requirement is checked belongs in tasks.md.
 
 Under `## Out of Scope`, list only what a reader might wrongly assume is
 included, a few words per item, as a flat numbered list. Omit the section
