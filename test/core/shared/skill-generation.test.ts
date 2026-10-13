@@ -8,9 +8,14 @@ import {
 
 describe('skill-generation', () => {
   describe('getSkillTemplates', () => {
-    it('should return all 10 skill templates', () => {
+    it('should return all 11 skill templates', () => {
       const templates = getSkillTemplates();
-      expect(templates).toHaveLength(10);
+      expect(templates).toHaveLength(11);
+    });
+
+    it('should map the sync workflow to outl-sync-specs and the sync command', () => {
+      expect(getSkillTemplates(['sync']).map(t => [t.dirName, t.workflowId])).toEqual([['outl-sync-specs', 'sync']]);
+      expect(getCommandTemplates(['sync']).map(t => t.id)).toEqual(['sync']);
     });
 
     it('should have unique directory names', () => {
@@ -28,6 +33,7 @@ describe('skill-generation', () => {
       expect(dirNames).toContain('outl-new-change');
       expect(dirNames).toContain('outl-continue-change');
       expect(dirNames).toContain('outl-apply-change');
+      expect(dirNames).toContain('outl-sync-specs');
       expect(dirNames).toContain('outl-update-change');
       expect(dirNames).toContain('outl-ff-change');
       expect(dirNames).toContain('outl-archive-change');
@@ -88,9 +94,9 @@ describe('skill-generation', () => {
   });
 
   describe('getCommandTemplates', () => {
-    it('should return all 10 command templates', () => {
+    it('should return all 11 command templates', () => {
       const templates = getCommandTemplates();
-      expect(templates).toHaveLength(10);
+      expect(templates).toHaveLength(11);
     });
 
     it('should have unique IDs', () => {
@@ -141,9 +147,9 @@ describe('skill-generation', () => {
   });
 
   describe('getCommandContents', () => {
-    it('should return all 10 command contents', () => {
+    it('should return all 11 command contents', () => {
       const contents = getCommandContents();
-      expect(contents).toHaveLength(10);
+      expect(contents).toHaveLength(11);
     });
 
     it('should have valid content structure', () => {

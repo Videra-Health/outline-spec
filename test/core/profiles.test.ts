@@ -9,7 +9,7 @@ import {
 describe('profiles', () => {
   describe('CORE_WORKFLOWS', () => {
     it('should contain the default core workflows', () => {
-      expect(CORE_WORKFLOWS).toEqual(['propose', 'explore', 'apply', 'update', 'archive']);
+      expect(CORE_WORKFLOWS).toEqual(['propose', 'explore', 'apply', 'update', 'sync', 'archive']);
     });
 
     it('should include update in the core profile (default install, not expanded-only)', () => {
@@ -24,14 +24,14 @@ describe('profiles', () => {
   });
 
   describe('ALL_WORKFLOWS', () => {
-    it('should contain all 10 workflows', () => {
-      expect(ALL_WORKFLOWS).toHaveLength(10);
+    it('should contain all 11 workflows', () => {
+      expect(ALL_WORKFLOWS).toHaveLength(11);
     });
 
     it('should contain expected workflow IDs', () => {
       const expected = [
         'propose', 'explore', 'new', 'continue', 'apply', 'update',
-        'ff', 'archive', 'verify', 'onboard',
+        'ff', 'sync', 'archive', 'verify', 'onboard',
       ];
       expect([...ALL_WORKFLOWS]).toEqual(expected);
     });
@@ -54,11 +54,11 @@ describe('profiles', () => {
       expect(result).toEqual(customWorkflows);
     });
 
-    it('should drop retired sync and bulk-archive workflows', () => {
+    it('should drop the retired bulk-archive workflow and keep sync', () => {
       const workflows = ['propose', 'sync', 'archive', 'bulk-archive'];
       const result = getProfileWorkflows('custom', workflows);
 
-      expect(result).toEqual(['propose', 'archive']);
+      expect(result).toEqual(['propose', 'sync', 'archive']);
       expect(workflows).toEqual(['propose', 'sync', 'archive', 'bulk-archive']);
     });
 

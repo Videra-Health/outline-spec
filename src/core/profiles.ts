@@ -11,7 +11,7 @@ import type { Profile } from './global-config.js';
  * Core workflows included in the 'core' profile.
  * These provide the streamlined experience for new users.
  */
-export const CORE_WORKFLOWS = ['propose', 'explore', 'apply', 'update', 'archive'] as const;
+export const CORE_WORKFLOWS = ['propose', 'explore', 'apply', 'update', 'sync', 'archive'] as const;
 
 /**
  * All available workflows in the system.
@@ -24,14 +24,14 @@ export const ALL_WORKFLOWS = [
   'apply',
   'update',
   'ff',
+  'sync',
   'archive',
   'verify',
   'onboard',
 ] as const;
 
-/** Workflows removed with delta specs; update deletes their installed skills and commands. */
+/** Workflows removed with delta specs; custom profiles drop them. */
 export const RETIRED_WORKFLOWS: ReadonlyMap<string, string> = new Map([
-  ['sync', 'outl-sync-specs'],
   ['bulk-archive', 'outl-bulk-archive-change'],
 ]);
 

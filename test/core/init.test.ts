@@ -300,12 +300,13 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      // Core profile: propose, explore, apply, update, archive
+      // Core profile: propose, explore, apply, update, sync, archive
       const coreSkillNames = [
         'outl-propose',
         'outl-explore',
         'outl-apply-change',
         'outl-update-change',
+        'outl-sync-specs',
         'outl-archive-change',
       ];
 
@@ -471,7 +472,7 @@ describe('InitCommand', () => {
           'outl-update-change',
           'outl-archive-change',
         ].map((name) => path.join(testDir, '.claude', 'skills', name, 'SKILL.md')),
-        ...['propose', 'explore', 'apply', 'update', 'archive'].map((name) =>
+        ...['propose', 'explore', 'apply', 'update', 'sync', 'archive'].map((name) =>
           path.join(testDir, '.claude', 'commands', 'outl', `${name}.md`)
         ),
       ];
@@ -1052,6 +1053,7 @@ describe('InitCommand', () => {
         'outl-archive-change',
         'outl-explore',
         'outl-propose',
+        'outl-sync-specs',
         'outl-update-change',
       ];
       expect((await fs.readdir(skillsDir)).sort()).toEqual(skillNames);
@@ -1676,7 +1678,7 @@ describe('InitCommand', () => {
           const commandFiles = await fs.readdir(commandsDir);
           expect(commandFiles.sort()).toEqual([
             'outl-apply.md', 'outl-archive.md', 'outl-explore.md',
-            'outl-propose.md', 'outl-update.md',
+            'outl-propose.md', 'outl-sync.md', 'outl-update.md',
           ]);
           for (const filename of commandFiles) {
             const content = await fs.readFile(path.join(commandsDir, filename), 'utf-8');
@@ -1701,7 +1703,7 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       const commandsDir = path.join(testDir, `.${toolId}`, 'commands', 'outl');
-      const commandIds = ['apply', 'archive', 'explore', 'propose', 'update'];
+      const commandIds = ['apply', 'archive', 'explore', 'propose', 'sync', 'update'];
       expect((await fs.readdir(commandsDir)).sort()).toEqual(commandIds.map((id) => `${id}.toml`));
       for (const commandId of commandIds) {
         const content = parseToml(await fs.readFile(path.join(commandsDir, `${commandId}.toml`), 'utf-8'));

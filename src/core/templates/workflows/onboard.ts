@@ -30,6 +30,7 @@ const COMMAND_REFERENCE_ROWS = [
   onlyWithWorkflow('propose', ' | `/outl:propose` | Create a change and generate all artifacts |'),
   onlyWithWorkflow('explore', ' | `/outl:explore` | Think through problems before/during work  |'),
   onlyWithWorkflow('apply', ' | `/outl:apply`   | Implement tasks from a change              |'),
+  onlyWithWorkflow('sync', ' | `/outl:sync`    | Apply spec edits early, keep working       |'),
   onlyWithWorkflow('archive', ' | `/outl:archive` | Apply a finished change to the specs       |'),
   onlyWithWorkflow('new', ' | `/outl:new`     | Start a new change, one artifact at a time |'),
   onlyWithWorkflow('continue', ' | `/outl:continue` | Continue working on an existing change    |'),
@@ -41,6 +42,7 @@ const QUICK_REFERENCE_ROWS = [
   onlyWithWorkflow('propose', ' | `/outl:propose <name>`  | Create a change and generate all artifacts |'),
   onlyWithWorkflow('explore', ' | `/outl:explore`         | Think through problems (no code changes)   |'),
   onlyWithWorkflow('apply', ' | `/outl:apply <name>`    | Implement tasks                            |'),
+  onlyWithWorkflow('sync', ' | `/outl:sync <name>`     | Apply spec edits early, keep working       |'),
   onlyWithWorkflow('archive', ' | `/outl:archive <name>`  | Archive when done                          |'),
   onlyWithWorkflow('new', ' | `/outl:new <name>`      | Start a new change, step by step           |'),
   onlyWithWorkflow('continue', ' | `/outl:continue <name>` | Continue an existing change                |'),
@@ -286,7 +288,7 @@ A change never edits those files directly. Its outline.md states the proposal in
 - A removed item is wholly struck, with its live text.
 - Labels never shift: a removed item leaves a gap.
 
-When the work is done, \`outline-spec archive\` applies these edits to the live specs.
+\`outline-spec sync\` applies these edits to the live specs early so work can continue; when the work is done, \`outline-spec archive\` applies what's left and finishes the change.
 \`\`\`
 
 **DO:** Read the specs this task touches (\`outline-spec list --specs\`, then \`outline-spec show "<spec>" --type spec\`), and get the artifact instructions:
@@ -446,7 +448,7 @@ The change is implemented! One more step—let's archive it.
 \`\`\`
 ## Archiving
 
-Archiving applies the change's outline.md to the live specs and deletes the change folder; git history keeps the record.
+Archiving applies the change's outline.md to the live specs and deletes the change folder; git history keeps the record. (Mid-change, \`outline-spec sync\` applies the spec edits early and keeps the change open.)
 \`\`\`
 
 **DO:** Validate, preview, then archive (\`--yes\` answers the confirmation prompt, which you cannot answer from a tool call):

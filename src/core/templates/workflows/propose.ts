@@ -44,7 +44,7 @@ I'll create a change with the artifacts your schema defines. With the default ou
 - diagrams.md (the few views that explain the change)
 - tasks.md (implementation steps, ending with archiving the change)
 
-outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done.
+outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done; syncing it first applies the spec edits early and keeps the change open.
 
 When the user is ready to implement, they must start the apply workflow explicitly.
 
@@ -187,7 +187,7 @@ After completing all artifacts, summarize:
 - Ask about ambiguities that would materially change scope, externally observable behavior, compatibility, or acceptance criteria; for minor details, make reasonable assumptions and record them
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next
-- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec archive\``,
+- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec sync\` (apply spec edits early and keep working) or \`outline-spec archive\` (finish)`,
     license: 'MIT',
     compatibility: 'Requires outline-spec CLI.',
     metadata: { author: 'outline-spec', version: '1.0' },
@@ -210,7 +210,7 @@ I'll create a change with the artifacts your schema defines. With the default ou
 - diagrams.md (the few views that explain the change)
 - tasks.md (implementation steps, ending with archiving the change)
 
-outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done.
+outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done; syncing it first applies the spec edits early and keeps the change open.
 
 When the user is ready to implement, they must start the apply workflow explicitly.
 
@@ -353,6 +353,6 @@ After completing all artifacts, summarize:
 - Ask about ambiguities that would materially change scope, externally observable behavior, compatibility, or acceptance criteria; for minor details, make reasonable assumptions and record them
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next
-- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec archive\``
+- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec sync\` (apply spec edits early and keep working) or \`outline-spec archive\` (finish)`
   };
 }

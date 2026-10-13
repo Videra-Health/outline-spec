@@ -108,6 +108,7 @@ const WORKFLOW_TO_SKILL_DIR: Record<string, string> = {
   'apply': 'outl-apply-change',
   'update': 'outl-update-change',
   'ff': 'outl-ff-change',
+  'sync': 'outl-sync-specs',
   'archive': 'outl-archive-change',
   'verify': 'outl-verify-change',
   'onboard': 'outl-onboard',

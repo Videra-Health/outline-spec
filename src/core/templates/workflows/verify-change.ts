@@ -62,7 +62,7 @@ ${input}
    - **Removed**: an item wholly in \`~~ ~~\`; that behavior should be gone
    - **Renamed**: \`~~Old~~ **New** (patch):\`; the name changes, the behavior stays
 
-   For each spec the outline touches, read the live spec with \`outline-spec show "<spec>" --type spec\` for the unchanged surrounding requirements. Run \`outline-spec validate "<name>"\` to confirm the outline still archives cleanly, and \`outline-spec archive "<name>" --dry-run\` to see the resulting spec text — that resulting text is what the code must satisfy. Never edit live specs; a mismatch is fixed in outline.md.
+   For each spec the outline touches, read the live spec with \`outline-spec show "<spec>" --type spec\` for the unchanged surrounding requirements. Run \`outline-spec validate "<name>"\` to confirm the outline still archives cleanly, and \`outline-spec archive "<name>" --dry-run\` to see the resulting spec text — that resulting text is what the code must satisfy. Edits an earlier \`outline-spec sync\` applied are already in the live specs; the change's \`applied/\` files list them. Never edit live specs; a mismatch is fixed in outline.md.
 
 5. **Initialize verification report structure**
 

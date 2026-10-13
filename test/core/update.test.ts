@@ -1256,7 +1256,7 @@ metadata:
       await updateCommand.execute(testDir);
 
       // Verify core profile commands were created (propose, explore, apply, update, archive)
-      const coreCommandIds = ['explore', 'apply', 'update', 'archive', 'propose'];
+      const coreCommandIds = ['explore', 'apply', 'update', 'sync', 'archive', 'propose'];
       const commandsDir = path.join(testDir, '.claude', 'commands', 'outl');
       for (const cmdId of coreCommandIds) {
         const cmdFile = path.join(commandsDir, `${cmdId}.md`);
@@ -1340,7 +1340,7 @@ metadata:
       setMockConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
       const commandsDir = path.join(testDir, '.claude', 'commands', 'outl');
       await fs.mkdir(commandsDir, { recursive: true });
-      const coreCommandIds = ['explore', 'apply', 'update', 'archive', 'propose'];
+      const coreCommandIds = ['explore', 'apply', 'update', 'sync', 'archive', 'propose'];
       for (const cmdId of coreCommandIds) {
         await fs.writeFile(path.join(commandsDir, `${cmdId}.md`), 'old command content');
       }
@@ -2679,7 +2679,7 @@ metadata:
         featureFlags: {},
         profile: 'custom',
         delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'archive'],
+        workflows: ['propose', 'explore', 'apply', 'sync', 'archive'],
       });
 
       const initCommand = new InitCommand({ tools: 'claude' });
@@ -2707,7 +2707,7 @@ metadata:
         featureFlags: {},
         profile: 'custom',
         delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'update', 'archive', 'verify'],
+        workflows: ['propose', 'explore', 'apply', 'update', 'sync', 'archive', 'verify'],
       });
 
       const initCommand = new InitCommand({ tools: 'claude' });
@@ -3056,6 +3056,7 @@ metadata:
         'outl-custom',
         'outl-explore',
         'outl-propose',
+        'outl-sync-specs',
         'outl-update-change',
       ]);
       expect(await fs.readFile(customSkill, 'utf-8')).toBe('my custom skill');

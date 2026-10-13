@@ -12,6 +12,7 @@ export { getContinueChangeSkillTemplate, getOutlineSpecContinueCommandTemplate }
 export { getApplyInstructions, getApplyChangeSkillTemplate, getOutlineSpecApplyCommandTemplate } from './workflows/apply-change.js';
 export { getUpdateChangeSkillTemplate, getOutlineSpecUpdateCommandTemplate } from './workflows/update-change.js';
 export { getFfChangeSkillTemplate, getOutlineSpecFfCommandTemplate } from './workflows/ff-change.js';
+export { getSyncSpecsSkillTemplate, getOutlineSpecSyncCommandTemplate } from './workflows/sync-specs.js';
 export { getArchiveChangeSkillTemplate, getOutlineSpecArchiveCommandTemplate } from './workflows/archive-change.js';
 export { getVerifyChangeSkillTemplate, getOutlineSpecVerifyCommandTemplate } from './workflows/verify-change.js';
 export { getOnboardSkillTemplate, getOutlineSpecOnboardCommandTemplate } from './workflows/onboard.js';

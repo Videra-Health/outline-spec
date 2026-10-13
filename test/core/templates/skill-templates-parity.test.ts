@@ -14,6 +14,7 @@ import {
   getFfChangeSkillTemplate,
   getNewChangeSkillTemplate,
   getOnboardSkillTemplate,
+  getSyncSpecsSkillTemplate,
   getOutlineSpecApplyCommandTemplate,
   getOutlineSpecArchiveCommandTemplate,
   getOutlineSpecContinueCommandTemplate,
@@ -23,6 +24,7 @@ import {
   getOutlineSpecOnboardCommandTemplate,
   getOutlineSpecProposeCommandTemplate,
   getOutlineSpecProposeSkillTemplate,
+  getOutlineSpecSyncCommandTemplate,
   getOutlineSpecUpdateCommandTemplate,
   getOutlineSpecVerifyCommandTemplate,
   getUpdateChangeSkillTemplate,
@@ -69,40 +71,43 @@ function outlineTitles(): Record<string, string> {
 }
 
 const EXPECTED_FUNCTION_HASHES: Record<string, string> = {
-  getExploreSkillTemplate: 'b46e7d64ca3bb06d686f009620533422655cf40853fbf0afdf388def39ac855c',
-  getNewChangeSkillTemplate: '4de0e9f394e372eda885d68e99011a44ab311759c0610c4541b1e6a5a7d663d0',
-  getContinueChangeSkillTemplate: '29ba7575525891407b6b7d0f0e49ae674e5b6cef6357e04b6caf627f7f4281e5',
-  getApplyChangeSkillTemplate: '1fd28d955720ac3139cfa39b3823efb718bddb775b7a6182fa3f7a8546744ac0',
-  getFfChangeSkillTemplate: 'e66a1c45efc6d53ee899946966c617f3c91b24f0fee4e3572d5cf24f2b040b15',
-  getOnboardSkillTemplate: '1fdab2d34531c0ab0d04468e50c99a22c2432f83dd9d852474ec8bb1107e14b7',
-  getOutlineSpecExploreCommandTemplate: '540302c165f30ffee0658983895cce7780df2d478dce1598a43056f1cbc5fe44',
-  getOutlineSpecNewCommandTemplate: 'e9c9e50130ae4fefe69d8bf9f642b9b3f715af02170a4b2222405b4de0e4179e',
-  getOutlineSpecContinueCommandTemplate: '5c2748aec938892ace5e4269aaf1315ab8b7c5f1b304320014075a120723229b',
-  getOutlineSpecApplyCommandTemplate: '721a6943b86181b4ba380d7bb6ddce98b7c34300bc31f350a6b74774c9e2e0e1',
-  getOutlineSpecFfCommandTemplate: 'f0ae0fd1176c6167b80f80fe984dd80a3a7ae1a2da2ee8cb8ce50b36cf659efb',
-  getArchiveChangeSkillTemplate: '567876b19ecec3869c3971f40c0d7134ee919250c1c839aff18a6bb8b424d57c',
-  getVerifyChangeSkillTemplate: 'c34ffb7ca992998fb7607899f48443e6684651da31c4b1e8dc6fb669a13b11b2',
-  getOutlineSpecArchiveCommandTemplate: '60df00912bb1bb291870703e42032482aae8900e48c013c54e263e2cd95fe508',
-  getOutlineSpecOnboardCommandTemplate: '589bd5602ce0d00b92134ec1ac91d8a41b45ff8fe61e9618070852df277c013b',
-  getOutlineSpecVerifyCommandTemplate: '2f189575eaa2d519f69db0a976eb0307733b542c7367d04fde8c6bd5cb5acc2e',
-  getOutlineSpecProposeSkillTemplate: 'de3d5d85eb623eba1dd4c7af1372593a85a1aef6850bd26335c136ee4d4781ed',
-  getOutlineSpecProposeCommandTemplate: '6e45f5682f71fb34e092deb0644159b441e12e23b76b694f66cdb20c202c70cd',
+  getExploreSkillTemplate: '23ae0f56d5d6671c6df3f72243931991f834ba6a46ae43c3cc0738f7a828f278',
+  getNewChangeSkillTemplate: '5247c0230cb4ba6d8d5d64ba755a342d423daf8ce5cdabf27a7b79d9ff85e0df',
+  getContinueChangeSkillTemplate: '13713675c2dce3e8197beb64d0c57aa7db3f3a10d091846dfb6412c60e3aed90',
+  getApplyChangeSkillTemplate: '1f3cf5dfa94aeb0bf4826c099ab9b6e080124c8d0a6a0ae1df26f4c684492b2e',
+  getFfChangeSkillTemplate: '854551c9af4abab4277f6ac7672435e96bb13798ad667956b7baefbb06bb17ea',
+  getOnboardSkillTemplate: 'b2ec3e5c857d72159d4a07cc4ce4b7f56914dbaf403ea15c68a9d1e75ace2e74',
+  getOutlineSpecExploreCommandTemplate: '7c08a082df7703e53b9f4bb489120c53aae737542ddafdd7c492a2a4e5da7ea8',
+  getOutlineSpecNewCommandTemplate: '8859250f69439bc49d05a63737301982d449f651cfc0fbf01342aef455357b52',
+  getOutlineSpecContinueCommandTemplate: '4d7b9e9f3d3f46215d09bbcf5ad731f0a01e21d2817bfc086fbc6680206c3e7d',
+  getOutlineSpecApplyCommandTemplate: '2b379c6ba52ee19d08b6390912e03cf88f34ce62e2baccad0ebdc6119af28581',
+  getOutlineSpecFfCommandTemplate: '63739a9d8c561056b88c3f4c17bd0341de9af9be893210fb712ad91d311bd8c6',
+  getSyncSpecsSkillTemplate: '59c51eff083380c8dfded52d76945dd3efeea16d415a5bcba37f47909b11b791',
+  getOutlineSpecSyncCommandTemplate: '53b7a53e423f723e137f91ca5558d742396d2f16694f5b0c90aee921fbb8e1e5',
+  getArchiveChangeSkillTemplate: 'b4fdcdb4ec2dd8082ca2b8aff5b0123466f478c28812bb4fe7b627bc1bb224ab',
+  getVerifyChangeSkillTemplate: '77f880700320b500891ae441820d1eed07cb9f6ef5b3fc57be0bd367fd82c8d8',
+  getOutlineSpecArchiveCommandTemplate: 'ff76b608fb5abcca51c93dbc2ee4e542ee6a6ad3c9423afc07d94a31b734da85',
+  getOutlineSpecOnboardCommandTemplate: 'c2e3a03a0f0653c00c04943fb5538d6b0bef8c321b07ae741d987b1547caf139',
+  getOutlineSpecVerifyCommandTemplate: '7aeb9d6d8ee2ec87e4b3d1119bb44d05d869859c739a3835c1d8d633400f8901',
+  getOutlineSpecProposeSkillTemplate: '85949f072a49ad46a04a62199b907b7c95be9fb3da06d22151ef3a20b2ab381a',
+  getOutlineSpecProposeCommandTemplate: '28a85409afce25d6c09c24564d2f2bf15b3e1ca1f5f2a3002c91d1cdeea636e8',
   getFeedbackSkillTemplate: '84032cbc59ea51005dcf80a20978b4755ea636e6746bcbd1aa0cba06814c36db',
-  getUpdateChangeSkillTemplate: '185dfc0830f9fef5fa2ecac51ad7aa13e009d8a3d6dc89201784a15a997cbd80',
-  getOutlineSpecUpdateCommandTemplate: '052dec187b19885c8aa6a826a228c73c65fcdd3817a2ec1ca51741ec052cab61',
+  getUpdateChangeSkillTemplate: '7c331548bb29bbfca02c36da4bc295d04dd399800428b10886d9dc1973bfaed5',
+  getOutlineSpecUpdateCommandTemplate: '20b2983597364f2ff59ba8e9d8fc117a631fddd51422d7802523133fda82b289',
 };
 
 const EXPECTED_GENERATED_SKILL_CONTENT_HASHES: Record<string, string> = {
-  'outl-explore': '50319d26c6ad6f6615f507e50c149de4bbd77c6e5be37a33bcb51f9a9fa0461c',
-  'outl-new-change': 'c030e6e792d7c9adc1e47da5b683b5cdf972a1bd3d7e254c50ad3a74980e5388',
-  'outl-continue-change': 'ce711b7d645a42f49df42478d68a3c2f813a6970a99c6b9c099134195e36c563',
-  'outl-apply-change': 'da90d9af1bed6a27e982f500e5352ac0dddb38772534a1feb9310753b26492de',
-  'outl-ff-change': '0d1fd5175fe49a9011d8fe35af42cc9da87d376385fb209f0611efd93bdb2f5d',
-  'outl-archive-change': '2f1d16a11f5625973cf53834cc7d8c163dd36a0b9d7f227ecb2ecb26d208c394',
-  'outl-verify-change': '28b325fbe0b6764e6f5f9baeafbc26cfe8c9e810decc8fa01a1460849d5b72d3',
-  'outl-onboard': 'b45221a5a96f27116662231ffa81daa4055f4a040bf47aab24e4c91bc32cdafa',
-  'outl-propose': 'e199471aba6872abf62222f3ddb897ce53853f50c16fb4956024815660bb0df4',
-  'outl-update-change': 'bda4d2b148d03e9a16f66606c8e1fe48fe2715943193f431806366e5a70d6bfe',
+  'outl-explore': '1d9ef9179499680fcdc4007b240dec1b0213a8815b6d46635960aaa1d4396cc6',
+  'outl-new-change': 'b187c6c76568b7de699f7b7bb7023bf18a3fded7f2fae47dc9bc1a92a5e0060b',
+  'outl-continue-change': 'a1b1696bb9ba7cd3dec08a13a423b369cc3ba40d26f1be0da7ab2a3c37b522d6',
+  'outl-apply-change': 'b2cd2eaab2a322adad9a91d0667705efbca2ef362291bcd46f17a8b6aaf6d1f1',
+  'outl-ff-change': '4becdf134892190f2eaf3b20a0f35a10cd106764b9efde5132d50601455bc475',
+  'outl-sync-specs': '4abe4bb81e1e3f01f51b16a2c9a6383a13e8d7b50d7c33d6209cd57246cb0d95',
+  'outl-archive-change': '8a37c42557ddf630e863d0d36f069af9561fdc0a8df37baca40b5b822167da04',
+  'outl-verify-change': 'c9bc1590e7e38bab78b4e275c618e553a1e83358b7afc44f5848bae6f7c7dbac',
+  'outl-onboard': 'd8aa8f2485ce12115b96a5519bd075973b4feb0afb29d09a2208bf5ebd8102ac',
+  'outl-propose': '2abd2cf87906bcf312f5d3215f15239fd889346b19a1d545dffb3698fa3e92d3',
+  'outl-update-change': 'fe4de36dfe7c3da432869d77737091323516dbd738915670c34ec1a8a49ff153',
 };
 
 // Intentionally excludes getFeedbackSkillTemplate: this list only models templates
@@ -113,6 +118,7 @@ const GENERATED_SKILL_FACTORIES: Array<[string, () => SkillTemplate]> = [
   ['outl-continue-change', getContinueChangeSkillTemplate],
   ['outl-apply-change', getApplyChangeSkillTemplate],
   ['outl-ff-change', getFfChangeSkillTemplate],
+  ['outl-sync-specs', getSyncSpecsSkillTemplate],
   ['outl-archive-change', getArchiveChangeSkillTemplate],
   ['outl-verify-change', getVerifyChangeSkillTemplate],
   ['outl-onboard', getOnboardSkillTemplate],
@@ -199,6 +205,8 @@ describe('skill templates split parity', () => {
       getOutlineSpecContinueCommandTemplate,
       getOutlineSpecApplyCommandTemplate,
       getOutlineSpecFfCommandTemplate,
+      getSyncSpecsSkillTemplate,
+      getOutlineSpecSyncCommandTemplate,
       getArchiveChangeSkillTemplate,
       getVerifyChangeSkillTemplate,
       getOutlineSpecArchiveCommandTemplate,
@@ -404,15 +412,34 @@ describe('skill templates split parity', () => {
     }
   });
 
-  it('teaches the outline model, not deltas, scenarios, or sync, in every generated workflow', () => {
+  it('teaches the outline model, not deltas or scenarios, in every generated workflow', () => {
     const corpus: Array<[string, string]> = [
       ...getSkillTemplates().map(({ dirName, template }) => [dirName, template.instructions] as [string, string]),
       ...getCommandContents().map((entry) => [entry.id, entry.body] as [string, string]),
     ];
     const stale =
-      /delta spec|\b(ADDED|MODIFIED|REMOVED|RENAMED) Requirements|#### Scenario|\bSHALL\b|\/outl:sync|outl-sync-specs|bulk-archive|skip_specs|retire_capabilities|changes\/archive|spec-driven/;
+      /delta spec|\b(ADDED|MODIFIED|REMOVED|RENAMED) Requirements|#### Scenario|\bSHALL\b|bulk-archive|skip_specs|retire_capabilities|changes\/archive|spec-driven/;
     for (const [id, text] of corpus) {
       expect(text, id).not.toMatch(stale);
+    }
+  });
+
+  it('validates, dry-runs, then syncs, keeps the change open, and fixes outline.md on a mismatch', () => {
+    const variants: Array<[string, string]> = [
+      ['sync skill', getSyncSpecsSkillTemplate().instructions],
+      ['sync command', getOutlineSpecSyncCommandTemplate().content],
+    ];
+
+    for (const [variant, content] of variants) {
+      const validate = content.indexOf('outline-spec validate "<name>"');
+      const dryRun = content.indexOf('outline-spec sync "<name>" --dry-run');
+      const sync = content.indexOf('outline-spec sync "<name>" --yes');
+      expect(validate, variant).toBeGreaterThan(-1);
+      expect(dryRun, variant).toBeGreaterThan(validate);
+      expect(sync, variant).toBeGreaterThan(dryRun);
+      expect(content, variant).toContain('applied/');
+      expect(content, variant).toContain('the change stays open');
+      expect(content, variant).toContain('Never hand-edit the live specs');
     }
   });
 

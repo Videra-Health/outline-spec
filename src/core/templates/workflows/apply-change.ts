@@ -209,7 +209,7 @@ What would you like to do?
 - When a task needs work beyond what outline.md describes, surface the added scope and pause - never silently narrow, defer, or simplify away specified behavior
 - Only mark a task \`- [x]\` when its specified behavior is fully implemented, not when it is partially done or deferred
 - Use contextFiles from CLI output, don't assume specific file names
-- Never edit live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs when the change is archived
+- Never edit live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs through \`outline-spec sync\` (apply spec edits early and keep working) or \`outline-spec archive\` (finish)
 - Use each task's sourcePath and line to update its exact checkbox
 - Do not use context or operation guidance as proof that a task is complete
 - Apply relevant project context; report conflicts with controlling workflow inputs

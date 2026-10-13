@@ -213,7 +213,7 @@ If the user mentions a change or you detect one is relevant:
 
 3. **Offer to capture when decisions are made**
 
-   outline.md holds the change's spec edits, addressed by spec name, requirement name, and live label. A new requirement or detail is written plainly after the last label at its level; an edit to existing text marks \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. \`outline-spec archive <change>\` applies the outline to the live specs later, so never edit \`outline-spec/specs/\` directly.
+   outline.md holds the change's spec edits, addressed by spec name, requirement name, and live label. A new requirement or detail is written plainly after the last label at its level; an edit to existing text marks \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. \`outline-spec sync <change>\` applies the outline's spec edits early and keeps the change open; \`outline-spec archive <change>\` applies what's left and finishes it, so never edit \`outline-spec/specs/\` directly.
 
     | Insight Type               | Where to Capture                          |
     |----------------------------|-------------------------------------------|
@@ -546,7 +546,7 @@ If the user mentions a change or you detect one is relevant:
 
 3. **Offer to capture when decisions are made**
 
-   outline.md holds the change's spec edits, addressed by spec name, requirement name, and live label. A new requirement or detail is written plainly after the last label at its level; an edit to existing text marks \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. \`outline-spec archive <change>\` applies the outline to the live specs later, so never edit \`outline-spec/specs/\` directly.
+   outline.md holds the change's spec edits, addressed by spec name, requirement name, and live label. A new requirement or detail is written plainly after the last label at its level; an edit to existing text marks \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. \`outline-spec sync <change>\` applies the outline's spec edits early and keeps the change open; \`outline-spec archive <change>\` applies what's left and finishes it, so never edit \`outline-spec/specs/\` directly.
 
     | Insight Type               | Where to Capture                          |
     |----------------------------|-------------------------------------------|

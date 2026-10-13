@@ -7,6 +7,7 @@ export const OUTLINE_SPEC_SKILL_NAMES = [
   'outl-apply-change',
   'outl-update-change',
   'outl-ff-change',
+  'outl-sync-specs',
   'outl-archive-change',
   'outl-verify-change',
   'outl-onboard',

@@ -46,8 +46,10 @@ const ARCHIVE_STEPS = `**Input**: Optionally specify a change name. If omitted, 
 6. **Archive**
 
    Run \`outline-spec archive "<name>" --yes\`. It applies outline.md to the live specs
-   in \`outline-spec/specs/\` and deletes the change folder. Git history is the
-   record; there is no archive folder.
+   in \`outline-spec/specs/\` and deletes the change folder. Edits an earlier
+   \`outline-spec sync\` applied are already in the live specs, and its
+   \`applied/\` records go with the folder. Git history is the record; there is
+   no archive folder.
 
 7. **Summarize**
 

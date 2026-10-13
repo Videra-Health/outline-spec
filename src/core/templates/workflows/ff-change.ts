@@ -138,7 +138,7 @@ After completing all artifacts, summarize:
 - Create every artifact the apply phase transitively depends on, not just the ids listed in \`apply.requires\`
 - Always read dependency artifacts before creating a new one - re-read from disk, not from conversation memory (files may have changed since you last saw them)
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
-- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec archive\`
+- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec sync\` (apply spec edits early and keep working) or \`outline-spec archive\` (finish)
 - If a change with that name already exists, suggest continuing that change instead
 - Verify each artifact file exists after writing before proceeding to next`,
     license: 'MIT',
@@ -258,7 +258,7 @@ After completing all artifacts, summarize:
 - Create every artifact the apply phase transitively depends on, not just the ids listed in \`apply.requires\`
 - Always read dependency artifacts before creating a new one - re-read from disk, not from conversation memory (files may have changed since you last saw them)
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
-- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec archive\`
+- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec sync\` (apply spec edits early and keep working) or \`outline-spec archive\` (finish)
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next`
   };

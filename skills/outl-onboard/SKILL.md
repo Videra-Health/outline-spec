@@ -11,7 +11,7 @@ metadata:
 
 Guide the user through their first complete outline-spec workflow cycle. This is a teaching experience—you'll do real work in their codebase while explaining each step.
 
-**Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
+**Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `sync`, `archive`, `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
 
 **Project check:** These steps expect a project that already uses outline-spec. Before the first step that writes anything (`new change`, `archive`, or authoring an artifact file), confirm the project has a root: run `outline-spec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `outline-spec/` directory here, and a write such as `outline-spec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
 
@@ -222,7 +222,7 @@ A change never edits those files directly. Its outline.md states the proposal in
 - A removed item is wholly struck, with its live text.
 - Labels never shift: a removed item leaves a gap.
 
-When the work is done, `outline-spec archive` applies these edits to the live specs.
+`outline-spec sync` applies these edits to the live specs early so work can continue; when the work is done, `outline-spec archive` applies what's left and finishes the change.
 ```
 
 **DO:** Read the specs this task touches (`outline-spec list --specs`, then `outline-spec show "<spec>" --type spec`), and get the artifact instructions:
@@ -382,7 +382,7 @@ The change is implemented! One more step—let's archive it.
 ```
 ## Archiving
 
-Archiving applies the change's outline.md to the live specs and deletes the change folder; git history keeps the record.
+Archiving applies the change's outline.md to the live specs and deletes the change folder; git history keeps the record. (Mid-change, `outline-spec sync` applies the spec edits early and keeps the change open.)
 ```
 
 **DO:** Validate, preview, then archive (`--yes` answers the confirmation prompt, which you cannot answer from a tool call):
@@ -429,6 +429,7 @@ This same rhythm works for any size change—a small fix or a major feature.
  | `/outl-propose` | Create a change and generate all artifacts |
  | `/outl-explore` | Think through problems before/during work  |
  | `/outl-apply-change`   | Implement tasks from a change              |
+ | `/outl-sync-specs`    | Apply spec edits early, keep working       |
  | `/outl-archive-change` | Apply a finished change to the specs       |
  | `/outl-new-change`     | Start a new change, one artifact at a time |
  | `/outl-continue-change` | Continue working on an existing change    |
@@ -476,6 +477,7 @@ If the user says they just want to see the commands or skip the tutorial:
  | `/outl-propose <name>`  | Create a change and generate all artifacts |
  | `/outl-explore`         | Think through problems (no code changes)   |
  | `/outl-apply-change <name>`    | Implement tasks                            |
+ | `/outl-sync-specs <name>`     | Apply spec edits early, keep working       |
  | `/outl-archive-change <name>`  | Archive when done                          |
  | `/outl-new-change <name>`      | Start a new change, step by step           |
  | `/outl-continue-change <name>` | Continue an existing change                |
