@@ -29,7 +29,7 @@ A rendered page a developer reads to check a change before approving it.
   b. The `template` names an HTML file in the schema's templates folder; a forked schema can replace it.
   c. `outline-spec schema validate` reports a tab with neither or both of `from` and `view`, an unknown view, and a missing template file.
   d. A schema with no review block has no review page, and `outline-spec review` says so.
-  e. The `outline` schema ships a review block with three tabs: Outline from `outline.md`, Diagrams from `diagrams.md` and `design.md`, and Spec changes from the `spec-changes` view.
+  e. The `outline` schema ships a review block with three tabs: Outline from `outline.md`, Diagrams from `diagrams.md`, and Spec changes from the `spec-changes` view.
 6. Project overrides: A project SHALL control the page from `outline-spec/config.yaml` without forking its schema.
   a. `review-on` lists the workflows that produce the page, from `propose` and `update`; it defaults to both, and `review-on: []` turns the page off.
   b. `review.tabs` replaces the schema's tabs, in the same form as the schema's review block.
