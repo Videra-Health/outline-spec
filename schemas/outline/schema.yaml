@@ -1,6 +1,6 @@
 name: outline
 version: 1
-description: Default outline-spec workflow - outline → (design) → tasks
+description: Default outline-spec workflow - outline → (design) → diagrams → tasks
 artifacts:
   - id: outline
     generates: outline.md
@@ -69,6 +69,9 @@ artifacts:
 
       Run `outline-spec validate <change>` after writing; it checks that the outline
       archives cleanly against the live specs.
+
+      When the workflow finishes and you summarize it to the user, include the full
+      contents of outline.md verbatim in that reply, not a paraphrase or a link.
     requires: []
 
   - id: design
@@ -94,6 +97,15 @@ artifacts:
       If a question would change the outline or the tasks, ask the user now
       instead of deferring it. Reference outline.md for what changes; design
       covers how.
+    requires:
+      - outline
+
+  - id: diagrams
+    generates: diagrams.md
+    description: Diagrams describing the change
+    template: diagrams.md
+    instruction: |
+      Use diagrams to describe the proposed change. Each section in the template is a candidate visualization to explain the change. Some visualizations are applicable for certain changes, while others are not. Pick the smallest number of views that makes the point. Put each view right after the one-line text it supports. Before each visualization include a small muted text with the label of the visualization. (e.g. <sub>GraphQL Contract</sub>)
     requires:
       - outline
 

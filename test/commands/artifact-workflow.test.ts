@@ -43,7 +43,7 @@ describe('artifact-workflow CLI commands', () => {
    */
   async function createTestChange(
     changeName: string,
-    artifacts: ('outline' | 'design' | 'tasks')[] = []
+    artifacts: ('outline' | 'design' | 'diagrams' | 'tasks')[] = []
   ): Promise<string> {
     const changeDir = path.join(changesDir, changeName);
     await fs.mkdir(changeDir, { recursive: true });
@@ -55,6 +55,10 @@ describe('artifact-workflow CLI commands', () => {
 
     if (artifacts.includes('design')) {
       await fs.writeFile(path.join(changeDir, 'design.md'), '# Design\n\nTechnical design.');
+    }
+
+    if (artifacts.includes('diagrams')) {
+      await fs.writeFile(path.join(changeDir, 'diagrams.md'), '# Diagrams\n\nA sequence diagram.');
     }
 
     if (artifacts.includes('tasks')) {
@@ -73,7 +77,7 @@ describe('artifact-workflow CLI commands', () => {
       const result = await runCLI(['status', '--change', 'scaffolded-change'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('scaffolded-change');
-      expect(result.stdout).toContain('0/3 artifacts complete');
+      expect(result.stdout).toContain('0/4 artifacts complete');
     });
 
     it('shows status for a change with outline only', async () => {
@@ -84,7 +88,7 @@ describe('artifact-workflow CLI commands', () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('minimal-change');
       expect(result.stdout).toContain('outline');
-      expect(result.stdout).toContain('1/3 artifacts complete');
+      expect(result.stdout).toContain('1/4 artifacts complete');
     });
 
     it('shows status for a change with outline and design', async () => {
@@ -92,7 +96,7 @@ describe('artifact-workflow CLI commands', () => {
 
       const result = await runCLI(['status', '--change', 'partial-change'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('2/3 artifacts complete');
+      expect(result.stdout).toContain('2/4 artifacts complete');
       expect(result.stdout).toContain('[x]');
     });
 
@@ -111,7 +115,7 @@ describe('artifact-workflow CLI commands', () => {
       expect(json.isPlanningComplete).toBe(false);
       expect(json.isComplete).toBe(false);
       expect(Array.isArray(json.artifacts)).toBe(true);
-      expect(json.artifacts).toHaveLength(3);
+      expect(json.artifacts).toHaveLength(4);
 
       const outlineArtifact = json.artifacts.find((a: any) => a.id === 'outline');
       expect(outlineArtifact.status).toBe('done');
@@ -154,7 +158,7 @@ describe('artifact-workflow CLI commands', () => {
       expect(result.exitCode).toBe(0);
 
       const json = JSON.parse(result.stdout);
-      expect(json.artifacts.map((a: any) => a.id)).toEqual(['outline', 'design', 'tasks']);
+      expect(json.artifacts.map((a: any) => a.id)).toEqual(['outline', 'design', 'diagrams', 'tasks']);
       expect(json.nextSteps[0]).toContain('outline-spec instructions design');
     });
 
@@ -185,7 +189,7 @@ describe('artifact-workflow CLI commands', () => {
       });
 
       it('names the apply command once planning is complete', async () => {
-        await createTestChange('resume-apply', ['outline', 'design', 'tasks']);
+        await createTestChange('resume-apply', ['outline', 'design', 'diagrams', 'tasks']);
 
         const result = await runCLI(['status', '--change', 'resume-apply'], { cwd: tempDir });
 
@@ -263,7 +267,7 @@ describe('artifact-workflow CLI commands', () => {
       });
 
       it('prints the same command the JSON nextSteps sentence names', async () => {
-        for (const artifacts of [[], ['outline', 'design', 'tasks']] as const) {
+        for (const artifacts of [[], ['outline', 'design', 'diagrams', 'tasks']] as const) {
           const changeName = `parity-${artifacts.length}`;
           await createTestChange(changeName, [...artifacts]);
 
@@ -282,17 +286,17 @@ describe('artifact-workflow CLI commands', () => {
     });
 
     it('shows planning completion when all artifacts exist', async () => {
-      await createTestChange('complete-change', ['outline', 'design', 'tasks']);
+      await createTestChange('complete-change', ['outline', 'design', 'diagrams', 'tasks']);
 
       const result = await runCLI(['status', '--change', 'complete-change'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('3/3 artifacts complete');
+      expect(result.stdout).toContain('4/4 artifacts complete');
       expect(result.stdout).toContain('All planning artifacts complete!');
       expect(result.stdout).not.toContain('All artifacts complete!');
     });
 
     it('distinguishes planning completion from implementation task completion', async () => {
-      await createTestChange('planned-change', ['outline', 'design', 'tasks']);
+      await createTestChange('planned-change', ['outline', 'design', 'diagrams', 'tasks']);
 
       const statusResult = await runCLI(['status', '--change', 'planned-change', '--json'], {
         cwd: tempDir,
@@ -419,7 +423,7 @@ describe('artifact-workflow CLI commands', () => {
       });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('2026-07-04-voice-copilot-v1');
-      expect(result.stdout).toContain('2/3 artifacts complete');
+      expect(result.stdout).toContain('2/4 artifacts complete');
     });
   });
 

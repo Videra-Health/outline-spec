@@ -69,7 +69,7 @@ describe('propose preamble', () => {
   // #788/#1260: an artifact missing from the preamble gets treated as optional.
   it('advertises every artifact the default schema defines (#788, #1260)', () => {
     const ids = defaultSchema.artifacts.map(artifact => artifact.id);
-    expect(ids).toEqual(['outline', 'design', 'tasks']);
+    expect(ids).toEqual(['outline', 'design', 'diagrams', 'tasks']);
 
     for (const [label, body] of proposeBodies) {
       const preamble = artifactPreamble(body);

@@ -35,7 +35,7 @@ pnpm install && pnpm build && npm install -g .
 cd your-project
 outline-spec init                      # pick your AI tools
 # in your AI tool:
-/outl:propose add dark mode    # writes outline.md and tasks.md
+/outl:propose add dark mode    # writes outline.md, diagrams.md, and tasks.md
 /outl:apply                    # implements the tasks
 /outl:archive                  # applies the outline to the specs
 ```

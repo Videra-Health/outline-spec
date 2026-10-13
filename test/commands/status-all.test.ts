@@ -90,7 +90,7 @@ describe('status --all', () => {
     expect(entry.schemaName).toBe('outline');
     expect(entry.isComplete).toBe(false);
     expect(Array.isArray(entry.artifacts)).toBe(true);
-    expect(entry.artifacts).toHaveLength(3);
+    expect(entry.artifacts).toHaveLength(4);
     expect(Array.isArray(entry.nextSteps)).toBe(true);
     expect(entry.actionContext).toBeDefined();
     expect(entry.artifactPaths).toBeDefined();
@@ -179,7 +179,7 @@ describe('status --all', () => {
 
     const good = json.changes.find((c: any) => c.changeName === 'good-change');
     expect(good.schemaName).toBe('outline');
-    expect(good.artifacts).toHaveLength(3);
+    expect(good.artifacts).toHaveLength(4);
   });
 
   it('prints one text block per change with --all', async () => {
@@ -190,8 +190,8 @@ describe('status --all', () => {
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('Change: first-change');
     expect(result.stdout).toContain('Change: second-change');
-    expect(result.stdout).toContain('1/3 artifacts complete');
-    expect(result.stdout).toContain('2/3 artifacts complete');
+    expect(result.stdout).toContain('1/4 artifacts complete');
+    expect(result.stdout).toContain('2/4 artifacts complete');
   });
 
   it('gives every change in the sweep its own next-step line', async () => {
@@ -207,7 +207,7 @@ describe('status --all', () => {
       'Next: outline-spec instructions design --change "first-change" --json'
     );
     expect(result.stdout).toContain(
-      'Next: outline-spec instructions tasks --change "second-change" --json'
+      'Next: outline-spec instructions diagrams --change "second-change" --json'
     );
   });
 
@@ -221,7 +221,7 @@ describe('status --all', () => {
     // A failed entry has no artifact statuses to reason about, so it must not
     // be given a next step alongside its diagnostic.
     expect(getOutput(result)).toContain('✗ broken-change');
-    expect(result.stdout).toContain('Next: outline-spec instructions tasks --change "good-change"');
+    expect(result.stdout).toContain('Next: outline-spec instructions diagrams --change "good-change"');
     expect(result.stdout).not.toContain('--change "broken-change"');
   });
 
@@ -237,7 +237,7 @@ describe('status --all', () => {
     expect(result.exitCode).toBe(1);
     expect(result.stdout).toContain('✗ broken-change:');
     expect(result.stdout).toContain('Change: good-change');
-    expect(result.stdout).toContain('2/3 artifacts complete');
+    expect(result.stdout).toContain('2/4 artifacts complete');
   });
 
   describe('a namespace folder holding nested changes (#1846)', () => {

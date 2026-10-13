@@ -1,14 +1,15 @@
 # The outline schema
 
-`outline` is the built-in workflow schema. A change has three artifacts, written in this order:
+`outline` is the built-in workflow schema. A change has four artifacts, written in this order:
 
 | Artifact | File | Requires |
 |---|---|---|
 | `outline` | `outline.md` | nothing |
 | `design` | `design.md` | `outline` |
+| `diagrams` | `diagrams.md` | `outline` |
 | `tasks` | `tasks.md` | `outline` |
 
-`design` is optional: its instruction tells the agent to skip it unless the change needs technical decisions explained. Apply needs `tasks` and tracks progress in `tasks.md`.
+`design` is optional: its instruction tells the agent to skip it unless the change needs technical decisions explained. `diagrams` holds the views that explain the change (sequence diagrams, call trees, state machines, data shapes, and so on); its template lists the candidate views and when each fits. Apply needs only `tasks`, so `diagrams` never blocks it, and tracks progress in `tasks.md`.
 
 The templates are in [`schemas/outline/templates/`](../schemas/outline/templates/). To change any of this for a project, fork the schema ([Configuration](configuration.md#custom-schemas)).
 
@@ -85,6 +86,9 @@ if there is nothing.
 
 Run `outline-spec validate <change>` after writing; it checks that the outline
 archives cleanly against the live specs.
+
+When the workflow finishes and you summarize it to the user, include the full
+contents of outline.md verbatim in that reply, not a paraphrase or a link.
 ```
 
 ## design
@@ -114,6 +118,18 @@ Sections:
 If a question would change the outline or the tasks, ask the user now
 instead of deferring it. Reference outline.md for what changes; design
 covers how.
+```
+
+## diagrams
+
+Diagrams describing the change.
+
+### Instructions
+
+The instruction sent to the agent when it writes this artifact.
+
+```md
+Use diagrams to describe the proposed change. Each section in the template is a candidate visualization to explain the change. Some visualizations are applicable for certain changes, while others are not. Pick the smallest number of views that makes the point. Put each view right after the one-line text it supports. Before each visualization include a small muted text with the label of the visualization. (e.g. <sub>GraphQL Contract</sub>)
 ```
 
 ## tasks

@@ -8,6 +8,7 @@ A change moves through three steps: propose, apply, archive. Each is a skill and
 
 - `outline.md`: the proposal and the spec edits ([Outlines](outlines.md)).
 - `design.md`: only when the change needs technical decisions explained.
+- `diagrams.md`: the few views (sequence diagram, call tree, state machine, data shapes, and so on) that explain the change.
 - `tasks.md`: a checklist of implementation tasks, ending with the archive step.
 
 The agent reads the specs the change touches before writing the outline, and runs `outline-spec validate <change>` to check that the outline archives cleanly against them.

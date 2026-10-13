@@ -30,7 +30,7 @@ operations:
 |---|---|
 | `schema` | The workflow schema for new changes: `outline` or a custom schema's name. |
 | `context` | Free text added to every artifact's instructions and to apply and archive. Up to 50 KB. |
-| `rules` | Extra rules for one artifact, keyed by artifact id (`outline`, `design`, `tasks`, or a custom schema's ids). |
+| `rules` | Extra rules for one artifact, keyed by artifact id (`outline`, `design`, `diagrams`, `tasks`, or a custom schema's ids). |
 | `operations` | Advisory guidance for `apply` and `archive`. |
 | `store` | A store id to use as the root when this `outline-spec/` folder has no `specs/` or `changes/` ([Stores](stores.md)). |
 | `references` | Store ids whose specs are listed in instructions output, as ids or `{ id, remote }` ([Stores](stores.md#references)). |

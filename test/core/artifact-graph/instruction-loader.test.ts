@@ -62,6 +62,7 @@ describe('instruction-loader', () => {
       const TITLES: Record<string, string> = {
         outline: '# Outline',
         design: '# Design',
+        diagrams: '# Diagrams',
         tasks: '# Tasks',
       };
 
@@ -268,8 +269,8 @@ describe('instruction-loader', () => {
       const context = loadChangeContext(tempDir, 'my-change');
       const instructions = generateInstructions(context, 'outline');
 
-      // outline unlocks design and tasks, in the schema's declared order
-      expect(instructions.unlocks).toEqual(['design', 'tasks']);
+      // outline unlocks design, diagrams, and tasks, in the schema's declared order
+      expect(instructions.unlocks).toEqual(['design', 'diagrams', 'tasks']);
     });
 
     it('should have empty dependencies for root artifact', () => {
@@ -674,6 +675,7 @@ rules:
       // Create all files for the outline schema
       fs.writeFileSync(path.join(changeDir, 'outline.md'), '# Outline');
       fs.writeFileSync(path.join(changeDir, 'design.md'), '# Design');
+      fs.writeFileSync(path.join(changeDir, 'diagrams.md'), '# Diagrams');
       fs.writeFileSync(path.join(changeDir, 'tasks.md'), '# Tasks');
 
       const context = loadChangeContext(tempDir, 'my-change');
@@ -724,7 +726,7 @@ rules:
       const status = formatChangeStatus(context);
 
       const ids = status.artifacts.map(a => a.id);
-      expect(ids).toEqual(['outline', 'design', 'tasks']);
+      expect(ids).toEqual(['outline', 'design', 'diagrams', 'tasks']);
     });
   });
 });

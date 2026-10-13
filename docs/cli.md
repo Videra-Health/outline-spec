@@ -71,7 +71,7 @@ Shows which artifacts of a change are done, ready, or blocked.
 
 ### outline-spec instructions [artifact]
 
-Prints what the agent needs for its next step: how to write an artifact (`outline`, `design`, `tasks`), or the reserved forms `apply` and `archive`.
+Prints what the agent needs for its next step: how to write an artifact (`outline`, `design`, `diagrams`, `tasks`), or the reserved forms `apply` and `archive`.
 
 | Flag | Effect |
 |---|---|

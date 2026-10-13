@@ -44,8 +44,8 @@ describe('ViewCommand', () => {
     const lines = logOutput.map(stripAnsi);
     const planningIndex = lines.findIndex(line => line.includes('◉') && line.includes('planning'));
     const implementingIndex = lines.findIndex(line => line.includes('◉') && line.includes('implementing'));
-    expect(lines[planningIndex + 1]).toBe('    └─ [outline] outline→ design tasks✓');
-    expect(lines[implementingIndex + 1]).toBe('    └─ [outline] outline✓ design→ tasks✓');
+    expect(lines[planningIndex + 1]).toBe('    └─ [outline] outline→ design diagrams tasks✓');
+    expect(lines[implementingIndex + 1]).toBe('    └─ [outline] outline✓ design→ diagrams→ tasks✓');
     expect(lines[planningIndex]).toContain('50%');
     expect(lines[implementingIndex]).toContain('50%');
     expect(lines.join('\n')).toContain('Task Progress: 2/4 (50% complete)');
@@ -69,7 +69,7 @@ describe('ViewCommand', () => {
     const lines = logOutput.map(stripAnsi);
     expect(lines.filter(line => line.includes('◉'))).toHaveLength(2);
     expect(lines.filter(line => line.includes('└─'))).toEqual([
-      '    └─ [outline] outline→ design tasks✓',
+      '    └─ [outline] outline→ design diagrams tasks✓',
     ]);
     expect(warn).toHaveBeenCalledTimes(1);
     expect(stripAnsi(String(warn.mock.calls[0][0]))).toContain('Could not load workflow status for "broken":');
