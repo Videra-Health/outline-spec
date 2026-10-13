@@ -446,7 +446,12 @@ export async function resolveOutlineSpecRoot(
     throw new RootSelectionError(
       'No outline-spec root found from the current directory.',
       'no_outline_spec_root',
-      { target: 'outline-spec.root', fix: 'Run outline-spec init to create a root here.' }
+      {
+        target: 'outline-spec.root',
+        fix: fs.existsSync(path.join(startPath, 'openspec'))
+          ? 'This project uses OpenSpec (openspec/). Run outline-spec adopt to convert it, or outline-spec init to start fresh.'
+          : 'Run outline-spec init to create a root here.',
+      }
     );
   }
 

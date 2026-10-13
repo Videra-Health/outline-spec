@@ -209,6 +209,19 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
     ],
   },
   {
+    name: 'adopt',
+    description: 'Convert an OpenSpec project: move openspec/ to outline-spec/ and convert its specs to outlines',
+    acceptsPositional: true,
+    positionals: [{ name: 'path', type: 'path', optional: true }],
+    flags: [
+      {
+        name: 'dry-run',
+        description: 'Report what would change and write nothing',
+      },
+      COMMON_FLAGS.json,
+    ],
+  },
+  {
     name: 'migrate-specs',
     description: 'Convert old-format specs (### Requirement: / #### Scenario:) to outlines',
     flags: [

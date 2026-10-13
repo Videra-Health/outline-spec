@@ -26,6 +26,7 @@ const COMMAND_IMPLEMENTATIONS: Record<string, string[]> = {
   pending: ['commands/pending.js'],
   relabel: ['commands/relabel.js'],
   'migrate-specs': ['commands/migrate-specs.js'],
+  adopt: ['commands/adopt.js'],
   change: ['commands/change.js'],
   spec: ['commands/spec.js'],
   validate: ['commands/validate.js'],
@@ -129,6 +130,7 @@ describe('CLI startup loads only what the command needs', () => {
     ['list --json', 'list'],
     ['pending --json', 'pending'],
     ['migrate-specs --dry-run --json', 'migrate-specs'],
+    ['adopt --dry-run --json', 'adopt'],
   ])('`outline-spec %s` loads only the %s implementation', async (invocation, command) => {
     await ensureCliBuilt();
     const { own } = loadedModules(invocation.split(' '));

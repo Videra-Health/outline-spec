@@ -473,6 +473,21 @@ program
     }
   });
 
+program
+  .command('adopt [path]')
+  .description('Convert an OpenSpec project: move openspec/ to outline-spec/ and convert its specs to outlines')
+  .option('--dry-run', 'Report what would change and write nothing')
+  .option('--json', 'Output as JSON')
+  .action(async (targetPath = '.', options: { dryRun?: boolean; json?: boolean }) => {
+    try {
+      const { adoptCommand } = await import('../commands/adopt.js');
+      await adoptCommand(targetPath, options);
+    } catch (error) {
+      await failWithError(error, { enabled: options.json, fallbackCode: 'adopt_error' });
+      process.exit(1);
+    }
+  });
+
 registerSpecCommand(program);
 registerConfigCommand(program);
 registerSchemaCommand(program);
