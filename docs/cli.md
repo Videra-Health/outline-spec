@@ -71,7 +71,7 @@ Shows which artifacts of a change are done, ready, or blocked.
 
 ### outline-spec instructions [artifact]
 
-Prints what the agent needs for its next step: how to write an artifact (`outline`, `design`, `tasks`), or the reserved forms `apply` and `land` (`archive` is accepted for `land`).
+Prints what the agent needs for its next step: how to write an artifact (`outline`, `design`, `tasks`), or the reserved forms `apply` and `archive`.
 
 | Flag | Effect |
 |---|---|
@@ -79,21 +79,19 @@ Prints what the agent needs for its next step: how to write an artifact (`outlin
 | `--schema <name>` | Override the schema. |
 | `--json`, `--store <id>` | |
 
-The artifact form gives the output path, the schema instruction, the template, project context and rules, and what the artifact unlocks. `apply` gives context files, task progress, `state` (`blocked`, `ready`, `all_done`), and the apply instruction. `land` gives project context and operation guidance from `config.yaml`.
+The artifact form gives the output path, the schema instruction, the template, project context and rules, and what the artifact unlocks. `apply` gives context files, task progress, `state` (`blocked`, `ready`, `all_done`), and the apply instruction. `archive` gives project context and operation guidance from `config.yaml`.
 
 In the `apply` JSON, each `tasks` entry carries `id`, `description`, `done`, `sourcePath`, and `line`. `sourcePath` is the absolute path to the tracked file that supplied the task, and `line` is the task checkbox's one-based line number in that file.
 
-### outline-spec land [change]
+### outline-spec archive [change]
 
-Applies a change's `outline.md` to the live specs and deletes the change folder. It checks the whole outline first and writes nothing if any edit doesn't fit ([What landing checks](outlines.md#what-landing-checks)). It warns about unchecked tasks.
+Applies a change's `outline.md` to the live specs and deletes the change folder. It checks the whole outline first and writes nothing if any edit doesn't fit ([What archiving checks](outlines.md#what-archiving-checks)). There is no archive folder; git history is the record. It warns about unchecked tasks.
 
 | Flag | Effect |
 |---|---|
 | `--dry-run` | Print the resulting spec text and write nothing. |
 | `-y, --yes` | Skip confirmation prompts. |
 | `--json`, `--store <id>` | |
-
-`outline-spec archive` is the old name and takes the same flags.
 
 ### outline-spec pending
 
@@ -120,13 +118,13 @@ Shows a change or a spec.
 | Flag | Effect |
 |---|---|
 | `--type change\|spec` | Disambiguate a name used by both. |
-| `--diff` | For a change: the spec text it would land. |
+| `--diff` | For a change: the spec text archiving it would produce. |
 | `--item <path>` | For a spec: one requirement or detail, as `"Payment"` or `"Cart total.b.i"`. |
 | `--json`, `--no-interactive`, `--store <id>` | |
 
 ### outline-spec validate [item]
 
-Checks that specs parse as outlines with a purpose and well-formed labels, and that changes land cleanly against the live specs.
+Checks that specs parse as outlines with a purpose and well-formed labels, and that changes archive cleanly against the live specs.
 
 | Flag | Effect |
 |---|---|

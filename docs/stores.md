@@ -45,7 +45,7 @@ Every command run inside the repo then acts on the store with no flag. Commit th
 
 To install skills and commands in such a repo, run `outline-spec init --tools <ids>` from the repository root. `config.yaml` is preserved byte-for-byte, and `outline-spec/specs/` and `outline-spec/changes/` are not created. Init refuses from a subdirectory, and refuses `--language` because the language belongs in the external store's config.
 
-The workflows are the same in a store: propose, apply, and land write to the store's folders. Commit and push the store to share a change.
+The workflows are the same in a store: propose, apply, and archive write to the store's folders. Commit and push the store to share a change.
 
 ## References
 

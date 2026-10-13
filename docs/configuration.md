@@ -21,17 +21,17 @@ operations:
   apply:
     guidance:
       - Keep test summaries concise
-  land:
+  archive:
     guidance:
-      - Summarize the landed spec edits before finishing
+      - Summarize the archived spec edits before finishing
 ```
 
 | Key | Effect |
 |---|---|
 | `schema` | The workflow schema for new changes: `outline` or a custom schema's name. |
-| `context` | Free text added to every artifact's instructions and to apply and land. Up to 50 KB. |
+| `context` | Free text added to every artifact's instructions and to apply and archive. Up to 50 KB. |
 | `rules` | Extra rules for one artifact, keyed by artifact id (`outline`, `design`, `tasks`, or a custom schema's ids). |
-| `operations` | Advisory guidance for `apply` and `land`. `archive` is read as `land` when `land` isn't set. |
+| `operations` | Advisory guidance for `apply` and `archive`. |
 | `store` | A store id to use as the root when this `outline-spec/` folder has no `specs/` or `changes/` ([Stores](stores.md)). |
 | `references` | Store ids whose specs are listed in instructions output, as ids or `{ id, remote }` ([Stores](stores.md#references)). |
 
@@ -75,4 +75,4 @@ This writes `outline-spec/schemas/my-flow/` with `schema.yaml` and `templates/`.
 
 Schemas resolve from the project (`outline-spec/schemas/`), then your user data folder (`~/.local/share/outline-spec/schemas/`, or `$XDG_DATA_HOME/outline-spec/schemas/`), then the built-in ones. `outline-spec schema which --all` shows where each comes from, and `outline-spec schema validate <name>` checks one.
 
-Keep an `outline` artifact that writes `outline.md` if you want `land`, `pending`, and `validate` to work: they read the change's `outline.md`, whatever the schema.
+Keep an `outline` artifact that writes `outline.md` if you want `archive`, `pending`, and `validate` to work: they read the change's `outline.md`, whatever the schema.

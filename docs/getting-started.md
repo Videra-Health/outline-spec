@@ -65,10 +65,10 @@ Then:
 The agent implements the tasks and checks them off. When they're done:
 
 ```
-/outline-spec:land
+/outline-spec:archive
 ```
 
-It validates the change, shows you the spec it will write, writes `outline-spec/specs/settings/spec.md`, and deletes the change folder. Commit.
+It validates the change, shows you the spec it will write, writes `outline-spec/specs/settings/spec.md`, and deletes the change folder (there is no archive folder; git history is the record). Commit.
 
 ## Next
 

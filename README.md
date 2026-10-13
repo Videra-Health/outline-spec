@@ -1,6 +1,6 @@
 # outline-spec
 
-outline-spec gives you and your coding agent a written plan before code is written, and keeps a living spec of what the software does. Specs are labeled outlines. Each change carries its spec edits as a small outline of its own, marked up with `~~removed~~` and `**added**` text, and landing the change applies those edits to the live specs by label.
+outline-spec gives you and your coding agent a written plan before code is written, and keeps a living spec of what the software does. Specs are labeled outlines. Each change carries its spec edits as a small outline of its own, marked up with `~~removed~~` and `**added**` text, and archiving the change applies those edits to the live specs by label.
 
 ```
 1. checkout:
@@ -9,7 +9,7 @@ outline-spec gives you and your coding agent a written plan before code is writt
       i. Orders over ~~$50~~ **$75** ship free.
 ```
 
-Because an edit addresses one labeled detail, two changes that touch different details of the same requirement both land cleanly. When they touch the same detail, the second one stops with a clear error instead of overwriting the first.
+Because an edit addresses one labeled detail, two changes that touch different details of the same requirement both archive cleanly. When they touch the same detail, the second one stops with a clear error instead of overwriting the first.
 
 ## Fork notice
 
@@ -37,7 +37,7 @@ outline-spec init                      # pick your AI tools
 # in your AI tool:
 /outline-spec:propose add dark mode    # writes outline.md and tasks.md
 /outline-spec:apply                    # implements the tasks
-/outline-spec:land                     # applies the outline to the specs
+/outline-spec:archive                  # applies the outline to the specs
 ```
 
 Moving from OpenSpec? Run `outline-spec adopt` ([Adopting](docs/adopting.md)).
@@ -46,7 +46,7 @@ Moving from OpenSpec? Run `outline-spec adopt` ([Adopting](docs/adopting.md)).
 
 - [Getting started](docs/getting-started.md)
 - [Outlines](docs/outlines.md): the spec and change format
-- [Workflows](docs/workflows.md): propose, apply, land, and parallel changes
+- [Workflows](docs/workflows.md): propose, apply, archive, and parallel changes
 - [CLI](docs/cli.md)
 - [Skills and commands](docs/skills.md)
 - [Configuration](docs/configuration.md) and [the outline schema](docs/schema.md)

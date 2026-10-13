@@ -55,7 +55,7 @@ The `## Purpose` text becomes the purpose. Each `### Requirement:` becomes a num
 ## What it can't convert
 
 - **Content with no place in an outline**: code blocks, tables, other `##` sections, other headings, or text before the first requirement. Adopt lists each line with its reason and moves nothing. Rewrite those lines in `openspec/specs/` as requirement text, details, or scenarios, then run it again.
-- **Open changes in delta format** (`proposal.md` plus `specs/` deltas). Adopt moves them but can't turn deltas into outline edits, and lists them at the end. Write an `outline.md` for each ([Outlines](outlines.md)), or land them with OpenSpec before adopting.
+- **Open changes in delta format** (`proposal.md` plus `specs/` deltas). Adopt moves them but can't turn deltas into outline edits, and lists them at the end. Write an `outline.md` for each ([Outlines](outlines.md)), or archive them with OpenSpec before adopting.
 
 Adopt refuses if `outline-spec/` already exists.
 

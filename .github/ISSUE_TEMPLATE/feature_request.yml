@@ -16,7 +16,7 @@ body:
     attributes:
       label: Who this affects
       description: Just you, everyone on a particular agent, everyone using a particular workflow, or everyone. outline-spec serves many agents and models, so this shapes whether a change fits.
-      placeholder: Anyone landing more than a handful of changes.
+      placeholder: Anyone archiving more than a handful of changes.
     validations:
       required: true
 

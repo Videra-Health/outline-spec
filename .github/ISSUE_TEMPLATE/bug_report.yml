@@ -17,7 +17,7 @@ body:
       label: What happened
       description: The actual behavior. Paste the command you ran and its output if you have it.
       placeholder: |
-        I ran `outline-spec land add-login` and it exited 0 without editing the spec.
+        I ran `outline-spec archive add-login` and it exited 0 without editing the spec.
     validations:
       required: true
 

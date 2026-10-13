@@ -4,7 +4,7 @@
 
 Report privately through [GitHub Security Advisories](https://github.com/heneryville/outline-spec/security/advisories/new). Please don't open a public issue for a suspected vulnerability. Include the affected version or commit, reproduction steps, and the impact you see.
 
-Fixes land on `main`. There are no maintained release branches.
+Fixes go to `main`. There are no maintained release branches.
 
 ## Threat model
 

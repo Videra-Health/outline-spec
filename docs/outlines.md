@@ -1,6 +1,6 @@
 # Outlines
 
-Specs in `outline-spec/specs/<name>/spec.md` are labeled outlines. A change holds its spec edits in its own `outline.md`, also an outline, until it lands. Landing applies the edits to the live specs and deletes the change folder. Git history is the archive.
+Specs in `outline-spec/specs/<name>/spec.md` are labeled outlines. A change holds its spec edits in its own `outline.md`, also an outline, until it is archived. Archiving applies the edits to the live specs and deletes the change folder. There is no archive folder; git history is the record.
 
 ## Spec files
 
@@ -25,7 +25,7 @@ How a shopper pays for the items in their cart.
 
 ### Labels never shift
 
-A removed item leaves a gap (`2.b` above is gone, so `2.c` stays `c`). A new item goes at the end of its level. Labels stay stable, so an open change can keep addressing `Payment › c` while other changes land around it.
+A removed item leaves a gap (`2.b` above is gone, so `2.c` stays `c`). A new item goes at the end of its level. Labels stay stable, so an open change can keep addressing `Payment › c` while other changes are archived around it.
 
 To close gaps, run `outline-spec relabel <spec>`. It refuses while any open change edits that spec, because those changes address the old labels.
 
@@ -51,7 +51,7 @@ Edits to existing text are marked inline:
 - A wholly struck item, `~~text~~`, removes the item and everything under it.
 - Unmarked text on an existing label changes nothing.
 
-Struck text must match the live spec exactly (whitespace aside). If it doesn't, landing stops and writes nothing, rather than edit an item that moved on.
+Struck text must match the live spec exactly (whitespace aside). If it doesn't, archiving stops and writes nothing, rather than edit an item that moved on.
 
 ### Renames and removals
 
@@ -60,7 +60,7 @@ Struck text must match the live spec exactly (whitespace aside). If it doesn't, 
 - **Edit a spec's purpose** the same way, after the spec name: `checkout: How a shopper pays for ~~the items in their cart~~ **an order**.`
 - **Remove a detail** by striking its text, with the label outside the marks: `c. ~~A declined card shows the processor's reason.~~`
 - **Remove a requirement**: strike the whole line, `~~Guest checkout: A shopper can pay without an account.~~`
-- **Remove a spec**: strike its top-level line, `~~checkout: How a shopper pays for the items in their cart.~~`. Landing deletes the spec file.
+- **Remove a spec**: strike its top-level line, `~~checkout: How a shopper pays for the items in their cart.~~`. Archiving deletes the spec file.
 
 ## Worked example
 
@@ -89,7 +89,7 @@ Raise the free-shipping line to $75, accept digital wallets, drop guest checkout
 - `d.` is new: the spec's last detail under `Payment` is `c`, so the next label is `d`, even though `b` is a gap.
 - `receipts` doesn't exist yet, so its purpose follows the colon and everything under it is written plainly.
 
-`outline-spec land wallets --dry-run` prints the result:
+`outline-spec archive wallets --dry-run` prints the result:
 
 ```
 # checkout
@@ -115,9 +115,9 @@ What the shopper gets after paying.
 
 Requirement `3` is gone and leaves a gap. No other label moved.
 
-## What landing checks
+## What archiving checks
 
-`outline-spec validate <change>` and `outline-spec land <change>` stop, with every problem listed, when:
+`outline-spec validate <change>` and `outline-spec archive <change>` stop, with every problem listed, when:
 
 - struck text doesn't match the live item, sentence, or purpose;
 - a `(patch)` requirement, or a detail label being edited or removed, doesn't exist;
@@ -129,4 +129,4 @@ Nothing is written when any check fails. [Workflows](workflows.md#when-a-change-
 
 ## Why outlines
 
-OpenSpec's delta specs replace whole requirements, so two changes that edit different details of one requirement overwrite each other when the second lands. Outline edits address single details by label, so those two changes merge. When they do touch the same item, struck text no longer matches and landing stops instead of overwriting.
+OpenSpec's delta specs replace whole requirements, so two changes that edit different details of one requirement overwrite each other when the second is archived. Outline edits address single details by label, so those two changes merge. When they do touch the same item, struck text no longer matches and archiving stops instead of overwriting.

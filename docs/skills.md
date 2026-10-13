@@ -23,12 +23,11 @@ Commit the installed files with the rest of your project.
 | `explore` | `outline-spec-explore` | A thinking partner for an idea or a problem. It reads code and specs and never writes code. It captures the discussion only when you ask, or say yes when it offers: it runs `outline-spec new change` and writes the artifacts you name. |
 | `apply` | `outline-spec-apply-change` | Implements a change's tasks and checks each off in the tracked file identified by `sourcePath` and one-based `line`. A schema can track tasks across multiple files. |
 | `update` | `outline-spec-update-change` | Revises a change's artifacts and keeps them consistent with each other. Never edits code. |
-| `land` | `outline-spec-land-change` | Validates, previews with `--dry-run`, and lands a finished change ([Workflows](workflows.md#land)). |
-| `archive` | `outline-spec-archive-change` | The old name for `land`; routes to the same flow. |
+| `archive` | `outline-spec-archive-change` | Validates, previews with `--dry-run`, and archives a finished change: applies its outline to the specs and deletes the folder ([Workflows](workflows.md#archive)). |
 | `new` | `outline-spec-new-change` | Creates an empty change and stops, ready for `continue`. |
 | `continue` | `outline-spec-continue-change` | Writes the next ready artifact of a change. |
 | `ff` | `outline-spec-ff-change` | Writes every artifact a change needs before implementation, in one pass. |
-| `verify` | `outline-spec-verify-change` | Checks that the implementation matches the change's artifacts before landing. |
+| `verify` | `outline-spec-verify-change` | Checks that the implementation matches the change's artifacts before archiving. |
 | `onboard` | `outline-spec-onboard` | Walks through one real change end to end, explaining each step. |
 
 ## Profiles
@@ -37,11 +36,11 @@ A profile chooses which workflows are installed. It's a global setting, per mach
 
 ### Core profile
 
-The default `core` profile installs `propose`, `explore`, `apply`, `update`, `land`, and `archive`.
+The default `core` profile installs `propose`, `explore`, `apply`, `update`, and `archive`.
 
 ### Custom profile
 
-`outline-spec config profile` opens a picker for the workflow set and the delivery form. Any set other than the core one is saved as `custom`. `archive` needs `land`, so choosing `archive` installs `land` too. `outline-spec config profile core` goes back to the core set.
+`outline-spec config profile` opens a picker for the workflow set and the delivery form. Any set other than the core one is saved as `custom`. `outline-spec config profile core` goes back to the core set.
 
 ### Delivery
 

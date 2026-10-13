@@ -26,7 +26,7 @@ The instruction sent to the agent when it writes this artifact.
 State the proposal in one or two sentences under `## Proposal`.
 
 Under `## Requirements`, write a nested outline, one sentence per item.
-This outline is the change's spec edits: `outline-spec land <change>` applies
+This outline is the change's spec edits: `outline-spec archive <change>` applies
 it to the live specs in `outline-spec/specs/` and deletes the change folder.
 
 Before writing, read the specs this change touches. Run `outline-spec list --specs`
@@ -69,7 +69,7 @@ included, a few words per item, as a flat numbered list. Omit the section
 if there is nothing.
 
 Run `outline-spec validate <change>` after writing; it checks that the outline
-lands cleanly against the live specs.
+archives cleanly against the live specs.
 ```
 
 ## design
@@ -124,9 +124,9 @@ Guidelines:
 - Each task is a checkbox: `- [ ] N.M Task description`.
 - Tasks should be small enough to complete in one session, ordered by dependency.
 - Each task states how to verify it (a test, command, or observable behavior).
-- Each group lands the tests and docs its own work calls for; don't collect
+- Each group includes the tests and docs its own work calls for; don't collect
   them into a final group.
-- The last task lands the change: `outline-spec land <change>`, which applies
+- The last task archives the change: `outline-spec archive <change>`, which applies
   outline.md to the live specs and deletes the change folder.
 
 Reference outline.md for what to build and design.md (if present) for how.
