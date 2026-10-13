@@ -2,6 +2,7 @@
 
 - TypeScript CLI, built with `pnpm build` into `dist/`; the entry point is `bin/outline-spec.js`.
 - Checks: `pnpm build && pnpm exec tsc --noEmit && pnpm lint && pnpm test`. Tests run against `dist/`, so build first.
+- The full suite takes about 2 minutes. While working, build and run only the affected files (`pnpm exec vitest run <file>`); run the full checks once, before the final commit.
 - The outline format lives in `src/core/outline/`; the `pending`, `relabel`, `migrate-specs`, and `adopt` commands are in `src/commands/`, and `archive` is in `src/core/archive.ts`. [docs/outlines.md](docs/outlines.md) describes the format.
 - Workflow skills are generated from `src/core/templates/workflows/`. After editing one, run `pnpm generate:skills` and `pnpm regen:parity-hashes`.
 - This repo's own specs are in `outline-spec/specs/`. Plan larger changes as `outline-spec/changes/<name>/`.
