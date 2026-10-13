@@ -14,7 +14,7 @@ Define AI tool path metadata used to generate outline-spec skills and commands i
   g. DeepSeek Harness paths defined: WHEN looking up the `dsh` tool THEN `skillsDir` SHALL be `.dsh` AND auto-detection SHALL require `.dsh` to be a directory AND outline-spec SHALL write dsh skills under `<projectRoot>/.dsh/skills/` using platform-native path joining
   h. Grok Build paths defined: WHEN looking up the `grok` tool THEN `skillsDir` SHALL be `.grok`
   i. Warp paths and detection defined: WHEN looking up the `warp` tool THEN `skillsDir` SHALL be `.warp` AND `detectionPaths` SHALL include `.warp` and `WARP.md`
-  j. Warp invokes skills without command files: WHEN generating workflows for the `warp` tool with delivery set to `commands` THEN skills SHALL remain installed in `.warp/skills/` AND no command adapter or command files SHALL be required AND each skill SHALL be directly invocable by its `/outline-spec-*` name
+  j. Warp invokes skills without command files: WHEN generating workflows for the `warp` tool with delivery set to `commands` THEN skills SHALL remain installed in `.warp/skills/` AND no command adapter or command files SHALL be required AND each skill SHALL be directly invocable by its `/outl-*` name
   k. Tools without skillsDir: WHEN a tool has no `skillsDir` defined THEN skill generation SHALL error with message indicating the tool is not supported
 3. Cross-platform path handling: The system SHALL handle paths correctly across operating systems.
   a. Path construction on Windows: WHEN constructing skill paths on Windows THEN the system SHALL use `path.join()` for all path construction AND SHALL NOT hardcode forward slashes

@@ -17,7 +17,7 @@ import { PROJECT_ROOT_GUARD } from './project-root.js';
  */
 const EXPLORE_MODE_NOTE = optionalWorkflow(
   'explore',
-  'Explore mode (`/outline-spec:explore`) is for this kind of thinking—investigating before implementing. You can use it anytime you need to think through a problem.',
+  'Explore mode (`/outl:explore`) is for this kind of thinking—investigating before implementing. You can use it anytime you need to think through a problem.',
   'Investigating before implementing is worth doing whenever a problem needs thinking through.'
 );
 
@@ -27,25 +27,25 @@ const EXPLORE_MODE_NOTE = optionalWorkflow(
  * commands the reader can run — and stays a valid table either way.
  */
 const COMMAND_REFERENCE_ROWS = [
-  onlyWithWorkflow('propose', ' | `/outline-spec:propose` | Create a change and generate all artifacts |'),
-  onlyWithWorkflow('explore', ' | `/outline-spec:explore` | Think through problems before/during work  |'),
-  onlyWithWorkflow('apply', ' | `/outline-spec:apply`   | Implement tasks from a change              |'),
-  onlyWithWorkflow('archive', ' | `/outline-spec:archive` | Apply a finished change to the specs       |'),
-  onlyWithWorkflow('new', ' | `/outline-spec:new`     | Start a new change, one artifact at a time |'),
-  onlyWithWorkflow('continue', ' | `/outline-spec:continue` | Continue working on an existing change    |'),
-  onlyWithWorkflow('ff', ' | `/outline-spec:ff`      | Fast-forward: create all artifacts at once |'),
-  onlyWithWorkflow('verify', ' | `/outline-spec:verify`  | Verify implementation matches artifacts    |'),
+  onlyWithWorkflow('propose', ' | `/outl:propose` | Create a change and generate all artifacts |'),
+  onlyWithWorkflow('explore', ' | `/outl:explore` | Think through problems before/during work  |'),
+  onlyWithWorkflow('apply', ' | `/outl:apply`   | Implement tasks from a change              |'),
+  onlyWithWorkflow('archive', ' | `/outl:archive` | Apply a finished change to the specs       |'),
+  onlyWithWorkflow('new', ' | `/outl:new`     | Start a new change, one artifact at a time |'),
+  onlyWithWorkflow('continue', ' | `/outl:continue` | Continue working on an existing change    |'),
+  onlyWithWorkflow('ff', ' | `/outl:ff`      | Fast-forward: create all artifacts at once |'),
+  onlyWithWorkflow('verify', ' | `/outl:verify`  | Verify implementation matches artifacts    |'),
 ].join('\n');
 
 const QUICK_REFERENCE_ROWS = [
-  onlyWithWorkflow('propose', ' | `/outline-spec:propose <name>`  | Create a change and generate all artifacts |'),
-  onlyWithWorkflow('explore', ' | `/outline-spec:explore`         | Think through problems (no code changes)   |'),
-  onlyWithWorkflow('apply', ' | `/outline-spec:apply <name>`    | Implement tasks                            |'),
-  onlyWithWorkflow('archive', ' | `/outline-spec:archive <name>`  | Archive when done                          |'),
-  onlyWithWorkflow('new', ' | `/outline-spec:new <name>`      | Start a new change, step by step           |'),
-  onlyWithWorkflow('continue', ' | `/outline-spec:continue <name>` | Continue an existing change                |'),
-  onlyWithWorkflow('ff', ' | `/outline-spec:ff <name>`       | Fast-forward: all artifacts at once        |'),
-  onlyWithWorkflow('verify', ' | `/outline-spec:verify <name>`   | Verify implementation                      |'),
+  onlyWithWorkflow('propose', ' | `/outl:propose <name>`  | Create a change and generate all artifacts |'),
+  onlyWithWorkflow('explore', ' | `/outl:explore`         | Think through problems (no code changes)   |'),
+  onlyWithWorkflow('apply', ' | `/outl:apply <name>`    | Implement tasks                            |'),
+  onlyWithWorkflow('archive', ' | `/outl:archive <name>`  | Archive when done                          |'),
+  onlyWithWorkflow('new', ' | `/outl:new <name>`      | Start a new change, step by step           |'),
+  onlyWithWorkflow('continue', ' | `/outl:continue <name>` | Continue an existing change                |'),
+  onlyWithWorkflow('ff', ' | `/outl:ff <name>`       | Fast-forward: all artifacts at once        |'),
+  onlyWithWorkflow('verify', ' | `/outl:verify <name>`   | Verify implementation                      |'),
 ].join('\n');
 
 /**
@@ -53,26 +53,26 @@ const QUICK_REFERENCE_ROWS = [
  * sentence that introduces them stands on its own without either.
  */
 const RESUME_HINTS = [
-  onlyWithWorkflow('continue', '- `/outline-spec:continue <name>` - Resume artifact creation'),
-  onlyWithWorkflow('apply', '- `/outline-spec:apply <name>` - Jump to implementation (if tasks exist)'),
+  onlyWithWorkflow('continue', '- `/outl:continue <name>` - Resume artifact creation'),
+  onlyWithWorkflow('apply', '- `/outl:apply <name>` - Jump to implementation (if tasks exist)'),
 ].join('\n');
 
 /** Where the tutorial points once it is over. */
 const NEXT_STEP_INVITE = optionalWorkflow(
   'propose',
-  'Try `/outline-spec:propose` on something you actually want to build. You\'ve got the rhythm now!',
+  'Try `/outl:propose` on something you actually want to build. You\'ve got the rhythm now!',
   'Try this on something you actually want to build. You\'ve got the rhythm now!'
 );
 
 const QUICK_REFERENCE_INVITE = optionalWorkflow(
   'propose',
-  'Try `/outline-spec:propose` to start your first change.',
+  'Try `/outl:propose` to start your first change.',
   'Ask me to start your first change whenever you are ready.'
 );
 
 export function getOnboardSkillTemplate(): SkillTemplate {
   return {
-    name: 'outline-spec-onboard',
+    name: 'outl-onboard',
     description: 'Guided onboarding for outline-spec - walk through a complete workflow cycle with narration and real codebase work. Also use when the user says "outline-spec onboard".',
     instructions: getOnboardInstructions(),
     license: 'MIT',
@@ -102,7 +102,7 @@ outline-spec --version 2>&1 || echo "CLI_NOT_INSTALLED"
 \`\`\`
 
 **If CLI not installed:**
-> outline-spec CLI is not installed. Install it first, then come back to \`/outline-spec:onboard\`.
+> outline-spec CLI is not installed. Install it first, then come back to \`/outl:onboard\`.
 
 Stop here if not installed.
 

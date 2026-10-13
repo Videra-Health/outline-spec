@@ -1,8 +1,11 @@
 import path from 'path';
 import * as fs from 'fs';
-import { AI_TOOLS, OUTLINE_SPEC_SKILL_NAMES, type AIToolOption } from './config.js';
+import { AI_TOOLS, LEGACY_OUTLINE_SPEC_SKILL_NAMES, OUTLINE_SPEC_SKILL_NAMES, type AIToolOption } from './config.js';
 import { FileSystemUtils } from '../utils/file-system.js';
 import { resolveCommandSurfaceCapability } from './command-surface.js';
+
+// Old-prefix skills still signal ownership until update replaces them.
+const KNOWN_SKILL_NAMES = [...OUTLINE_SPEC_SKILL_NAMES, ...LEGACY_OUTLINE_SPEC_SKILL_NAMES];
 
 const TARGET_MARKER = '.outline-spec-target';
 
@@ -29,7 +32,7 @@ export function readSharedSkillTarget(
 export function hasLegacySkills(projectPath: string, tool: AIToolOption): boolean {
   return (tool.legacySkillsDirs ?? []).some((root) => {
     const skillsDir = path.join(projectPath, root, 'skills');
-    return OUTLINE_SPEC_SKILL_NAMES.some((skillName) => {
+    return KNOWN_SKILL_NAMES.some((skillName) => {
       try {
         const skillFile = path.join(skillsDir, skillName, 'SKILL.md');
         FileSystemUtils.assertProjectArtifactPath(projectPath, skillFile);
@@ -48,13 +51,13 @@ export function hasLegacySkills(projectPath: string, tool: AIToolOption): boolea
 function inferSharedSkillTarget(projectPath: string, skillsDir: string): string | undefined {
   let foundGenericReference = false;
 
-  for (const skillName of OUTLINE_SPEC_SKILL_NAMES) {
+  for (const skillName of KNOWN_SKILL_NAMES) {
     const skillFile = path.join(projectPath, skillsDir, 'skills', skillName, 'SKILL.md');
     try {
       FileSystemUtils.assertProjectArtifactPath(projectPath, skillFile);
       const content = fs.readFileSync(skillFile, 'utf-8');
-      if (content.includes('$outline-spec-')) return 'codex';
-      if (content.includes('/outline-spec-')) foundGenericReference = true;
+      if (/\$(outl|outline-spec)-/.test(content)) return 'codex';
+      if (/\/(outl|outline-spec)-/.test(content)) foundGenericReference = true;
     } catch {
       // Missing, unreadable, or out-of-project files provide no ownership signal.
     }
@@ -65,7 +68,7 @@ function inferSharedSkillTarget(projectPath: string, skillsDir: string): string 
 
 /** Whether the canonical shared root already contains an outline-spec skill. */
 function hasCurrentSkills(projectPath: string, skillsDir: string): boolean {
-  return OUTLINE_SPEC_SKILL_NAMES.some((skillName) => {
+  return KNOWN_SKILL_NAMES.some((skillName) => {
     const skillFile = path.join(projectPath, skillsDir, 'skills', skillName, 'SKILL.md');
     try {
       FileSystemUtils.assertProjectArtifactPath(projectPath, skillFile);

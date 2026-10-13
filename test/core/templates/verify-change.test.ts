@@ -140,7 +140,7 @@ describe('verify-change templates', () => {
       expect(body, label).toContain('outline-spec validate "<name>"');
       expect(body, label).toContain('outline-spec archive "<name>" --dry-run');
       expect(body, label).toContain('Never report a removed item as "Requirement not found"');
-      for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven', 'skip_specs']) {
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/outl:sync', 'spec-driven', 'skip_specs']) {
         expect(body, label).not.toContain(stale);
       }
     }

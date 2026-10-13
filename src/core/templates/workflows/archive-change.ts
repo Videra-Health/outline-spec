@@ -16,7 +16,7 @@ const ARCHIVE_STEPS = `**Input**: Optionally specify a change name. If omitted, 
    - Auto-select if only one active change exists
    - If ambiguous, run \`outline-spec list --json\` and ask the user to select one
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/outline-spec:archive <other>\`).
+   Always announce: "Using change: <name>" and how to override (e.g., \`/outl:archive <other>\`).
 
 2. **Load project guidance (advisory)**
 
@@ -88,7 +88,7 @@ ${ARCHIVE_STEPS}`;
 
 export function getArchiveChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'outline-spec-archive-change',
+    name: 'outl-archive-change',
     description: 'Archive a finished outline-spec change, applying its outline.md to the live specs and deleting the change folder. Use when implementation is done and the user wants to finalize or archive a change. Also use when the user says "outline-spec archive".',
     instructions: BODY,
     license: 'MIT',

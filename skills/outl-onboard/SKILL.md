@@ -1,5 +1,5 @@
 ---
-name: outline-spec-onboard
+name: outl-onboard
 description: Guided onboarding for outline-spec - walk through a complete workflow cycle with narration and real codebase work. Also use when the user says "outline-spec onboard".
 allowed-tools: Bash(outline-spec:*)
 license: MIT
@@ -38,7 +38,7 @@ outline-spec --version 2>&1 || echo "CLI_NOT_INSTALLED"
 ```
 
 **If CLI not installed:**
-> outline-spec CLI is not installed. Install it first, then come back to `/outline-spec-onboard`.
+> outline-spec CLI is not installed. Install it first, then come back to `/outl-onboard`.
 
 Stop here if not installed.
 
@@ -165,7 +165,7 @@ Spend 1-2 minutes investigating the relevant code:
 │   [Optional: ASCII diagram if helpful]  │
 └─────────────────────────────────────────┘
 
-Explore mode (`/outline-spec-explore`) is for this kind of thinking—investigating before implementing. You can use it anytime you need to think through a problem.
+Explore mode (`/outl-explore`) is for this kind of thinking—investigating before implementing. You can use it anytime you need to think through a problem.
 
 Now let's create a change to hold our work.
 ```
@@ -412,20 +412,20 @@ This same rhythm works for any size change—a small fix or a major feature.
 
  | Command          | What it does                               |
  |------------------|--------------------------------------------|
- | `/outline-spec-propose` | Create a change and generate all artifacts |
- | `/outline-spec-explore` | Think through problems before/during work  |
- | `/outline-spec-apply-change`   | Implement tasks from a change              |
- | `/outline-spec-archive-change` | Apply a finished change to the specs       |
- | `/outline-spec-new-change`     | Start a new change, one artifact at a time |
- | `/outline-spec-continue-change` | Continue working on an existing change    |
- | `/outline-spec-ff-change`      | Fast-forward: create all artifacts at once |
- | `/outline-spec-verify-change`  | Verify implementation matches artifacts    |
+ | `/outl-propose` | Create a change and generate all artifacts |
+ | `/outl-explore` | Think through problems before/during work  |
+ | `/outl-apply-change`   | Implement tasks from a change              |
+ | `/outl-archive-change` | Apply a finished change to the specs       |
+ | `/outl-new-change`     | Start a new change, one artifact at a time |
+ | `/outl-continue-change` | Continue working on an existing change    |
+ | `/outl-ff-change`      | Fast-forward: create all artifacts at once |
+ | `/outl-verify-change`  | Verify implementation matches artifacts    |
 
 ---
 
 ## What's Next?
 
-Try `/outline-spec-propose` on something you actually want to build. You've got the rhythm now!
+Try `/outl-propose` on something you actually want to build. You've got the rhythm now!
 ```
 
 ---
@@ -440,8 +440,8 @@ If the user says they need to stop, want to pause, or seem disengaged:
 No problem! Your change is saved at the `changeRoot` reported by `outline-spec status --change "<name>" --json`.
 
 To pick up where we left off later, `outline-spec status --change "<name>" --json` shows exactly where the change stands.
-- `/outline-spec-continue-change <name>` - Resume artifact creation
-- `/outline-spec-apply-change <name>` - Jump to implementation (if tasks exist)
+- `/outl-continue-change <name>` - Resume artifact creation
+- `/outl-apply-change <name>` - Jump to implementation (if tasks exist)
 
 The work won't be lost. Come back whenever you're ready.
 ```
@@ -459,16 +459,16 @@ If the user says they just want to see the commands or skip the tutorial:
 
  | Command                  | What it does                               |
  |--------------------------|--------------------------------------------|
- | `/outline-spec-propose <name>`  | Create a change and generate all artifacts |
- | `/outline-spec-explore`         | Think through problems (no code changes)   |
- | `/outline-spec-apply-change <name>`    | Implement tasks                            |
- | `/outline-spec-archive-change <name>`  | Archive when done                          |
- | `/outline-spec-new-change <name>`      | Start a new change, step by step           |
- | `/outline-spec-continue-change <name>` | Continue an existing change                |
- | `/outline-spec-ff-change <name>`       | Fast-forward: all artifacts at once        |
- | `/outline-spec-verify-change <name>`   | Verify implementation                      |
+ | `/outl-propose <name>`  | Create a change and generate all artifacts |
+ | `/outl-explore`         | Think through problems (no code changes)   |
+ | `/outl-apply-change <name>`    | Implement tasks                            |
+ | `/outl-archive-change <name>`  | Archive when done                          |
+ | `/outl-new-change <name>`      | Start a new change, step by step           |
+ | `/outl-continue-change <name>` | Continue an existing change                |
+ | `/outl-ff-change <name>`       | Fast-forward: all artifacts at once        |
+ | `/outl-verify-change <name>`   | Verify implementation                      |
 
-Try `/outline-spec-propose` to start your first change.
+Try `/outl-propose` to start your first change.
 ```
 
 Exit gracefully.

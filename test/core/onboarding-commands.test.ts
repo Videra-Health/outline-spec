@@ -10,21 +10,21 @@ describe('getOnboardingCommands', () => {
   it('omits commands the profile does not install', () => {
     const commands = getOnboardingCommands(CORE_WORKFLOWS).map((c) => c.command);
 
-    expect(commands).toEqual(['/outline-spec:propose', '/outline-spec:apply']);
-    expect(commands).not.toContain('/outline-spec:new');
-    expect(commands).not.toContain('/outline-spec:continue');
+    expect(commands).toEqual(['/outl:propose', '/outl:apply']);
+    expect(commands).not.toContain('/outl:new');
+    expect(commands).not.toContain('/outl:continue');
   });
 
   it('includes expanded commands when a custom profile installs them', () => {
     const commands = getOnboardingCommands(['new', 'continue', 'apply']).map((c) => c.command);
 
-    expect(commands).toEqual(['/outline-spec:new', '/outline-spec:continue', '/outline-spec:apply']);
+    expect(commands).toEqual(['/outl:new', '/outl:continue', '/outl:apply']);
   });
 
   it('returns lifecycle order regardless of the order workflows are given', () => {
     const commands = getOnboardingCommands(['apply', 'continue', 'propose']).map((c) => c.command);
 
-    expect(commands).toEqual(['/outline-spec:propose', '/outline-spec:continue', '/outline-spec:apply']);
+    expect(commands).toEqual(['/outl:propose', '/outl:continue', '/outl:apply']);
   });
 
   it('returns nothing when no onboarding workflow is installed', () => {

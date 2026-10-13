@@ -10,21 +10,21 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * Continue adapter for command generation.
- * File path: .continue/prompts/outline-spec-<id>.prompt
+ * File path: .continue/prompts/outl-<id>.prompt
  * Frontmatter: name, description, invokable
  */
 export const continueAdapter: ToolCommandAdapter = {
   toolId: 'continue',
 
   getFilePath(commandId: string): string {
-    return path.join('.continue', 'prompts', `outline-spec-${commandId}.prompt`);
+    return path.join('.continue', 'prompts', `outl-${commandId}.prompt`);
   },
 
   formatFile(content: CommandContent): string {
     // Continue injects an invoked prompt into the model context. Smaller local
     // models can otherwise mistake the workflow name for a tool to call (#925).
     return `---
-name: ${escapeYamlValue(`outline-spec-${content.id}`)}
+name: ${escapeYamlValue(`outl-${content.id}`)}
 description: ${escapeYamlValue(content.description)}
 invokable: true
 ---

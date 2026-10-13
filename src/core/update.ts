@@ -63,6 +63,7 @@ import {
   resolveSharedSkillWriters,
   writeSharedSkillTarget,
 } from './shared-skill-target.js';
+import { removeLegacyPrefixArtifacts } from './legacy-prefix.js';
 import { includesGitHubCopilot, writeCopilotCloudFiles, removeCopilotCloudFiles, isCopilotCloudEnabled, readCopilotCloudOptIn, findUnmanagedCloudFiles } from './github-copilot/cloud-agent.js';
 
 const require = createRequire(import.meta.url);
@@ -262,6 +263,7 @@ export class UpdateCommand {
     let removedSkillCount = 0;
     let removedDeselectedCommandCount = 0;
     let removedDeselectedSkillCount = 0;
+    let removedLegacyPrefixCount = 0;
 
     for (const toolId of toolsToUpdate) {
       const tool = AI_TOOLS.find((t) => t.value === toolId);
@@ -352,6 +354,8 @@ export class UpdateCommand {
           removedCommandCount += await this.removeCommandFiles(resolvedProjectPath, toolId);
         }
 
+        removedLegacyPrefixCount += await removeLegacyPrefixArtifacts(resolvedProjectPath, tool.value);
+
         spinner.succeed(`Updated ${tool.name}`);
         updatedTools.push(tool.name);
         updatedToolIds.push(tool.value);
@@ -406,6 +410,9 @@ export class UpdateCommand {
     }
     if (removedDeselectedSkillCount > 0) {
       console.log(chalk.dim(`Removed: ${removedDeselectedSkillCount} skill directories (deselected workflows)`));
+    }
+    if (removedLegacyPrefixCount > 0) {
+      console.log(chalk.dim(`Removed: ${removedLegacyPrefixCount} skills and commands with the old outline-spec prefix`));
     }
 
     await this.syncCopilotCloudFiles(resolvedProjectPath, configuredTools);

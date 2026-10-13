@@ -63,7 +63,7 @@ describe('update detects a tampered SKILL.md', () => {
       testDir,
       '.claude',
       'skills',
-      'outline-spec-apply-change',
+      'outl-apply-change',
       'SKILL.md'
     );
   });

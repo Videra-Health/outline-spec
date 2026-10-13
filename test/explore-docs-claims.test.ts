@@ -109,7 +109,7 @@ describe('explore documentation', () => {
   // An unprompted claim about explore writing, checked clause by clause so
   // "does not automatically capture" passes and "automatically captures every
   // artifact, but never writes code" still fails. Only lines naming explore or
-  // capture count: /outline-spec:ff legitimately "creates all planning artifacts".
+  // capture count: /outl:ff legitimately "creates all planning artifacts".
   function claimsUnpromptedWrite(line: string): boolean {
     if (!/\b(explore|captur)/i.test(line)) return false;
     return line.split(/[.,;:!?]|\bbut\b/i).some((clause) => {

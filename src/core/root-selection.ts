@@ -275,7 +275,7 @@ export async function inspectRegisteredStore(
 /**
  * The nearest-root walk, qualified: an `outline-spec/` DIRECTORY alone is
  * not a root — it must carry a planning shape or a config file.
- * Without this, the recommended `~/outline-spec/<id>` store layout would
+ * Without this, the recommended `~/outl/<id>` store layout would
  * make $HOME a phantom root that captures every command under the
  * home tree.
  */

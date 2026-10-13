@@ -28,9 +28,9 @@ describe('command-generation/generator', () => {
       const result = generateCommand(sampleContent, cursorAdapter);
 
       expect(result.path).toContain('.cursor');
-      expect(result.path).toContain('outline-spec-explore.md');
-      expect(result.fileContent).toContain('name: "/outline-spec-explore"');
-      expect(result.fileContent).toContain('id: "outline-spec-explore"');
+      expect(result.path).toContain('outl-explore.md');
+      expect(result.fileContent).toContain('name: "/outl-explore"');
+      expect(result.fileContent).toContain('id: "outl-explore"');
       expect(result.fileContent).toContain('Command body here.');
     });
 

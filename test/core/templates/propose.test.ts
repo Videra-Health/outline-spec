@@ -91,7 +91,7 @@ describe('propose preamble', () => {
 
   it('never teaches delta specs, scenarios, or sync', () => {
     for (const [label, body] of loopBodies) {
-      for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'skip_specs', 'spec-driven', 'proposal.md']) {
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/outl:sync', 'skip_specs', 'spec-driven', 'proposal.md']) {
         expect(body, `${label} mentions ${stale}`).not.toContain(stale);
       }
     }
@@ -334,12 +334,12 @@ describe('propose implementation boundary', () => {
   });
 
   it('hands command-only tools to apply instead of advertising direct coding (#258)', () => {
-    expect(proposeCommandBody).toContain('When you are ready, run `/outline-spec:apply`.');
+    expect(proposeCommandBody).toContain('When you are ready, run `/outl:apply`.');
     expect(proposeCommandBody).not.toContain('ask me to implement');
     expect(proposeCommandBody).not.toContain('ask me to apply this change');
 
     expect(proposeSkillBody).toContain(
-      'run `/outline-spec:apply` or ask me to apply this change'
+      'run `/outl:apply` or ask me to apply this change'
     );
     expect(proposeSkillBody).not.toContain('ask me to implement');
   });
@@ -352,7 +352,7 @@ describe('propose implementation boundary', () => {
     const ffCommand = withoutApply(getOutlineSpecFfCommandTemplate().content);
 
     for (const body of [command, skill, ffCommand]) {
-      expect(body).not.toContain('/outline-spec:apply');
+      expect(body).not.toContain('/outl:apply');
     }
 
     expect(command).toContain(

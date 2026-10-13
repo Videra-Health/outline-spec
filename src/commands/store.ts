@@ -260,7 +260,7 @@ async function resolveSetupInput(
       'store_setup_id_required',
       {
         target: 'store.id',
-        fix: 'outline-spec store setup <id> --path ~/outline-spec/<id> --json',
+        fix: 'outline-spec store setup <id> --path ~/outl/<id> --json',
       }
     );
   }

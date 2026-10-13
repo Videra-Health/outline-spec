@@ -57,7 +57,7 @@ const SANCTIONED_OUTSIDE_STEP_FIVE = [
   'Do NOT write to `resolvedOutputPath`',
   '- Edit only the concrete files in `existingOutputPaths`; never write to a glob `resolvedOutputPath`.',
   'Confirm every edit with the user before writing.',
-  '`/outline-spec:apply`',
+  '`/outl:apply`',
   '(tasks checked off / already applied)',
 ];
 
@@ -140,7 +140,7 @@ function writeAuthorizationsOutsideStepFive(body: string, label: string): string
 // Regression for #1836: step 4 said "Apply the requested edit" while step 5 and
 // the guardrails said to write only after the user confirms. "Apply" is a write
 // verb in this very document - step 5 is titled "Confirm and apply" - so the
-// same `/outline-spec:update "the design now uses X"` either wrote immediately or
+// same `/outl:update "the design now uses X"` either wrote immediately or
 // stopped and showed the revision first, depending on which passage the agent
 // weighed. Step 5 is the workflow's only gated write path, so its confirmation
 // guarantee was unenforceable whenever step 4 governed.
@@ -204,7 +204,7 @@ describe('update-change write gate (#1836)', () => {
 
 describe('update-change templates', () => {
   it('generates the expected skill and command shape (3.1)', () => {
-    expect(skill.name).toBe('outline-spec-update-change');
+    expect(skill.name).toBe('outl-update-change');
     expect(skill.description).toContain('Never edits code');
     expect(skill.license).toBe('MIT');
     expect(skill.compatibility).toBe('Requires outline-spec CLI.');
@@ -213,7 +213,7 @@ describe('update-change templates', () => {
     expect(command.name).toBe('outline-spec: Update');
     expect(command.category).toBe('Workflow');
     expect(command.tags).toEqual(['workflow', 'artifacts', 'experimental']);
-    expect(command.content).toContain('/outline-spec:update add-auth');
+    expect(command.content).toContain('/outl:update add-auth');
 
     for (const [label, body] of bodies) {
       expect(body, label).toContain(STORE_SELECTION_GUIDANCE);
@@ -235,17 +235,17 @@ describe('update-change templates', () => {
     }
   });
 
-  it('edits planning artifacts only, hands code off to /outline-spec:apply, never advances the frontier (3.3)', () => {
+  it('edits planning artifacts only, hands code off to /outl:apply, never advances the frontier (3.3)', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('Never edit code');
       expect(body, label).toContain('NEVER edit implementation code');
-      expect(body, label).toContain('stop and point to `/outline-spec:apply`');
+      expect(body, label).toContain('stop and point to `/outl:apply`');
       expect(body, label).toContain('Do not advance the build frontier');
       expect(body, label).toContain(
-        'no existing output files and status `ready` or `blocked`, note it and point the user to `/outline-spec:continue`'
+        'no existing output files and status `ready` or `blocked`, note it and point the user to `/outl:continue`'
       );
       expect(body, label).toContain(
-        'empty `existingOutputPaths` and status `ready` or `blocked`, that is `/outline-spec:continue`\'s job'
+        'empty `existingOutputPaths` and status `ready` or `blocked`, that is `/outl:continue`\'s job'
       );
       expect(body, label).toContain('Leave `skipped` artifacts untouched');
       expect(body, label).toContain('do not treat them as missing or defer them to the continue workflow');
@@ -305,22 +305,22 @@ describe('update-change templates', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('guidance only - NEVER act on it');
       expect(body, label).toContain(
-        'Artifacts with empty `existingOutputPaths` and status `ready` or `blocked` -> suggest `/outline-spec:continue`'
+        'Artifacts with empty `existingOutputPaths` and status `ready` or `blocked` -> suggest `/outl:continue`'
       );
-      expect(body, label).toContain('suggest `/outline-spec:continue`');
-      expect(body, label).toContain('suggest `/outline-spec:apply`');
-      expect(body, label).toContain('suggest `/outline-spec:archive`');
+      expect(body, label).toContain('suggest `/outl:continue`');
+      expect(body, label).toContain('suggest `/outl:apply`');
+      expect(body, label).toContain('suggest `/outl:archive`');
       expect(body, label).toContain('the code may no longer match the revised plan');
     }
   });
 
-  it('hands off to /outline-spec:continue when that workflow is installed', () => {
+  it('hands off to /outl:continue when that workflow is installed', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        '`/outline-spec:continue` is what creates the ones that do not'
+        '`/outl:continue` is what creates the ones that do not'
       );
-      expect(body, label).toContain('suggest `/outline-spec:continue` to create them');
-      expect(body, label).toContain("that is `/outline-spec:continue`'s job");
+      expect(body, label).toContain('suggest `/outl:continue` to create them');
+      expect(body, label).toContain("that is `/outl:continue`'s job");
       // The handoff is stated outright, not deferred to a runtime availability
       // check the model has to perform (#1734).
       expect(body, label).not.toContain('may not be installed');
@@ -328,9 +328,9 @@ describe('update-change templates', () => {
     }
   });
 
-  it('never names /outline-spec:continue on a profile that does not install it', () => {
+  it('never names /outl:continue on a profile that does not install it', () => {
     for (const [label, body] of coreBodies) {
-      expect(body, label).not.toContain('/outline-spec:continue');
+      expect(body, label).not.toContain('/outl:continue');
       expect(body, label).toContain('it never creates missing ones');
       expect(body, label).toContain(
         'run `outline-spec status --change "<name>" --json` for the next artifact'
@@ -345,22 +345,22 @@ describe('update-change templates', () => {
     }
   });
 
-  it('confirms every edit and redirects intent changes to /outline-spec:new when installed', () => {
+  it('confirms every edit and redirects intent changes to /outl:new when installed', () => {
     for (const [label, body] of bodies) {
       const reconciliation = body.slice(body.indexOf('4. **Read and reconcile**'), body.indexOf('5. **Confirm and apply'));
       expect(reconciliation, label).toContain('Draft the requested edit in the conversation, not in files');
       expect(reconciliation, label).not.toContain('Apply the requested edit');
       expect(body, label).toContain('Write only after the user confirms');
       expect(body, label).toContain('If the user rejects a revision, do not write it');
-      expect(body, label).toContain('recommend starting fresh with `/outline-spec:new`');
+      expect(body, label).toContain('recommend starting fresh with `/outl:new`');
       expect(body, label).toContain('Update vs. Start Fresh');
       expect(body, label).not.toContain('first verify whether the optional');
     }
   });
 
-  it('routes intent changes to the CLI when /outline-spec:new is not installed', () => {
+  it('routes intent changes to the CLI when /outl:new is not installed', () => {
     for (const [label, body] of coreBodies) {
-      expect(body, label).not.toContain('/outline-spec:new');
+      expect(body, label).not.toContain('/outl:new');
       expect(body, label).toContain('ask for a distinct unused change name');
       expect(body, label).toContain('outline-spec new change "<new-change-name>"');
       expect(body, label).not.toContain('outline-spec new change "<name>"');
@@ -373,7 +373,7 @@ describe('update-change templates', () => {
       expect(body, label).toContain('`~~old~~ **new**`');
       expect(body, label).toContain('labels never shift');
       expect(body, label).toContain('Never edit the live specs under `outline-spec/specs/`');
-      for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven']) {
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/outl:sync', 'spec-driven']) {
         expect(body, label).not.toContain(stale);
       }
     }

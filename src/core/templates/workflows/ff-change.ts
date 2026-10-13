@@ -19,19 +19,19 @@ import { PROJECT_ROOT_GUARD } from './project-root.js';
  */
 const SKILL_APPLY_HANDOFF = optionalWorkflow(
   'apply',
-  'Run `/outline-spec:apply` or ask me to implement to start working on the tasks.',
+  'Run `/outl:apply` or ask me to implement to start working on the tasks.',
   'Ask me to implement to start working on the tasks.'
 );
 
 const COMMAND_APPLY_HANDOFF = optionalWorkflow(
   'apply',
-  'Run `/outline-spec:apply` to start implementing.',
+  'Run `/outl:apply` to start implementing.',
   'Run `outline-spec instructions apply --change "<name>" --json` to get the task list and start implementing.'
 );
 
 export function getFfChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'outline-spec-ff-change',
+    name: 'outl-ff-change',
     description: 'Fast-forward through outline-spec artifact creation. Use when the user wants to quickly create all artifacts needed for implementation without stepping through each one individually. Also use when the user says "outline-spec ff".',
     instructions: `Fast-forward through artifact creation - generate everything needed to start implementation in one go.
 
@@ -159,7 +159,7 @@ ${STORE_SELECTION_GUIDANCE}
 
 ${PROJECT_ROOT_GUARD}
 
-**Input**: The argument after \`/outline-spec:ff\` is the change name (kebab-case), OR a description of what the user wants to build.
+**Input**: The argument after \`/outl:ff\` is the change name (kebab-case), OR a description of what the user wants to build.
 
 **Steps**
 

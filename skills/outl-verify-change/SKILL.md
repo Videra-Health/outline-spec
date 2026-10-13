@@ -1,5 +1,5 @@
 ---
-name: outline-spec-verify-change
+name: outl-verify-change
 description: Verify implementation matches outline-spec change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving. Also use when the user says "outline-spec verify".
 allowed-tools: Bash(outline-spec:*)
 license: MIT
@@ -39,7 +39,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    Include the schema used for each change if available.
    Mark changes with incomplete tasks as "(In Progress)".
 
-   Always announce: "Using change: <name>" and how to override (e.g., `/outline-spec-verify-change <other>`).
+   Always announce: "Using change: <name>" and how to override (e.g., `/outl-verify-change <other>`).
 
 2. **Check status to understand the schema**
    ```bash
@@ -200,7 +200,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    - If CRITICAL issues: "X critical issue(s) found. Fix before archiving." If any check was skipped, also name every skipped check and its reason.
    - If no CRITICAL issues, one or more warnings, and no checks were skipped: "No critical issues. Y warning(s) to consider. Ready to archive (with noted improvements)."
    - If only suggestions and no checks were skipped: "No critical issues or warnings. Z suggestion(s) to consider. Ready to archive (with noted improvements)."
-   - If no issues and no checks were skipped: "All checks passed. Ready to archive with `/outline-spec-archive-change`."
+   - If no issues and no checks were skipped: "All checks passed. Ready to archive with `/outl-archive-change`."
    - If any check was skipped and there are no CRITICAL issues: do not claim readiness. Say "No critical issues found in the checks that ran. <check(s)> not verified: <reason>." Include the warning count when nonzero.
    - Include the suggestion count when nonzero in every final assessment.
 

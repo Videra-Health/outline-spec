@@ -4,9 +4,9 @@ import { isLegacyCodexSkillEquivalentToCurrent } from '../../../src/core/shared/
 describe('legacy Codex skill equivalence', () => {
   it('accepts generated version, BOM, CRLF, and known dual-reference differences', () => {
     const legacy =
-      '\uFEFF---\r\nmetadata:\r\n  generatedBy: "0.1.0"\r\n---\r\nUse $outline-spec-apply-change.\r\n';
+      '\uFEFF---\r\nmetadata:\r\n  generatedBy: "0.1.0"\r\n---\r\nUse $outl-apply-change.\r\n';
     const current =
-      '---\nmetadata:\n  generatedBy: "1.7.0-beta.1+build.5"\n---\nUse $outline-spec-apply-change (Codex) or /outline-spec-apply-change (other agents).\n';
+      '---\nmetadata:\n  generatedBy: "1.7.0-beta.1+build.5"\n---\nUse $outl-apply-change (Codex) or /outl-apply-change (other agents).\n';
 
     expect(isLegacyCodexSkillEquivalentToCurrent(legacy, current)).toBe(true);
   });

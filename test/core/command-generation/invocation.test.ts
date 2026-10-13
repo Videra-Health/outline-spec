@@ -15,9 +15,9 @@ import { ALL_WORKFLOWS } from '../../../src/core/profiles.js';
 
 /**
  * Tools whose command files live in an `outline-spec/` directory, so the tool
- * namespaces the command and registers `/outline-spec:<id>`. Every other registered
- * adapter writes `outline-spec-<id>` as the filename and therefore registers
- * `/outline-spec-<id>`.
+ * namespaces the command and registers `/outl:<id>`. Every other registered
+ * adapter writes `outl-<id>` as the filename and therefore registers
+ * `/outl-<id>`.
  *
  * This list is a tripwire, not the source of truth: production classifies a
  * tool from its own `getFilePath`. A new adapter that ends up on the wrong side
@@ -30,7 +30,7 @@ const NAMESPACED_TOOLS = ['claude', 'codebuddy', 'crush', 'easycode', 'gemini', 
  * prefix cannot be read off the file path, so it is adapter metadata — and
  * this list is the tripwire that a new one was declared deliberately. Amazon Q
  * loads its `.amazonq/prompts/` files into its prompt library, invoked as
- * `@outline-spec-<id>`.
+ * `@outl-<id>`.
  */
 const NON_SLASH_PREFIXES: Record<string, string> = { 'amazon-q': '@' };
 
@@ -45,19 +45,19 @@ const sampleContent: CommandContent = {
   description: 'Implement tasks',
   category: 'Workflow',
   tags: ['outline-spec'],
-  body: 'Run /outline-spec:archive when done. See /outline-spec:continue for the next artifact.',
+  body: 'Run /outl:archive when done. See /outl:continue for the next artifact.',
 };
 
 describe('command-generation/invocation', () => {
   describe('getInvocationStyleForPath', () => {
     it('classifies an outline-spec- prefixed filename as flat', () => {
-      expect(getInvocationStyleForPath(path.join('.cursor', 'commands', 'outline-spec-apply.md'))).toBe('flat');
-      expect(getInvocationStyleForPath(path.join('.github', 'prompts', 'outline-spec-apply.prompt.md'))).toBe('flat');
+      expect(getInvocationStyleForPath(path.join('.cursor', 'commands', 'outl-apply.md'))).toBe('flat');
+      expect(getInvocationStyleForPath(path.join('.github', 'prompts', 'outl-apply.prompt.md'))).toBe('flat');
     });
 
     it('classifies a file inside an outline-spec/ directory as namespaced', () => {
-      expect(getInvocationStyleForPath(path.join('.claude', 'commands', 'outline-spec', 'apply.md'))).toBe('namespaced');
-      expect(getInvocationStyleForPath(path.join('.gemini', 'commands', 'outline-spec', 'apply.toml'))).toBe('namespaced');
+      expect(getInvocationStyleForPath(path.join('.claude', 'commands', 'outl', 'apply.md'))).toBe('namespaced');
+      expect(getInvocationStyleForPath(path.join('.gemini', 'commands', 'outl', 'apply.toml'))).toBe('namespaced');
     });
   });
 
@@ -118,10 +118,10 @@ describe('command-generation/invocation', () => {
 
   describe('formatCommandInvocation', () => {
     it('spells each shape the way the tool registers it', () => {
-      expect(formatCommandInvocation({ style: 'namespaced', prefix: '/' }, 'apply')).toBe('/outline-spec:apply');
-      expect(formatCommandInvocation({ style: 'flat', prefix: '/' }, 'apply')).toBe('/outline-spec-apply');
+      expect(formatCommandInvocation({ style: 'namespaced', prefix: '/' }, 'apply')).toBe('/outl:apply');
+      expect(formatCommandInvocation({ style: 'flat', prefix: '/' }, 'apply')).toBe('/outl-apply');
       expect(formatCommandInvocation({ style: 'flat', prefix: '@' }, 'bulk-archive')).toBe(
-        '@outline-spec-bulk-archive'
+        '@outl-bulk-archive'
       );
     });
 
@@ -137,29 +137,29 @@ describe('command-generation/invocation', () => {
       for (const toolId of ['cursor', 'github-copilot', 'devin', 'opencode', 'qwen']) {
         const adapter = CommandAdapterRegistry.get(toolId)!;
         const { fileContent } = generateCommand(sampleContent, adapter);
-        expect(fileContent, toolId).toContain('/outline-spec-archive');
-        expect(fileContent, toolId).toContain('/outline-spec-continue');
-        expect(fileContent, toolId).not.toContain('/outline-spec:');
+        expect(fileContent, toolId).toContain('/outl-archive');
+        expect(fileContent, toolId).toContain('/outl-continue');
+        expect(fileContent, toolId).not.toContain('/outl:');
       }
     });
 
     it("writes Amazon Q's prompt-library form, not a slash command", () => {
-      // .amazonq/prompts/outline-spec-<id>.md is a prompt, invoked with @ — a body
-      // telling the user to type /outline-spec-archive names nothing Amazon Q registers.
+      // .amazonq/prompts/outl-<id>.md is a prompt, invoked with @ — a body
+      // telling the user to type /outl-archive names nothing Amazon Q registers.
       const adapter = CommandAdapterRegistry.get('amazon-q')!;
       const { fileContent } = generateCommand(sampleContent, adapter);
-      expect(fileContent).toContain('@outline-spec-archive');
-      expect(fileContent).toContain('@outline-spec-continue');
+      expect(fileContent).toContain('@outl-archive');
+      expect(fileContent).toContain('@outl-continue');
       expect(fileContent).not.toMatch(HYPHEN_COMMAND_REF);
-      expect(fileContent).not.toContain('/outline-spec:');
+      expect(fileContent).not.toContain('/outl:');
     });
 
     it('leaves command references alone for namespaced tools', () => {
       for (const toolId of NAMESPACED_TOOLS) {
         const adapter = CommandAdapterRegistry.get(toolId)!;
         const { fileContent } = generateCommand(sampleContent, adapter);
-        expect(fileContent, toolId).toContain('/outline-spec:archive');
-        expect(fileContent, toolId).not.toContain('/outline-spec-archive');
+        expect(fileContent, toolId).toContain('/outl:archive');
+        expect(fileContent, toolId).not.toContain('/outl-archive');
       }
     });
 
@@ -176,7 +176,7 @@ describe('command-generation/invocation', () => {
       // generateCommand happens to be identical (the rewrite is idempotent).
       for (const toolId of ['bob', 'oh-my-pi', 'opencode', 'pi', 'qwen', 'cursor', 'devin']) {
         const adapter = CommandAdapterRegistry.get(toolId)!;
-        expect(adapter.formatFile(sampleContent), toolId).toContain('/outline-spec:archive');
+        expect(adapter.formatFile(sampleContent), toolId).toContain('/outl:archive');
       }
     });
   });

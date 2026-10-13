@@ -10,14 +10,14 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * Antigravity adapter for command generation.
- * File path: .agents/workflows/outline-spec-<id>.md
+ * File path: .agents/workflows/outl-<id>.md
  * Frontmatter: description
  */
 export const antigravityAdapter: ToolCommandAdapter = {
   toolId: 'antigravity',
 
   getFilePath(commandId: string): string {
-    return path.join('.agents', 'workflows', `outline-spec-${commandId}.md`);
+    return path.join('.agents', 'workflows', `outl-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

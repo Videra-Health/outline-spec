@@ -76,16 +76,16 @@ describe('Warp integration', () => {
         const frontmatter = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
         expect(frontmatter).not.toBeNull();
         expect(parse(frontmatter![1])).toMatchObject({ name: dirName, description: expect.any(String) });
-        expect(content).not.toMatch(/\/outline-spec:|\$outline-spec-/);
+        expect(content).not.toMatch(/\/outl:|\$outl-/);
       }
-      expect(await fs.readFile(skillPath('outline-spec-propose'), 'utf8')).toContain('/outline-spec-apply-change');
+      expect(await fs.readFile(skillPath('outl-propose'), 'utf8')).toContain('/outl-apply-change');
       expect(await fs.readdir(path.join(projectPath, '.warp'))).toEqual(['skills']);
       expect((await fs.readdir(projectPath)).sort()).toEqual(['.warp', 'outline-spec']);
       expect(getConfiguredTools(projectPath)).toEqual(['warp']);
       expect(getToolSkillStatus(projectPath, 'warp').configured).toBe(true);
       const output = vi.mocked(console.log).mock.calls.flat().join('\n');
-      expect(output).toContain('/outline-spec-propose');
-      expect(output).not.toContain('/outline-spec:');
+      expect(output).toContain('/outl-propose');
+      expect(output).not.toContain('/outl:');
     }
   );
 
@@ -94,10 +94,10 @@ describe('Warp integration', () => {
     await new InitCommand({ tools: 'warp' }).execute(projectPath);
 
     expect(await installedSkills()).toEqual(getSkillTemplates().map(({ dirName }) => dirName).sort());
-    const onboarding = await fs.readFile(skillPath('outline-spec-onboard'), 'utf8');
-    expect(onboarding).toContain('/outline-spec-new-change');
-    expect(onboarding).toContain('/outline-spec-apply-change');
-    expect(onboarding).not.toMatch(/\/outline-spec:|\$outline-spec-/);
+    const onboarding = await fs.readFile(skillPath('outl-onboard'), 'utf8');
+    expect(onboarding).toContain('/outl-new-change');
+    expect(onboarding).toContain('/outl-apply-change');
+    expect(onboarding).not.toMatch(/\/outl:|\$outl-/);
   });
 
   it('refreshes and prunes skills for a custom commands-only profile without touching other files', async () => {
@@ -117,13 +117,13 @@ describe('Warp integration', () => {
     for (const [filePath, content] of Object.entries(preserved)) {
       expect(await fs.readFile(path.join(projectPath, filePath), 'utf8')).toBe(content);
     }
-    await fs.writeFile(skillPath('outline-spec-apply-change'), '# stale content\n');
+    await fs.writeFile(skillPath('outl-apply-change'), '# stale content\n');
     mockState.config = { profile: 'custom', workflows: ['apply'], delivery: 'commands' };
 
     await new UpdateCommand({ force: true }).execute(projectPath);
 
-    expect(await installedSkills()).toEqual(['my-skill', 'outline-spec-apply-change']);
-    expect(await fs.readFile(skillPath('outline-spec-apply-change'), 'utf8')).toContain('name: outline-spec-apply-change');
+    expect(await installedSkills()).toEqual(['my-skill', 'outl-apply-change']);
+    expect(await fs.readFile(skillPath('outl-apply-change'), 'utf8')).toContain('name: outl-apply-change');
     expect((await fs.readdir(path.join(projectPath, '.warp'))).sort()).toEqual(['settings.json', 'skills']);
     for (const [filePath, content] of Object.entries(preserved)) {
       expect(await fs.readFile(path.join(projectPath, filePath), 'utf8')).toBe(content);
@@ -135,13 +135,13 @@ describe('Warp integration', () => {
 
   it('refreshes outdated skills without force and stays current after commands-only reinitialization', async () => {
     await new InitCommand({ tools: 'warp' }).execute(projectPath);
-    const original = await fs.readFile(skillPath('outline-spec-explore'), 'utf8');
+    const original = await fs.readFile(skillPath('outl-explore'), 'utf8');
     const outdated = original.replace(/generatedBy: "[^"]+"/, 'generatedBy: "0.0.1"');
     expect(outdated).not.toBe(original);
-    await fs.writeFile(skillPath('outline-spec-explore'), outdated);
+    await fs.writeFile(skillPath('outl-explore'), outdated);
 
     await new UpdateCommand().execute(projectPath);
-    expect(await fs.readFile(skillPath('outline-spec-explore'), 'utf8')).toBe(original);
+    expect(await fs.readFile(skillPath('outl-explore'), 'utf8')).toBe(original);
 
     mockState.config.delivery = 'commands';
     await new InitCommand({ tools: 'warp' }).execute(projectPath);
@@ -153,7 +153,7 @@ describe('Warp integration', () => {
     await new UpdateCommand().execute(projectPath);
 
     expect(vi.mocked(console.log).mock.calls.flat().join('\n')).toContain('up to date');
-    expect(await fs.readFile(skillPath('outline-spec-explore'), 'utf8')).toBe(original);
+    expect(await fs.readFile(skillPath('outl-explore'), 'utf8')).toBe(original);
   });
 
   it.each(['.warp', 'WARP.md'])('detects %s as Warp without treating it as configured', async (signal) => {
@@ -166,7 +166,7 @@ describe('Warp integration', () => {
 
   it('does not infer Warp from shared or other tool instructions', async () => {
     await writeProjectFile('AGENTS.md', '# Shared rules\n');
-    await writeProjectFile('.agents/skills/outline-spec-propose/SKILL.md', '# Use /outline-spec-propose\n');
+    await writeProjectFile('.agents/skills/outl-propose/SKILL.md', '# Use /outl-propose\n');
     await writeProjectFile('.claude/settings.json', '{}\n');
 
     expect(getAvailableTools(projectPath).map((tool) => tool.value)).not.toContain('warp');

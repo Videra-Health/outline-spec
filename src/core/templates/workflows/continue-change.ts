@@ -16,11 +16,11 @@ import { PROJECT_ROOT_GUARD } from './project-root.js';
  */
 const PLANNING_COMPLETE_HANDOFF = optionalWorkflow(
   'apply',
-  'You can now implement this change with `/outline-spec:apply`.',
+  'You can now implement this change with `/outl:apply`.',
   'You can now implement this change - `outline-spec instructions apply --change "<name>" --json` returns the tasks and how to work them.'
 ) + ' ' + optionalWorkflow(
   'archive',
-  'Once implementation and any tracked work are complete, archive it with `/outline-spec:archive`.',
+  'Once implementation and any tracked work are complete, archive it with `/outl:archive`.',
   'Once implementation and any tracked work are complete, archive it with `outline-spec archive "<name>"`.'
 );
 
@@ -36,7 +36,7 @@ const PARTIAL_ARTIFACT_CHECK = `**Before anything else, finish a partly written 
 
 export function getContinueChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'outline-spec-continue-change',
+    name: 'outl-continue-change',
     description: 'Continue working on an outline-spec change by creating the next artifact. Use when the user wants to progress their change, create the next artifact, or continue their workflow. Also use when the user says "outline-spec continue".',
     instructions: `Continue working on a change by creating the next artifact.
 
@@ -62,7 +62,7 @@ ${PROJECT_ROOT_GUARD}
 
    Mark the most recently modified change as "(Recommended)" since it's likely what the user wants to continue.
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/outline-spec:continue <other>\`).
+   Always announce: "Using change: <name>" and how to override (e.g., \`/outl:continue <other>\`).
 
 2. **Check current status**
    \`\`\`bash
@@ -168,7 +168,7 @@ ${STORE_SELECTION_GUIDANCE}
 
 ${PROJECT_ROOT_GUARD}
 
-**Input**: Optionally specify a change name after \`/outline-spec:continue\` (e.g., \`/outline-spec:continue add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+**Input**: Optionally specify a change name after \`/outl:continue\` (e.g., \`/outl:continue add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
 
@@ -186,7 +186,7 @@ ${PROJECT_ROOT_GUARD}
 
    Mark the most recently modified change as "(Recommended)" since it's likely what the user wants to continue.
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/outline-spec:continue <other>\`).
+   Always announce: "Using change: <name>" and how to override (e.g., \`/outl:continue <other>\`).
 
 2. **Check current status**
    \`\`\`bash
@@ -255,7 +255,7 @@ After each invocation, show:
 - Schema workflow being used
 - Current progress (N/M complete)
 - What artifacts are now unlocked
-- Prompt: "Run \`/outline-spec:continue\` to create the next artifact"
+- Prompt: "Run \`/outl:continue\` to create the next artifact"
 
 **Artifact Creation Guidelines**
 

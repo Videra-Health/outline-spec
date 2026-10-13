@@ -44,7 +44,7 @@ function normalizeGeneratedSkill(content: string): string {
  */
 function toLegacyCodexReferences(content: string): string {
   return content.replace(
-    /\$(outline-spec-[a-z0-9-]+) \(Codex\) or \/\1 \(other agents\)/g,
+    /\$(outl-[a-z0-9-]+) \(Codex\) or \/\1 \(other agents\)/g,
     (match, skillName: string) =>
       OUTLINE_SPEC_SKILL_NAME_SET.has(skillName) ? `$${skillName}` : match
   );

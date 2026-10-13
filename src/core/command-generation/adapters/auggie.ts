@@ -10,14 +10,14 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * Auggie adapter for command generation.
- * File path: .augment/commands/outline-spec-<id>.md
+ * File path: .augment/commands/outl-<id>.md
  * Frontmatter: description, argument-hint
  */
 export const auggieAdapter: ToolCommandAdapter = {
   toolId: 'auggie',
 
   getFilePath(commandId: string): string {
-    return path.join('.augment', 'commands', `outline-spec-${commandId}.md`);
+    return path.join('.augment', 'commands', `outl-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

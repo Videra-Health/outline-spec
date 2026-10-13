@@ -10,14 +10,14 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * Code Studio adapter for command generation.
- * File path: .codestudio/prompts/outline-spec-<id>.prompt.md
+ * File path: .codestudio/prompts/outl-<id>.prompt.md
  * Frontmatter: description
  */
 export const codeStudioAdapter: ToolCommandAdapter = {
   toolId: 'codestudio',
 
   getFilePath(commandId: string): string {
-    return path.join('.codestudio', 'prompts', `outline-spec-${commandId}.prompt.md`);
+    return path.join('.codestudio', 'prompts', `outl-${commandId}.prompt.md`);
   },
 
   formatFile(content: CommandContent): string {

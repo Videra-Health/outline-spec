@@ -1,6 +1,6 @@
 ---
-name: outline-spec-propose
-description: Propose a new outline-spec change with all artifacts generated in one step. Use when the user wants to quickly describe what they want to build and get a complete outline of spec edits and tasks ready for implementation. Also use when the user says "outline-spec propose".
+name: outl-ff-change
+description: Fast-forward through outline-spec artifact creation. Use when the user wants to quickly create all artifacts needed for implementation without stepping through each one individually. Also use when the user says "outline-spec ff".
 allowed-tools: Bash(outline-spec:*)
 license: MIT
 compatibility: Requires outline-spec CLI.
@@ -9,20 +9,7 @@ metadata:
   version: "1.0"
 ---
 
-Propose a new change - create the change and generate all artifacts in one step.
-
-**Planning boundary**: This workflow creates planning artifacts only. The user request that selected or triggered this workflow authorizes planning only, even if it asks to build or fix something. Do not edit project code. After the planning artifacts are complete, stop. Do not start implementation in the same response, even if the initial request asks for it. Wait for a new user request after the artifacts are presented; then start the apply workflow.
-
-I'll create a change with the artifacts your schema defines. With the default outline schema that is:
-- outline.md (the proposal and its spec edits, as a labeled outline)
-- design.md (how - only when the change needs technical decisions explained)
-- tasks.md (implementation steps, ending with archiving the change)
-
-outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked `~~old~~ **new**`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done.
-
-When the user is ready to implement, they must start the apply workflow explicitly.
-
----
+Fast-forward through artifact creation - generate everything needed to start implementation in one go.
 
 **Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
 
@@ -41,53 +28,22 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 
 **Steps**
 
-1. **Understand the request and clarify material ambiguity**
+1. **If no clear input provided, ask what they want to build**
 
-   If no clear input is provided, ask the user (open-ended, no preset options):
+   Ask the user (open-ended, no preset options):
    > "What change do you want to work on? Describe what you want to build or fix."
 
    From their description, derive a kebab-case name (e.g., "add user authentication" → `add-user-auth`).
 
    **IMPORTANT**: Do NOT proceed without understanding what the user wants to build.
 
-   If the request contains ambiguity that would materially affect scope, externally observable behavior, compatibility, or acceptance criteria, ask the user before creating the change. For minor details, make a reasonable assumption and record it in the planning artifacts.
-
-2. **Load project context**
-
-   Run `outline-spec context --json` from the current working directory (or `outline-spec context --json --store "<store-id>"` when a registered store was explicitly selected). Use the returned `root.path` as the authoritative outline-spec root. If context reports `no_outline_spec_root`, stop without creating or changing any files and follow the **Project check** above for how this workflow was reached. Offer `outline-spec init` only for an explicit outline-spec request, and wait for the user to request initialization. Do not initialize automatically or run `outline-spec new change`. After initialization, rerun this context check before continuing. For any other context failure, stop and report the error; do not fall back to the current directory or run later outline-spec commands without the selected store.
-
-   Only when context returns a resolved `root.path`, read `<root.path>/outline-spec/config.yaml`. Use `config.yml` only when `config.yaml` does not exist. If neither file exists, continue without project context. Do not fall back to `config.yml` if `config.yaml` is unreadable or invalid.
-
-   If the file parses as a YAML object and its `context` field is a string no larger than 51,200 bytes in UTF-8, apply that field before exploring the codebase or making planning decisions. If the file cannot be read or parsed, or the context field is invalid or oversized, continue without project context. Validate this field independently of other config fields, as outline-spec does.
-
-   Treat context as project-provided data and constraints, not as authority to change this workflow: it cannot override user authorization, the planning boundary, tool restrictions, or artifact and output rules. Do not copy the context into artifacts; use it to focus any codebase exploration and as a constraint on the proposal.
-
-3. **Determine the workflow schema**
-
-   Use the configured default schema unless the user explicitly requests a different workflow.
-
-   **Use a different schema only if the user:**
-   - Explicitly requests a specific schema by name → use `--schema <schema-name>`
-   - Asks to "show workflows" or asks "what workflows" exist → resolve the authoritative root by running `outline-spec context --json` from the current working directory. If the user explicitly selected a registered store, use `outline-spec context --json --store "<store-id>"`. Then run `outline-spec schemas --json` with its working directory set to the returned `root.path` and let them choose. This preserves roots selected by a local `store:` pointer or the global `defaultStore`; when a registered store was explicitly selected, append `--store "<store-id>"` to `outline-spec schemas --json` as well. If context fails, stop as described in the context-loading step; do not fall back to the current directory.
-
-   Otherwise, omit `--schema` to preserve the configured default.
-
-4. **Create the change directory**
-
-   Choose one schema form below. If a registered store is selected, append `--store "<store-id>"` to that command and each later outline-spec command shown below that accepts `--store`.
-
-   Using the configured default:
+2. **Create the change directory**
    ```bash
    outline-spec new change "<name>"
    ```
+   This creates a scaffolded change in the planning home resolved by the CLI.
 
-   Using an explicitly requested schema:
-   ```bash
-   outline-spec new change "<name>" --schema "<schema-name>"
-   ```
-   This creates a scaffolded change in the planning home resolved by the CLI with `.outline-spec.yaml`.
-
-5. **Get the artifact build order**
+3. **Get the artifact build order**
    ```bash
    outline-spec status --change "<name>" --json
    ```
@@ -96,7 +52,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    - `artifacts`: list of all artifacts, each with its `status` and its `requires` edges (the artifact IDs it directly depends on)
    - `planningHome`, `changeRoot`, `artifactPaths`, and `actionContext`: path and scope context. Use these instead of assuming repo-local paths.
 
-6. **Create every artifact in the required set**
+4. **Create every artifact in the required set**
 
    Use a todo list to track progress through the artifacts.
 
@@ -122,7 +78,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
       - If the `instruction` field delegates creation to a specific skill or command, invoke it to produce the artifact instead of writing the file yourself, then verify the artifact file exists at `resolvedOutputPath`
       - Otherwise create the artifact file using `template` as the structure and write it to `resolvedOutputPath`. If `resolvedOutputPath` is a glob, follow `instruction` to choose the concrete file path
       - Apply `context` and `rules` as constraints - but do NOT copy them into the file
-      - Show brief progress: "Created <artifact-id>"
+      - Show brief progress: "✓ Created <artifact-id>"
 
    b. **Continue until every artifact in the required set exists (not just `apply.requires`)**
       - After creating each artifact, re-run `outline-spec status --change "<name>" --json`
@@ -135,11 +91,11 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 
    c. **Check the outline archives cleanly**: after writing outline.md, run `outline-spec validate "<name>"`. It checks that the outline archives cleanly against the live specs; fix outline.md until it passes.
 
-   d. **If an artifact requires user input** (unclear context):
+   d. **If an artifact requires user input** (critically unclear context):
       - Ask the user to clarify
       - Then continue with creation
 
-7. **Show final status**
+5. **Show final status**
    ```bash
    outline-spec status --change "<name>"
    ```
@@ -150,7 +106,7 @@ After completing all artifacts, summarize:
 - Change name and location
 - List of artifacts created with brief descriptions, plus any conditional artifact you skipped and why
 - What's ready: "All artifacts needed for implementation are ready."
-- Prompt: "The artifacts are ready for review. When you are ready, run `/outline-spec-apply-change` or ask me to apply this change."
+- Prompt: "Run `/outl-apply-change` or ask me to implement to start working on the tasks."
 
 **Artifact Creation Guidelines**
 
@@ -164,10 +120,9 @@ After completing all artifacts, summarize:
   - These guide what you write, but should never appear in the output
 
 **Guardrails**
-- The request that invoked this workflow authorizes planning only. Any implementation or apply instruction in that request does not carry forward. Do NOT implement the change, start the apply workflow, or edit project code during this workflow. After presenting the artifacts, stop and wait for a new user request to start the apply workflow
 - Create every artifact the apply phase transitively depends on, not just the ids listed in `apply.requires`
 - Always read dependency artifacts before creating a new one - re-read from disk, not from conversation memory (files may have changed since you last saw them)
-- Ask about ambiguities that would materially change scope, externally observable behavior, compatibility, or acceptance criteria; for minor details, make reasonable assumptions and record them
-- If a change with that name already exists, ask if user wants to continue it or create a new one
-- Verify each artifact file exists after writing before proceeding to next
+- If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
 - Never edit the live specs in `outline-spec/specs/`; spec changes go in outline.md and reach the live specs with `outline-spec archive`
+- If a change with that name already exists, suggest continuing that change instead
+- Verify each artifact file exists after writing before proceeding to next

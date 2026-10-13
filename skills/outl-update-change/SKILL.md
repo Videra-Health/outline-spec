@@ -1,5 +1,5 @@
 ---
-name: outline-spec-update-change
+name: outl-update-change
 description: Update an outline-spec change by revising its existing planning artifacts and keeping them coherent with one another. Use when the user wants to revise a change's plan, fold new decisions into it, or reconcile its artifacts after an edit. Also use when the user says "outline-spec update change". If the user means the outline-spec update CLI command, which refreshes generated files, run that command instead. Never edits code.
 allowed-tools: Bash(outline-spec:*)
 license: MIT
@@ -26,7 +26,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 
 **Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
-This workflow revises artifacts that already exist; `/outline-spec-continue-change` is what creates the ones that do not.
+This workflow revises artifacts that already exist; `/outl-continue-change` is what creates the ones that do not.
 
 **Steps**
 
@@ -44,7 +44,7 @@ This workflow revises artifacts that already exist; `/outline-spec-continue-chan
 
    Mark the most recently modified change as "(Recommended)" since it's likely what the user wants to update.
 
-   Always announce: "Using change: <name>" and how to override (e.g., `/outline-spec-update-change <other>`).
+   Always announce: "Using change: <name>" and how to override (e.g., `/outl-update-change <other>`).
 
 2. **Get the change's artifacts**
    ```bash
@@ -68,7 +68,7 @@ This workflow revises artifacts that already exist; `/outline-spec-continue-chan
    - Read the artifact(s) the request touches and the change's other existing artifacts.
    - Draft the requested edit in the conversation, not in files. Work out exactly what it changes; step 5 owns every write. Then check every other existing artifact against the drafted edit - in ANY direction: an edit to a later artifact may require revising an earlier one, not only the other way around. Build order is a useful reading order, not a constraint on which artifacts may be revised.
    - Note everything that is now inconsistent, missing, or contradictory.
-   - Propose revisions to files that already exist (`existingOutputPaths`). If an artifact has no existing output files and status `ready` or `blocked`, note it and point the user to `/outline-spec-continue-change` to create them. Leave `skipped` artifacts untouched; do not treat them as missing or defer them to the continue workflow.
+   - Propose revisions to files that already exist (`existingOutputPaths`). If an artifact has no existing output files and status `ready` or `blocked`, note it and point the user to `/outl-continue-change` to create them. Leave `skipped` artifacts untouched; do not treat them as missing or defer them to the continue workflow.
    - A glob artifact (e.g. `docs/**/*.md`) is marked `done` after at least one file matches, and the continue workflow only handles `ready` artifacts. When reconciliation identifies a missing file for a glob artifact whose `existingOutputPaths` is non-empty:
      1. Run `outline-spec instructions "<artifact-id>" --change "<name>" --json` and use its `instruction` and `template`. Treat `context` and `rules` as constraints; do not copy them into the file. If instructions report `skipped: true`, do not create the file. Read current dependency files from disk; if a required non-skipped dependency is missing, stop and ask the user to restore it first.
      2. Choose a concrete path inside `changeRoot` that matches `artifactPaths.<id>.outputPath` and does not already exist. Verify it remains inside `changeRoot` after resolving any symlinked parent directories. The glob `resolvedOutputPath` is not a valid target.
@@ -88,23 +88,23 @@ This workflow revises artifacts that already exist; `/outline-spec-continue-chan
      ```
 
 6. **Point to the next step (guidance only - NEVER act on it)**
-   - Artifacts with empty `existingOutputPaths` and status `ready` or `blocked` -> suggest `/outline-spec-continue-change` to create them.
-   - Change already implemented (tasks checked off / already applied) -> the code may no longer match the revised plan; suggest `/outline-spec-apply-change` to carry the revision into code.
-   - Everything done and implemented -> suggest `/outline-spec-archive-change`.
+   - Artifacts with empty `existingOutputPaths` and status `ready` or `blocked` -> suggest `/outl-continue-change` to create them.
+   - Change already implemented (tasks checked off / already applied) -> the code may no longer match the revised plan; suggest `/outl-apply-change` to carry the revision into code.
+   - Everything done and implemented -> suggest `/outl-archive-change`.
 
 **Output**
 
 After each invocation, show:
 - Which artifacts were revised (and which proposed revisions were rejected)
 - Any file created under a glob artifact that was already partially populated
-- Anything deferred to `/outline-spec-continue-change` (artifacts with no files yet and status `ready` or `blocked`, never `skipped` artifacts)
+- Anything deferred to `/outl-continue-change` (artifacts with no files yet and status `ready` or `blocked`, never `skipped` artifacts)
 - Where the change stands and the recommended next command
 
 **Guardrails**
-- Planning artifacts only - NEVER edit implementation code. If the revised plan implies code changes, stop and point to `/outline-spec-apply-change`.
+- Planning artifacts only - NEVER edit implementation code. If the revised plan implies code changes, stop and point to `/outl-apply-change`.
 - Use the artifact ids and paths reported by `outline-spec status`; never branch on hardcoded artifact names.
 - Edit only the concrete files in `existingOutputPaths`; never write to a glob `resolvedOutputPath`.
-- Do not advance the build frontier: if an artifact has empty `existingOutputPaths` and status `ready` or `blocked`, that is `/outline-spec-continue-change`'s job. Leave `skipped` artifacts untouched. The only new-file scope is a confirmed concrete path under a glob artifact whose `existingOutputPaths` is non-empty.
+- Do not advance the build frontier: if an artifact has empty `existingOutputPaths` and status `ready` or `blocked`, that is `/outl-continue-change`'s job. Leave `skipped` artifacts untouched. The only new-file scope is a confirmed concrete path under a glob artifact whose `existingOutputPaths` is non-empty.
 - Never edit the live specs under `outline-spec/specs/`; the outline reaches them only when the change is archived.
 - Confirm every edit with the user before writing.
-- If the request changes the change's *intent* rather than refining it, recommend starting fresh with `/outline-spec-new-change` (the "Update vs. Start Fresh" heuristic).
+- If the request changes the change's *intent* rather than refining it, recommend starting fresh with `/outl-new-change` (the "Update vs. Start Fresh" heuristic).

@@ -289,9 +289,9 @@ describe('FileSystemUtils', () => {
     it('should join POSIX-style paths', () => {
       const result = FileSystemUtils.joinPath(
         '/tmp/project',
-        '.claude/commands/outline-spec/proposal.md'
+        '.claude/commands/outl/proposal.md'
       );
-      expect(result).toBe('/tmp/project/.claude/commands/outline-spec/proposal.md');
+      expect(result).toBe('/tmp/project/.claude/commands/outl/proposal.md');
     });
 
     it('should join Linux home directory paths', () => {
@@ -305,30 +305,30 @@ describe('FileSystemUtils', () => {
     it('should join Windows drive-letter paths with backslashes', () => {
       const result = FileSystemUtils.joinPath(
         'C:\\Users\\dev\\project',
-        '.claude/commands/outline-spec/proposal.md'
+        '.claude/commands/outl/proposal.md'
       );
       expect(result).toBe(
-        'C:\\Users\\dev\\project\\.claude\\commands\\outline-spec\\proposal.md'
+        'C:\\Users\\dev\\project\\.claude\\commands\\outl\\proposal.md'
       );
     });
 
     it('should join Windows paths that use forward slashes', () => {
       const result = FileSystemUtils.joinPath(
         'D:/workspace/app',
-        '.cursor/commands/outline-spec-apply.md'
+        '.cursor/commands/outl-apply.md'
       );
       expect(result).toBe(
-        'D:\\workspace\\app\\.cursor\\commands\\outline-spec-apply.md'
+        'D:\\workspace\\app\\.cursor\\commands\\outl-apply.md'
       );
     });
 
     it('should join UNC-style Windows paths', () => {
       const result = FileSystemUtils.joinPath(
         '\\server\\share\\repo',
-        '.windsurf/workflows/outline-spec-archive.md'
+        '.windsurf/workflows/outl-archive.md'
       );
       expect(result).toBe(
-        '\\server\\share\\repo\\.windsurf\\workflows\\outline-spec-archive.md'
+        '\\server\\share\\repo\\.windsurf\\workflows\\outl-archive.md'
       );
     });
   });

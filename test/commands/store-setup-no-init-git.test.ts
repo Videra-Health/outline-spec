@@ -17,7 +17,7 @@ import { isolatedGitEnv } from '../helpers/store-git.js';
  * and a new repository inside an existing one is almost always an accident.
  * `--no-init-git` creates no repository, so there is nothing to nest: the
  * guard must not refuse it. The motivating layout is a `$HOME` kept as a
- * dotfiles repository with the guide's recommended `~/outline-spec/<id>` store.
+ * dotfiles repository with the guide's recommended `~/outl/<id>` store.
  */
 describe('store setup --no-init-git inside an existing Git repository', () => {
   let tempDir: string;

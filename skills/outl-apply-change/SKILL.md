@@ -1,5 +1,5 @@
 ---
-name: outline-spec-apply-change
+name: outl-apply-change
 description: Implement tasks from an outline-spec change. Use when the user wants to start implementing, continue implementation, or work through tasks. Also use when the user says "outline-spec apply" or "outline-spec implement".
 allowed-tools: Bash(outline-spec:*)
 license: MIT
@@ -24,7 +24,7 @@ Otherwise, with no root, what happens next depends on how this workflow was reac
 
 In both branches, never create the root as a side effect: do not run `outline-spec init` until the user asks for it, do not hand-create `outline-spec/` files, and do not let a command create it.
 
-**Input**: Optionally specify a change name (e.g., `/outline-spec-apply-change add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+**Input**: Optionally specify a change name (e.g., `/outl-apply-change add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
 
@@ -35,7 +35,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    - Auto-select if only one active change exists
    - If ambiguous, run `outline-spec list --json` to get available changes and ask the user to select one
 
-   Always announce: "Using change: <name>" and how to override (e.g., `/outline-spec-apply-change <other>`).
+   Always announce: "Using change: <name>" and how to override (e.g., `/outl-apply-change <other>`).
 
 2. **Check status to understand the schema**
    ```bash
@@ -63,7 +63,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 
    **Handle states:**
    - If `state: "blocked"`: show the message and pause implementation.
-     - If `missingArtifacts` is non-empty: suggest using `/outline-spec-continue-change` to create them.
+     - If `missingArtifacts` is non-empty: suggest using `/outl-continue-change` to create them.
      - Otherwise, follow the CLI instruction to create or repair the schema-configured tracking file from existing planning artifacts. Do not assume another artifact is ready or start implementation while blocked.
    - If `state: "all_done"`: report that all tracked tasks are complete and suggest review or verification as appropriate before archiving
    - Otherwise: proceed to implementation
@@ -156,7 +156,7 @@ Working on task 4/7: <task description>
 ...
 
 All tracked tasks are complete. Review or verify the change as appropriate
-before archiving. You can archive this change with `/outline-spec-archive-change`.
+before archiving. You can archive this change with `/outl-archive-change`.
 ```
 
 **Output On Pause (Issue Encountered)**

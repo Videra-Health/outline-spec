@@ -25,7 +25,7 @@ export function registerStoreCommand(program: Command): void {
   store
     .command('setup [id]')
     .description('Create and register a local store')
-    .option('--path <path>', 'Folder where the store should live (for example ~/outline-spec/<id>)')
+    .option('--path <path>', 'Folder where the store should live (for example ~/outl/<id>)')
     .option('--init-git', 'Initialize a Git repository with an initial commit (default)')
     .option('--no-init-git', 'Skip every Git action: no init, no initial commit')
     .option('--remote <url>', 'Canonical clone source recorded in store.yaml')

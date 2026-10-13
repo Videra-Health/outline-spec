@@ -1,9 +1,9 @@
 # outline-spec-verify-skill
-Define `/outline-spec:verify` behavior for assessing implementation completeness, correctness, and coherence against change artifacts.
+Define `/outl:verify` behavior for assessing implementation completeness, correctness, and coherence against change artifacts.
 
-1. Verify Skill Invocation: The system SHALL provide an `/outline-spec:verify` skill that validates implementation against change artifacts.
-  a. Verify with change name provided: WHEN agent executes `/outline-spec:verify <change-name>` THEN the agent verifies implementation for that specific change AND produces a verification report
-  b. Verify without change name: WHEN agent executes `/outline-spec:verify` without a change name THEN the agent infers the change from conversation context, or auto-selects it when only one active change exists AND when ambiguous, prompts user to select from all active changes, including changes with no tracked tasks AND announces which change was selected and how to override
+1. Verify Skill Invocation: The system SHALL provide an `/outl:verify` skill that validates implementation against change artifacts.
+  a. Verify with change name provided: WHEN agent executes `/outl:verify <change-name>` THEN the agent verifies implementation for that specific change AND produces a verification report
+  b. Verify without change name: WHEN agent executes `/outl:verify` without a change name THEN the agent infers the change from conversation context, or auto-selects it when only one active change exists AND when ambiguous, prompts user to select from all active changes, including changes with no tracked tasks AND announces which change was selected and how to override
   c. Change has no task descriptions: WHEN the schema configures task tracking but the structured task list provides no usable task descriptions, even if task progress reports nonzero totals THEN the agent reports Task Completion as not verified with the reason AND continues checks supported by the remaining artifacts
   d. Schema has no task tracking: WHEN the schema does not configure `apply.tracks` THEN apply instructions report `taskTrackingConfigured: false` AND the agent reports Task Completion as not applicable, not as skipped or failed AND continues the checks that apply to the schema
 2. Completeness Verification: The agent SHALL verify that all required work has been completed.

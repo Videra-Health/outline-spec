@@ -52,7 +52,7 @@ describe('available-tools', () => {
         'home',
         '.minimax',
         'skills',
-        'outline-spec-explore',
+        'outl-explore',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(globalSkill), { recursive: true });
@@ -65,7 +65,7 @@ describe('available-tools', () => {
         testDir,
         '.minimax',
         'skills',
-        'outline-spec-explore',
+        'outl-explore',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(localSkill), { recursive: true });
@@ -262,7 +262,7 @@ describe('available-tools', () => {
         'home',
         '.minimax',
         'skills',
-        'outline-spec-explore',
+        'outl-explore',
         'SKILL.md'
       );
       await fs.mkdir(sharedSkills, { recursive: true });
@@ -281,11 +281,11 @@ describe('available-tools', () => {
         testDir,
         '.agents',
         'skills',
-        'outline-spec-propose',
+        'outl-propose',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(skillFile), { recursive: true });
-      await fs.writeFile(skillFile, 'Next: $outline-spec-apply-change');
+      await fs.writeFile(skillFile, 'Next: $outl-apply-change');
 
       const tools = getAvailableTools(testDir);
       expect(tools.map((tool) => tool.value)).toEqual(['codex']);
@@ -295,9 +295,9 @@ describe('available-tools', () => {
       'should preserve generic content when the shared marker is %j',
       async (marker) => {
         const skillsDir = path.join(testDir, '.agents', 'skills');
-        const skillFile = path.join(skillsDir, 'outline-spec-propose', 'SKILL.md');
+        const skillFile = path.join(skillsDir, 'outl-propose', 'SKILL.md');
         await fs.mkdir(path.dirname(skillFile), { recursive: true });
-        await fs.writeFile(skillFile, 'Next: /outline-spec-apply-change');
+        await fs.writeFile(skillFile, 'Next: /outl-apply-change');
         await fs.writeFile(path.join(skillsDir, '.outline-spec-target'), `${marker}\n`);
 
         const tools = getAvailableTools(testDir);
@@ -310,20 +310,20 @@ describe('available-tools', () => {
         testDir,
         '.agents',
         'skills',
-        'outline-spec-propose',
+        'outl-propose',
         'SKILL.md'
       );
       const codexSkill = path.join(
         testDir,
         '.codex',
         'skills',
-        'outline-spec-propose',
+        'outl-propose',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(agentsSkill), { recursive: true });
       await fs.mkdir(path.dirname(codexSkill), { recursive: true });
-      await fs.writeFile(agentsSkill, 'Next: /outline-spec-apply-change');
-      await fs.writeFile(codexSkill, 'Next: $outline-spec-apply-change');
+      await fs.writeFile(agentsSkill, 'Next: /outl-apply-change');
+      await fs.writeFile(codexSkill, 'Next: $outl-apply-change');
 
       const tools = getAvailableTools(testDir);
       expect(tools.map((tool) => tool.value)).toEqual(['codex']);
@@ -333,15 +333,15 @@ describe('available-tools', () => {
       const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-legacy-outside-'));
       try {
         const legacySkills = path.join(testDir, '.codex', 'skills');
-        await fs.mkdir(path.join(legacySkills, 'outline-spec-propose'), { recursive: true });
+        await fs.mkdir(path.join(legacySkills, 'outl-propose'), { recursive: true });
         await fs.writeFile(
-          path.join(legacySkills, 'outline-spec-propose', 'SKILL.md'),
-          'Next: $outline-spec-apply-change'
+          path.join(legacySkills, 'outl-propose', 'SKILL.md'),
+          'Next: $outl-apply-change'
         );
         await fs.mkdir(outsideDir, { recursive: true });
         await fs.symlink(
           outsideDir,
-          path.join(legacySkills, 'outline-spec-explore'),
+          path.join(legacySkills, 'outl-explore'),
           process.platform === 'win32' ? 'junction' : 'dir'
         );
 

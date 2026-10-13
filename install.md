@@ -40,4 +40,4 @@ adding the path when it isn't the current folder.
 
 ## 5. Report
 
-Relay what init printed: how many skills and commands it created and where, and what to restart. Tell the user how to start a change in their tool, taking the spelling from the files init created: `/outline-spec:propose` in Claude Code, `/outline-spec-propose` in most other tools, `@outline-spec-propose` in Amazon Q, `$outline-spec-propose` in Codex, `/skill:outline-spec-propose` in Kimi Code.
+Relay what init printed: how many skills and commands it created and where, and what to restart. Tell the user how to start a change in their tool, taking the spelling from the files init created: `/outl:propose` in Claude Code, `/outl-propose` in most other tools, `@outl-propose` in Amazon Q, `$outl-propose` in Codex, `/skill:outl-propose` in Kimi Code.

@@ -35,9 +35,9 @@ pnpm install && pnpm build && npm install -g .
 cd your-project
 outline-spec init                      # pick your AI tools
 # in your AI tool:
-/outline-spec:propose add dark mode    # writes outline.md and tasks.md
-/outline-spec:apply                    # implements the tasks
-/outline-spec:archive                  # applies the outline to the specs
+/outl:propose add dark mode    # writes outline.md and tasks.md
+/outl:apply                    # implements the tasks
+/outl:archive                  # applies the outline to the specs
 ```
 
 Moving from OpenSpec? Run `outline-spec adopt` ([Adopting](docs/adopting.md)).

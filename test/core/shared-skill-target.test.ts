@@ -20,12 +20,12 @@ describe('sharedSkillRootOwnedByOther', () => {
 
   const writeAgentsSkill = async (marker?: string) => {
     const skillsRoot = path.join(projectPath, '.agents', 'skills');
-    const skillDir = path.join(skillsRoot, 'outline-spec-propose');
+    const skillDir = path.join(skillsRoot, 'outl-propose');
     await fs.mkdir(skillDir, { recursive: true });
-    // Generic invocation syntax => inferred owner is `agents` (not `$outline-spec-`).
+    // Generic invocation syntax => inferred owner is `agents` (not `$outl-`).
     await fs.writeFile(
       path.join(skillDir, 'SKILL.md'),
-      '# outline-spec-propose\n\nRun /outline-spec-propose to start.\n'
+      '# outl-propose\n\nRun /outl-propose to start.\n'
     );
     if (marker !== undefined) {
       await fs.writeFile(path.join(skillsRoot, '.outline-spec-target'), `${marker}\n`);
@@ -49,7 +49,7 @@ describe('sharedSkillRootOwnedByOther', () => {
   });
 
   it('infers agents ownership from a generic tree even without a marker', async () => {
-    await writeAgentsSkill(); // no marker; content is generic `/outline-spec-`
+    await writeAgentsSkill(); // no marker; content is generic `/outl-`
     expect(sharedSkillRootOwnedByOther(projectPath, 'codex')).toBe(true);
   });
 
@@ -71,12 +71,12 @@ describe('sharedSkillRootOwnedByOther', () => {
   });
 
   it('treats an existing tree with no marker and no inferable syntax as agents-owned', async () => {
-    // Neither `$outline-spec-` nor `/outline-spec-` in the content and no marker:
+    // Neither `$outl-` nor `/outl-` in the content and no marker:
     // ownership can't be inferred, so reconciliation keeps the established
     // `agents` target rather than letting Codex claim the existing tree.
-    const skillDir = path.join(projectPath, '.agents', 'skills', 'outline-spec-propose');
+    const skillDir = path.join(projectPath, '.agents', 'skills', 'outl-propose');
     await fs.mkdir(skillDir, { recursive: true });
-    await fs.writeFile(path.join(skillDir, 'SKILL.md'), '# outline-spec-propose\n\nNo invocation syntax here.\n');
+    await fs.writeFile(path.join(skillDir, 'SKILL.md'), '# outl-propose\n\nNo invocation syntax here.\n');
     expect(sharedSkillRootOwnedByOther(projectPath, 'codex')).toBe(true);
     // The established `agents` target is the resolved owner of the ambiguous tree.
     expect(sharedSkillRootOwner(projectPath, 'codex')).toBe('agents');

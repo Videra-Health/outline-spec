@@ -26,16 +26,16 @@ type WorkflowId = (typeof ALL_WORKFLOWS)[number];
  * Maps workflow IDs to their skill directory names.
  */
 export const WORKFLOW_TO_SKILL_DIR: Record<WorkflowId, string> = {
-  'explore': 'outline-spec-explore',
-  'new': 'outline-spec-new-change',
-  'continue': 'outline-spec-continue-change',
-  'apply': 'outline-spec-apply-change',
-  'update': 'outline-spec-update-change',
-  'ff': 'outline-spec-ff-change',
-  'archive': 'outline-spec-archive-change',
-  'verify': 'outline-spec-verify-change',
-  'onboard': 'outline-spec-onboard',
-  'propose': 'outline-spec-propose',
+  'explore': 'outl-explore',
+  'new': 'outl-new-change',
+  'continue': 'outl-continue-change',
+  'apply': 'outl-apply-change',
+  'update': 'outl-update-change',
+  'ff': 'outl-ff-change',
+  'archive': 'outl-archive-change',
+  'verify': 'outl-verify-change',
+  'onboard': 'outl-onboard',
+  'propose': 'outl-propose',
 };
 
 function toKnownWorkflows(workflows: readonly string[]): WorkflowId[] {

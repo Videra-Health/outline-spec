@@ -11,20 +11,20 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * Cursor adapter for command generation.
- * File path: .cursor/commands/outline-spec-<id>.md
- * Frontmatter: name (as /outline-spec-<id>), id, category, description
+ * File path: .cursor/commands/outl-<id>.md
+ * Frontmatter: name (as /outl-<id>), id, category, description
  */
 export const cursorAdapter: ToolCommandAdapter = {
   toolId: 'cursor',
 
   getFilePath(commandId: string): string {
-    return path.join('.cursor', 'commands', `outline-spec-${commandId}.md`);
+    return path.join('.cursor', 'commands', `outl-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {
     return `---
-name: ${escapeYamlValue(`/outline-spec-${content.id}`)}
-id: ${escapeYamlValue(`outline-spec-${content.id}`)}
+name: ${escapeYamlValue(`/outl-${content.id}`)}
+id: ${escapeYamlValue(`outl-${content.id}`)}
 category: ${escapeYamlValue(content.category)}
 description: ${escapeYamlValue(content.description)}
 ---

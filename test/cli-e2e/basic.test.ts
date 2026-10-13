@@ -343,11 +343,11 @@ describe('outline-spec CLI e2e basics', () => {
       expect(result.stdout).toContain('outline-spec Setup Complete');
 
       // Check that skills were created for multiple tools
-      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/outline-spec-explore/SKILL.md');
-      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/outline-spec-explore/SKILL.md');
+      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/outl-explore/SKILL.md');
+      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/outl-explore/SKILL.md');
       const minimaxSkillPath = path.join(
         testHome,
-        '.minimax/skills/outline-spec-explore/SKILL.md'
+        '.minimax/skills/outl-explore/SKILL.md'
       );
       expect(await fileExists(claudeSkillPath)).toBe(true);
       expect(await fileExists(cursorSkillPath)).toBe(true);
@@ -365,8 +365,8 @@ describe('outline-spec CLI e2e basics', () => {
       expect(result.stdout).toContain('Claude Code');
 
       // New init creates skills, not CLAUDE.md
-      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/outline-spec-explore/SKILL.md');
-      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/outline-spec-explore/SKILL.md');
+      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/outl-explore/SKILL.md');
+      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/outl-explore/SKILL.md');
       expect(await fileExists(claudeSkillPath)).toBe(true);
       expect(await fileExists(cursorSkillPath)).toBe(false); // Not selected
     });
@@ -380,7 +380,7 @@ describe('outline-spec CLI e2e basics', () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('outline-spec Setup Complete');
 
-      const skillPath = path.join(emptyProjectDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const skillPath = path.join(emptyProjectDir, '.agents', 'skills', 'outl-explore', 'SKILL.md');
       expect(await fileExists(skillPath)).toBe(true);
     });
 
@@ -395,7 +395,7 @@ describe('outline-spec CLI e2e basics', () => {
       expect(result.stdout).toContain('Zed Agent');
       expect(result.stdout).not.toContain('Restart your IDE');
 
-      const skillPath = path.join(emptyProjectDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const skillPath = path.join(emptyProjectDir, '.agents', 'skills', 'outl-explore', 'SKILL.md');
       expect(await fileExists(skillPath)).toBe(true);
       expect(await fs.readFile(
         path.join(emptyProjectDir, '.agents', 'skills', '.outline-spec-target'),
@@ -409,8 +409,8 @@ describe('outline-spec CLI e2e basics', () => {
         'utf-8'
       )).toBe('zed\n');
       const updatedSkill = await fs.readFile(skillPath, 'utf-8');
-      expect(updatedSkill).toContain('/outline-spec-explore');
-      expect(updatedSkill).not.toContain('$outline-spec-explore');
+      expect(updatedSkill).toContain('/outl-explore');
+      expect(updatedSkill).not.toContain('$outl-explore');
     });
 
     it('initializes with --tools none option', async () => {
@@ -423,8 +423,8 @@ describe('outline-spec CLI e2e basics', () => {
       expect(result.stdout).toContain('outline-spec Setup Complete');
 
       // With --tools none, no tool skills should be created
-      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/outline-spec-explore/SKILL.md');
-      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/outline-spec-explore/SKILL.md');
+      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/outl-explore/SKILL.md');
+      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/outl-explore/SKILL.md');
 
       expect(await fileExists(claudeSkillPath)).toBe(false);
       expect(await fileExists(cursorSkillPath)).toBe(false);

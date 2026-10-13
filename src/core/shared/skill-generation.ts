@@ -77,16 +77,16 @@ export interface CommandTemplateEntry {
  */
 export function getSkillTemplates(workflowFilter?: readonly string[]): SkillTemplateEntry[] {
   const all: SkillTemplateEntry[] = [
-    { template: getExploreSkillTemplate(), dirName: 'outline-spec-explore', workflowId: 'explore' },
-    { template: getNewChangeSkillTemplate(), dirName: 'outline-spec-new-change', workflowId: 'new' },
-    { template: getContinueChangeSkillTemplate(), dirName: 'outline-spec-continue-change', workflowId: 'continue' },
-    { template: getApplyChangeSkillTemplate(), dirName: 'outline-spec-apply-change', workflowId: 'apply' },
-    { template: getUpdateChangeSkillTemplate(), dirName: 'outline-spec-update-change', workflowId: 'update' },
-    { template: getFfChangeSkillTemplate(), dirName: 'outline-spec-ff-change', workflowId: 'ff' },
-    { template: getArchiveChangeSkillTemplate(), dirName: 'outline-spec-archive-change', workflowId: 'archive' },
-    { template: getVerifyChangeSkillTemplate(), dirName: 'outline-spec-verify-change', workflowId: 'verify' },
-    { template: getOnboardSkillTemplate(), dirName: 'outline-spec-onboard', workflowId: 'onboard' },
-    { template: getOutlineSpecProposeSkillTemplate(), dirName: 'outline-spec-propose', workflowId: 'propose' },
+    { template: getExploreSkillTemplate(), dirName: 'outl-explore', workflowId: 'explore' },
+    { template: getNewChangeSkillTemplate(), dirName: 'outl-new-change', workflowId: 'new' },
+    { template: getContinueChangeSkillTemplate(), dirName: 'outl-continue-change', workflowId: 'continue' },
+    { template: getApplyChangeSkillTemplate(), dirName: 'outl-apply-change', workflowId: 'apply' },
+    { template: getUpdateChangeSkillTemplate(), dirName: 'outl-update-change', workflowId: 'update' },
+    { template: getFfChangeSkillTemplate(), dirName: 'outl-ff-change', workflowId: 'ff' },
+    { template: getArchiveChangeSkillTemplate(), dirName: 'outl-archive-change', workflowId: 'archive' },
+    { template: getVerifyChangeSkillTemplate(), dirName: 'outl-verify-change', workflowId: 'verify' },
+    { template: getOnboardSkillTemplate(), dirName: 'outl-onboard', workflowId: 'onboard' },
+    { template: getOutlineSpecProposeSkillTemplate(), dirName: 'outl-propose', workflowId: 'propose' },
   ];
 
   const installed = resolveInstalledWorkflows(workflowFilter);

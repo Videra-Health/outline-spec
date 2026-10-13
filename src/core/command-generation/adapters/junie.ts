@@ -10,14 +10,14 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * Junie adapter for command generation.
- * File path: .junie/commands/outline-spec-<id>.md
+ * File path: .junie/commands/outl-<id>.md
  * Frontmatter: description
  */
 export const junieAdapter: ToolCommandAdapter = {
   toolId: 'junie',
 
   getFilePath(commandId: string): string {
-    return path.join('.junie', 'commands', `outline-spec-${commandId}.md`);
+    return path.join('.junie', 'commands', `outl-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

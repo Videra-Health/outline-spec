@@ -3,7 +3,7 @@
  *
  * Not every workflow is installed. The `core` profile ships six of the twelve
  * (`propose`, `explore`, `apply`, `update`, `sync`, `archive`), and a `custom`
- * profile can ship any subset. A template that names `/outline-spec:continue` is
+ * profile can ship any subset. A template that names `/outl:continue` is
  * therefore writing a dead reference for anyone whose profile omits it — the
  * agent is told to hand off to a workflow that was never generated (#1734,
  * umbrella #919).
@@ -91,7 +91,7 @@ function assertConditionalsWellFormed(text: string): void {
  * @param whenMissing - Text to emit otherwise, typically a CLI fallback
  *
  * @example
- * optionalWorkflow('continue', 'suggest `/outline-spec:continue`', 'run `outline-spec status`')
+ * optionalWorkflow('continue', 'suggest `/outl:continue`', 'run `outline-spec status`')
  */
 export function optionalWorkflow(
   workflowId: string,

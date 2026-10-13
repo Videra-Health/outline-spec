@@ -31,7 +31,7 @@ ${input}
    Include the schema used for each change if available.
    Mark changes with incomplete tasks as "(In Progress)".
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/outline-spec:verify <other>\`).
+   Always announce: "Using change: <name>" and how to override (e.g., \`/outl:verify <other>\`).
 
 2. **Check status to understand the schema**
    \`\`\`bash
@@ -192,7 +192,7 @@ ${input}
    - If CRITICAL issues: "X critical issue(s) found. Fix before archiving." If any check was skipped, also name every skipped check and its reason.
    - If no CRITICAL issues, one or more warnings, and no checks were skipped: "No critical issues. Y warning(s) to consider. Ready to archive (with noted improvements)."
    - If only suggestions and no checks were skipped: "No critical issues or warnings. Z suggestion(s) to consider. Ready to archive (with noted improvements)."
-   - If no issues and no checks were skipped: "All checks passed. Ready to archive with ${optionalWorkflow('archive', '\`/outline-spec:archive\`', '\`outline-spec archive "<name>"\`')}."
+   - If no issues and no checks were skipped: "All checks passed. Ready to archive with ${optionalWorkflow('archive', '\`/outl:archive\`', '\`outline-spec archive "<name>"\`')}."
    - If any check was skipped and there are no CRITICAL issues: do not claim readiness. Say "No critical issues found in the checks that ran. <check(s)> not verified: <reason>." Include the warning count when nonzero.
    - Include the suggestion count when nonzero in every final assessment.
 
@@ -216,7 +216,7 @@ Use clear markdown with:
 
 export function getVerifyChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'outline-spec-verify-change',
+    name: 'outl-verify-change',
     description: 'Verify implementation matches outline-spec change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving. Also use when the user says "outline-spec verify".',
     instructions: getVerifyInstructions(
       '**Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
@@ -234,7 +234,7 @@ export function getOutlineSpecVerifyCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'verify', 'experimental'],
     content: getVerifyInstructions(
-      '**Input**: Optionally specify a change name after `/outline-spec:verify` (e.g., `/outline-spec:verify add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
+      '**Input**: Optionally specify a change name after `/outl:verify` (e.g., `/outl:verify add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
     ),
   };
 }

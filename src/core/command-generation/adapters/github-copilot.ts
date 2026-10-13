@@ -10,14 +10,14 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * GitHub Copilot adapter for command generation.
- * File path: .github/prompts/outline-spec-<id>.prompt.md
+ * File path: .github/prompts/outl-<id>.prompt.md
  * Frontmatter: description
  */
 export const githubCopilotAdapter: ToolCommandAdapter = {
   toolId: 'github-copilot',
 
   getFilePath(commandId: string): string {
-    return path.join('.github', 'prompts', `outline-spec-${commandId}.prompt.md`);
+    return path.join('.github', 'prompts', `outl-${commandId}.prompt.md`);
   },
 
   formatFile(content: CommandContent): string {

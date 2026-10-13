@@ -23,6 +23,7 @@ import { isLegacyCodexSkillEquivalentToCurrent } from './shared/skill-content-eq
 import path from 'path';
 import * as fs from 'fs';
 import { resolveToolSkillsDir, toolSupportsSkills } from './shared/skill-paths.js';
+import { toLegacyPrefixPath } from './legacy-prefix.js';
 
 export interface LegacyToolRoot {
   /** Former tool root, e.g. '.kimi' */
@@ -109,7 +110,7 @@ function classifyManagedFile(source: string, destination: string): FileDispositi
 
 /**
  * Rewrites a generated command path from the tool's current root to a legacy
- * one, so `.devin/workflows/outline-spec-apply.md` locates its `.windsurf/` twin
+ * one, so `.devin/workflows/outl-apply.md` locates its `.windsurf/` twin
  * without the migration hard-coding either layout.
  *
  * Returns undefined for adapters whose paths are absolute (global-scoped
@@ -140,8 +141,8 @@ export function findLegacyToolMigrations(
 }
 
 /**
- * Moves outline-spec-managed skill directories (outline-spec-*) and command files
- * (outline-spec-*) from a tool's legacy root to its current one. When the destination
+ * Moves outline-spec-managed skill directories (outl-*) and command files
+ * (outl-*) from a tool's legacy root to its current one. When the destination
  * already exists the legacy copy is removed instead. Legacy directories are
  * deleted only when left empty, so user files under the old location — a
  * hand-written Cascade workflow next to the generated ones — are preserved.
@@ -484,8 +485,8 @@ function scanInstalledWorkflowArtifacts(
     for (const skillsDir of skillsDirs) {
       for (const workflowId of ALL_WORKFLOWS) {
         const skillDirName = WORKFLOW_TO_SKILL_DIR[workflowId];
-        const skillFile = path.join(skillsDir, skillDirName, 'SKILL.md');
-        if (fs.existsSync(skillFile)) {
+        const names = [skillDirName, skillDirName.replace(/^outl-/, 'outline-spec-')];
+        if (names.some((name) => fs.existsSync(path.join(skillsDir, name, 'SKILL.md')))) {
           installed.add(workflowId);
           hasSkills = true;
         }
@@ -505,7 +506,7 @@ function scanInstalledWorkflowArtifacts(
 
     for (const workflowId of ALL_WORKFLOWS) {
       const commandPath = adapter.getFilePath(workflowId);
-      const candidates = [commandPath];
+      const candidates = [commandPath, toLegacyPrefixPath(commandPath)];
       if (tool.skillsDir) {
         for (const root of legacyRoots) {
           const legacyPath = legacyCommandPath(commandPath, tool.skillsDir, root);
@@ -605,8 +606,8 @@ export function migrateIfNeeded(projectPath: string, tools: AIToolOption[]): voi
   console.log(`Migrated: custom profile with ${installedWorkflows.length} workflows`);
   // Each detected tool resolves to a propose reference for its surface: the
   // command name its generated files answer to when commands will exist for it
-  // under the effective delivery (/outline-spec:propose when namespaced under outline-spec/,
-  // /outline-spec-propose when the filename is the command), its documented skill
+  // under the effective delivery (/outl:propose when namespaced under outl/,
+  // /outl-propose when the filename is the command), its documented skill
   // invocation otherwise. When the tools disagree — including command tools
   // mixed with skill-only tools — stay syntax-neutral rather than advertise a
   // form that is wrong for one of them.
@@ -620,12 +621,12 @@ export function migrateIfNeeded(projectPath: string, tools: AIToolOption[]): voi
           resolveCommandSurfaceCapability(tool.value),
           resolveCommandInvocation(tool.value)
         );
-        return transformer ? transformer('/outline-spec:propose') : '/outline-spec:propose';
+        return transformer ? transformer('/outl:propose') : '/outl:propose';
       }
-      return getSkillReferenceTransformer(tool.value)('/outline-spec:propose');
+      return getSkillReferenceTransformer(tool.value)('/outl:propose');
     })
   );
   const proposeReference =
-    proposeReferences.size === 1 ? [...proposeReferences][0] : 'the outline-spec-propose skill';
+    proposeReferences.size === 1 ? [...proposeReferences][0] : 'the outl-propose skill';
   console.log(`New in this version: ${proposeReference}. Try 'outline-spec config profile core' for the streamlined experience.`);
 }

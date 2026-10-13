@@ -341,7 +341,7 @@ describe('store canonical remote (3.3)', () => {
 
   describe('onboarding end to end', () => {
     it('executes the printed clone fix verbatim and continues to a resolved index', async () => {
-      // A scratch HOME keeps the rendered <home>/outline-spec/<id> checkout
+      // A scratch HOME keeps the rendered <home>/outl/<id> checkout
       // path inside the temp dir for both the fix text and the CLI.
       const scratchHome = path.join(tempDir, 'home');
       fs.mkdirSync(scratchHome, { recursive: true });

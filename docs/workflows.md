@@ -4,7 +4,7 @@ A change moves through three steps: propose, apply, archive. Each is a skill and
 
 ## Propose
 
-`/outline-spec:propose "add digital wallets"` creates `outline-spec/changes/<name>/` and writes its artifacts in order:
+`/outl:propose "add digital wallets"` creates `outline-spec/changes/<name>/` and writes its artifacts in order:
 
 - `outline.md`: the proposal and the spec edits ([Outlines](outlines.md)).
 - `design.md`: only when the change needs technical decisions explained.
@@ -18,13 +18,13 @@ Review the outline before applying. `outline-spec show <change> --diff` prints t
 
 ## Apply
 
-`/outline-spec:apply` works through `tasks.md`, writing code and checking off each task (`- [ ]` to `- [x]`). It stops to ask when a task is unclear or blocked.
+`/outl:apply` works through `tasks.md`, writing code and checking off each task (`- [ ]` to `- [x]`). It stops to ask when a task is unclear or blocked.
 
-If the plan changes while you build, `/outline-spec:update` revises the change's artifacts and keeps them consistent with each other. It never edits code.
+If the plan changes while you build, `/outl:update` revises the change's artifacts and keeps them consistent with each other. It never edits code.
 
 ## Archive
 
-`/outline-spec:archive` finishes the change:
+`/outl:archive` finishes the change:
 
 1. It warns about unchecked tasks and asks before going on.
 2. It runs `outline-spec validate <change>`.

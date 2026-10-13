@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Shorter prefix.** Skills are `outl-*` (`outl-propose`) and commands are `/outl:propose` or `/outl-propose`, in `outl/` command folders. `init` and `update` remove the old `outline-spec-*` skills and `outline-spec/` commands they generated. The CLI, package, and `outline-spec/` project folder keep their names.
+
 ## 0.2.0
 
 - **Tables.** An outline item can carry a Markdown table whose first column is `id`, for facts about many things (every ship, every catalog item). A change edits a live table by row id and column header: `~~old~~ **new**` cells, new and struck rows, and bold, struck, or renamed columns. Archive checks struck cells against the live table and writes tables unpadded; hand-aligned tables are normalized when their spec is archived into. Format: [docs/outlines.md](docs/outlines.md#tables).

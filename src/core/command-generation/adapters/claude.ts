@@ -11,14 +11,14 @@ import { OUTLINE_SPEC_CLI_ALLOWED_TOOLS } from '../../shared/allowed-tools.js';
 
 /**
  * Claude Code adapter for command generation.
- * File path: .claude/commands/outline-spec/<id>.md
+ * File path: .claude/commands/outl/<id>.md
  * Frontmatter: name, description, allowed-tools, category, tags
  */
 export const claudeAdapter: ToolCommandAdapter = {
   toolId: 'claude',
 
   getFilePath(commandId: string): string {
-    return path.join('.claude', 'commands', 'outline-spec', `${commandId}.md`);
+    return path.join('.claude', 'commands', 'outl', `${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

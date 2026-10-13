@@ -20,19 +20,19 @@ import { PROJECT_ROOT_GUARD } from './project-root.js';
  */
 const SKILL_APPLY_HANDOFF = optionalWorkflow(
   'apply',
-  'run `/outline-spec:apply` or ask me to apply this change',
+  'run `/outl:apply` or ask me to apply this change',
   'ask me to apply this change'
 );
 
 const COMMAND_APPLY_HANDOFF = optionalWorkflow(
   'apply',
-  'run `/outline-spec:apply`',
+  'run `/outl:apply`',
   'run `outline-spec instructions apply --change "<name>" --json` to get the tasks'
 );
 
 export function getOutlineSpecProposeSkillTemplate(): SkillTemplate {
   return {
-    name: 'outline-spec-propose',
+    name: 'outl-propose',
     description: 'Propose a new outline-spec change with all artifacts generated in one step. Use when the user wants to quickly describe what they want to build and get a complete outline of spec edits and tasks ready for implementation. Also use when the user says "outline-spec propose".',
     instructions: `Propose a new change - create the change and generate all artifacts in one step.
 
@@ -218,7 +218,7 @@ ${STORE_SELECTION_GUIDANCE}
 
 ${PROJECT_ROOT_GUARD}
 
-**Input**: The argument after \`/outline-spec:propose\` is the change name (kebab-case), OR a description of what the user wants to build.
+**Input**: The argument after \`/outl:propose\` is the change name (kebab-case), OR a description of what the user wants to build.
 
 **Steps**
 

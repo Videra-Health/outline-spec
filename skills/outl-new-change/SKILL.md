@@ -1,5 +1,5 @@
 ---
-name: outline-spec-new-change
+name: outl-new-change
 description: Start a new outline-spec change using the experimental artifact workflow. Use when the user wants to create a new feature, fix, or modification with a structured step-by-step approach. Also use when the user says "outline-spec new change".
 allowed-tools: Bash(outline-spec:*)
 license: MIT

@@ -14,14 +14,14 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * GigaCode adapter for command generation.
- * File path: .gigacode/commands/outline-spec-<id>.md
+ * File path: .gigacode/commands/outl-<id>.md
  * Format: Markdown with description frontmatter
  */
 export const gigacodeAdapter: ToolCommandAdapter = {
   toolId: 'gigacode',
 
   getFilePath(commandId: string): string {
-    return path.join('.gigacode', 'commands', `outline-spec-${commandId}.md`);
+    return path.join('.gigacode', 'commands', `outl-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

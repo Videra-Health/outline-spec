@@ -35,7 +35,7 @@ outline-spec/
 └── changes/      open changes
 ```
 
-plus the skills and commands in each tool's folder, for example `.claude/skills/` and `.claude/commands/outline-spec/` for Claude Code. Commit all of it. Restart your AI tool so it picks up the new commands.
+plus the skills and commands in each tool's folder, for example `.claude/skills/` and `.claude/commands/outl/` for Claude Code. Commit all of it. Restart your AI tool so it picks up the new commands.
 
 Coming from OpenSpec? Use `outline-spec adopt` instead ([Adopting](adopting.md)).
 
@@ -44,7 +44,7 @@ Coming from OpenSpec? Use `outline-spec adopt` instead ([Adopting](adopting.md))
 In your AI tool:
 
 ```
-/outline-spec:propose add a dark mode toggle to settings
+/outl:propose add a dark mode toggle to settings
 ```
 
 The agent creates `outline-spec/changes/add-dark-mode/` with `outline.md` (the proposal and spec edits), `tasks.md`, and `design.md` if the change needs one. Read `outline.md`. On a new project the specs are empty, so the outline creates a spec:
@@ -59,13 +59,13 @@ The agent creates `outline-spec/changes/add-dark-mode/` with `outline.md` (the p
 Then:
 
 ```
-/outline-spec:apply
+/outl:apply
 ```
 
 The agent implements the tasks and checks them off. When they're done:
 
 ```
-/outline-spec:archive
+/outl:archive
 ```
 
 It validates the change, shows you the spec it will write, writes `outline-spec/specs/settings/spec.md`, and deletes the change folder (there is no archive folder; git history is the record). Commit.

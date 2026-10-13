@@ -1,17 +1,22 @@
 export const OUTLINE_SPEC_DIR_NAME = 'outline-spec';
 
 export const OUTLINE_SPEC_SKILL_NAMES = [
-  'outline-spec-explore',
-  'outline-spec-new-change',
-  'outline-spec-continue-change',
-  'outline-spec-apply-change',
-  'outline-spec-update-change',
-  'outline-spec-ff-change',
-  'outline-spec-archive-change',
-  'outline-spec-verify-change',
-  'outline-spec-onboard',
-  'outline-spec-propose',
+  'outl-explore',
+  'outl-new-change',
+  'outl-continue-change',
+  'outl-apply-change',
+  'outl-update-change',
+  'outl-ff-change',
+  'outl-archive-change',
+  'outl-verify-change',
+  'outl-onboard',
+  'outl-propose',
 ] as const;
+
+/** Skill names written before the prefix changed from `outline-spec-` to `outl-`. */
+export const LEGACY_OUTLINE_SPEC_SKILL_NAMES: readonly string[] = OUTLINE_SPEC_SKILL_NAMES.map(
+  (name) => name.replace(/^outl-/, 'outline-spec-')
+);
 
 export const OUTLINE_SPEC_MARKERS = {
   start: '<!-- OUTLINE_SPEC:START -->',

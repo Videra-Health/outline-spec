@@ -12,18 +12,18 @@ import { escapeYamlValue, formatTagsArray } from '../yaml.js';
 
 /**
  * Devin Desktop adapter for command generation.
- * File path: .devin/workflows/outline-spec-<id>.md
+ * File path: .devin/workflows/outl-<id>.md
  * Frontmatter: name, description, category, tags
  *
- * The `outline-spec-` filename prefix makes this a flat invocation, so the generator
- * rewrites the body's `/outline-spec:*` references to the `/outline-spec-*` form Devin
+ * The `outl-` filename prefix makes this a flat invocation, so the generator
+ * rewrites the body's `/outl:*` references to the `/outl-*` form Devin
  * registers — see invocation.ts.
  */
 export const devinAdapter: ToolCommandAdapter = {
   toolId: 'devin',
 
   getFilePath(commandId: string): string {
-    return path.join('.devin', 'workflows', `outline-spec-${commandId}.md`);
+    return path.join('.devin', 'workflows', `outl-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

@@ -24,17 +24,17 @@ describe('skill-generation', () => {
       const templates = getSkillTemplates();
       const dirNames = templates.map(t => t.dirName);
 
-      expect(dirNames).toContain('outline-spec-explore');
-      expect(dirNames).toContain('outline-spec-new-change');
-      expect(dirNames).toContain('outline-spec-continue-change');
-      expect(dirNames).toContain('outline-spec-apply-change');
-      expect(dirNames).toContain('outline-spec-update-change');
-      expect(dirNames).toContain('outline-spec-ff-change');
-      expect(dirNames).toContain('outline-spec-archive-change');
-      expect(dirNames).toContain('outline-spec-archive-change');
-      expect(dirNames).toContain('outline-spec-verify-change');
-      expect(dirNames).toContain('outline-spec-onboard');
-      expect(dirNames).toContain('outline-spec-propose');
+      expect(dirNames).toContain('outl-explore');
+      expect(dirNames).toContain('outl-new-change');
+      expect(dirNames).toContain('outl-continue-change');
+      expect(dirNames).toContain('outl-apply-change');
+      expect(dirNames).toContain('outl-update-change');
+      expect(dirNames).toContain('outl-ff-change');
+      expect(dirNames).toContain('outl-archive-change');
+      expect(dirNames).toContain('outl-archive-change');
+      expect(dirNames).toContain('outl-verify-change');
+      expect(dirNames).toContain('outl-onboard');
+      expect(dirNames).toContain('outl-propose');
     });
 
     it('should have valid template structure', () => {
@@ -83,7 +83,7 @@ describe('skill-generation', () => {
       const filtered = getSkillTemplates(['propose']);
       expect(filtered).toHaveLength(1);
       expect(filtered[0].workflowId).toBe('propose');
-      expect(filtered[0].dirName).toBe('outline-spec-propose');
+      expect(filtered[0].dirName).toBe('outl-propose');
     });
   });
 
@@ -259,28 +259,28 @@ describe('skill-generation', () => {
       const template = {
         name: 'transform-test',
         description: 'Test transform callback',
-        instructions: 'Use /outline-spec:new to start and /outline-spec:apply to implement.',
+        instructions: 'Use /outl:new to start and /outl:apply to implement.',
       };
 
-      const transformer = (text: string) => text.replace(/\/outline-spec:/g, '/outline-spec-');
+      const transformer = (text: string) => text.replace(/\/outl:/g, '/outl-');
       const content = generateSkillContent(template, '0.23.0', transformer);
 
-      expect(content).toContain('/outline-spec-new');
-      expect(content).toContain('/outline-spec-apply');
-      expect(content).not.toContain('/outline-spec:new');
-      expect(content).not.toContain('/outline-spec:apply');
+      expect(content).toContain('/outl-new');
+      expect(content).toContain('/outl-apply');
+      expect(content).not.toContain('/outl:new');
+      expect(content).not.toContain('/outl:apply');
     });
 
     it('should not transform instructions when callback is undefined', () => {
       const template = {
         name: 'no-transform-test',
         description: 'Test without transform',
-        instructions: 'Use /outline-spec:new to start.',
+        instructions: 'Use /outl:new to start.',
       };
 
       const content = generateSkillContent(template, '0.23.0', undefined);
 
-      expect(content).toContain('/outline-spec:new');
+      expect(content).toContain('/outl:new');
     });
 
     it('should support custom transformInstructions logic', () => {

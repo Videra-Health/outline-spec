@@ -63,6 +63,6 @@ Specs already under `outline-spec/specs/` in the old format can be converted on 
 
 ## Running alongside OpenSpec
 
-The two tools don't touch each other's files. `outline-spec init` and `update` write only `outline-spec-*` skills and `/outline-spec:` commands, and never remove OpenSpec's `openspec-*` skills, `/opsx:` commands, or `openspec/` folder. Both CLIs can be installed on one machine.
+The two tools don't touch each other's files. `outline-spec init` and `update` write only `outl-*` skills and `/outl:` commands, and never remove OpenSpec's `openspec-*` skills, `/opsx:` commands, or `openspec/` folder. Both CLIs can be installed on one machine.
 
 After adopting, the project's specs live in `outline-spec/`, so OpenSpec's commands no longer find them. Delete OpenSpec's skills and commands from the project when you're done with them, for example `.claude/skills/openspec-*` and `.claude/commands/opsx/`.

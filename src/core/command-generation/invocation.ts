@@ -4,19 +4,19 @@
  * How a tool spells an outline-spec command has two parts, and only one of them
  * can be read off the file the adapter writes:
  *
- * - The *name* comes from the file. `.../commands/outline-spec/<id>.md` is namespaced
- *   by its directory, so the tool registers `outline-spec:<id>` (Claude Code, Gemini,
- *   Crush, ...). `.../commands/outline-spec-<id>.md` names the command with the
- *   filename, so the tool registers `outline-spec-<id>` (Cursor, GitHub Copilot,
+ * - The *name* comes from the file. `.../commands/outl/<id>.md` is namespaced
+ *   by its directory, so the tool registers `outl:<id>` (Claude Code, Gemini,
+ *   Crush, ...). `.../commands/outl-<id>.md` names the command with the
+ *   filename, so the tool registers `outl-<id>` (Cursor, GitHub Copilot,
  *   OpenCode, ...).
  * - The *prefix* is the tool's own and cannot be derived. Almost every tool
  *   uses `/`; Amazon Q loads these files into its prompt library, which is
- *   invoked with `@` (`@outline-spec-propose`), so its adapter declares that prefix.
+ *   invoked with `@` (`@outl-propose`), so its adapter declares that prefix.
  *
  * Deriving the name from `getFilePath` keeps generated cross-references and
  * onboarding hints in step with the files outline-spec actually writes. A
  * hand-maintained list drifted before: only OpenCode was rewritten when the
- * hyphen form was introduced (#727), and Cursor still advertised `/outline-spec:`
+ * hyphen form was introduced (#727), and Cursor still advertised `/outl:`
  * commands its palette never registered (#1307). Carrying the prefix as
  * adapter metadata rather than inferring it keeps the one tool that does not
  * use a slash from being advertised as if it did.
@@ -43,18 +43,18 @@ export const CANONICAL_INVOCATION: CommandInvocation = { style: 'namespaced', pr
 /**
  * Classifies a generated command file by the name the tool will answer to.
  *
- * The test is the filename, not the directory: an `outline-spec-` prefix means the
+ * The test is the filename, not the directory: an `outl-` prefix means the
  * filename is the command. Every other shape is treated as namespaced, which
- * is what all seven `outline-spec/<id>.*` adapters need. An adapter that neither
- * prefixes the filename nor nests under `outline-spec/` would end up here too — none
+ * is what all seven `outl/<id>.*` adapters need. An adapter that neither
+ * prefixes the filename nor nests under `outl/` would end up here too — none
  * does, and the registry-wide test in invocation.test.ts fails if one appears.
  *
  * @param commandFilePath - Path returned by an adapter's `getFilePath`
- * @returns 'flat' when the filename carries the `outline-spec-` prefix, otherwise
+ * @returns 'flat' when the filename carries the `outl-` prefix, otherwise
  *          'namespaced'
  */
 export function getInvocationStyleForPath(commandFilePath: string): CommandInvocationStyle {
-  return path.basename(commandFilePath).startsWith('outline-spec-') ? 'flat' : 'namespaced';
+  return path.basename(commandFilePath).startsWith('outl-') ? 'flat' : 'namespaced';
 }
 
 /**
@@ -77,18 +77,18 @@ export function getInvocationForAdapter(adapter: ToolCommandAdapter): CommandInv
  *
  * @param invocation - The tool's invocation, from getInvocationForAdapter()
  * @param commandId - The command identifier (e.g. 'apply')
- * @returns What the user types, e.g. `/outline-spec:apply`, `/outline-spec-apply`, `@outline-spec-apply`
+ * @returns What the user types, e.g. `/outl:apply`, `/outl-apply`, `@outl-apply`
  */
 export function formatCommandInvocation(
   invocation: CommandInvocation,
   commandId: string
 ): string {
   const separator = invocation.style === 'namespaced' ? ':' : '-';
-  return `${invocation.prefix}outline-spec${separator}${commandId}`;
+  return `${invocation.prefix}outl${separator}${commandId}`;
 }
 
 /**
- * Whether a tool's invocation differs from the canonical `/outline-spec:<id>` that
+ * Whether a tool's invocation differs from the canonical `/outl:<id>` that
  * command bodies and skill templates are authored in — that is, whether
  * generated text has to be rewritten for that tool at all.
  */

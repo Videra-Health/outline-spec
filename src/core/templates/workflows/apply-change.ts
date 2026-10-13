@@ -10,20 +10,20 @@ import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 import { PROJECT_ROOT_GUARD } from './project-root.js';
 
 /**
- * `/outline-spec:continue` is not in the `core` profile, so the blocked-state handoff
+ * `/outl:continue` is not in the `core` profile, so the blocked-state handoff
  * is authored with a CLI fallback and resolved at generation time (see
  * optional-workflow.ts).
  */
 const BLOCKED_STATE_HANDOFF = optionalWorkflow(
   'continue',
-  'suggest using `/outline-spec:continue` to create them.',
+  'suggest using `/outl:continue` to create them.',
   'suggest completing the missing artifacts. Run `outline-spec status --change "<name>" --json`, select the next `ready` artifact (not `skipped` or `blocked`), and use `outline-spec instructions "<artifact-id>" --change "<name>" --json` for its rules and template. Keep the selected `--store <id>` on both commands.'
 );
 
 /** The archive handoff shown once every task is done. */
 const ARCHIVE_HANDOFF = optionalWorkflow(
   'archive',
-  'You can archive this change with `/outline-spec:archive`.',
+  'You can archive this change with `/outl:archive`.',
   'You can archive this change by running `outline-spec archive "<name>"`.'
 );
 
@@ -31,7 +31,7 @@ const ARCHIVE_HANDOFF = optionalWorkflow(
  * The apply workflow instructions, authored once and rendered by both the
  * skill and command surfaces. The surfaces are intentionally distinct, but
  * they differ only in how they are invoked — the generation transformers
- * rewrite the canonical `/outline-spec:<id>` tokens per surface downstream (see
+ * rewrite the canonical `/outl:<id>` tokens per surface downstream (see
  * command-references.ts). The instruction text itself is shared, so the two
  * cannot silently drift. Should a surface ever need genuinely different
  * wording, add a parameter here and pass it from that surface's template.
@@ -43,7 +43,7 @@ ${STORE_SELECTION_GUIDANCE}
 
 ${PROJECT_ROOT_GUARD}
 
-**Input**: Optionally specify a change name (e.g., \`/outline-spec:apply add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
+**Input**: Optionally specify a change name (e.g., \`/outl:apply add-auth\`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.
 
 **Steps**
 
@@ -54,7 +54,7 @@ ${PROJECT_ROOT_GUARD}
    - Auto-select if only one active change exists
    - If ambiguous, run \`outline-spec list --json\` to get available changes and ask the user to select one
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/outline-spec:apply <other>\`).
+   Always announce: "Using change: <name>" and how to override (e.g., \`/outl:apply <other>\`).
 
 2. **Check status to understand the schema**
    \`\`\`bash
@@ -227,7 +227,7 @@ This skill supports the "actions on a change" model:
 
 export function getApplyChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'outline-spec-apply-change',
+    name: 'outl-apply-change',
     description: 'Implement tasks from an outline-spec change. Use when the user wants to start implementing, continue implementation, or work through tasks. Also use when the user says "outline-spec apply" or "outline-spec implement".',
     instructions: getApplyInstructions(),
     license: 'MIT',

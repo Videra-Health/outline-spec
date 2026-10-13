@@ -32,7 +32,7 @@ function getWelcomeText(workflows: readonly string[]): string[] {
       quickStart.push(`    ${chalk.dim(description)}`);
     }
     // These are the canonical names. How each tool spells them differs
-    // (/outline-spec-propose, @outline-spec-propose, $outline-spec-propose ...) and cannot be known
+    // (/outl-propose, @outl-propose, $outl-propose ...) and cannot be known
     // until tools are picked, one prompt later — so flag it rather than let the
     // canonical form read as the literal thing to type. "Getting started"
     // prints the real spelling once the selection is known.

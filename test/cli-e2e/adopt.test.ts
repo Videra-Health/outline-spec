@@ -51,7 +51,7 @@ describe('outline-spec adopt', () => {
     expect(r.stdout).toContain('outline-spec update');
     // .claude/ belongs to OpenSpec and to `outline-spec update`; adopt leaves it alone.
     expect(read('.claude/skills/openspec-propose/SKILL.md')).toBe('OpenSpec skill\n');
-    expect(existsSync(at('.claude/skills/outline-spec-propose'))).toBe(false);
+    expect(existsSync(at('.claude/skills/outl-propose'))).toBe(false);
   });
 
   it('keeps an outline spec that already has a table', async () => {

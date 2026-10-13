@@ -91,10 +91,10 @@ describe('welcome screen', () => {
 
     const output = writtenOutput();
 
-    expect(output).toContain('/outline-spec:propose');
-    expect(output).toContain('/outline-spec:apply');
-    expect(output).not.toContain('/outline-spec:new');
-    expect(output).not.toContain('/outline-spec:continue');
+    expect(output).toContain('/outl:propose');
+    expect(output).toContain('/outl:apply');
+    expect(output).not.toContain('/outl:new');
+    expect(output).not.toContain('/outl:continue');
   });
 
   it('advertises expanded commands when a custom profile installs them', async () => {
@@ -105,9 +105,9 @@ describe('welcome screen', () => {
 
     const output = writtenOutput();
 
-    expect(output).toContain('/outline-spec:new');
-    expect(output).toContain('/outline-spec:continue');
-    expect(output).not.toContain('/outline-spec:propose');
+    expect(output).toContain('/outl:new');
+    expect(output).toContain('/outl:continue');
+    expect(output).not.toContain('/outl:propose');
   });
 
   it('omits the quick start block when no onboarding workflow is installed', async () => {
@@ -143,13 +143,13 @@ describe('welcome screen', () => {
     renderStatically();
 
     // The quick start shows canonical names, but this screen renders one
-    // prompt before tools are picked — an Amazon Q user types @outline-spec-propose
-    // and a Codex user $outline-spec-propose, neither of which is shown here.
+    // prompt before tools are picked — an Amazon Q user types @outl-propose
+    // and a Codex user $outl-propose, neither of which is shown here.
     await showWelcomeScreen(['propose']);
 
     const output = writtenOutput();
 
-    expect(output).toContain('/outline-spec:propose');
+    expect(output).toContain('/outl:propose');
     expect(output).toContain('spelling varies by tool');
   });
 

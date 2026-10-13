@@ -8,13 +8,13 @@ import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
 import { createOutlineSpecRoot } from '../helpers/outline-spec-fixtures.js';
 
 /**
- * The guide's store layout is `~/outline-spec/<id>`. With the id `specs` or
+ * The guide's store layout is `~/outl/<id>`. With the id `specs` or
  * `changes`, the store folder is itself `~/outline-spec/specs` or
  * `~/outline-spec/changes`, which gave `$HOME` a planning shape. `$HOME` then
  * became the nearest root for every command under the home tree: the global
  * `defaultStore` was never consulted and new changes were created outside the store.
  */
-describe('a store named specs or changes at ~/outline-spec/<id>', () => {
+describe('a store named specs or changes at ~/outl/<id>', () => {
   let tempDir: string;
   let home: string;
   let workDir: string;
@@ -48,7 +48,7 @@ describe('a store named specs or changes at ~/outline-spec/<id>', () => {
     }
   }
 
-  /** `store setup <id> --path ~/outline-spec/<id>`, then `config set defaultStore <id>`. */
+  /** `store setup <id> --path ~/outl/<id>`, then `config set defaultStore <id>`. */
   async function setupDefaultStore(id: string): Promise<string> {
     const storeRoot = path.join(home, 'outline-spec', id);
     const setup = await runCLI(

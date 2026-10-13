@@ -1441,7 +1441,7 @@ operations:
       });
       expect(result.exitCode).toBe(0);
 
-      const skillFile = path.join(tempDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.agents', 'skills', 'outl-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
     });
@@ -1456,7 +1456,7 @@ operations:
       expect(output).toContain('.claude/');
 
       // Verify skill files were created
-      const skillFile = path.join(tempDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.claude', 'skills', 'outl-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
     });
@@ -1471,14 +1471,14 @@ operations:
       expect(output).toContain('.cursor/');
 
       // Verify skill files were created
-      const skillFile = path.join(tempDir, '.cursor', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.cursor', 'skills', 'outl-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
 
       // Verify commands were created with Cursor format
-      const commandFile = path.join(tempDir, '.cursor', 'commands', 'outline-spec-explore.md');
+      const commandFile = path.join(tempDir, '.cursor', 'commands', 'outl-explore.md');
       const content = await fs.readFile(commandFile, 'utf-8');
-      expect(content).toContain('name: "/outline-spec-explore"');
+      expect(content).toContain('name: "/outl-explore"');
     });
 
     it('creates skills for the retired windsurf id, under Devin Desktop', async () => {
@@ -1491,7 +1491,7 @@ operations:
       expect(output).toContain('.devin/');
 
       // Verify skill files were created
-      const skillFile = path.join(tempDir, '.devin', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.devin', 'skills', 'outl-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
     });

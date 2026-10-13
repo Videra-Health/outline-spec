@@ -151,12 +151,12 @@ describe('UpdateCommand', () => {
     it('should update skill files for configured Claude tool', async () => {
       // Set up a configured Claude tool by creating skill directories
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      const exploreSkillDir = path.join(skillsDir, 'outline-spec-explore');
+      const exploreSkillDir = path.join(skillsDir, 'outl-explore');
       await fs.mkdir(exploreSkillDir, { recursive: true });
 
       // Create an existing skill file
       const oldSkillContent = `---
-name: outline-spec-explore (old)
+name: outl-explore (old)
 description: Old description
 license: MIT
 compatibility: Requires outline-spec CLI.
@@ -181,7 +181,7 @@ Old instructions content
         path.join(exploreSkillDir, 'SKILL.md'),
         'utf-8'
       );
-      expect(updatedSkill).toContain('name: outline-spec-explore');
+      expect(updatedSkill).toContain('name: outl-explore');
       expect(updatedSkill).not.toContain('Old instructions content');
       expect(updatedSkill).toContain('license: MIT');
 
@@ -195,11 +195,11 @@ Old instructions content
 
     it('should refresh configured DeepSeek Harness skills and stay idempotent', async () => {
       const skillsDir = path.join(testDir, '.dsh', 'skills');
-      const skillFile = path.join(skillsDir, 'outline-spec-explore', 'SKILL.md');
+      const skillFile = path.join(skillsDir, 'outl-explore', 'SKILL.md');
       await fs.mkdir(path.dirname(skillFile), { recursive: true });
 
       const oldSkillContent = `---
-name: outline-spec-explore (old)
+name: outl-explore (old)
 description: Old description
 license: MIT
 compatibility: Requires outline-spec CLI.
@@ -215,7 +215,7 @@ Old instructions content
       await updateCommand.execute(testDir);
 
       const refreshed = await fs.readFile(skillFile, 'utf-8');
-      expect(refreshed).toContain('name: outline-spec-explore');
+      expect(refreshed).toContain('name: outl-explore');
       expect(refreshed).not.toContain('Old instructions content');
       expect(refreshed).toContain('license: MIT');
 
@@ -245,7 +245,7 @@ Old instructions content
         await new InitCommand({ tools: 'dsh' }).execute(testDir);
         const skillsDir = path.join(testDir, '.dsh', 'skills');
         expect(await FileSystemUtils.fileExists(
-          path.join(skillsDir, 'outline-spec-apply-change', 'SKILL.md')
+          path.join(skillsDir, 'outl-apply-change', 'SKILL.md')
         )).toBe(true);
 
         setMockConfig(setting === 'profile'
@@ -257,7 +257,7 @@ Old instructions content
 
         const expectedSkills = ['my-custom-skill', 'outline-spec-user-notes'];
         if (setting === 'profile') {
-          expectedSkills.push('outline-spec-explore');
+          expectedSkills.push('outl-explore');
         } else {
           const correction = consoleSpy.mock.calls.flat().map(String)
             .find((entry) => entry.includes('No skills or commands remain'));
@@ -280,7 +280,7 @@ Old instructions content
 
     it('should update MiniMax Code skills without touching unrelated global skills', async () => {
       const skillsDir = path.join(testDir, 'home', '.minimax', 'skills');
-      const exploreSkill = path.join(skillsDir, 'outline-spec-explore', 'SKILL.md');
+      const exploreSkill = path.join(skillsDir, 'outl-explore', 'SKILL.md');
       const customSkill = path.join(skillsDir, 'my-custom-skill', 'SKILL.md');
       await fs.mkdir(path.dirname(exploreSkill), { recursive: true });
       await fs.writeFile(exploreSkill, 'old content');
@@ -289,7 +289,7 @@ Old instructions content
 
       await updateCommand.execute(testDir);
 
-      expect(await fs.readFile(exploreSkill, 'utf-8')).toContain('name: outline-spec-explore');
+      expect(await fs.readFile(exploreSkill, 'utf-8')).toContain('name: outl-explore');
       expect(await fs.readFile(customSkill, 'utf-8')).toBe('custom content');
       expect(await FileSystemUtils.directoryExists(path.join(testDir, '.minimax'))).toBe(false);
       expect(await FileSystemUtils.directoryExists(path.join(testDir, '.mavis'))).toBe(false);
@@ -298,10 +298,10 @@ Old instructions content
     it('should not update MiniMax skills through a linked directory outside the global skills root', async () => {
       const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-minimax-outside-'));
       const skillsRoot = path.join(testDir, 'home', '.minimax', 'skills');
-      const linkedSkillDir = path.join(skillsRoot, 'outline-spec-explore');
+      const linkedSkillDir = path.join(skillsRoot, 'outl-explore');
       const skillFile = path.join(outsideDir, 'SKILL.md');
       const oldSkillContent = `---
-name: outline-spec-explore
+name: outl-explore
 metadata:
   author: outline-spec
   version: "0.9"
@@ -338,10 +338,10 @@ Outside content
       });
       const outsideDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-minimax-outside-'));
       const skillsRoot = path.join(testDir, 'home', '.minimax', 'skills');
-      const linkedSkillDir = path.join(skillsRoot, 'outline-spec-explore');
+      const linkedSkillDir = path.join(skillsRoot, 'outl-explore');
       const skillFile = path.join(outsideDir, 'SKILL.md');
       const oldSkillContent = `---
-name: outline-spec-explore
+name: outl-explore
 metadata:
   author: outline-spec
   version: "0.9"
@@ -374,11 +374,11 @@ Outside content
       const skillFile = path.join(
         outsideDir,
         'skills',
-        'outline-spec-explore',
+        'outl-explore',
         'SKILL.md'
       );
       const oldSkillContent = `---
-name: outline-spec-explore
+name: outl-explore
 metadata:
   author: outline-spec
   version: "0.9"
@@ -402,7 +402,7 @@ Outside content
 
         expect(await fs.readFile(skillFile, 'utf-8')).toBe(oldSkillContent);
         expect(await fs.readdir(path.join(outsideDir, 'skills'))).toEqual([
-          'outline-spec-explore',
+          'outl-explore',
         ]);
       } finally {
         await fs.rm(outsideDir, { recursive: true, force: true });
@@ -415,14 +415,14 @@ Outside content
       const skillFile = path.join(
         outsideDir,
         'skills',
-        'outline-spec-explore',
+        'outl-explore',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(skillFile), { recursive: true });
       await fs.writeFile(
         skillFile,
         `---
-name: outline-spec-explore
+name: outl-explore
 metadata:
   author: outline-spec
   version: "0.9"
@@ -448,11 +448,11 @@ metadata:
     });
 
     it('should show the Hermes setup note when updating a configured Hermes tool', async () => {
-      const exploreSkillDir = path.join(testDir, '.hermes', 'skills', 'outline-spec-explore');
+      const exploreSkillDir = path.join(testDir, '.hermes', 'skills', 'outl-explore');
       await fs.mkdir(exploreSkillDir, { recursive: true });
       await fs.writeFile(
         path.join(exploreSkillDir, 'SKILL.md'),
-        `---\nname: outline-spec-explore\nmetadata:\n  author: outline-spec\n  version: "0.9"\n---\n\nOld instructions content\n`
+        `---\nname: outl-explore\nmetadata:\n  author: outline-spec\n  version: "0.9"\n---\n\nOld instructions content\n`
       );
 
       const consoleSpy = vi.spyOn(console, 'log');
@@ -490,11 +490,11 @@ metadata:
 
     it('should migrate outline-spec skills from legacy .kimi to .kimi-code, preserving user files', async () => {
       // Managed skill in the legacy Kimi CLI location
-      const legacySkillDir = path.join(testDir, '.kimi', 'skills', 'outline-spec-explore');
+      const legacySkillDir = path.join(testDir, '.kimi', 'skills', 'outl-explore');
       await fs.mkdir(legacySkillDir, { recursive: true });
       await fs.writeFile(
         path.join(legacySkillDir, 'SKILL.md'),
-        `---\nname: outline-spec-explore\nmetadata:\n  author: outline-spec\n  version: "0.9"\n---\n\nOld instructions content\n`
+        `---\nname: outl-explore\nmetadata:\n  author: outline-spec\n  version: "0.9"\n---\n\nOld instructions content\n`
       );
 
       // User-owned files in the legacy location that must be preserved
@@ -509,17 +509,17 @@ metadata:
 
       // Managed skill migrated to .kimi-code and refreshed by the update
       const migratedSkill = await fs.readFile(
-        path.join(testDir, '.kimi-code', 'skills', 'outline-spec-explore', 'SKILL.md'),
+        path.join(testDir, '.kimi-code', 'skills', 'outl-explore', 'SKILL.md'),
         'utf-8'
       );
-      expect(migratedSkill).toContain('name: outline-spec-explore');
+      expect(migratedSkill).toContain('name: outl-explore');
       expect(migratedSkill).not.toContain('Old instructions content');
       // Kimi Code has no command adapter, so the refreshed skill must use
-      // its documented /skill:<name> invocations, never /outline-spec:* commands
+      // its documented /skill:<name> invocations, never /outl:* commands
       // that were not generated
-      expect(migratedSkill).not.toContain('/outline-spec:');
+      expect(migratedSkill).not.toContain('/outl:');
       expect(migratedSkill).not.toMatch(HYPHEN_COMMAND_REF);
-      expect(migratedSkill).toContain('/skill:outline-spec-');
+      expect(migratedSkill).toContain('/skill:outl-');
 
       // Legacy managed skill is gone; user files stay where they were
       await expect(fs.access(legacySkillDir)).rejects.toThrow();
@@ -533,17 +533,17 @@ metadata:
     });
 
     it('should remove the legacy .kimi directory entirely when it only held outline-spec skills', async () => {
-      const legacySkillDir = path.join(testDir, '.kimi', 'skills', 'outline-spec-explore');
+      const legacySkillDir = path.join(testDir, '.kimi', 'skills', 'outl-explore');
       await fs.mkdir(legacySkillDir, { recursive: true });
       await fs.writeFile(
         path.join(legacySkillDir, 'SKILL.md'),
-        `---\nname: outline-spec-explore\nmetadata:\n  author: outline-spec\n  version: "0.9"\n---\n\nOld instructions content\n`
+        `---\nname: outl-explore\nmetadata:\n  author: outline-spec\n  version: "0.9"\n---\n\nOld instructions content\n`
       );
 
       await updateCommand.execute(testDir);
 
       await expect(fs.access(path.join(testDir, '.kimi'))).rejects.toThrow();
-      const migratedSkill = path.join(testDir, '.kimi-code', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const migratedSkill = path.join(testDir, '.kimi-code', 'skills', 'outl-explore', 'SKILL.md');
       await expect(fs.access(migratedSkill)).resolves.toBeUndefined();
     });
 
@@ -564,12 +564,12 @@ metadata:
         testDir,
         '.agents',
         'skills',
-        'outline-spec-propose',
+        'outl-propose',
         'SKILL.md'
       );
-      expect(await fs.readFile(currentSkill, 'utf-8')).toContain('$outline-spec-apply-change');
+      expect(await fs.readFile(currentSkill, 'utf-8')).toContain('$outl-apply-change');
       await expect(
-        fs.access(path.join(testDir, '.codex', 'skills', 'outline-spec-propose', 'SKILL.md'))
+        fs.access(path.join(testDir, '.codex', 'skills', 'outl-propose', 'SKILL.md'))
       ).rejects.toThrow();
       expect(await fs.readFile(userSkill, 'utf-8')).toBe('user skill');
       expect(await fs.readFile(path.join(testDir, '.codex', 'config.toml'), 'utf-8')).toBe(
@@ -590,12 +590,12 @@ metadata:
       await fs.rm(path.join(legacySkills, '.outline-spec-target'));
 
       for (const entry of await fs.readdir(legacySkills, { withFileTypes: true })) {
-        if (!entry.isDirectory() || !entry.name.startsWith('outline-spec-')) continue;
+        if (!entry.isDirectory() || !entry.name.startsWith('outl-')) continue;
         const skillFile = path.join(legacySkills, entry.name, 'SKILL.md');
         const legacyContent = (await fs.readFile(skillFile, 'utf-8'))
           .replace(
-            /\$outline-spec-([a-z0-9-]+) \(Codex\) or \/outline-spec-\1 \(other agents\)/g,
-            '$outline-spec-$1'
+            /\$outl-([a-z0-9-]+) \(Codex\) or \/outl-\1 \(other agents\)/g,
+            '$outl-$1'
           )
           .replace(/generatedBy:\s*"[^"]+"/, 'generatedBy: "0.0.9"')
           .replace(/\n/g, '\r\n');
@@ -605,12 +605,12 @@ metadata:
       await updateCommand.execute(testDir);
 
       await expect(
-        fs.access(path.join(legacySkills, 'outline-spec-propose', 'SKILL.md'))
+        fs.access(path.join(legacySkills, 'outl-propose', 'SKILL.md'))
       ).rejects.toThrow();
       expect(await fs.readFile(
-        path.join(canonicalSkills, 'outline-spec-propose', 'SKILL.md'),
+        path.join(canonicalSkills, 'outl-propose', 'SKILL.md'),
         'utf-8'
-      )).toContain('$outline-spec-apply-change');
+      )).toContain('$outl-apply-change');
     });
 
     it('should preserve and report a divergent legacy Codex skill', async () => {
@@ -621,7 +621,7 @@ metadata:
         testDir,
         '.codex',
         'skills',
-        'outline-spec-propose',
+        'outl-propose',
         'SKILL.md'
       );
       await fs.appendFile(legacySkill, '\nUser edit\n');
@@ -658,17 +658,17 @@ metadata:
 
       expect(
         await FileSystemUtils.fileExists(
-          path.join(testDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md')
+          path.join(testDir, '.agents', 'skills', 'outl-explore', 'SKILL.md')
         )
       ).toBe(true);
       expect(
         await FileSystemUtils.fileExists(
-          path.join(testDir, '.agents', 'skills', 'outline-spec-apply-change', 'SKILL.md')
+          path.join(testDir, '.agents', 'skills', 'outl-apply-change', 'SKILL.md')
         )
       ).toBe(false);
       expect(
         await FileSystemUtils.fileExists(
-          path.join(testDir, '.codex', 'skills', 'outline-spec-apply-change', 'SKILL.md')
+          path.join(testDir, '.codex', 'skills', 'outl-apply-change', 'SKILL.md')
         )
       ).toBe(true);
 
@@ -686,11 +686,11 @@ metadata:
       await new UpdateCommand({ force: true }).execute(testDir);
 
       const proposeSkill = await fs.readFile(
-        path.join(testDir, '.agents', 'skills', 'outline-spec-propose', 'SKILL.md'),
+        path.join(testDir, '.agents', 'skills', 'outl-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(proposeSkill).toContain('$outline-spec-apply-change');
-      expect(proposeSkill).toContain('/outline-spec-apply-change');
+      expect(proposeSkill).toContain('$outl-apply-change');
+      expect(proposeSkill).toContain('/outl-apply-change');
       expect(
         consoleSpy.mock.calls.flat().map(String).some((entry) =>
           entry.includes('Force updating 1 tool(s): codex')
@@ -701,15 +701,15 @@ metadata:
     it('should refresh an Amp-owned shared skill tree', async () => {
       await new InitCommand({ tools: 'amp' }).execute(testDir);
       const skillsDir = path.join(testDir, '.agents', 'skills');
-      const skillFile = path.join(skillsDir, 'outline-spec-propose', 'SKILL.md');
+      const skillFile = path.join(skillsDir, 'outl-propose', 'SKILL.md');
       await fs.writeFile(skillFile, 'stale Amp skill');
 
       await new UpdateCommand({ force: true }).execute(testDir);
 
       expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('amp\n');
       const updated = await fs.readFile(skillFile, 'utf-8');
-      expect(updated).toContain('name: outline-spec-propose');
-      expect(updated).toContain('/outline-spec-apply-change');
+      expect(updated).toContain('name: outl-propose');
+      expect(updated).toContain('/outl-apply-change');
       expect(updated).not.toContain('stale Amp skill');
     });
 
@@ -721,13 +721,13 @@ metadata:
       const skillsDir = path.join(testDir, '.agents', 'skills');
       expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('codex\n');
       const proposeSkill = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'),
+        path.join(skillsDir, 'outl-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(proposeSkill).toContain('$outline-spec-apply-change');
-      expect(proposeSkill).toContain('/outline-spec-apply-change');
+      expect(proposeSkill).toContain('$outl-apply-change');
+      expect(proposeSkill).toContain('/outl-apply-change');
       await expect(
-        fs.access(path.join(testDir, '.agents', 'workflows', 'outline-spec-propose.md'))
+        fs.access(path.join(testDir, '.agents', 'workflows', 'outl-propose.md'))
       ).resolves.toBeUndefined();
       expect(getConfiguredToolsForProfileSync(testDir)).toEqual([
         'antigravity',
@@ -737,10 +737,10 @@ metadata:
 
     it('should upgrade legacy Antigravity workflows beside Codex-owned shared skills', async () => {
       await new InitCommand({ tools: 'antigravity' }).execute(testDir);
-      const legacyWorkflow = path.join(testDir, '.agent', 'workflows', 'outline-spec-propose.md');
+      const legacyWorkflow = path.join(testDir, '.agent', 'workflows', 'outl-propose.md');
       await fs.mkdir(path.dirname(legacyWorkflow), { recursive: true });
       await fs.copyFile(
-        path.join(testDir, '.agents', 'workflows', 'outline-spec-propose.md'),
+        path.join(testDir, '.agents', 'workflows', 'outl-propose.md'),
         legacyWorkflow
       );
       await fs.cp(
@@ -756,10 +756,10 @@ metadata:
       const skillsDir = path.join(testDir, '.agents', 'skills');
       expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('codex\n');
       expect(
-        await fs.readFile(path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'), 'utf-8')
-      ).toContain('$outline-spec-apply-change');
+        await fs.readFile(path.join(skillsDir, 'outl-propose', 'SKILL.md'), 'utf-8')
+      ).toContain('$outl-apply-change');
       await expect(
-        fs.access(path.join(testDir, '.agents', 'workflows', 'outline-spec-propose.md'))
+        fs.access(path.join(testDir, '.agents', 'workflows', 'outl-propose.md'))
       ).resolves.toBeUndefined();
       await expect(fs.access(legacyWorkflow)).rejects.toThrow();
     });
@@ -769,7 +769,7 @@ metadata:
       await fs.rename(path.join(testDir, '.agents'), path.join(testDir, '.codex'));
       await fs.rm(path.join(testDir, '.codex', 'skills', '.outline-spec-target'));
       await fs.appendFile(
-        path.join(testDir, '.codex', 'skills', 'outline-spec-propose', 'SKILL.md'),
+        path.join(testDir, '.codex', 'skills', 'outl-propose', 'SKILL.md'),
         '\nUser edit\n'
       );
       await new InitCommand({ tools: 'agents' }).execute(testDir);
@@ -779,11 +779,11 @@ metadata:
       const skillsDir = path.join(testDir, '.agents', 'skills');
       expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('agents\n');
       expect(
-        await fs.readFile(path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'), 'utf-8')
-      ).toContain('/outline-spec-apply-change');
+        await fs.readFile(path.join(skillsDir, 'outl-propose', 'SKILL.md'), 'utf-8')
+      ).toContain('/outl-apply-change');
       expect(
         await fs.readFile(
-          path.join(testDir, '.codex', 'skills', 'outline-spec-propose', 'SKILL.md'),
+          path.join(testDir, '.codex', 'skills', 'outl-propose', 'SKILL.md'),
           'utf-8'
         )
       ).toContain('User edit');
@@ -797,7 +797,7 @@ metadata:
       await new InitCommand({ tools: 'agents' }).execute(testDir);
       const legacyPrompts = path.join(testDir, '.codex', 'prompts');
       await fs.mkdir(legacyPrompts, { recursive: true });
-      await fs.writeFile(path.join(legacyPrompts, 'outline-spec-explore.md'), 'legacy repo-local prompt');
+      await fs.writeFile(path.join(legacyPrompts, 'outl-explore.md'), 'legacy repo-local prompt');
 
       await new UpdateCommand({ force: true }).execute(testDir);
 
@@ -807,7 +807,7 @@ metadata:
       expect(
         await fs.readFile(path.join(testDir, '.agents', 'skills', '.outline-spec-target'), 'utf-8')
       ).toBe('agents\n');
-      const preservedPrompt = path.join(legacyPrompts, 'outline-spec-explore.md');
+      const preservedPrompt = path.join(legacyPrompts, 'outl-explore.md');
       expect(await FileSystemUtils.fileExists(preservedPrompt)).toBe(true);
       expect(await fs.readFile(preservedPrompt, 'utf-8')).toBe('legacy repo-local prompt');
     });
@@ -820,11 +820,11 @@ metadata:
       const skillsDir = path.join(testDir, '.agents', 'skills');
       expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('codex\n');
       const proposeSkill = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'),
+        path.join(skillsDir, 'outl-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(proposeSkill).toContain('$outline-spec-apply-change');
-      expect(proposeSkill).toContain('/outline-spec-apply-change');
+      expect(proposeSkill).toContain('$outl-apply-change');
+      expect(proposeSkill).toContain('/outl-apply-change');
     });
 
     it('should consolidate an existing unmarked agents tree with legacy Codex skills', async () => {
@@ -837,7 +837,7 @@ metadata:
         testDir,
         '.codex',
         'skills',
-        'outline-spec-propose',
+        'outl-propose',
         'SKILL.md'
       );
       await fs.writeFile(
@@ -853,13 +853,13 @@ metadata:
       const skillsDir = path.join(testDir, '.agents', 'skills');
       expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('codex\n');
       const proposeSkill = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'),
+        path.join(skillsDir, 'outl-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(proposeSkill).toContain('$outline-spec-apply-change');
-      expect(proposeSkill).toContain('/outline-spec-apply-change');
+      expect(proposeSkill).toContain('$outl-apply-change');
+      expect(proposeSkill).toContain('/outl-apply-change');
       await expect(
-        fs.access(path.join(testDir, '.codex', 'skills', 'outline-spec-propose', 'SKILL.md'))
+        fs.access(path.join(testDir, '.codex', 'skills', 'outl-propose', 'SKILL.md'))
       ).rejects.toThrow();
     });
 
@@ -872,11 +872,11 @@ metadata:
 
       expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('codex\n');
       const proposeSkill = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'),
+        path.join(skillsDir, 'outl-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(proposeSkill).toContain('$outline-spec-apply-change');
-      expect(proposeSkill).toContain('/outline-spec-apply-change');
+      expect(proposeSkill).toContain('$outl-apply-change');
+      expect(proposeSkill).toContain('/outl-apply-change');
     });
 
     it('should preserve agents ownership when it switches to commands-only', async () => {
@@ -888,7 +888,7 @@ metadata:
       const skillsDir = path.join(testDir, '.agents', 'skills');
       expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('agents\n');
       await expect(
-        fs.access(path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'))
+        fs.access(path.join(skillsDir, 'outl-propose', 'SKILL.md'))
       ).rejects.toThrow();
     });
 
@@ -898,7 +898,7 @@ metadata:
       const legacySkills = path.join(testDir, '.codex', 'skills');
       await fs.cp(canonicalSkills, legacySkills, { recursive: true });
       await fs.writeFile(
-        path.join(legacySkills, 'outline-spec-propose', 'SKILL.md'),
+        path.join(legacySkills, 'outl-propose', 'SKILL.md'),
         'divergent legacy Codex skill\n'
       );
       setMockConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
@@ -910,10 +910,10 @@ metadata:
         'agents\n'
       );
       await expect(
-        fs.access(path.join(canonicalSkills, 'outline-spec-propose', 'SKILL.md'))
+        fs.access(path.join(canonicalSkills, 'outl-propose', 'SKILL.md'))
       ).rejects.toThrow();
       expect(
-        await fs.readFile(path.join(legacySkills, 'outline-spec-propose', 'SKILL.md'), 'utf-8')
+        await fs.readFile(path.join(legacySkills, 'outl-propose', 'SKILL.md'), 'utf-8')
       ).toBe('divergent legacy Codex skill\n');
     });
 
@@ -928,13 +928,13 @@ metadata:
       const skillsDir = path.join(testDir, '.agents', 'skills');
       expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('codex\n');
       const proposeSkill = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'),
+        path.join(skillsDir, 'outl-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(proposeSkill).toContain('$outline-spec-apply-change');
-      expect(proposeSkill).toContain('/outline-spec-apply-change');
+      expect(proposeSkill).toContain('$outl-apply-change');
+      expect(proposeSkill).toContain('/outl-apply-change');
       await expect(
-        fs.access(path.join(testDir, '.codex', 'skills', 'outline-spec-propose', 'SKILL.md'))
+        fs.access(path.join(testDir, '.codex', 'skills', 'outl-propose', 'SKILL.md'))
       ).rejects.toThrow();
     });
 
@@ -945,12 +945,12 @@ metadata:
         const outsideSkill = path.join(
           outsideDir,
           'skills',
-          'outline-spec-propose',
+          'outl-propose',
           'SKILL.md'
         );
         await fs.mkdir(path.dirname(outsideSkill), { recursive: true });
         await fs.copyFile(
-          path.join(testDir, '.agents', 'skills', 'outline-spec-propose', 'SKILL.md'),
+          path.join(testDir, '.agents', 'skills', 'outl-propose', 'SKILL.md'),
           outsideSkill
         );
         await fs.symlink(
@@ -963,7 +963,7 @@ metadata:
         await new UpdateCommand({ force: true }).execute(testDir);
 
         await expect(fs.readFile(outsideSkill, 'utf-8')).resolves.toContain(
-          'name: outline-spec-propose'
+          'name: outl-propose'
         );
         expect(
           warningSpy.mock.calls.flat().map(String).some((entry) =>
@@ -983,14 +983,14 @@ metadata:
         await new InitCommand({ tools: 'codex' }).execute(testDir);
         const outsideSkill = path.join(outsideDir, 'SKILL.md');
         await fs.copyFile(
-          path.join(testDir, '.agents', 'skills', 'outline-spec-propose', 'SKILL.md'),
+          path.join(testDir, '.agents', 'skills', 'outl-propose', 'SKILL.md'),
           outsideSkill
         );
         const legacySkillsDir = path.join(testDir, '.codex', 'skills');
         await fs.mkdir(legacySkillsDir, { recursive: true });
         await fs.symlink(
           outsideDir,
-          path.join(legacySkillsDir, 'outline-spec-propose'),
+          path.join(legacySkillsDir, 'outl-propose'),
           process.platform === 'win32' ? 'junction' : 'dir'
         );
         const warningSpy = vi.spyOn(console, 'warn');
@@ -998,7 +998,7 @@ metadata:
         await new UpdateCommand({ force: true }).execute(testDir);
 
         await expect(fs.readFile(outsideSkill, 'utf-8')).resolves.toContain(
-          'name: outline-spec-propose'
+          'name: outl-propose'
         );
         expect(
           warningSpy.mock.calls.flat().map(String).some((entry) =>
@@ -1015,11 +1015,11 @@ metadata:
       const skillsDir = path.join(testDir, '.claude', 'skills');
 
       // Create at least one skill to mark tool as configured
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old content'
       );
 
@@ -1027,11 +1027,11 @@ metadata:
 
       // Verify core profile skill files were created/updated (propose, explore, apply, update, archive)
       const coreSkillNames = [
-        'outline-spec-explore',
-        'outline-spec-apply-change',
-        'outline-spec-update-change',
-        'outline-spec-archive-change',
-        'outline-spec-propose',
+        'outl-explore',
+        'outl-apply-change',
+        'outl-update-change',
+        'outl-archive-change',
+        'outl-propose',
       ];
 
       for (const skillName of coreSkillNames) {
@@ -1047,10 +1047,10 @@ metadata:
 
       // Verify non-core skills are NOT created
       const nonCoreSkillNames = [
-        'outline-spec-new-change',
-        'outline-spec-continue-change',
-        'outline-spec-ff-change',
-        'outline-spec-verify-change',
+        'outl-new-change',
+        'outl-continue-change',
+        'outl-ff-change',
+        'outl-verify-change',
       ];
 
       for (const skillName of nonCoreSkillNames) {
@@ -1062,7 +1062,7 @@ metadata:
 
     it('should update skill files for configured shared agents target', async () => {
       const skillsDir = path.join(testDir, '.agents', 'skills');
-      const exploreSkillDir = path.join(skillsDir, 'outline-spec-explore');
+      const exploreSkillDir = path.join(skillsDir, 'outl-explore');
       await fs.mkdir(exploreSkillDir, { recursive: true });
       await fs.writeFile(path.join(exploreSkillDir, 'SKILL.md'), 'old content');
 
@@ -1072,7 +1072,7 @@ metadata:
         path.join(exploreSkillDir, 'SKILL.md'),
         'utf-8'
       );
-      expect(updatedSkill).toContain('name: outline-spec-explore');
+      expect(updatedSkill).toContain('name: outl-explore');
     });
   });
 
@@ -1084,32 +1084,32 @@ metadata:
       const initCommand = new InitCommand({ tools: 'cursor' });
       await initCommand.execute(testDir);
 
-      const commandFile = path.join(testDir, '.cursor', 'commands', 'outline-spec-apply.md');
+      const commandFile = path.join(testDir, '.cursor', 'commands', 'outl-apply.md');
       const skillFile = path.join(
         testDir,
         '.cursor',
         'skills',
-        'outline-spec-apply-change',
+        'outl-apply-change',
         'SKILL.md'
       );
       for (const file of [commandFile, skillFile]) {
-        const stale = (await fs.readFile(file, 'utf-8')).replace(/\/outline-spec-/g, '/outline-spec:');
+        const stale = (await fs.readFile(file, 'utf-8')).replace(/\/outl-/g, '/outl:');
         await fs.writeFile(file, stale);
       }
-      expect(await fs.readFile(commandFile, 'utf-8')).toContain('/outline-spec:apply');
-      expect(await fs.readFile(skillFile, 'utf-8')).toContain('/outline-spec:apply');
+      expect(await fs.readFile(commandFile, 'utf-8')).toContain('/outl:apply');
+      expect(await fs.readFile(skillFile, 'utf-8')).toContain('/outl:apply');
 
       await new UpdateCommand({ force: true }).execute(testDir);
 
       const command = await fs.readFile(commandFile, 'utf-8');
-      expect(command).toContain('/outline-spec-archive');
-      expect(command).not.toContain('/outline-spec:');
+      expect(command).toContain('/outl-archive');
+      expect(command).not.toContain('/outl:');
 
       const skill = await fs.readFile(skillFile, 'utf-8');
       // Positive assertion too: a skill that simply dropped every reference
       // would satisfy the negative one.
-      expect(skill).toContain('/outline-spec-apply');
-      expect(skill).not.toContain('/outline-spec:');
+      expect(skill).toContain('/outl-apply');
+      expect(skill).not.toContain('/outl:');
     });
 
     it('keeps namespaced references for claude while hyphenating qwen in one run', async () => {
@@ -1119,31 +1119,31 @@ metadata:
       await new UpdateCommand({ force: true }).execute(testDir);
 
       const claudeCommand = await fs.readFile(
-        path.join(testDir, '.claude', 'commands', 'outline-spec', 'apply.md'),
+        path.join(testDir, '.claude', 'commands', 'outl', 'apply.md'),
         'utf-8'
       );
-      expect(claudeCommand).toContain('/outline-spec:archive');
-      expect(claudeCommand).not.toContain('/outline-spec-archive');
+      expect(claudeCommand).toContain('/outl:archive');
+      expect(claudeCommand).not.toContain('/outl-archive');
 
       const qwenCommand = await fs.readFile(
-        path.join(testDir, '.qwen', 'commands', 'outline-spec-apply.md'),
+        path.join(testDir, '.qwen', 'commands', 'outl-apply.md'),
         'utf-8'
       );
-      expect(qwenCommand).toContain('/outline-spec-archive');
-      expect(qwenCommand).not.toContain('/outline-spec:');
+      expect(qwenCommand).toContain('/outl-archive');
+      expect(qwenCommand).not.toContain('/outl:');
 
       const qwenSkill = await fs.readFile(
-        path.join(testDir, '.qwen', 'skills', 'outline-spec-apply-change', 'SKILL.md'),
+        path.join(testDir, '.qwen', 'skills', 'outl-apply-change', 'SKILL.md'),
         'utf-8'
       );
-      expect(qwenSkill).toContain('/outline-spec-apply');
-      expect(qwenSkill).not.toContain('/outline-spec:');
+      expect(qwenSkill).toContain('/outl-apply');
+      expect(qwenSkill).not.toContain('/outl:');
 
       const claudeSkill = await fs.readFile(
-        path.join(testDir, '.claude', 'skills', 'outline-spec-apply-change', 'SKILL.md'),
+        path.join(testDir, '.claude', 'skills', 'outl-apply-change', 'SKILL.md'),
         'utf-8'
       );
-      expect(claudeSkill).toContain('/outline-spec:apply');
+      expect(claudeSkill).toContain('/outl:apply');
       expect(claudeSkill).not.toMatch(HYPHEN_COMMAND_REF);
     });
 
@@ -1154,19 +1154,19 @@ metadata:
       const initCommand = new InitCommand({ tools: 'amazon-q' });
       await initCommand.execute(testDir);
 
-      const promptFile = path.join(testDir, '.amazonq', 'prompts', 'outline-spec-apply.md');
+      const promptFile = path.join(testDir, '.amazonq', 'prompts', 'outl-apply.md');
       const skillFile = path.join(
         testDir,
         '.amazonq',
         'skills',
-        'outline-spec-apply-change',
+        'outl-apply-change',
         'SKILL.md'
       );
       for (const file of [promptFile, skillFile]) {
-        const stale = (await fs.readFile(file, 'utf-8')).replace(/@outline-spec-/g, '/outline-spec:');
+        const stale = (await fs.readFile(file, 'utf-8')).replace(/@outl-/g, '/outl:');
         await fs.writeFile(file, stale);
       }
-      expect(await fs.readFile(promptFile, 'utf-8')).toContain('/outline-spec:apply');
+      expect(await fs.readFile(promptFile, 'utf-8')).toContain('/outl:apply');
 
       await new UpdateCommand({ force: true }).execute(testDir);
 
@@ -1174,29 +1174,29 @@ metadata:
         const refreshed = await fs.readFile(file, 'utf-8');
         // Positive assertion too: dropping every reference would satisfy the
         // negative ones. And no stray slash may survive the rewrite.
-        expect(refreshed).toContain('@outline-spec-apply');
-        expect(refreshed).not.toContain('/outline-spec:');
+        expect(refreshed).toContain('@outl-apply');
+        expect(refreshed).not.toContain('/outl:');
         expect(refreshed).not.toMatch(HYPHEN_COMMAND_REF);
       }
       // The prompt body cross-references other prompts; those move too.
-      expect(await fs.readFile(promptFile, 'utf-8')).toContain('@outline-spec-archive');
+      expect(await fs.readFile(promptFile, 'utf-8')).toContain('@outl-archive');
     });
 
     it('should update outline-spec commands for configured Claude tool', async () => {
       // Set up a configured Claude tool
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old content'
       );
 
       await updateCommand.execute(testDir);
 
       // Check outline-spec command files were created
-      const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'outl');
       const exploreCmd = path.join(commandsDir, 'explore.md');
       const exists = await FileSystemUtils.fileExists(exploreCmd);
       expect(exists).toBe(true);
@@ -1212,16 +1212,16 @@ metadata:
     it('should generate ZCode commands under .zcode without creating .agents', async () => {
       // Mark ZCode as configured with an outdated generatedBy so update picks it up
       const skillsDir = path.join(testDir, '.zcode', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         '---\nmetadata:\n  generatedBy: "0.0.1"\n---\nold content\n'
       );
 
       await updateCommand.execute(testDir);
 
       // Commands regenerated under .zcode/commands/outline-spec
-      const exploreCmd = path.join(testDir, '.zcode', 'commands', 'outline-spec', 'explore.md');
+      const exploreCmd = path.join(testDir, '.zcode', 'commands', 'outl', 'explore.md');
       expect(await FileSystemUtils.fileExists(exploreCmd)).toBe(true);
 
       const cmdContent = await fs.readFile(exploreCmd, 'utf-8');
@@ -1233,7 +1233,7 @@ metadata:
 
       // Skill refreshed under .zcode
       const refreshedSkill = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'utf-8'
       );
       expect(refreshedSkill).not.toContain('old content');
@@ -1245,11 +1245,11 @@ metadata:
     it('should update core profile outline-spec commands when tool is configured', async () => {
       // Set up a configured tool
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old content'
       );
 
@@ -1257,7 +1257,7 @@ metadata:
 
       // Verify core profile commands were created (propose, explore, apply, update, archive)
       const coreCommandIds = ['explore', 'apply', 'update', 'archive', 'propose'];
-      const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'outl');
       for (const cmdId of coreCommandIds) {
         const cmdFile = path.join(commandsDir, `${cmdId}.md`);
         const exists = await FileSystemUtils.fileExists(cmdFile);
@@ -1276,29 +1276,29 @@ metadata:
     it('should refresh both Devin Desktop surfaces with the right invocation syntax', async () => {
       // Set up Devin Desktop directory with a skill to indicate it's configured
       const skillsDir = path.join(testDir, '.devin', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-apply-change'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-apply-change'), {
         recursive: true,
       });
-      const skillFile = path.join(skillsDir, 'outline-spec-apply-change', 'SKILL.md');
+      const skillFile = path.join(skillsDir, 'outl-apply-change', 'SKILL.md');
       await fs.writeFile(skillFile, 'old content');
 
       await updateCommand.execute(testDir);
 
-      // Workflows are invoked by filename, so their bodies use `/outline-spec-*`.
-      const workflow = path.join(testDir, '.devin', 'workflows', 'outline-spec-apply.md');
+      // Workflows are invoked by filename, so their bodies use `/outl-*`.
+      const workflow = path.join(testDir, '.devin', 'workflows', 'outl-apply.md');
       expect(await FileSystemUtils.fileExists(workflow)).toBe(true);
 
       const workflowContent = await fs.readFile(workflow, 'utf-8');
       expect(workflowContent).toMatch(/^---\nname: "/);
-      expect(workflowContent).toContain('/outline-spec-');
-      expect(workflowContent).not.toContain('/outline-spec:');
+      expect(workflowContent).toContain('/outl-');
+      expect(workflowContent).not.toContain('/outl:');
 
       // Skills are refreshed too, and point at skills — the Devin Local agent
       // has no workflows to point at.
       const skillContent = await fs.readFile(skillFile, 'utf-8');
       expect(skillContent).not.toContain('old content');
-      expect(skillContent).toContain('/outline-spec-apply-change');
-      expect(skillContent).not.toContain('/outline-spec:');
+      expect(skillContent).toContain('/outl-apply-change');
+      expect(skillContent).not.toContain('/outl:');
       expect(skillContent).not.toMatch(HYPHEN_COMMAND_REF);
     });
 
@@ -1308,8 +1308,8 @@ metadata:
         setMockConfig({ featureFlags: {}, profile: 'core', delivery });
         const commandsDir = path.join(testDir, '.codeassistant', 'commands');
         await fs.mkdir(commandsDir, { recursive: true });
-        await fs.writeFile(path.join(commandsDir, 'outline-spec-apply.md'), 'old command content');
-        const skillFile = path.join(testDir, '.codeassistant', 'skills', 'outline-spec-apply-change', 'SKILL.md');
+        await fs.writeFile(path.join(commandsDir, 'outl-apply.md'), 'old command content');
+        const skillFile = path.join(testDir, '.codeassistant', 'skills', 'outl-apply-change', 'SKILL.md');
         if (delivery === 'both') {
           await fs.mkdir(path.dirname(skillFile), { recursive: true });
           await fs.writeFile(skillFile, 'old skill content');
@@ -1317,17 +1317,17 @@ metadata:
 
         await updateCommand.execute(testDir);
 
-        const commandContent = await fs.readFile(path.join(commandsDir, 'outline-spec-apply.md'), 'utf-8');
+        const commandContent = await fs.readFile(path.join(commandsDir, 'outl-apply.md'), 'utf-8');
         expect(commandContent).toMatch(/^---\ndescription: /);
-        expect(commandContent).toContain('/outline-spec-archive');
-        expect(commandContent).not.toContain('/outline-spec:');
-        expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outline-spec-propose.md'))).toBe(true);
+        expect(commandContent).toContain('/outl-archive');
+        expect(commandContent).not.toContain('/outl:');
+        expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outl-propose.md'))).toBe(true);
 
         expect(await FileSystemUtils.fileExists(skillFile)).toBe(delivery === 'both');
         if (delivery === 'both') {
           const skillContent = await fs.readFile(skillFile, 'utf-8');
-          expect(skillContent).toContain('/outline-spec-archive');
-          expect(skillContent).not.toContain('/outline-spec:');
+          expect(skillContent).toContain('/outl-archive');
+          expect(skillContent).not.toContain('/outl:');
         }
 
         const consoleSpy = vi.spyOn(console, 'log');
@@ -1338,7 +1338,7 @@ metadata:
 
     it('should update command files when tool is configured via commands-only delivery without skills', async () => {
       setMockConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
-      const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'outl');
       await fs.mkdir(commandsDir, { recursive: true });
       const coreCommandIds = ['explore', 'apply', 'update', 'archive', 'propose'];
       for (const cmdId of coreCommandIds) {
@@ -1359,21 +1359,21 @@ metadata:
     it('should update multiple configured tools', async () => {
       // Set up Claude
       const claudeSkillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(claudeSkillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(claudeSkillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(claudeSkillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(claudeSkillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
       // Set up Cursor
       const cursorSkillsDir = path.join(testDir, '.cursor', 'skills');
-      await fs.mkdir(path.join(cursorSkillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(cursorSkillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(cursorSkillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(cursorSkillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
@@ -1388,17 +1388,17 @@ metadata:
 
       // Verify Claude skills updated
       const claudeSkill = await fs.readFile(
-        path.join(claudeSkillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(claudeSkillsDir, 'outl-explore', 'SKILL.md'),
         'utf-8'
       );
-      expect(claudeSkill).toContain('name: outline-spec-explore');
+      expect(claudeSkill).toContain('name: outl-explore');
 
       // Verify Cursor skills updated
       const cursorSkill = await fs.readFile(
-        path.join(cursorSkillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(cursorSkillsDir, 'outl-explore', 'SKILL.md'),
         'utf-8'
       );
-      expect(cursorSkill).toContain('name: outline-spec-explore');
+      expect(cursorSkill).toContain('name: outl-explore');
 
       consoleSpy.mockRestore();
     });
@@ -1406,22 +1406,22 @@ metadata:
     it('should update Qwen tool with correct command format', async () => {
       // Set up Qwen
       const qwenSkillsDir = path.join(testDir, '.qwen', 'skills');
-      await fs.mkdir(path.join(qwenSkillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(qwenSkillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(qwenSkillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(qwenSkillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
       await updateCommand.execute(testDir);
 
-      // Check Qwen command format (Markdown) - Qwen uses flat path structure: outline-spec-<id>.md
+      // Check Qwen command format (Markdown) - Qwen uses flat path structure: outl-<id>.md
       const qwenCmd = path.join(
         testDir,
         '.qwen',
         'commands',
-        'outline-spec-explore.md'
+        'outl-explore.md'
       );
       const exists = await FileSystemUtils.fileExists(qwenCmd);
       expect(exists).toBe(true);
@@ -1434,22 +1434,22 @@ metadata:
     it('should update GigaCode tool with correct command format', async () => {
       // Set up GigaCode
       const gigacodeSkillsDir = path.join(testDir, '.gigacode', 'skills');
-      await fs.mkdir(path.join(gigacodeSkillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(gigacodeSkillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(gigacodeSkillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(gigacodeSkillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
       await updateCommand.execute(testDir);
 
-      // Check GigaCode command format (Markdown) - flat path structure like Qwen: outline-spec-<id>.md
+      // Check GigaCode command format (Markdown) - flat path structure like Qwen: outl-<id>.md
       const gigacodeCmd = path.join(
         testDir,
         '.gigacode',
         'commands',
-        'outline-spec-explore.md'
+        'outl-explore.md'
       );
       const exists = await FileSystemUtils.fileExists(gigacodeCmd);
       expect(exists).toBe(true);
@@ -1462,22 +1462,22 @@ metadata:
     it('should update Command Code tool and regenerate its flat command', async () => {
       // A configured Command Code install is detected by its skills dir
       const commandCodeSkillsDir = path.join(testDir, '.commandcode', 'skills');
-      await fs.mkdir(path.join(commandCodeSkillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(commandCodeSkillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(commandCodeSkillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(commandCodeSkillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
       await updateCommand.execute(testDir);
 
-      // Adapter-backed: update regenerates .commandcode/commands/outline-spec-<id>.md
+      // Adapter-backed: update regenerates .commandcode/commands/outl-<id>.md
       const commandCodeCmd = path.join(
         testDir,
         '.commandcode',
         'commands',
-        'outline-spec-explore.md'
+        'outl-explore.md'
       );
       expect(await FileSystemUtils.fileExists(commandCodeCmd)).toBe(true);
 
@@ -1493,7 +1493,7 @@ metadata:
         setMockConfig({ featureFlags: {}, profile: 'core', delivery });
         await new InitCommand({ tools: 'easycode' }).execute(testDir);
 
-        const commandsDir = path.join(testDir, '.easycode', 'commands', 'outline-spec');
+        const commandsDir = path.join(testDir, '.easycode', 'commands', 'outl');
         const exploreFile = path.join(commandsDir, 'explore.toml');
         const originalExplore = await fs.readFile(exploreFile, 'utf-8');
         await fs.writeFile(exploreFile, 'stale command');
@@ -1505,7 +1505,7 @@ metadata:
         const apply = parseToml(await fs.readFile(path.join(commandsDir, 'apply.toml'), 'utf-8'));
         expect(apply.prompt).toContain('outline-spec');
         expect(await FileSystemUtils.fileExists(
-          path.join(testDir, '.easycode', 'skills', 'outline-spec-explore', 'SKILL.md')
+          path.join(testDir, '.easycode', 'skills', 'outl-explore', 'SKILL.md')
         )).toBe(delivery === 'both');
 
         const consoleSpy = vi.spyOn(console, 'log');
@@ -1529,7 +1529,7 @@ metadata:
       await fs.mkdir(commandsDir, { recursive: true });
       for (const commandId of coreCommandIds) {
         await fs.writeFile(
-          path.join(commandsDir, `outline-spec-${commandId}.md`),
+          path.join(commandsDir, `outl-${commandId}.md`),
           'old command without arguments'
         );
       }
@@ -1538,7 +1538,7 @@ metadata:
 
       for (const commandId of coreCommandIds) {
         const content = await fs.readFile(
-          path.join(commandsDir, `outline-spec-${commandId}.md`),
+          path.join(commandsDir, `outl-${commandId}.md`),
           'utf-8'
         );
         expect(content.match(/\$ARGUMENTS/g)).toHaveLength(1);
@@ -1558,13 +1558,13 @@ metadata:
     it('should migrate a legacy .windsurf install to .devin, preserving user files', async () => {
       // A project set up before the Devin Desktop rebrand: outline-spec skills and
       // workflows under .windsurf/, alongside files the user wrote themselves.
-      const legacySkillDir = path.join(testDir, '.windsurf', 'skills', 'outline-spec-explore');
+      const legacySkillDir = path.join(testDir, '.windsurf', 'skills', 'outl-explore');
       await fs.mkdir(legacySkillDir, { recursive: true });
       await fs.writeFile(path.join(legacySkillDir, 'SKILL.md'), 'old skill content');
 
       const legacyWorkflows = path.join(testDir, '.windsurf', 'workflows');
       await fs.mkdir(legacyWorkflows, { recursive: true });
-      await fs.writeFile(path.join(legacyWorkflows, 'outline-spec-explore.md'), 'old workflow content');
+      await fs.writeFile(path.join(legacyWorkflows, 'outl-explore.md'), 'old workflow content');
 
       // User-owned content that must survive untouched
       const userSkillDir = path.join(testDir, '.windsurf', 'skills', 'my-custom-skill');
@@ -1577,12 +1577,12 @@ metadata:
 
       // Both surfaces now live under .devin and were refreshed
       const migratedSkill = await fs.readFile(
-        path.join(testDir, '.devin', 'skills', 'outline-spec-explore', 'SKILL.md'),
+        path.join(testDir, '.devin', 'skills', 'outl-explore', 'SKILL.md'),
         'utf-8'
       );
       expect(migratedSkill).not.toContain('old skill content');
       const migratedWorkflow = await fs.readFile(
-        path.join(testDir, '.devin', 'workflows', 'outline-spec-explore.md'),
+        path.join(testDir, '.devin', 'workflows', 'outl-explore.md'),
         'utf-8'
       );
       expect(migratedWorkflow).not.toContain('old workflow content');
@@ -1591,7 +1591,7 @@ metadata:
       // The outline-spec-managed originals are gone; the user's files are not
       await expect(fs.access(legacySkillDir)).rejects.toThrow();
       await expect(
-        fs.access(path.join(legacyWorkflows, 'outline-spec-explore.md'))
+        fs.access(path.join(legacyWorkflows, 'outl-explore.md'))
       ).rejects.toThrow();
       expect(await fs.readFile(path.join(userSkillDir, 'SKILL.md'), 'utf-8')).toBe('user skill');
       expect(
@@ -1604,7 +1604,7 @@ metadata:
       // Source and destination are then the same file, so a naive
       // "destination exists, drop the legacy copy" would delete the original.
       await updateCommand.execute(testDir);
-      const devinSkill = path.join(testDir, '.devin', 'skills', 'outline-spec-explore');
+      const devinSkill = path.join(testDir, '.devin', 'skills', 'outl-explore');
       await fs.mkdir(devinSkill, { recursive: true });
       await fs.writeFile(path.join(devinSkill, 'SKILL.md'), 'real content');
       await fs.symlink('.devin', path.join(testDir, '.windsurf'));
@@ -1618,11 +1618,11 @@ metadata:
     it('should keep user files that live inside an outline-spec-managed skill directory', async () => {
       // Both roots holding the same skill is the normal state after a rebrand.
       // A reference the user wrote beside SKILL.md is theirs and never moves.
-      const devinSkill = path.join(testDir, '.devin', 'skills', 'outline-spec-explore');
+      const devinSkill = path.join(testDir, '.devin', 'skills', 'outl-explore');
       await fs.mkdir(devinSkill, { recursive: true });
       await fs.writeFile(path.join(devinSkill, 'SKILL.md'), 'current');
 
-      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outline-spec-explore');
+      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outl-explore');
       await fs.mkdir(legacySkill, { recursive: true });
       await fs.writeFile(path.join(legacySkill, 'SKILL.md'), 'current');
       await fs.writeFile(path.join(legacySkill, 'reference.md'), 'my notes');
@@ -1638,19 +1638,19 @@ metadata:
       // Every legacy file differs from its counterpart, so there is no move to
       // make. Staying silent would leave two divergent copies the user never
       // hears about, so the result is reported rather than dropped.
-      const devinSkill = path.join(testDir, '.devin', 'skills', 'outline-spec-explore');
+      const devinSkill = path.join(testDir, '.devin', 'skills', 'outl-explore');
       await fs.mkdir(devinSkill, { recursive: true });
       await fs.writeFile(path.join(devinSkill, 'SKILL.md'), 'current');
       const devinWorkflows = path.join(testDir, '.devin', 'workflows');
       await fs.mkdir(devinWorkflows, { recursive: true });
-      await fs.writeFile(path.join(devinWorkflows, 'outline-spec-explore.md'), 'current');
+      await fs.writeFile(path.join(devinWorkflows, 'outl-explore.md'), 'current');
 
-      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outline-spec-explore');
+      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outl-explore');
       await fs.mkdir(legacySkill, { recursive: true });
       await fs.writeFile(path.join(legacySkill, 'SKILL.md'), 'mine');
       const legacyWorkflows = path.join(testDir, '.windsurf', 'workflows');
       await fs.mkdir(legacyWorkflows, { recursive: true });
-      await fs.writeFile(path.join(legacyWorkflows, 'outline-spec-explore.md'), 'mine');
+      await fs.writeFile(path.join(legacyWorkflows, 'outl-explore.md'), 'mine');
 
       const consoleSpy = vi.spyOn(console, 'log');
       await updateCommand.execute(testDir);
@@ -1667,33 +1667,33 @@ metadata:
       expect(logCalls.some((entry) => entry.includes('Migrated 0'))).toBe(false);
       // ...and nothing was touched
       expect(await fs.readFile(path.join(legacySkill, 'SKILL.md'), 'utf-8')).toBe('mine');
-      expect(await fs.readFile(path.join(legacyWorkflows, 'outline-spec-explore.md'), 'utf-8')).toBe('mine');
+      expect(await fs.readFile(path.join(legacyWorkflows, 'outl-explore.md'), 'utf-8')).toBe('mine');
     });
 
     it('should keep a legacy SKILL.md the user edited, matching how command files are treated', async () => {
       // Skills and commands must follow one rule. An earlier draft compared
       // content for commands and not for skills, so the same situation
       // destroyed a user's edited skill while preserving their edited command.
-      const devinSkill = path.join(testDir, '.devin', 'skills', 'outline-spec-explore');
+      const devinSkill = path.join(testDir, '.devin', 'skills', 'outl-explore');
       await fs.mkdir(devinSkill, { recursive: true });
       await fs.writeFile(path.join(devinSkill, 'SKILL.md'), 'current');
       const devinWorkflows = path.join(testDir, '.devin', 'workflows');
       await fs.mkdir(devinWorkflows, { recursive: true });
-      await fs.writeFile(path.join(devinWorkflows, 'outline-spec-explore.md'), 'current');
+      await fs.writeFile(path.join(devinWorkflows, 'outl-explore.md'), 'current');
 
-      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outline-spec-explore');
+      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outl-explore');
       await fs.mkdir(legacySkill, { recursive: true });
       await fs.writeFile(path.join(legacySkill, 'SKILL.md'), 'my edited skill');
       const legacyWorkflows = path.join(testDir, '.windsurf', 'workflows');
       await fs.mkdir(legacyWorkflows, { recursive: true });
-      await fs.writeFile(path.join(legacyWorkflows, 'outline-spec-explore.md'), 'my edited command');
+      await fs.writeFile(path.join(legacyWorkflows, 'outl-explore.md'), 'my edited command');
 
       await updateCommand.execute(testDir);
 
       expect(await fs.readFile(path.join(legacySkill, 'SKILL.md'), 'utf-8')).toBe(
         'my edited skill'
       );
-      expect(await fs.readFile(path.join(legacyWorkflows, 'outline-spec-explore.md'), 'utf-8')).toBe(
+      expect(await fs.readFile(path.join(legacyWorkflows, 'outl-explore.md'), 'utf-8')).toBe(
         'my edited command'
       );
     });
@@ -1703,7 +1703,7 @@ metadata:
       // and removes on its own under commands-only delivery, so moving the
       // whole legacy directory would hand the user's file to that removal.
       setMockConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
-      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outline-spec-explore');
+      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outl-explore');
       await fs.mkdir(legacySkill, { recursive: true });
       await fs.writeFile(path.join(legacySkill, 'SKILL.md'), 'stale');
       await fs.writeFile(path.join(legacySkill, 'reference.md'), 'my notes');
@@ -1715,9 +1715,9 @@ metadata:
     });
 
     it('should not carry a user file into a skill directory a deselected workflow deletes', async () => {
-      // outline-spec-new-change is outside the core profile, so the skill
+      // outl-new-change is outside the core profile, so the skill
       // directory it would go in is one outline-spec prunes.
-      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outline-spec-new-change');
+      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outl-new-change');
       await fs.mkdir(legacySkill, { recursive: true });
       await fs.writeFile(path.join(legacySkill, 'SKILL.md'), 'stale');
       await fs.writeFile(path.join(legacySkill, 'reference.md'), 'my notes');
@@ -1730,7 +1730,7 @@ metadata:
     it('should still fully vacate a legacy skill directory that holds only SKILL.md', async () => {
       // The safety rule must not leave empty scaffolding behind in the
       // ordinary case, where there is nothing of the user's to preserve.
-      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outline-spec-explore');
+      const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outl-explore');
       await fs.mkdir(legacySkill, { recursive: true });
       await fs.writeFile(path.join(legacySkill, 'SKILL.md'), 'stale');
 
@@ -1738,7 +1738,7 @@ metadata:
 
       expect(
         await FileSystemUtils.fileExists(
-          path.join(testDir, '.devin', 'skills', 'outline-spec-explore', 'SKILL.md')
+          path.join(testDir, '.devin', 'skills', 'outl-explore', 'SKILL.md')
         )
       ).toBe(true);
       await expect(fs.access(path.join(testDir, '.windsurf'))).rejects.toThrow();
@@ -1747,28 +1747,28 @@ metadata:
     it('should keep a legacy command file the user edited, and drop an identical one', async () => {
       const devinWorkflows = path.join(testDir, '.devin', 'workflows');
       await fs.mkdir(devinWorkflows, { recursive: true });
-      await fs.writeFile(path.join(devinWorkflows, 'outline-spec-explore.md'), 'generated');
-      await fs.writeFile(path.join(devinWorkflows, 'outline-spec-apply.md'), 'generated');
+      await fs.writeFile(path.join(devinWorkflows, 'outl-explore.md'), 'generated');
+      await fs.writeFile(path.join(devinWorkflows, 'outl-apply.md'), 'generated');
 
       const legacyWorkflows = path.join(testDir, '.windsurf', 'workflows');
       await fs.mkdir(legacyWorkflows, { recursive: true });
       // Edited by the user — deleting it would throw the edit away
-      await fs.writeFile(path.join(legacyWorkflows, 'outline-spec-explore.md'), 'my edits');
+      await fs.writeFile(path.join(legacyWorkflows, 'outl-explore.md'), 'my edits');
       // Byte-identical — nothing is lost by dropping it
-      await fs.writeFile(path.join(legacyWorkflows, 'outline-spec-apply.md'), 'generated');
+      await fs.writeFile(path.join(legacyWorkflows, 'outl-apply.md'), 'generated');
 
       await updateCommand.execute(testDir);
 
-      expect(await fs.readFile(path.join(legacyWorkflows, 'outline-spec-explore.md'), 'utf-8')).toBe(
+      expect(await fs.readFile(path.join(legacyWorkflows, 'outl-explore.md'), 'utf-8')).toBe(
         'my edits'
       );
-      await expect(fs.access(path.join(legacyWorkflows, 'outline-spec-apply.md'))).rejects.toThrow();
+      await expect(fs.access(path.join(legacyWorkflows, 'outl-apply.md'))).rejects.toThrow();
     });
 
     it('should leave a migrated project alone on the next run', async () => {
       // The move must be idempotent: once .windsurf/ holds nothing of ours,
       // a second update has nothing to migrate and nothing to announce.
-      const legacySkillDir = path.join(testDir, '.windsurf', 'skills', 'outline-spec-explore');
+      const legacySkillDir = path.join(testDir, '.windsurf', 'skills', 'outl-explore');
       await fs.mkdir(legacySkillDir, { recursive: true });
       await fs.writeFile(path.join(legacySkillDir, 'SKILL.md'), 'old');
 
@@ -1789,14 +1789,14 @@ metadata:
         testDir,
         '.codex',
         'skills',
-        'outline-spec-explore',
+        'outl-explore',
         'SKILL.md'
       );
       const legacyContent = 'legacy Codex skill';
       await fs.mkdir(path.dirname(legacySkill), { recursive: true });
       await fs.writeFile(legacySkill, legacyContent);
 
-      const prompt = path.join(process.env.CODEX_HOME!, 'prompts', 'outline-spec-explore.md');
+      const prompt = path.join(process.env.CODEX_HOME!, 'prompts', 'outl-explore.md');
       await fs.mkdir(path.dirname(prompt), { recursive: true });
       await fs.writeFile(prompt, 'legacy prompt');
 
@@ -1818,11 +1818,11 @@ metadata:
     it('should report tool update failures to automation', async () => {
       // Set up a configured tool
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
@@ -1855,20 +1855,20 @@ metadata:
     it('should continue updating other tools when one fails', async () => {
       // Set up Claude and Cursor
       const claudeSkillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(claudeSkillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(claudeSkillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(claudeSkillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(claudeSkillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
       const cursorSkillsDir = path.join(testDir, '.cursor', 'skills');
-      await fs.mkdir(path.join(cursorSkillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(cursorSkillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(cursorSkillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(cursorSkillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
@@ -1909,8 +1909,8 @@ metadata:
     });
 
     it('should not suggest an IDE restart when only the IDE tool fails', async () => {
-      const claudeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
-      const cursorSkill = path.join(testDir, '.cursor', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const claudeSkill = path.join(testDir, '.claude', 'skills', 'outl-explore', 'SKILL.md');
+      const cursorSkill = path.join(testDir, '.cursor', 'skills', 'outl-explore', 'SKILL.md');
       await fs.mkdir(path.dirname(claudeSkill), { recursive: true });
       await fs.mkdir(path.dirname(cursorSkill), { recursive: true });
       await fs.writeFile(claudeSkill, 'old');
@@ -1962,7 +1962,7 @@ metadata:
         testDir,
         '.claude',
         'skills',
-        'outline-spec-archive-change'
+        'outl-archive-change'
       );
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), 'old');
@@ -1984,18 +1984,18 @@ metadata:
     it('should generate valid YAML frontmatter in skill files', async () => {
       // Set up a configured tool
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
       await updateCommand.execute(testDir);
 
       const skillContent = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'utf-8'
       );
 
@@ -2014,18 +2014,18 @@ metadata:
     it('should include proper instructions in skill files', async () => {
       // Set up a configured tool with apply-change skill (which is in core profile)
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-apply-change'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-apply-change'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-apply-change', 'SKILL.md'),
+        path.join(skillsDir, 'outl-apply-change', 'SKILL.md'),
         'old'
       );
 
       await updateCommand.execute(testDir);
 
       const skillContent = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-apply-change', 'SKILL.md'),
+        path.join(skillsDir, 'outl-apply-change', 'SKILL.md'),
         'utf-8'
       );
 
@@ -2038,11 +2038,11 @@ metadata:
     it('should display success message with tool name', async () => {
       // Set up a configured tool
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
@@ -2061,11 +2061,11 @@ metadata:
     it('should not suggest an IDE restart for CLI-only tools', async () => {
       // Set up a configured CLI tool
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
@@ -2087,11 +2087,11 @@ metadata:
     ] as const)('should name the generated IDE surface with %s delivery', async (delivery, surface) => {
       setMockConfig({ featureFlags: {}, profile: 'core', delivery });
       const skillsDir = path.join(testDir, '.cursor', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
@@ -2103,10 +2103,10 @@ metadata:
         expect.stringContaining(`Restart your IDE to refresh ${surface}.`)
       );
       expect(await FileSystemUtils.fileExists(
-        path.join(testDir, '.cursor', 'commands', 'outline-spec-explore.md')
+        path.join(testDir, '.cursor', 'commands', 'outl-explore.md')
       )).toBe(delivery !== 'skills');
       expect(await FileSystemUtils.fileExists(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md')
+        path.join(skillsDir, 'outl-explore', 'SKILL.md')
       )).toBe(delivery !== 'commands');
 
       consoleSpy.mockClear();
@@ -2129,10 +2129,10 @@ metadata:
         await updateCommand.execute(testDir);
 
         expect(await FileSystemUtils.fileExists(
-          path.join(testDir, '.cursor', 'commands', 'outline-spec-explore.md')
+          path.join(testDir, '.cursor', 'commands', 'outl-explore.md')
         )).toBe(false);
         expect(await FileSystemUtils.fileExists(
-          path.join(testDir, '.cursor', 'skills', 'outline-spec-explore', 'SKILL.md')
+          path.join(testDir, '.cursor', 'skills', 'outl-explore', 'SKILL.md')
         )).toBe(false);
         const surface = delivery === 'skills' ? 'skills' : 'commands';
         expect(consoleSpy).toHaveBeenCalledWith(
@@ -2147,7 +2147,7 @@ metadata:
     it('should not suggest an IDE restart when only a CLI tool needs updating', async () => {
       await new InitCommand({ tools: 'claude,cursor' }).execute(testDir);
       await fs.writeFile(
-        path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md'),
+        path.join(testDir, '.claude', 'skills', 'outl-explore', 'SKILL.md'),
         'old'
       );
       const consoleSpy = vi.spyOn(console, 'log');
@@ -2297,13 +2297,13 @@ metadata:
     it('should detect update needed when generatedBy is missing', async () => {
       // Set up a configured tool without generatedBy
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         `---
-name: outline-spec-explore
+name: outl-explore
 metadata:
   author: outline-spec
   version: "1.0"
@@ -2328,13 +2328,13 @@ Legacy content without generatedBy
     it('should detect update needed when version differs', async () => {
       // Set up a configured tool with old version
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         `---
-name: outline-spec-explore
+name: outl-explore
 metadata:
   generatedBy: "0.0.9"
 ---
@@ -2358,18 +2358,18 @@ Old version content
     it('should embed generatedBy in updated skill files', async () => {
       // Set up a configured tool without generatedBy
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old content without version'
       );
 
       await updateCommand.execute(testDir);
 
       const updatedContent = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'utf-8'
       );
 
@@ -2382,13 +2382,13 @@ Old version content
     it('should update when force is true even if up to date', async () => {
       // Set up a configured tool with current version
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
 
       const { version } = await import('../../package.json');
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         `---
 metadata:
   generatedBy: "${version}"
@@ -2419,11 +2419,11 @@ Content
     it('should not show --force hint when force is used', async () => {
       // Set up a configured tool
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old content'
       );
 
@@ -2447,7 +2447,7 @@ Content
     it('should update all tools when force is used with mixed versions', async () => {
       // Set up Claude with current version
       const { version } = await import('../../package.json');
-      const claudeSkillDir = path.join(testDir, '.claude', 'skills', 'outline-spec-explore');
+      const claudeSkillDir = path.join(testDir, '.claude', 'skills', 'outl-explore');
       await fs.mkdir(claudeSkillDir, { recursive: true });
       await fs.writeFile(
         path.join(claudeSkillDir, 'SKILL.md'),
@@ -2459,7 +2459,7 @@ metadata:
       );
 
       // Set up Cursor with old version
-      const cursorSkillDir = path.join(testDir, '.cursor', 'skills', 'outline-spec-explore');
+      const cursorSkillDir = path.join(testDir, '.cursor', 'skills', 'outl-explore');
       await fs.mkdir(cursorSkillDir, { recursive: true });
       await fs.writeFile(
         path.join(cursorSkillDir, 'SKILL.md'),
@@ -2488,11 +2488,11 @@ metadata:
     it('should show version in success message', async () => {
       // Set up a configured tool
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), {
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), {
         recursive: true,
       });
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'old'
       );
 
@@ -2515,7 +2515,7 @@ metadata:
       await initCommand.execute(testDir);
 
       // Make Claude stale to force a version update.
-      const claudeSkillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const claudeSkillFile = path.join(testDir, '.claude', 'skills', 'outl-explore', 'SKILL.md');
       const claudeContent = await fs.readFile(claudeSkillFile, 'utf-8');
       await fs.writeFile(
         claudeSkillFile,
@@ -2549,7 +2549,7 @@ metadata:
     it('should prune EasyCode profile and delivery changes while preserving user files', async () => {
       await new InitCommand({ tools: 'easycode' }).execute(testDir);
 
-      const commandsDir = path.join(testDir, '.easycode', 'commands', 'outline-spec');
+      const commandsDir = path.join(testDir, '.easycode', 'commands', 'outl');
       const skillsDir = path.join(testDir, '.easycode', 'skills');
       const userCommand = path.join(commandsDir, 'personal.toml');
       const userSkill = path.join(skillsDir, 'personal', 'SKILL.md');
@@ -2563,14 +2563,14 @@ metadata:
       expect((await fs.readdir(commandsDir)).sort()).toEqual(['explore.toml', 'new.toml', 'personal.toml']);
       const newCommand = parseToml(await fs.readFile(path.join(commandsDir, 'new.toml'), 'utf-8'));
       expect(newCommand.prompt).toContain('outline-spec');
-      expect(await FileSystemUtils.fileExists(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'))).toBe(false);
-      expect(await FileSystemUtils.fileExists(path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'))).toBe(false);
+      expect(await FileSystemUtils.fileExists(path.join(skillsDir, 'outl-explore', 'SKILL.md'))).toBe(false);
+      expect(await FileSystemUtils.fileExists(path.join(skillsDir, 'outl-propose', 'SKILL.md'))).toBe(false);
 
       setMockConfig({ featureFlags: {}, profile: 'custom', delivery: 'skills', workflows: ['explore', 'new'] });
       await updateCommand.execute(testDir);
 
       expect(await fs.readdir(commandsDir)).toEqual(['personal.toml']);
-      for (const skillName of ['outline-spec-explore', 'outline-spec-new-change']) {
+      for (const skillName of ['outl-explore', 'outl-new-change']) {
         expect(await fs.readFile(path.join(skillsDir, skillName, 'SKILL.md'), 'utf-8')).toContain(`name: ${skillName}`);
       }
       expect(await fs.readFile(userCommand, 'utf-8')).toBe('prompt = "Keep my command"\n');
@@ -2588,7 +2588,7 @@ metadata:
         const skillsDir = path.join(testDir, '.atomcode', 'skills');
         const commandsDir = path.join(testDir, '.atomcode', 'commands');
         const customSkill = path.join(skillsDir, 'my-custom-skill', 'SKILL.md');
-        const customCommand = path.join(commandsDir, 'outline-spec-custom.md');
+        const customCommand = path.join(commandsDir, 'outl-custom.md');
         await fs.mkdir(path.dirname(customSkill), { recursive: true });
         await fs.writeFile(customSkill, 'my custom skill');
         await fs.writeFile(customCommand, 'my custom command');
@@ -2597,18 +2597,18 @@ metadata:
         await updateCommand.execute(testDir);
 
         expect(await FileSystemUtils.fileExists(
-          path.join(skillsDir, 'outline-spec-new-change', 'SKILL.md')
+          path.join(skillsDir, 'outl-new-change', 'SKILL.md')
         )).toBe(false);
-        expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outline-spec-new.md'))).toBe(false);
+        expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outl-new.md'))).toBe(false);
         expect(await FileSystemUtils.fileExists(
-          path.join(skillsDir, 'outline-spec-propose', 'SKILL.md')
+          path.join(skillsDir, 'outl-propose', 'SKILL.md')
         )).toBe(delivery !== 'commands');
-        expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outline-spec-propose.md')))
+        expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outl-propose.md')))
           .toBe(delivery !== 'skills');
         expect(await FileSystemUtils.fileExists(
-          path.join(skillsDir, 'outline-spec-explore', 'SKILL.md')
+          path.join(skillsDir, 'outl-explore', 'SKILL.md')
         )).toBe(delivery !== 'commands');
-        expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outline-spec-explore.md')))
+        expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outl-explore.md')))
           .toBe(delivery !== 'skills');
         expect(await fs.readFile(customSkill, 'utf-8')).toBe('my custom skill');
         expect(await fs.readFile(customCommand, 'utf-8')).toBe('my custom command');
@@ -2624,7 +2624,7 @@ metadata:
     it('should detect and repair an AtomCode commands-only install', async () => {
       setMockConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
       const commandsDir = path.join(testDir, '.atomcode', 'commands');
-      const commandFile = path.join(commandsDir, 'outline-spec-explore.md');
+      const commandFile = path.join(commandsDir, 'outl-explore.md');
       await fs.mkdir(commandsDir, { recursive: true });
       await fs.writeFile(commandFile, '---\ndescription: old command\n---\nold body');
 
@@ -2634,10 +2634,10 @@ metadata:
       await updateCommand.execute(testDir);
 
       const content = await fs.readFile(commandFile, 'utf-8');
-      expect(content).toContain('name: outline-spec-explore');
+      expect(content).toContain('name: outl-explore');
       expect(content).toContain('$ARGUMENTS');
       expect(content).not.toContain('old body');
-      expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outline-spec-propose.md'))).toBe(true);
+      expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outl-propose.md'))).toBe(true);
       expect(await FileSystemUtils.directoryExists(path.join(testDir, '.atomcode', 'skills'))).toBe(false);
     });
 
@@ -2652,25 +2652,25 @@ metadata:
 
       // Set up a configured tool
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       await updateCommand.execute(testDir);
 
       // Should create explore and new skills
       expect(await FileSystemUtils.fileExists(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md')
+        path.join(skillsDir, 'outl-explore', 'SKILL.md')
       )).toBe(true);
       expect(await FileSystemUtils.fileExists(
-        path.join(skillsDir, 'outline-spec-new-change', 'SKILL.md')
+        path.join(skillsDir, 'outl-new-change', 'SKILL.md')
       )).toBe(true);
 
       // Should NOT create non-profile skills
       expect(await FileSystemUtils.fileExists(
-        path.join(skillsDir, 'outline-spec-apply-change', 'SKILL.md')
+        path.join(skillsDir, 'outl-apply-change', 'SKILL.md')
       )).toBe(false);
       expect(await FileSystemUtils.fileExists(
-        path.join(skillsDir, 'outline-spec-propose', 'SKILL.md')
+        path.join(skillsDir, 'outl-propose', 'SKILL.md')
       )).toBe(false);
     });
 
@@ -2833,40 +2833,40 @@ metadata:
       });
 
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       await updateCommand.execute(testDir);
 
       // Skills should be created
       expect(await FileSystemUtils.fileExists(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md')
+        path.join(skillsDir, 'outl-explore', 'SKILL.md')
       )).toBe(true);
 
       // Commands should NOT be created
-      const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'outl');
       expect(await FileSystemUtils.fileExists(
         path.join(commandsDir, 'explore.md')
       )).toBe(false);
 
       // Skill content should reference skills, not commands that were never generated
       const skillContent = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         'utf-8'
       );
-      expect(skillContent).not.toContain('/outline-spec:');
+      expect(skillContent).not.toContain('/outl:');
       expect(skillContent).not.toMatch(HYPHEN_COMMAND_REF);
-      expect(skillContent).toContain('/outline-spec-');
+      expect(skillContent).toContain('/outl-');
 
       // update-change references several other workflows; a command missing
       // from the reference map would leave a raw /outline-spec: reference behind
       const updateSkillContent = await fs.readFile(
-        path.join(skillsDir, 'outline-spec-update-change', 'SKILL.md'),
+        path.join(skillsDir, 'outl-update-change', 'SKILL.md'),
         'utf-8'
       );
-      expect(updateSkillContent).not.toContain('/outline-spec:');
+      expect(updateSkillContent).not.toContain('/outl:');
       expect(updateSkillContent).not.toMatch(HYPHEN_COMMAND_REF);
-      expect(updateSkillContent).toContain('/outline-spec-');
+      expect(updateSkillContent).toContain('/outl-');
     });
 
     it.each(['skills', 'commands'] as const)(
@@ -2874,7 +2874,7 @@ metadata:
       async (delivery) => {
         await new InitCommand({ tools: 'codeassistant' }).execute(testDir);
         const toolDir = path.join(testDir, '.codeassistant');
-        const customCommand = path.join(toolDir, 'commands', 'outline-spec-custom.md');
+        const customCommand = path.join(toolDir, 'commands', 'outl-custom.md');
         const customSkill = path.join(toolDir, 'skills', 'custom-review', 'SKILL.md');
         await fs.mkdir(path.dirname(customSkill), { recursive: true });
         await fs.writeFile(customCommand, 'custom command');
@@ -2883,13 +2883,13 @@ metadata:
         setMockConfig({ featureFlags: {}, profile: 'core', delivery });
         await updateCommand.execute(testDir);
 
-        expect(await FileSystemUtils.fileExists(path.join(toolDir, 'commands', 'outline-spec-apply.md'))).toBe(delivery === 'commands');
-        const skillFile = path.join(toolDir, 'skills', 'outline-spec-apply-change', 'SKILL.md');
+        expect(await FileSystemUtils.fileExists(path.join(toolDir, 'commands', 'outl-apply.md'))).toBe(delivery === 'commands');
+        const skillFile = path.join(toolDir, 'skills', 'outl-apply-change', 'SKILL.md');
         expect(await FileSystemUtils.fileExists(skillFile)).toBe(delivery === 'skills');
         if (delivery === 'skills') {
           const skillContent = await fs.readFile(skillFile, 'utf-8');
-          expect(skillContent).toContain('the outline-spec-archive-change skill');
-          expect(skillContent).not.toMatch(/\/outline-spec-[a-z]+-change|\/outline-spec-(?:explore|onboard|propose)\b/);
+          expect(skillContent).toContain('the outl-archive-change skill');
+          expect(skillContent).not.toMatch(/\/outl-[a-z]+-change|\/outl-(?:explore|onboard|propose)\b/);
           expect(skillContent).not.toMatch(HYPHEN_COMMAND_REF);
         }
         expect(await fs.readFile(customCommand, 'utf-8')).toBe('custom command');
@@ -2905,20 +2905,20 @@ metadata:
       });
 
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       await updateCommand.execute(testDir);
 
       // Commands should be created
-      const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'outl');
       expect(await FileSystemUtils.fileExists(
         path.join(commandsDir, 'explore.md')
       )).toBe(true);
 
       // Skills should be removed for commands-only delivery
       expect(await FileSystemUtils.fileExists(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md')
+        path.join(skillsDir, 'outl-explore', 'SKILL.md')
       )).toBe(false);
     });
 
@@ -2930,8 +2930,8 @@ metadata:
       });
 
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       // First run updates commands and removes skills
       await updateCommand.execute(testDir);
@@ -2959,17 +2959,17 @@ metadata:
 
         const skillsDir = path.join(testDir, '.agents', 'skills');
         await markCodexTarget(skillsDir);
-        await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-        await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+        await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+        await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
         await updateCommand.execute(testDir);
 
-        const skillFile = path.join(skillsDir, 'outline-spec-explore', 'SKILL.md');
+        const skillFile = path.join(skillsDir, 'outl-explore', 'SKILL.md');
         expect(await FileSystemUtils.fileExists(skillFile)).toBe(true);
         const skillContent = await fs.readFile(skillFile, 'utf-8');
-        expect(skillContent).toContain('name: outline-spec-explore');
+        expect(skillContent).toContain('name: outl-explore');
 
-        const promptFile = path.join(process.env.CODEX_HOME!, 'prompts', 'outline-spec-explore.md');
+        const promptFile = path.join(process.env.CODEX_HOME!, 'prompts', 'outl-explore.md');
         expect(await FileSystemUtils.fileExists(promptFile)).toBe(false);
       }
     );
@@ -2981,12 +2981,12 @@ metadata:
 
         const grokDir = path.join(testDir, '.grok');
         const skillsDir = path.join(grokDir, 'skills');
-        const exploreSkill = path.join(skillsDir, 'outline-spec-explore', 'SKILL.md');
-        const userNotes = path.join(skillsDir, 'outline-spec-explore', 'notes.md');
+        const exploreSkill = path.join(skillsDir, 'outl-explore', 'SKILL.md');
+        const userNotes = path.join(skillsDir, 'outl-explore', 'notes.md');
         const customSkill = path.join(skillsDir, 'my-custom-skill', 'SKILL.md');
         const userConfig = path.join(grokDir, 'settings.json');
         await fs.mkdir(path.dirname(exploreSkill), { recursive: true });
-        await fs.writeFile(exploreSkill, 'old instructions: /outline-spec:explore');
+        await fs.writeFile(exploreSkill, 'old instructions: /outl:explore');
         await fs.writeFile(userNotes, 'my exploration notes');
         await fs.mkdir(path.dirname(customSkill), { recursive: true });
         await fs.writeFile(customSkill, 'my custom skill');
@@ -2994,10 +2994,10 @@ metadata:
 
         await updateCommand.execute(testDir);
 
-        for (const skillName of ['outline-spec-explore', 'outline-spec-update-change']) {
+        for (const skillName of ['outl-explore', 'outl-update-change']) {
           const content = await fs.readFile(path.join(skillsDir, skillName, 'SKILL.md'), 'utf-8');
           expect(content).toContain(`name: ${skillName}`);
-          expect(content).toContain('/outline-spec-');
+          expect(content).toContain('/outl-');
           expect(content).not.toMatch(COMMAND_REF);
           expect(content).not.toContain('old instructions');
         }
@@ -3012,7 +3012,7 @@ metadata:
       await new InitCommand({ tools: 'grok' }).execute(testDir);
       const grokDir = path.join(testDir, '.grok');
       const skillsDir = path.join(grokDir, 'skills');
-      const customSkill = path.join(skillsDir, 'outline-spec-custom', 'SKILL.md');
+      const customSkill = path.join(skillsDir, 'outl-custom', 'SKILL.md');
       await fs.mkdir(path.dirname(customSkill));
       await fs.writeFile(customSkill, 'my custom skill');
       await fs.writeFile(path.join(grokDir, 'notes.md'), 'my Grok notes');
@@ -3021,7 +3021,7 @@ metadata:
 
       await updateCommand.execute(testDir);
 
-      expect(await fs.readdir(skillsDir)).toEqual(['outline-spec-custom']);
+      expect(await fs.readdir(skillsDir)).toEqual(['outl-custom']);
       expect(await fs.readFile(customSkill, 'utf-8')).toBe('my custom skill');
       expect(await fs.readFile(path.join(grokDir, 'notes.md'), 'utf-8')).toBe('my Grok notes');
       expect((await fs.readdir(grokDir)).sort()).toEqual(['notes.md', 'skills']);
@@ -3041,8 +3041,8 @@ metadata:
 
       const grokDir = path.join(testDir, '.grok');
       const skillsDir = path.join(grokDir, 'skills');
-      expect((await fs.readdir(skillsDir)).sort()).toEqual(['outline-spec-explore', 'outline-spec-new-change']);
-      const customSkill = path.join(skillsDir, 'outline-spec-custom', 'SKILL.md');
+      expect((await fs.readdir(skillsDir)).sort()).toEqual(['outl-explore', 'outl-new-change']);
+      const customSkill = path.join(skillsDir, 'outl-custom', 'SKILL.md');
       await fs.mkdir(path.dirname(customSkill));
       await fs.writeFile(customSkill, 'my custom skill');
       await fs.writeFile(path.join(grokDir, 'notes.md'), 'my Grok notes');
@@ -3051,12 +3051,12 @@ metadata:
       await updateCommand.execute(testDir);
 
       expect((await fs.readdir(skillsDir)).sort()).toEqual([
-        'outline-spec-apply-change',
-        'outline-spec-archive-change',
-        'outline-spec-custom',
-        'outline-spec-explore',
-        'outline-spec-propose',
-        'outline-spec-update-change',
+        'outl-apply-change',
+        'outl-archive-change',
+        'outl-custom',
+        'outl-explore',
+        'outl-propose',
+        'outl-update-change',
       ]);
       expect(await fs.readFile(customSkill, 'utf-8')).toBe('my custom skill');
       expect(await fs.readFile(path.join(grokDir, 'notes.md'), 'utf-8')).toBe('my Grok notes');
@@ -3072,8 +3072,8 @@ metadata:
 
       const skillsDir = path.join(testDir, '.agents', 'skills');
       await markCodexTarget(skillsDir);
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       const consoleSpy = vi.spyOn(console, 'log');
 
@@ -3098,11 +3098,11 @@ metadata:
 
       const skillsDir = path.join(testDir, '.agents', 'skills');
       await markCodexTarget(skillsDir);
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       const promptDir = path.join(process.env.CODEX_HOME!, 'prompts');
-      const managedPrompt = path.join(promptDir, 'outline-spec-explore.md');
+      const managedPrompt = path.join(promptDir, 'outl-explore.md');
       await fs.mkdir(promptDir, { recursive: true });
       await fs.writeFile(managedPrompt, 'legacy explore prompt');
 
@@ -3110,7 +3110,7 @@ metadata:
 
       expect(await FileSystemUtils.fileExists(managedPrompt)).toBe(true);
       expect(await FileSystemUtils.fileExists(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md')
+        path.join(skillsDir, 'outl-explore', 'SKILL.md')
       )).toBe(true);
     });
 
@@ -3126,7 +3126,7 @@ metadata:
         'home',
         '.minimax',
         'skills',
-        'outline-spec-explore',
+        'outl-explore',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(skillFile), { recursive: true });
@@ -3161,14 +3161,14 @@ metadata:
       }
 
       const skillsDir = path.join(testDir, adapterlessTool.skillsDir, 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       const consoleSpy = vi.spyOn(console, 'log');
       await expect(updateCommand.execute(testDir)).resolves.toBeUndefined();
 
       expect(await FileSystemUtils.fileExists(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md')
+        path.join(skillsDir, 'outl-explore', 'SKILL.md')
       )).toBe(false);
 
       // The tool now has zero outline-spec artifacts; the removal must not be
@@ -3187,13 +3187,13 @@ metadata:
       });
 
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
       const packageJsonPath = path.join(process.cwd(), 'package.json');
       const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8')) as { version: string };
       await fs.writeFile(
-        path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'),
+        path.join(skillsDir, 'outl-explore', 'SKILL.md'),
         `---
-name: outline-spec-explore
+name: outl-explore
 metadata:
   generatedBy: "${packageJson.version}"
 ---
@@ -3201,7 +3201,7 @@ content
 `
       );
 
-      const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'outl');
       await fs.mkdir(commandsDir, { recursive: true });
       await fs.writeFile(path.join(commandsDir, 'explore.md'), 'old command');
 
@@ -3220,7 +3220,7 @@ content
         delivery: 'commands',
       });
 
-      const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'outl');
       await fs.mkdir(commandsDir, { recursive: true });
       await fs.writeFile(path.join(commandsDir, 'explore.md'), 'existing command');
 
@@ -3255,13 +3255,13 @@ content
 
       // Set up tool with extra workflows beyond core profile
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       // Add a non-core workflow
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-new-change'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-new-change', 'SKILL.md'), 'old');
-      const extraCommandFile = path.join(testDir, '.claude', 'commands', 'outline-spec', 'new.md');
+      await fs.mkdir(path.join(skillsDir, 'outl-new-change'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-new-change', 'SKILL.md'), 'old');
+      const extraCommandFile = path.join(testDir, '.claude', 'commands', 'outl', 'new.md');
       await fs.mkdir(path.dirname(extraCommandFile), { recursive: true });
       await fs.writeFile(extraCommandFile, 'old');
 
@@ -3271,7 +3271,7 @@ content
 
       // Deselected workflow artifacts should be removed for both delivery surfaces.
       expect(await FileSystemUtils.fileExists(
-        path.join(skillsDir, 'outline-spec-new-change', 'SKILL.md')
+        path.join(skillsDir, 'outl-new-change', 'SKILL.md')
       )).toBe(false);
       expect(await FileSystemUtils.fileExists(extraCommandFile)).toBe(false);
 
@@ -3292,8 +3292,8 @@ content
     it('should detect new tool directories not currently configured', async () => {
       // Set up a configured Claude tool
       const claudeSkillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(claudeSkillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(claudeSkillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(claudeSkillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(claudeSkillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       // Create a Cursor directory (not configured — no skills)
       await fs.mkdir(path.join(testDir, '.cursor'), { recursive: true });
@@ -3317,8 +3317,8 @@ content
     it('should consolidate multiple new tools into one message', async () => {
       // Set up a configured Claude tool
       const claudeSkillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(claudeSkillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(claudeSkillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(claudeSkillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(claudeSkillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       // Create two unconfigured tool directories
       await fs.mkdir(path.join(testDir, '.github'), { recursive: true });
@@ -3352,8 +3352,8 @@ content
     it('should not show new tool message when no new tools detected', async () => {
       // Set up a configured tool (only Claude, no other tool directories)
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       const consoleSpy = vi.spyOn(console, 'log');
 
@@ -3375,10 +3375,10 @@ content
     it('should detect installed workflows across tools', async () => {
       // Create skills for Claude
       const claudeSkillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(claudeSkillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(claudeSkillsDir, 'outline-spec-explore', 'SKILL.md'), 'content');
-      await fs.mkdir(path.join(claudeSkillsDir, 'outline-spec-apply-change'), { recursive: true });
-      await fs.writeFile(path.join(claudeSkillsDir, 'outline-spec-apply-change', 'SKILL.md'), 'content');
+      await fs.mkdir(path.join(claudeSkillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(claudeSkillsDir, 'outl-explore', 'SKILL.md'), 'content');
+      await fs.mkdir(path.join(claudeSkillsDir, 'outl-apply-change'), { recursive: true });
+      await fs.writeFile(path.join(claudeSkillsDir, 'outl-apply-change', 'SKILL.md'), 'content');
 
       const workflows = scanInstalledWorkflows(testDir, ['claude']);
       expect(workflows).toContain('explore');
@@ -3389,13 +3389,13 @@ content
     it('should return union of workflows across multiple tools', async () => {
       // Claude has explore
       const claudeSkillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(claudeSkillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(claudeSkillsDir, 'outline-spec-explore', 'SKILL.md'), 'content');
+      await fs.mkdir(path.join(claudeSkillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(claudeSkillsDir, 'outl-explore', 'SKILL.md'), 'content');
 
       // Cursor has apply
       const cursorSkillsDir = path.join(testDir, '.cursor', 'skills');
-      await fs.mkdir(path.join(cursorSkillsDir, 'outline-spec-apply-change'), { recursive: true });
-      await fs.writeFile(path.join(cursorSkillsDir, 'outline-spec-apply-change', 'SKILL.md'), 'content');
+      await fs.mkdir(path.join(cursorSkillsDir, 'outl-apply-change'), { recursive: true });
+      await fs.writeFile(path.join(cursorSkillsDir, 'outl-apply-change', 'SKILL.md'), 'content');
 
       const workflows = scanInstalledWorkflows(testDir, ['claude', 'cursor']);
       expect(workflows).toContain('explore');
@@ -3418,7 +3418,7 @@ content
     });
 
     it('should detect installed workflows from managed command files', async () => {
-      const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'outl');
       await fs.mkdir(commandsDir, { recursive: true });
       await fs.writeFile(path.join(commandsDir, 'explore.md'), 'content');
 
@@ -3430,8 +3430,8 @@ content
   describe('tools output', () => {
     it('should list affected tools in output', async () => {
       const skillsDir = path.join(testDir, '.claude', 'skills');
-      await fs.mkdir(path.join(skillsDir, 'outline-spec-explore'), { recursive: true });
-      await fs.writeFile(path.join(skillsDir, 'outline-spec-explore', 'SKILL.md'), 'old');
+      await fs.mkdir(path.join(skillsDir, 'outl-explore'), { recursive: true });
+      await fs.writeFile(path.join(skillsDir, 'outl-explore', 'SKILL.md'), 'old');
 
       const consoleSpy = vi.spyOn(console, 'log');
 

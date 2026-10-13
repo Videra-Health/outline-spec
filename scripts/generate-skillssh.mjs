@@ -34,7 +34,7 @@ cleanSkillSubdirectories(outDir);
 
 let count = 0;
 for (const { template, dirName } of getSkillTemplates()) {
-  // skills.sh installs SKILL.md files only — no /outline-spec:* commands exist in
+  // skills.sh installs SKILL.md files only — no /outl:* commands exist in
   // that channel, so references must point at the skills themselves.
   const content = stripVolatileFrontmatter(
     generateSkillContent(template, 'skills.sh', transformToSkillReferences)

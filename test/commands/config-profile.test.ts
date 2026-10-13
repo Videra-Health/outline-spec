@@ -84,19 +84,19 @@ describe('config profile interactive flow', () => {
 
   function setupDriftedProjectArtifacts(projectDir: string): void {
     fs.mkdirSync(path.join(projectDir, 'outline-spec'), { recursive: true });
-    const exploreSkillPath = path.join(projectDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
+    const exploreSkillPath = path.join(projectDir, '.claude', 'skills', 'outl-explore', 'SKILL.md');
     fs.mkdirSync(path.dirname(exploreSkillPath), { recursive: true });
-    fs.writeFileSync(exploreSkillPath, 'name: outline-spec-explore\n', 'utf-8');
+    fs.writeFileSync(exploreSkillPath, 'name: outl-explore\n', 'utf-8');
   }
 
   function setupSyncedCoreBothArtifacts(projectDir: string): void {
     fs.mkdirSync(path.join(projectDir, 'outline-spec'), { recursive: true });
     const coreSkillDirs = [
-      'outline-spec-propose',
-      'outline-spec-explore',
-      'outline-spec-apply-change',
-      'outline-spec-update-change',
-      'outline-spec-archive-change',
+      'outl-propose',
+      'outl-explore',
+      'outl-apply-change',
+      'outl-update-change',
+      'outl-archive-change',
     ];
     for (const dirName of coreSkillDirs) {
       const skillPath = path.join(projectDir, '.claude', 'skills', dirName, 'SKILL.md');
@@ -106,18 +106,18 @@ describe('config profile interactive flow', () => {
 
     const coreCommands = ['propose', 'explore', 'apply', 'update', 'archive'];
     for (const commandId of coreCommands) {
-      const commandPath = path.join(projectDir, '.claude', 'commands', 'outline-spec', `${commandId}.md`);
+      const commandPath = path.join(projectDir, '.claude', 'commands', 'outl', `${commandId}.md`);
       fs.mkdirSync(path.dirname(commandPath), { recursive: true });
       fs.writeFileSync(commandPath, `# ${commandId}\n`, 'utf-8');
     }
   }
 
   function addExtraVerifyWorkflowArtifacts(projectDir: string): void {
-    const verifySkillPath = path.join(projectDir, '.claude', 'skills', 'outline-spec-verify-change', 'SKILL.md');
+    const verifySkillPath = path.join(projectDir, '.claude', 'skills', 'outl-verify-change', 'SKILL.md');
     fs.mkdirSync(path.dirname(verifySkillPath), { recursive: true });
-    fs.writeFileSync(verifySkillPath, 'name: outline-spec-verify-change\n', 'utf-8');
+    fs.writeFileSync(verifySkillPath, 'name: outl-verify-change\n', 'utf-8');
 
-    const verifyCommandPath = path.join(projectDir, '.claude', 'commands', 'outline-spec', 'verify.md');
+    const verifyCommandPath = path.join(projectDir, '.claude', 'commands', 'outl', 'verify.md');
     fs.mkdirSync(path.dirname(verifyCommandPath), { recursive: true });
     fs.writeFileSync(verifyCommandPath, '# verify\n', 'utf-8');
   }

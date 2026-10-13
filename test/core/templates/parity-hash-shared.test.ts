@@ -39,11 +39,11 @@ describe('parity hash rewriting', () => {
   });
 
   it('rewrites a stale generated-content pin and reports it moved', () => {
-    const src = `const M = {\n  'outline-spec-foo-bar': '${OLD}',\n};\n`;
-    const result = rewriteParityHashes(src, resolvers({}, { 'outline-spec-foo-bar': NEW }));
+    const src = `const M = {\n  'outl-foo-bar': '${OLD}',\n};\n`;
+    const result = rewriteParityHashes(src, resolvers({}, { 'outl-foo-bar': NEW }));
 
-    expect(result.source).toContain(`'outline-spec-foo-bar': '${NEW}',`);
-    expect(result.moved).toEqual(['outline-spec-foo-bar']);
+    expect(result.source).toContain(`'outl-foo-bar': '${NEW}',`);
+    expect(result.moved).toEqual(['outl-foo-bar']);
   });
 
   it('leaves an already-correct pin untouched and reports nothing moved', () => {
@@ -80,10 +80,10 @@ describe('parity hash rewriting', () => {
   // test/** carries no `text eol=lf` attribute, so a Windows checkout delivers
   // CRLF. Anchoring on $ alone matched nothing there and the run aborted.
   it('round-trips CRLF line endings unchanged', () => {
-    const src = `const M = {\r\n  getFooTemplate: '${OLD}',\r\n  'outline-spec-foo': '${OTHER}',\r\n};\r\n`;
+    const src = `const M = {\r\n  getFooTemplate: '${OLD}',\r\n  'outl-foo': '${OTHER}',\r\n};\r\n`;
     const result = rewriteParityHashes(
       src,
-      resolvers({ getFooTemplate: NEW }, { 'outline-spec-foo': OTHER })
+      resolvers({ getFooTemplate: NEW }, { 'outl-foo': OTHER })
     );
 
     expect(result.source).toContain(`getFooTemplate: '${NEW}',\r\n`);
@@ -98,9 +98,9 @@ describe('parity hash rewriting', () => {
   });
 
   it('throws when a generated-content pin names a directory that no longer exists', () => {
-    const src = `const M = {\n  'outline-spec-gone': '${OLD}',\n};\n`;
+    const src = `const M = {\n  'outl-gone': '${OLD}',\n};\n`;
 
-    expect(() => rewriteParityHashes(src, resolvers())).toThrow(/'outline-spec-gone' is pinned/);
+    expect(() => rewriteParityHashes(src, resolvers())).toThrow(/'outl-gone' is pinned/);
   });
 
   // The count is taken with a broader pattern than the rewriters on purpose:
@@ -127,38 +127,38 @@ describe('parity hash rewriting', () => {
   // compares only the entries it lists), so it would ship with no golden hash
   // while the run reported success.
   it('throws when the registry deploys a skill that is not pinned', () => {
-    const src = `const M = {\n  'outline-spec-foo': '${OLD}',\n};\n`;
+    const src = `const M = {\n  'outl-foo': '${OLD}',\n};\n`;
 
     expect(() =>
       rewriteParityHashes(
         src,
-        resolvers({}, { 'outline-spec-foo': OLD, 'outline-spec-brand-new': NEW }, [
-          'outline-spec-foo',
-          'outline-spec-brand-new',
+        resolvers({}, { 'outl-foo': OLD, 'outl-brand-new': NEW }, [
+          'outl-foo',
+          'outl-brand-new',
         ])
       )
-    ).toThrow(/outline-spec-brand-new/);
+    ).toThrow(/outl-brand-new/);
   });
 
   it('names every unpinned skill, not just the first', () => {
-    const src = `const M = {\n  'outline-spec-foo': '${OLD}',\n};\n`;
+    const src = `const M = {\n  'outl-foo': '${OLD}',\n};\n`;
 
     expect(() =>
       rewriteParityHashes(
         src,
-        resolvers({}, { 'outline-spec-foo': OLD }, ['outline-spec-foo', 'outline-spec-aaa', 'outline-spec-bbb'])
+        resolvers({}, { 'outl-foo': OLD }, ['outl-foo', 'outl-aaa', 'outl-bbb'])
       )
-    ).toThrow(/outline-spec-aaa[\s\S]*outline-spec-bbb/);
+    ).toThrow(/outl-aaa[\s\S]*outl-bbb/);
   });
 
   it('accepts a registry fully covered by pins', () => {
-    const src = `const M = {\n  'outline-spec-foo': '${OLD}',\n};\n`;
+    const src = `const M = {\n  'outl-foo': '${OLD}',\n};\n`;
     const result = rewriteParityHashes(
       src,
-      resolvers({}, { 'outline-spec-foo': NEW }, ['outline-spec-foo'])
+      resolvers({}, { 'outl-foo': NEW }, ['outl-foo'])
     );
 
-    expect(result.moved).toEqual(['outline-spec-foo']);
+    expect(result.moved).toEqual(['outl-foo']);
   });
 
   it('names both causes when the counts disagree, since either is possible', () => {

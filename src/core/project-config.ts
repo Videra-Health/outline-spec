@@ -642,7 +642,7 @@ export interface OutlineSpecDirClassification {
  * disagree (slice 3.2).
  *
  * A specs/ or changes/ directory carrying store metadata is a store at
- * the recommended `~/outline-spec/<id>` layout whose id is `specs` or
+ * the recommended `~/outl/<id>` layout whose id is `specs` or
  * `changes`, not planning content of the directory above it. Counting it
  * would make $HOME the phantom root the qualifying walk exists to prevent.
  */

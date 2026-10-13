@@ -7,38 +7,38 @@ import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 import { PROJECT_ROOT_GUARD } from './project-root.js';
 
 /**
- * Passages that hand off to `/outline-spec:continue` or `/outline-spec:new`. Neither workflow
+ * Passages that hand off to `/outl:continue` or `/outl:new`. Neither workflow
  * is in the `core` profile, so each is authored with a CLI fallback and
  * resolved at generation time (see optional-workflow.ts). Shared by both
  * surfaces below so the skill and the command cannot drift apart.
  */
 const CONTINUE_SCOPE_NOTE = optionalWorkflow(
   'continue',
-  'This workflow revises artifacts that already exist; `/outline-spec:continue` is what creates the ones that do not.',
+  'This workflow revises artifacts that already exist; `/outl:continue` is what creates the ones that do not.',
   'This workflow revises artifacts that already exist; it never creates missing ones. When an artifact is missing, `outline-spec status --change "<name>" --json` names the next one and `outline-spec instructions "<artifact-id>" --change "<name>" --json` explains how to write it.'
 );
 
 const CONTINUE_CREATE_THEM = optionalWorkflow(
   'continue',
-  'point the user to `/outline-spec:continue` to create them',
+  'point the user to `/outl:continue` to create them',
   'point the user to `outline-spec instructions "<artifact-id>" --change "<name>" --json` for how to create them'
 );
 
 const CONTINUE_NEXT_STEP = optionalWorkflow(
   'continue',
-  'suggest `/outline-spec:continue` to create them',
+  'suggest `/outl:continue` to create them',
   'run `outline-spec status --change "<name>" --json` for the next artifact and point the user to `outline-spec instructions "<artifact-id>" --change "<name>" --json` for how to create it'
 );
 
 const CONTINUE_DEFERRED = optionalWorkflow(
   'continue',
-  'Anything deferred to `/outline-spec:continue` (artifacts with no files yet and status `ready` or `blocked`, never `skipped` artifacts)',
+  'Anything deferred to `/outl:continue` (artifacts with no files yet and status `ready` or `blocked`, never `skipped` artifacts)',
   'Anything deferred because it does not exist yet (artifacts with no files and status `ready` or `blocked`, never `skipped` artifacts)'
 );
 
 const CONTINUE_FRONTIER = optionalWorkflow(
   'continue',
-  "that is `/outline-spec:continue`'s job",
+  "that is `/outl:continue`'s job",
   'creating them is a separate step, outside this workflow'
 );
 
@@ -48,25 +48,25 @@ const CONTINUE_FRONTIER = optionalWorkflow(
  */
 const APPLY_REVISION_HANDOFF = optionalWorkflow(
   'apply',
-  'suggest `/outline-spec:apply` to carry the revision into code',
+  'suggest `/outl:apply` to carry the revision into code',
   'say that the code may need updating and offer to carry the revision into it'
 );
 
 const APPLY_GUARDRAIL = optionalWorkflow(
   'apply',
-  'stop and point to `/outline-spec:apply`',
+  'stop and point to `/outl:apply`',
   'stop and say that the revised plan now implies code changes; implementing them is a separate step'
 );
 
 const ARCHIVE_HANDOFF = optionalWorkflow(
   'archive',
-  'suggest `/outline-spec:archive`',
+  'suggest `/outl:archive`',
   'suggest archiving with `outline-spec archive "<name>"`'
 );
 
 const INTENT_CHANGE_GUARDRAIL = optionalWorkflow(
   'new',
-  'recommend starting fresh with `/outline-spec:new` (the "Update vs. Start Fresh" heuristic)',
+  'recommend starting fresh with `/outl:new` (the "Update vs. Start Fresh" heuristic)',
   'ask for a distinct unused change name and recommend `outline-spec new change "<new-change-name>"` instead (the "Update vs. Start Fresh" heuristic)'
 );
 
@@ -98,7 +98,7 @@ ${CONTINUE_SCOPE_NOTE}
 
    Mark the most recently modified change as "(Recommended)" since it's likely what the user wants to update.
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/outline-spec:update <other>\`).
+   Always announce: "Using change: <name>" and how to override (e.g., \`/outl:update <other>\`).
 
 2. **Get the change's artifacts**
    \`\`\`bash
@@ -166,7 +166,7 @@ After each invocation, show:
 
 export function getUpdateChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'outline-spec-update-change',
+    name: 'outl-update-change',
     description: "Update an outline-spec change by revising its existing planning artifacts and keeping them coherent with one another. Use when the user wants to revise a change's plan, fold new decisions into it, or reconcile its artifacts after an edit. Also use when the user says \"outline-spec update change\". If the user means the outline-spec update CLI command, which refreshes generated files, run that command instead. Never edits code.",
     instructions: getUpdateInstructions(
       '**Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
@@ -184,7 +184,7 @@ export function getOutlineSpecUpdateCommandTemplate(): CommandTemplate {
     category: 'Workflow',
     tags: ['workflow', 'artifacts', 'experimental'],
     content: getUpdateInstructions(
-      '**Input**: Optionally specify a change name after `/outline-spec:update` (e.g., `/outline-spec:update add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
+      '**Input**: Optionally specify a change name after `/outl:update` (e.g., `/outl:update add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
     ),
   };
 }

@@ -32,10 +32,10 @@ export const DESCRIPTION_BUDGET = 17;
  * then implement.
  */
 const ONBOARDING_COMMANDS: readonly OnboardingCommand[] = [
-  { workflow: 'propose', command: '/outline-spec:propose', description: 'Start a change' },
-  { workflow: 'new', command: '/outline-spec:new', description: 'Scaffold a change' },
-  { workflow: 'continue', command: '/outline-spec:continue', description: 'Next artifact' },
-  { workflow: 'apply', command: '/outline-spec:apply', description: 'Implement tasks' },
+  { workflow: 'propose', command: '/outl:propose', description: 'Start a change' },
+  { workflow: 'new', command: '/outl:new', description: 'Scaffold a change' },
+  { workflow: 'continue', command: '/outl:continue', description: 'Next artifact' },
+  { workflow: 'apply', command: '/outl:apply', description: 'Implement tasks' },
 ];
 
 /**
@@ -55,7 +55,7 @@ export function getOnboardingCommands(
  *
  * Setup output otherwise never names the workflows that exist but were not
  * installed, so a user on the default profile has no way to learn that
- * `/outline-spec:ff` and friends are one command away. The docs say it; nobody reads
+ * `/outl:ff` and friends are one command away. The docs say it; nobody reads
  * the docs before typing a command that isn't there.
  */
 export function formatOptionalWorkflowsNote(

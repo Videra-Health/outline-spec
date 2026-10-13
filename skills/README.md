@@ -6,7 +6,7 @@ Install the outline-spec workflow skills into any [skills.sh](https://skills.sh)
 npx skills add heneryville/outline-spec
 ```
 
-Each `outline-spec-*/SKILL.md` here is the same skill `outline-spec init` writes into a
+Each `outl-*/SKILL.md` here is the same skill `outline-spec init` writes into a
 project. The skills drive the `outline-spec` CLI, so for the full setup (CLI +
 `outline-spec/` project scaffolding + slash commands) run:
 

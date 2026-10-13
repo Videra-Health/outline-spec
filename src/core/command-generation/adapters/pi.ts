@@ -24,18 +24,18 @@ function injectPiArgs(body: string): string {
 
 /**
  * Pi adapter for prompt template generation.
- * File path: .pi/prompts/outline-spec-<id>.md
+ * File path: .pi/prompts/outl-<id>.md
  * Frontmatter: description
  *
  * Pi uses the filename (minus .md) as the slash command name, so
- * outline-spec-propose.md → /outline-spec-propose. generateCommand rewrites the body's
+ * outl-propose.md → /outl-propose. generateCommand rewrites the body's
  * command references to that form before this adapter formats it.
  */
 export const piAdapter: ToolCommandAdapter = {
   toolId: 'pi',
 
   getFilePath(commandId: string): string {
-    return path.join('.pi', 'prompts', `outline-spec-${commandId}.md`);
+    return path.join('.pi', 'prompts', `outl-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

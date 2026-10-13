@@ -15,19 +15,19 @@ import { PROJECT_ROOT_GUARD } from './project-root.js';
  */
 const FIRST_ARTIFACT_PROMPT = optionalWorkflow(
   'continue',
-  'Run `/outline-spec:continue` or just describe what this change is about and I\'ll draft it.',
+  'Run `/outl:continue` or just describe what this change is about and I\'ll draft it.',
   'Just describe what this change is about and I\'ll draft it.'
 );
 
 const EXISTING_CHANGE_HINT = optionalWorkflow(
   'continue',
-  'suggest using `/outline-spec:continue` instead',
+  'suggest using `/outl:continue` instead',
   'say so and ask whether to resume that change or pick a different name'
 );
 
 export function getNewChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'outline-spec-new-change',
+    name: 'outl-new-change',
     description: 'Start a new outline-spec change using the experimental artifact workflow. Use when the user wants to create a new feature, fix, or modification with a structured step-by-step approach. Also use when the user says "outline-spec new change".',
     instructions: `Start a new change using the experimental artifact-driven approach.
 
@@ -114,7 +114,7 @@ ${STORE_SELECTION_GUIDANCE}
 
 ${PROJECT_ROOT_GUARD}
 
-**Input**: The argument after \`/outline-spec:new\` is the change name (kebab-case), OR a description of what the user wants to build.
+**Input**: The argument after \`/outl:new\` is the change name (kebab-case), OR a description of what the user wants to build.
 
 **Steps**
 

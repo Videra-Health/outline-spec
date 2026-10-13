@@ -1,10 +1,10 @@
 # specs-sync-skill
 Defines the agent skill for syncing delta specs from changes to main specs.
 
-1. Specs Sync Skill: The system SHALL provide an `/outline-spec:sync` skill that syncs delta specs from a change to the main specs.
-  a. Sync delta specs to main specs: WHEN agent executes `/outline-spec:sync` with a change name THEN the agent reads delta specs from `outline-spec/changes/<name>/specs/` AND reads corresponding main specs from `outline-spec/specs/` AND reconciles main specs to match what the deltas describe
-  b. Idempotent operation: WHEN agent executes `/outline-spec:sync` multiple times on the same change THEN the result is the same as running it once AND no duplicate requirements are created
-  c. Change selection prompt: WHEN agent executes `/outline-spec:sync` without specifying a change THEN the agent infers the change from conversation context, or auto-selects it when only one active change exists AND when ambiguous, prompts user to select from available changes, showing changes that have delta specs AND announces which change was selected and how to override
+1. Specs Sync Skill: The system SHALL provide an `/outl:sync` skill that syncs delta specs from a change to the main specs.
+  a. Sync delta specs to main specs: WHEN agent executes `/outl:sync` with a change name THEN the agent reads delta specs from `outline-spec/changes/<name>/specs/` AND reads corresponding main specs from `outline-spec/specs/` AND reconciles main specs to match what the deltas describe
+  b. Idempotent operation: WHEN agent executes `/outl:sync` multiple times on the same change THEN the result is the same as running it once AND no duplicate requirements are created
+  c. Change selection prompt: WHEN agent executes `/outl:sync` without specifying a change THEN the agent infers the change from conversation context, or auto-selects it when only one active change exists AND when ambiguous, prompts user to select from available changes, showing changes that have delta specs AND announces which change was selected and how to override
 2. Delta Reconciliation Logic: The agent SHALL reconcile main specs with delta specs using the delta operation headers.
   a. ADDED requirements: WHEN delta contains `## ADDED Requirements` with a requirement AND the requirement does not exist in main spec THEN add the requirement to main spec
   b. ADDED requirement already exists: WHEN delta contains `## ADDED Requirements` with a requirement AND a requirement with the same name already exists in main spec THEN update the existing requirement to match the delta version

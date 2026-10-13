@@ -40,7 +40,7 @@ async function snapshot(root: string): Promise<Record<string, string>> {
     const entries = await fs.readdir(path.join(root, dir), { recursive: true });
     out[`${dir}/`] = entries
       .map(String)
-      .filter((entry) => !entry.startsWith('outline-spec'))
+      .filter((entry) => !entry.startsWith('outl'))
       .sort()
       .join('\n');
   }
@@ -79,8 +79,8 @@ describe('side by side with OpenSpec', () => {
 
     expect(await snapshot(testDir)).toEqual(before);
     // outline-spec installed its own files beside them.
-    await expect(fs.stat(path.join(testDir, '.claude/skills/outline-spec-propose/SKILL.md'))).resolves.toBeTruthy();
-    await expect(fs.stat(path.join(testDir, '.claude/commands/outline-spec/propose.md'))).resolves.toBeTruthy();
+    await expect(fs.stat(path.join(testDir, '.claude/skills/outl-propose/SKILL.md'))).resolves.toBeTruthy();
+    await expect(fs.stat(path.join(testDir, '.claude/commands/outl/propose.md'))).resolves.toBeTruthy();
     await expect(fs.stat(path.join(testDir, 'outline-spec/config.yaml'))).resolves.toBeTruthy();
   });
 
@@ -91,6 +91,6 @@ describe('side by side with OpenSpec', () => {
     await new UpdateCommand({ force: true }).execute(testDir);
 
     expect(await snapshot(testDir)).toEqual(before);
-    await expect(fs.stat(path.join(testDir, '.claude/skills/outline-spec-propose'))).rejects.toThrow();
+    await expect(fs.stat(path.join(testDir, '.claude/skills/outl-propose'))).rejects.toThrow();
   });
 });

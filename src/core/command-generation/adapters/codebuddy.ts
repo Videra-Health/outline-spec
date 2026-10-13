@@ -10,14 +10,14 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * CodeBuddy adapter for command generation.
- * File path: .codebuddy/commands/outline-spec/<id>.md
+ * File path: .codebuddy/commands/outl/<id>.md
  * Frontmatter: name, description, argument-hint
  */
 export const codebuddyAdapter: ToolCommandAdapter = {
   toolId: 'codebuddy',
 
   getFilePath(commandId: string): string {
-    return path.join('.codebuddy', 'commands', 'outline-spec', `${commandId}.md`);
+    return path.join('.codebuddy', 'commands', 'outl', `${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

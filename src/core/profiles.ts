@@ -31,8 +31,8 @@ export const ALL_WORKFLOWS = [
 
 /** Workflows removed with delta specs; update deletes their installed skills and commands. */
 export const RETIRED_WORKFLOWS: ReadonlyMap<string, string> = new Map([
-  ['sync', 'outline-spec-sync-specs'],
-  ['bulk-archive', 'outline-spec-bulk-archive-change'],
+  ['sync', 'outl-sync-specs'],
+  ['bulk-archive', 'outl-bulk-archive-change'],
 ]);
 
 export type WorkflowId = (typeof ALL_WORKFLOWS)[number];

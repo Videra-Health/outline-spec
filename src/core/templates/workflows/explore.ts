@@ -39,43 +39,43 @@ adding a service to operate; shared state would need a separate sync design.
  */
 const IMPLEMENT_REQUEST_HANDOFF = optionalWorkflow(
   'propose',
-  'point them at `/outline-spec:propose`, which turns the discussion into a change',
+  'point them at `/outl:propose`, which turns the discussion into a change',
   'offer to capture the discussion as a change, as described below'
 );
 
 const CAPTURE_PLANNING_HANDOFF = optionalWorkflow(
   'propose',
-  '`/outline-spec:propose` writes the remaining planning artifacts',
+  '`/outl:propose` writes the remaining planning artifacts',
   'any remaining planning artifacts can be captured here the same way'
 );
 
 const CAPTURE_APPLY_HANDOFF = optionalWorkflow(
   'apply',
-  '`/outline-spec:apply` implements the change once tasks exist',
+  '`/outl:apply` implements the change once tasks exist',
   'implementation works from the change\'s tasks (`outline-spec instructions apply --change "<name>" --json`), outside explore mode'
 );
 
 const DISCOVERY_END_HANDOFF = optionalWorkflow(
   'propose',
-  'Ready to start? Run `/outline-spec:propose` and this becomes a change.',
+  'Ready to start? Run `/outl:propose` and this becomes a change.',
   'Ready to start? I can capture this as a change.'
 );
 
 const SUMMARY_NEXT_STEP = optionalWorkflow(
   'propose',
-  '- Turn this into a change: `/outline-spec:propose`',
+  '- Turn this into a change: `/outl:propose`',
   '- Capture this as a change: ask me to'
 );
 
 const GUARDRAIL_HANDOFF = optionalWorkflow(
   'propose',
-  '`/outline-spec:propose` turns the discussion into a change, and the work happens there',
+  '`/outl:propose` turns the discussion into a change, and the work happens there',
   'offer to capture the discussion as a change, and the work happens from that change'
 );
 
 export function getExploreSkillTemplate(): SkillTemplate {
   return {
-    name: 'outline-spec-explore',
+    name: 'outl-explore',
     description: 'Enter outline-spec explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements in a project that uses outline-spec. Use when the user wants to think through something before or during an outline-spec change. Also use when the user says "outline-spec explore".',
     instructions: `Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
 
@@ -303,7 +303,7 @@ You: [reads codebase]
 
 **User is stuck mid-implementation:**
 \`\`\`
-User: /outline-spec:explore add-auth-system
+User: /outl:explore add-auth-system
       The OAuth integration is more complex than expected
 
 You: [reads change artifacts]
@@ -411,7 +411,7 @@ ${STORE_SELECTION_GUIDANCE}
 
 ${PROJECT_ROOT_GUARD}
 
-**Input**: The argument after \`/outline-spec:explore\` is whatever the user wants to think about. Could be:
+**Input**: The argument after \`/outl:explore\` is whatever the user wants to think about. Could be:
 - A vague idea: "real-time collaboration"
 - A specific problem: "the auth system is getting unwieldy"
 - A change name: "add-dark-mode" (to explore in context of that change)

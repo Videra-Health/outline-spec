@@ -6,7 +6,7 @@
 
 import path from 'path';
 import * as fs from 'fs';
-import { AI_TOOLS, OUTLINE_SPEC_SKILL_NAMES } from '../config.js';
+import { AI_TOOLS, LEGACY_OUTLINE_SPEC_SKILL_NAMES, OUTLINE_SPEC_SKILL_NAMES } from '../config.js';
 import { CommandAdapterRegistry, generateCommands } from '../command-generation/index.js';
 import { getCommandContents } from './skill-generation.js';
 import { getGlobalConfig } from '../global-config.js';
@@ -27,6 +27,7 @@ import {
   resolveToolSkillsDir,
   toolSupportsSkills,
 } from './skill-paths.js';
+import { hasLegacyPrefixArtifacts, toLegacyPrefixPath } from '../legacy-prefix.js';
 
 /**
  * Names of skill directories created by outline-spec init.
@@ -112,9 +113,10 @@ export function getToolSkillStatus(projectRoot: string, toolId: string): ToolSki
   ];
   let skillCount = 0;
 
-  for (const skillName of SKILL_NAMES) {
+  for (const [index, skillName] of SKILL_NAMES.entries()) {
+    const names = [skillName, LEGACY_OUTLINE_SPEC_SKILL_NAMES[index]];
     if (skillsDirs.some((skillsDir) =>
-      fs.existsSync(path.join(skillsDir, skillName, 'SKILL.md'))
+      names.some((name) => fs.existsSync(path.join(skillsDir, name, 'SKILL.md')))
     )) {
       skillCount++;
     }
@@ -136,9 +138,11 @@ export function toolHasAnyConfiguredCommand(projectPath: string, toolId: string)
 
   for (const commandId of COMMAND_IDS) {
     const cmdPath = adapter.getFilePath(commandId);
-    const fullPath = path.isAbsolute(cmdPath) ? cmdPath : path.join(projectPath, cmdPath);
-    if (fs.existsSync(fullPath)) {
-      return true;
+    for (const candidate of [cmdPath, toLegacyPrefixPath(cmdPath)]) {
+      const fullPath = path.isAbsolute(candidate) ? candidate : path.join(projectPath, candidate);
+      if (fs.existsSync(fullPath)) {
+        return true;
+      }
     }
   }
 
@@ -332,7 +336,7 @@ export function getToolVersionStatus(
   let foundSkill = false;
 
   // 1. Find the first skill file that exists and read its version
-  for (const skillName of SKILL_NAMES) {
+  for (const skillName of [...SKILL_NAMES, ...LEGACY_OUTLINE_SPEC_SKILL_NAMES]) {
     for (const skillsDir of skillsDirs) {
       const skillFile = path.join(skillsDir, skillName, 'SKILL.md');
       if (fs.existsSync(skillFile)) {
@@ -398,7 +402,8 @@ export function getToolVersionStatus(
     configured &&
     (generatedByVersion === null ||
       generatedByVersion !== currentVersion ||
-      commandsDrifted);
+      commandsDrifted ||
+      hasLegacyPrefixArtifacts(projectRoot, toolId));
 
   return {
     toolId,

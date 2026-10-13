@@ -1,7 +1,7 @@
 /**
  * Init Command
  *
- * Sets up outline-spec with Agent Skills and /outline-spec:* slash commands.
+ * Sets up outline-spec with Agent Skills and /outl:* slash commands.
  * This is the unified setup command that replaces both the old init and experimental commands.
  */
 
@@ -60,6 +60,7 @@ import {
   writeSharedSkillTarget,
 } from './shared-skill-target.js';
 import { migrateIfNeeded, migrateLegacyToolDirs, describeLegacyMigration, keptInPlaceNotice, hasMovableContent } from './migration.js';
+import { removeLegacyPrefixArtifacts } from './legacy-prefix.js';
 import {
   resolveCommandSurfaceCapability,
   resolveCommandInvocation,
@@ -101,16 +102,16 @@ const PROGRESS_SPINNER = {
 };
 
 const WORKFLOW_TO_SKILL_DIR: Record<string, string> = {
-  'explore': 'outline-spec-explore',
-  'new': 'outline-spec-new-change',
-  'continue': 'outline-spec-continue-change',
-  'apply': 'outline-spec-apply-change',
-  'update': 'outline-spec-update-change',
-  'ff': 'outline-spec-ff-change',
-  'archive': 'outline-spec-archive-change',
-  'verify': 'outline-spec-verify-change',
-  'onboard': 'outline-spec-onboard',
-  'propose': 'outline-spec-propose',
+  'explore': 'outl-explore',
+  'new': 'outl-new-change',
+  'continue': 'outl-continue-change',
+  'apply': 'outl-apply-change',
+  'update': 'outl-update-change',
+  'ff': 'outl-ff-change',
+  'archive': 'outl-archive-change',
+  'verify': 'outl-verify-change',
+  'onboard': 'outl-onboard',
+  'propose': 'outl-propose',
 };
 
 // -----------------------------------------------------------------------------
@@ -782,6 +783,7 @@ export class InitCommand {
     skillsInvocableCommandSkips: string[];
     removedCommandCount: number;
     removedSkillCount: number;
+    removedLegacyPrefixCount: number;
   }> {
     const createdTools: typeof tools = [];
     const refreshedTools: typeof tools = [];
@@ -790,6 +792,7 @@ export class InitCommand {
     const skillsInvocableCommandSkips: string[] = [];
     let removedCommandCount = 0;
     let removedSkillCount = 0;
+    let removedLegacyPrefixCount = 0;
 
     // Read global config for profile and delivery settings (use --profile override if set)
     const globalConfig = getGlobalConfig();
@@ -864,6 +867,7 @@ export class InitCommand {
         if (shouldReconcileCommandFilesForTool(tool.value, delivery)) {
           removedCommandCount += await this.removeCommandFiles(projectPath, tool.value);
         }
+        removedLegacyPrefixCount += await removeLegacyPrefixArtifacts(projectPath, tool.value);
         if (tool.value === 'github-copilot' && writeCopilotCloud) {
           await writeCopilotCloudFiles(projectPath);
         }
@@ -903,6 +907,7 @@ export class InitCommand {
       skillsInvocableCommandSkips,
       removedCommandCount,
       removedSkillCount,
+      removedLegacyPrefixCount,
     };
   }
 
@@ -1013,6 +1018,7 @@ export class InitCommand {
       skillsInvocableCommandSkips: string[];
       removedCommandCount: number;
       removedSkillCount: number;
+      removedLegacyPrefixCount: number;
     },
     configStatus: 'created' | 'exists' | 'skipped',
     copilot: {
@@ -1127,6 +1133,9 @@ export class InitCommand {
     if (results.removedSkillCount > 0) {
       console.log(chalk.dim(`Removed: ${results.removedSkillCount} skill directories (delivery: commands)`));
     }
+    if (results.removedLegacyPrefixCount > 0) {
+      console.log(chalk.dim(`Removed: ${results.removedLegacyPrefixCount} skills and commands with the old outline-spec prefix`));
+    }
 
     // GitHub Copilot cloud files are opt-in — report what is actually on disk:
     // list the managed files that now exist (never files we didn't write), flag
@@ -1178,17 +1187,17 @@ export class InitCommand {
 
     // Getting started (task 7.6: show propose if in profile)
     const activeWorkflows = this.getActiveWorkflows();
-    // When no tool got /outline-spec:* commands, point at the skill instead of a
+    // When no tool got /outl:* commands, point at the skill instead of a
     // command that does not exist.
     const activeDelivery: Delivery = getGlobalConfig().delivery ?? 'both';
     const commandsGenerated = successfulTools.some((tool) => shouldGenerateCommandsForTool(tool.value, activeDelivery));
     const skillsGenerated = successfulTools.some((tool) => shouldGenerateSkillsForTool(tool.value, activeDelivery));
     // Each hint line must be a usable instruction for the tool it serves.
     // Tools that generated commands are told the command name their files
-    // answer to (/outline-spec:* when namespaced under outline-spec/, /outline-spec-* when the
+    // answer to (/outl:* when namespaced under outl/, /outl-* when the
     // filename is the command); tools that only got skills are told their
-    // documented skill invocation (Kimi Code: /skill:outline-spec-*; Codex CLI:
-    // $outline-spec-*; others: /outline-spec-*). Tools that got no artifacts are
+    // documented skill invocation (Kimi Code: /skill:outl-*; Codex CLI:
+    // $outl-*; others: /outl-*). Tools that got no artifacts are
     // covered by the configuration correction instead. When the selection
     // disagrees, print one line per distinct instruction, labeled with the
     // tools it applies to.
@@ -1207,7 +1216,7 @@ export class InitCommand {
         } else if (shouldGenerateSkillsForTool(tool.value, activeDelivery)) {
           const skillReference = getSkillReferenceTransformer(tool.value)(command);
           // Tools with no slash surface (e.g. Rovo Dev) reference skills as
-          // prose ("the outline-spec-propose skill"); phrase the hint so it reads
+          // prose ("the outl-propose skill"); phrase the hint so it reads
           // as an instruction rather than a dead command with an argument.
           if (usesNaturalLanguageSkillReferences(tool.value)) {
             hint = `Start your first change: ask ${tool.name} to use ${skillReference} with "your idea"`;
@@ -1262,9 +1271,9 @@ export class InitCommand {
       // whole story, so don't advertise an invocation that doesn't exist.
       advertisedAnInvocation = false;
     } else if (activeWorkflows.includes('propose')) {
-      printStartHints('/outline-spec:propose');
+      printStartHints('/outl:propose');
     } else if (activeWorkflows.includes('new')) {
-      printStartHints('/outline-spec:new');
+      printStartHints('/outl:new');
     } else {
       console.log("Done. Run 'outline-spec config profile' to configure your workflows.");
       advertisedAnInvocation = false;

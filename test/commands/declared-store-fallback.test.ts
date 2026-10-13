@@ -158,7 +158,7 @@ describe('declared store fallback (3.2)', () => {
     });
 
     expect(initialized.exitCode).toBe(0);
-    expect(fs.existsSync(path.join(pointerRepo, '.claude', 'skills', 'outline-spec-propose', 'SKILL.md'))).toBe(true);
+    expect(fs.existsSync(path.join(pointerRepo, '.claude', 'skills', 'outl-propose', 'SKILL.md'))).toBe(true);
     expect(fs.readFileSync(path.join(pointerRepo, 'outline-spec', 'config.yaml'), 'utf8')).toBe(
       'store: team-context\n'
     );
@@ -178,7 +178,7 @@ describe('declared store fallback (3.2)', () => {
     });
 
     expect(initialized.exitCode).toBe(0);
-    expect(fs.existsSync(path.join(pointerRepo, '.claude', 'skills', 'outline-spec-propose', 'SKILL.md'))).toBe(true);
+    expect(fs.existsSync(path.join(pointerRepo, '.claude', 'skills', 'outl-propose', 'SKILL.md'))).toBe(true);
     expect(fs.readFileSync(path.join(pointerRepo, 'outline-spec', 'config.yaml'), 'utf8')).toBe(
       'store: team-context\n'
     );

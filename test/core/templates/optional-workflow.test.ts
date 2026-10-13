@@ -10,15 +10,15 @@ const installed = (...ids: string[]) => new Set<string>(ids);
 
 describe('optionalWorkflow / resolveOptionalWorkflows', () => {
   it('keeps the installed branch and drops the other', () => {
-    const text = `Next: ${optionalWorkflow('continue', 'run `/outline-spec:continue`', 'run `outline-spec status`')}.`;
+    const text = `Next: ${optionalWorkflow('continue', 'run `/outl:continue`', 'run `outline-spec status`')}.`;
 
     expect(resolveOptionalWorkflows(text, installed('continue'))).toBe(
-      'Next: run `/outline-spec:continue`.'
+      'Next: run `/outl:continue`.'
     );
   });
 
   it('keeps the fallback branch when the workflow is not installed', () => {
-    const text = `Next: ${optionalWorkflow('continue', 'run `/outline-spec:continue`', 'run `outline-spec status`')}.`;
+    const text = `Next: ${optionalWorkflow('continue', 'run `/outl:continue`', 'run `outline-spec status`')}.`;
 
     expect(resolveOptionalWorkflows(text, installed('apply'))).toBe(
       'Next: run `outline-spec status`.'
@@ -38,7 +38,7 @@ describe('optionalWorkflow / resolveOptionalWorkflows', () => {
   });
 
   it('leaves text without conditionals untouched', () => {
-    const text = 'Plain body naming `/outline-spec:apply` only.';
+    const text = 'Plain body naming `/outl:apply` only.';
 
     expect(resolveOptionalWorkflows(text, installed())).toBe(text);
   });
@@ -49,9 +49,9 @@ describe('optionalWorkflow / resolveOptionalWorkflows', () => {
     const table = [
       '| Command | What it does |',
       '|---------|--------------|',
-      onlyWithWorkflow('propose', '| `/outline-spec:propose` | Start a change |'),
-      onlyWithWorkflow('ff', '| `/outline-spec:ff` | Fast-forward |'),
-      onlyWithWorkflow('apply', '| `/outline-spec:apply` | Implement tasks |'),
+      onlyWithWorkflow('propose', '| `/outl:propose` | Start a change |'),
+      onlyWithWorkflow('ff', '| `/outl:ff` | Fast-forward |'),
+      onlyWithWorkflow('apply', '| `/outl:apply` | Implement tasks |'),
       '',
       'Done.',
     ].join('\n');
@@ -60,8 +60,8 @@ describe('optionalWorkflow / resolveOptionalWorkflows', () => {
       [
         '| Command | What it does |',
         '|---------|--------------|',
-        '| `/outline-spec:propose` | Start a change |',
-        '| `/outline-spec:apply` | Implement tasks |',
+        '| `/outl:propose` | Start a change |',
+        '| `/outl:apply` | Implement tasks |',
         '',
         'Done.',
       ].join('\n')
@@ -69,10 +69,10 @@ describe('optionalWorkflow / resolveOptionalWorkflows', () => {
   });
 
   it('keeps the indentation of a line-level conditional it keeps', () => {
-    const text = `intro\n  ${onlyWithWorkflow('apply', '- run `/outline-spec:apply`')}\nouttro`;
+    const text = `intro\n  ${onlyWithWorkflow('apply', '- run `/outl:apply`')}\nouttro`;
 
     expect(resolveOptionalWorkflows(text, installed('apply'))).toBe(
-      'intro\n  - run `/outline-spec:apply`\nouttro'
+      'intro\n  - run `/outl:apply`\nouttro'
     );
     expect(resolveOptionalWorkflows(text, installed())).toBe('intro\nouttro');
   });
@@ -80,7 +80,7 @@ describe('optionalWorkflow / resolveOptionalWorkflows', () => {
   // Only a conditional that owns its whole line takes the line with it; one
   // that sits inside a sentence must not swallow the text around it.
   it('leaves the surrounding line intact for an inline conditional', () => {
-    const text = `Next: ${onlyWithWorkflow('apply', 'run `/outline-spec:apply`')}.`;
+    const text = `Next: ${onlyWithWorkflow('apply', 'run `/outl:apply`')}.`;
 
     expect(resolveOptionalWorkflows(text, installed())).toBe('Next: .');
   });

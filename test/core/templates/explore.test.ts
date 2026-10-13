@@ -614,7 +614,7 @@ describe('explore templates describe the outline model', () => {
 
   it('carries no delta-spec vocabulary', () => {
     for (const [label, body] of bodies) {
-      for (const word of ['delta', 'Scenario', 'scenario', 'SHALL', '/outline-spec:sync', 'proposal.md', 'specs/<capability-path>', '--no-scenarios']) {
+      for (const word of ['delta', 'Scenario', 'scenario', 'SHALL', '/outl:sync', 'proposal.md', 'specs/<capability-path>', '--no-scenarios']) {
         expect(body, `${label}: ${word}`).not.toContain(word);
       }
     }
@@ -629,7 +629,7 @@ describe('explore handoff to the propose workflow (#869)', () => {
   it('names the propose workflow when the user asks for implementation', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        'point them at `/outline-spec:propose`, which turns the discussion into a change'
+        'point them at `/outl:propose`, which turns the discussion into a change'
       );
       expect(body, label).toContain('The work happens from that change, never from explore mode');
       expect(body, label).not.toContain(
@@ -641,7 +641,7 @@ describe('explore handoff to the propose workflow (#869)', () => {
   it('names the propose workflow where discovery ends', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        '**Flow into a change**: "Ready to start? Run `/outline-spec:propose` and this becomes a change."'
+        '**Flow into a change**: "Ready to start? Run `/outl:propose` and this becomes a change."'
       );
       expect(body, label).not.toContain('I can create a change proposal');
     }
@@ -650,24 +650,24 @@ describe('explore handoff to the propose workflow (#869)', () => {
   it('pairs the do-not-implement guardrail with the handoff', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        'When the user is ready to build, name the handoff rather than starting: `/outline-spec:propose` turns the discussion into a change, and the work happens there'
+        'When the user is ready to build, name the handoff rather than starting: `/outl:propose` turns the discussion into a change, and the work happens there'
       );
     }
   });
 
   it('offers the handoff as a next step in the closing summary', () => {
-    expect(skill.instructions).toContain('- Turn this into a change: `/outline-spec:propose`');
+    expect(skill.instructions).toContain('- Turn this into a change: `/outl:propose`');
     expect(skill.instructions).not.toContain('- Create a change proposal');
   });
 
-  // The reference has to be the canonical `/outline-spec:<id>` form of a known
+  // The reference has to be the canonical `/outl:<id>` form of a known
   // command id, or the per-tool transformers leave it as written and the
   // skill advertises an invocation no tool registers (#727, #1307).
   it('writes the reference so per-tool rendering rewrites it', () => {
     for (const [label, body] of bodies) {
       const rendered = transformToSkillReferences(body);
-      expect(rendered, label).toContain('/outline-spec-propose');
-      expect(rendered, label).not.toContain('/outline-spec:propose');
+      expect(rendered, label).toContain('/outl-propose');
+      expect(rendered, label).not.toContain('/outl:propose');
     }
   });
 });
@@ -683,7 +683,7 @@ describe('explore handoff renders for every delivery surface (#869)', () => {
   const HANDOFF_IDS = ['propose', 'apply'] as const;
 
   function canonicalCount(body: string, commandId: string): number {
-    return occurrenceCount(body, `/outline-spec:${commandId}`);
+    return occurrenceCount(body, `/outl:${commandId}`);
   }
 
   it('names both handoff workflows in both bodies before any rendering', () => {
@@ -726,12 +726,12 @@ describe('explore handoff renders for every delivery surface (#869)', () => {
       for (const [label, body] of bodies) {
         const rendered = transform(body);
 
-        expect(rendered, `${tool.value} ${label}`).not.toContain('/outline-spec:');
-        expect(occurrenceCount(rendered, 'outline-spec-propose'), `${tool.value} ${label}`).toBe(
+        expect(rendered, `${tool.value} ${label}`).not.toContain('/outl:');
+        expect(occurrenceCount(rendered, 'outl-propose'), `${tool.value} ${label}`).toBe(
           canonicalCount(body, 'propose')
         );
         expect(
-          occurrenceCount(rendered, 'outline-spec-apply-change'),
+          occurrenceCount(rendered, 'outl-apply-change'),
           `${tool.value} ${label}`
         ).toBe(canonicalCount(body, 'apply'));
       }
@@ -742,15 +742,15 @@ describe('explore handoff renders for every delivery surface (#869)', () => {
     for (const [label, body] of bodies) {
       const rendered = transformToCodexCompatibleSkillReferences(body);
 
-      expect(rendered, label).not.toContain('/outline-spec:');
+      expect(rendered, label).not.toContain('/outl:');
       expect(
-        occurrenceCount(rendered, '$outline-spec-propose (Codex) or /outline-spec-propose (other agents)'),
+        occurrenceCount(rendered, '$outl-propose (Codex) or /outl-propose (other agents)'),
         label
       ).toBe(canonicalCount(body, 'propose'));
       expect(
         occurrenceCount(
           rendered,
-          '$outline-spec-apply-change (Codex) or /outline-spec-apply-change (other agents)'
+          '$outl-apply-change (Codex) or /outl-apply-change (other agents)'
         ),
         label
       ).toBe(canonicalCount(body, 'apply'));
@@ -770,8 +770,8 @@ describe('explore capture path names where the work continues (#869)', () => {
       expect(transition, label).toContain(
         'When the requested capture is done, stop there and name where the work continues'
       );
-      expect(transition, label).toContain('`/outline-spec:propose` writes the remaining planning artifacts');
-      expect(transition, label).toContain('`/outline-spec:apply` implements the change once tasks exist');
+      expect(transition, label).toContain('`/outl:propose` writes the remaining planning artifacts');
+      expect(transition, label).toContain('`/outl:apply` implements the change once tasks exist');
     }
   });
 
@@ -816,17 +816,17 @@ describe('explore handoffs follow the installed workflow set (#869)', () => {
         getSkillReferenceTransformer(tool.value)
       );
       for (const id of missing) {
-        const skillName = id === 'propose' ? 'outline-spec-propose' : 'outline-spec-apply-change';
+        const skillName = id === 'propose' ? 'outl-propose' : 'outl-apply-change';
         expect(content, `${tool.value} ${id}`).not.toContain(skillName);
       }
     }
     for (const id of missing) {
-      expect(body).not.toContain(`/outline-spec:${id}`);
+      expect(body).not.toContain(`/outl:${id}`);
       expect(transformToCodexCompatibleSkillReferences(body)).not.toMatch(
-        new RegExp(`outline-spec-${id}`)
+        new RegExp(`outl-${id}`)
       );
     }
-    expect(body).not.toContain('[[outline-spec:');
+    expect(body).not.toContain('[[outl:');
   });
 
   it.each(PROFILES)('%s: generated commands never name a missing workflow', (_name, workflows, missing) => {
@@ -841,11 +841,11 @@ describe('explore handoffs follow the installed workflow set (#869)', () => {
         expect(explore!.fileContent, `${adapter.toolId} ${id}`).not.toContain(
           formatCommandInvocation(invocation, id)
         );
-        expect(explore!.fileContent, `${adapter.toolId} ${id}`).not.toContain(`/outline-spec:${id}`);
+        expect(explore!.fileContent, `${adapter.toolId} ${id}`).not.toContain(`/outl:${id}`);
       }
-      expect(explore!.fileContent, adapter.toolId).not.toContain('[[outline-spec:');
+      expect(explore!.fileContent, adapter.toolId).not.toContain('[[outl:');
     }
-    expect(exploreCommandBody(workflows)).not.toContain('[[outline-spec:');
+    expect(exploreCommandBody(workflows)).not.toContain('[[outl:');
   });
 
   it.each(PROFILES)('%s: explore still names a way forward', (_name, workflows) => {
@@ -858,8 +858,8 @@ describe('explore handoffs follow the installed workflow set (#869)', () => {
   it('keeps both named handoffs when propose and apply are installed (core profile)', () => {
     const core = getProfileWorkflows('core');
     for (const body of [exploreSkillBody([...core]), exploreCommandBody([...core])]) {
-      expect(body).toContain('point them at `/outline-spec:propose`');
-      expect(body).toContain('`/outline-spec:apply` implements the change once tasks exist');
+      expect(body).toContain('point them at `/outl:propose`');
+      expect(body).toContain('`/outl:apply` implements the change once tasks exist');
     }
   });
 });

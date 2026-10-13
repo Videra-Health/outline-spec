@@ -1,5 +1,5 @@
 ---
-name: outline-spec-continue-change
+name: outl-continue-change
 description: Continue working on an outline-spec change by creating the next artifact. Use when the user wants to progress their change, create the next artifact, or continue their workflow. Also use when the user says "outline-spec continue".
 allowed-tools: Bash(outline-spec:*)
 license: MIT
@@ -42,7 +42,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 
    Mark the most recently modified change as "(Recommended)" since it's likely what the user wants to continue.
 
-   Always announce: "Using change: <name>" and how to override (e.g., `/outline-spec-continue-change <other>`).
+   Always announce: "Using change: <name>" and how to override (e.g., `/outl-continue-change <other>`).
 
 2. **Check current status**
    ```bash

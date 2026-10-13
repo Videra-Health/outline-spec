@@ -16,11 +16,11 @@ describe('setup documentation', () => {
     const claudeCommandPath = claudeAdapter.getFilePath('<id>').split(path.sep).join('/');
 
     expect(claude?.skillsDir).toBeDefined();
-    expect(SKILLS).toContain(`\`${claude?.skillsDir}/skills/outline-spec-*/SKILL.md\``);
+    expect(SKILLS).toContain(`\`${claude?.skillsDir}/skills/outl-*/SKILL.md\``);
     expect(SKILLS).toContain(`\`${claudeCommandPath}\``);
     expect(SKILLS).toContain('outline-spec config set delivery both');
     expect(SKILLS).toContain('outline-spec update');
-    expect(SKILLS).toContain('`/outline-spec-propose`');
+    expect(SKILLS).toContain('`/outl-propose`');
   });
 
   it('lists every workflow in the core profile', () => {
