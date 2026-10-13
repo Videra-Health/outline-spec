@@ -146,6 +146,19 @@ export function sides(text: string): { old: string; new: string } {
 const plain = (text: string) => sides(text).new;
 const same = (a: string, b: string) => tidy(a) === tidy(b);
 
+/** Character offsets of the "## Requirements" section: its heading line through the line before the next "## " heading. */
+export function requirementsRange(src: string): { start: number; end: number } | null {
+  let at = 0;
+  let start = -1;
+  for (const line of src.split("\n")) {
+    const bare = line.replace(/\r$/, "");
+    if (start < 0 && /^## Requirements\s*$/.test(bare)) start = at;
+    else if (start >= 0 && /^## /.test(bare)) return { start, end: at };
+    at += line.length + 1;
+  }
+  return start < 0 ? null : { start, end: src.length };
+}
+
 /** Reads a change's outline.md: each top-level item under "## Requirements" edits one spec. */
 export function parseChange(src: string, where: string): SpecEdit[] {
   const lines = src.split("\n");

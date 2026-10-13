@@ -5,6 +5,8 @@ import { applyEdit, parseChange, parseSpec, touches, writeSpec, type Spec, type 
 import { folderStyleNameProblem } from '../id.js';
 
 export const CHANGE_OUTLINE = 'outline.md';
+/** Where sync records the edits it applied; a record only, never read as an artifact or outline. */
+export const APPLIED_DIR = 'applied';
 
 export type SpecAction = 'updated' | 'created' | 'deleted';
 export type SpecPlan = Map<string, Spec | null>;

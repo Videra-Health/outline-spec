@@ -414,6 +414,20 @@ addArchiveOptions(
   }
 });
 
+addArchiveOptions(
+  program
+    .command('sync [change-name]')
+    .description("Apply a change's spec edits now and keep the change open")
+).action(async (changeName: string | undefined, options: ArchiveOptions) => {
+  try {
+    const { SyncCommand } = await import('../core/sync.js');
+    await new SyncCommand().execute(changeName, options);
+  } catch (error) {
+    await failWithError(error);
+    process.exit(1);
+  }
+});
+
 program
   .command('pending')
   .description('List what each open change touches and where changes overlap')

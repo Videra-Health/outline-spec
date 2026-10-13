@@ -23,6 +23,7 @@ const COMMAND_IMPLEMENTATIONS: Record<string, string[]> = {
   list: ['core/list.js'],
   view: ['core/view.js'],
   archive: ['core/archive.js'],
+  sync: ['core/sync.js'],
   pending: ['commands/pending.js'],
   relabel: ['commands/relabel.js'],
   'migrate-specs': ['commands/migrate-specs.js'],
@@ -129,6 +130,8 @@ describe('CLI startup loads only what the command needs', () => {
     ['schemas --json', 'schemas'],
     ['list --json', 'list'],
     ['pending --json', 'pending'],
+    ['sync --json', 'sync'],
+    ['archive --json', 'archive'],
     ['migrate-specs --dry-run --json', 'migrate-specs'],
     ['adopt --dry-run --json', 'adopt'],
   ])('`outline-spec %s` loads only the %s implementation', async (invocation, command) => {

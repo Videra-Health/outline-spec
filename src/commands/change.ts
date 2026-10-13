@@ -3,7 +3,7 @@ import path from 'path';
 import { Validator } from '../core/validation/validator.js';
 import type { RootOutput } from '../core/root-selection.js';
 import { writeSpec } from '../core/outline/outline.js';
-import { CHANGE_OUTLINE, describePlan, editTouches, planEdits, readChangeEdits } from '../core/outline/specs.js';
+import { APPLIED_DIR, CHANGE_OUTLINE, describePlan, editTouches, planEdits, readChangeEdits } from '../core/outline/specs.js';
 import { isInteractive } from '../utils/interactive.js';
 import { getActiveChangeIds } from '../utils/item-discovery.js';
 import { describeNestedChange, findNestedChangesIn } from '../utils/nested-change.js';
@@ -109,10 +109,15 @@ export class ChangeCommand {
       }
     }
 
+    const applied = (await fs.readdir(path.join(changeDir, APPLIED_DIR)).catch(() => [] as string[]))
+      .filter((f) => f.endsWith('.md'))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+
     if (options?.json) {
       const output = {
         id: changeName,
         outline,
+        ...(applied.length ? { applied } : {}),
         touches: editTouches(this.getSpecsPath(), edits),
         ...(archived ? { archived } : {}),
         ...(archiveError ? { archiveError: archiveError.split('\n') } : {}),
@@ -123,6 +128,7 @@ export class ChangeCommand {
     }
 
     console.log(outline);
+    if (applied.length) console.log(`Applied by sync (${APPLIED_DIR}/): ${applied.join(', ')}`);
     if (!options?.diff) return;
     if (archiveError) {
       console.error(`Cannot archive "${changeName}":\n${archiveError}`);

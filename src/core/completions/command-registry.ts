@@ -168,6 +168,29 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
     ],
   },
   {
+    name: 'sync',
+    description: "Apply a change's spec edits now and keep the change open",
+    acceptsPositional: true,
+    positionalType: 'change-id',
+    positionals: [{ name: 'change-name', type: 'change-id', optional: true }],
+    flags: [
+      {
+        name: 'yes',
+        short: 'y',
+        description: 'Skip confirmation prompts',
+      },
+      {
+        name: 'dry-run',
+        description: 'Print the resulting spec text and write nothing',
+      },
+      {
+        name: 'json',
+        description: 'Output as JSON (non-interactive)',
+      },
+      COMMON_FLAGS.store,
+    ],
+  },
+  {
     name: 'pending',
     description: 'List what each open change touches and where changes overlap',
     flags: [
