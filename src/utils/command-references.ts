@@ -69,7 +69,7 @@ const COMMAND_TO_SKILL_NAME: Record<string, string> = {
  * Tools whose skill invocation uses a non-default prefix. The default is `/`
  * (e.g. `/outline-spec-propose`); Kimi Code invokes skills as `/skill:<name>` and
  * Codex CLI as `$<name>` — a `/<name>` form Codex does not recognize
- * (see docs/supported-tools.md).
+ * (see docs/skills.md).
  */
 const SKILL_INVOCATION_PREFIX: Record<string, string> = {
   kimi: '/skill:',
@@ -80,7 +80,7 @@ const SKILL_INVOCATION_PREFIX: Record<string, string> = {
  * Tools with no documented slash invocation for skills: use automatic
  * matching or natural-language prompts instead. SourceCraft Code Assistant
  * supports separate command files, but its skills use description matching.
- * Rovo Dev's `/skills` only manages skills (see docs/supported-tools.md).
+ * Rovo Dev's `/skills` only manages skills (see docs/skills.md).
  * Skill references for these tools are spelled as prose ("the outline-spec-propose
  * skill") so skills-only delivery does not advertise unregistered commands.
  */

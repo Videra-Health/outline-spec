@@ -570,7 +570,6 @@ describe('artifact loop guards (propose and ff)', () => {
 
   // Without this the loop deadlocks: skipping design leaves tasks blocked
   // forever, no artifact is ready, and the stop condition can never be met.
-  // docs/concepts.md: "Dependencies are enablers, not gates."
   it('authorizes writing a blocked artifact whose only blocker was skipped', () => {
     for (const [label, body] of loopBodies) {
       expect(body, label).toContain('Dependencies are enablers, not gates');

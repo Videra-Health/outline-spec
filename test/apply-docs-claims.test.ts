@@ -5,19 +5,15 @@ import { fileURLToPath } from 'node:url';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = fs.readFileSync(
-  path.join(REPO_ROOT, 'docs-lab', 'reference', 'cli.md'),
+  path.join(REPO_ROOT, 'docs', 'cli.md'),
   'utf-8'
 );
 const SKILLS = fs.readFileSync(
-  path.join(REPO_ROOT, 'docs-lab', 'reference', 'skills.md'),
+  path.join(REPO_ROOT, 'docs', 'skills.md'),
   'utf-8'
 );
-const APPLY_INSTRUCTIONS = CLI.split('## outline-spec instructions')[1].split(
-  '## outline-spec templates'
-)[0];
-const APPLY_SKILL = SKILLS.split('## outline-spec-apply-change')[1].split(
-  '## outline-spec-update-change'
-)[0];
+const APPLY_INSTRUCTIONS = CLI.split('### outline-spec instructions')[1].split('\n### ')[0];
+const APPLY_SKILL = SKILLS.split('\n').find((line) => line.startsWith('| `apply`')) ?? '';
 
 describe('apply documentation', () => {
   it('documents every task source-location field in the CLI contract', () => {

@@ -9,12 +9,12 @@ function readPage(relativePath: string): string {
   return fs.readFileSync(path.join(REPO_ROOT, ...relativePath.split('/')), 'utf-8');
 }
 
-const CLI_INIT = readPage('docs-lab/reference/cli.md')
-  .split('## outline-spec init')[1]
-  .split('## outline-spec update')[0];
-const STORE_INTEGRATIONS = readPage('docs-lab/multi-repo/stores.md')
-  .split('### Install integrations in a store-only repo')[1]
-  .split('### `defaultStore` on your machine')[0];
+const CLI_INIT = readPage('docs/cli.md')
+  .split('### outline-spec init')[1]
+  .split('### outline-spec update')[0];
+const STORE_INTEGRATIONS = readPage('docs/stores.md')
+  .split('## A code repo that plans in a store')[1]
+  .split('## References')[0];
 
 describe('store-only init documentation', () => {
   it.each([

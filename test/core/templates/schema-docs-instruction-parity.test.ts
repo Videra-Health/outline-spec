@@ -4,23 +4,10 @@ import { describe, expect, it } from 'vitest';
 
 import { parseSchema } from '../../../src/core/artifact-graph/schema.js';
 
-// The published schema reference quotes every built-in `outline` instruction
-// verbatim ("The instruction sent to the agent when it drafts this
-// artifact"), so a reader can see exactly what their agent is told. Nothing
-// regenerated that page, and it drifted: the `specs` block predated the
-// store-aware main-spec paths (#1703) and the `tasks` block still taught the
-// pre-#1660 rules, so the site contradicted the shipped instruction. This
-// keeps the quoted blocks byte-identical to schema.yaml.
+// docs/schema.md quotes every built-in `outline` instruction verbatim; this keeps it in step with schema.yaml.
 const REPO_ROOT = path.join(__dirname, '..', '..', '..');
 const SCHEMA_DIR = path.join(REPO_ROOT, 'schemas', 'outline');
-const DOC_PATH = path.join(
-  REPO_ROOT,
-  'docs-lab',
-  'reference',
-  'schemas',
-  'outline',
-  'index.md'
-);
+const DOC_PATH = path.join(REPO_ROOT, 'docs', 'schema.md');
 
 const normalize = (value: string): string => value.replace(/\r\n?/g, '\n').trim();
 
@@ -29,8 +16,8 @@ const normalize = (value: string): string => value.replace(/\r\n?/g, '\n').trim(
 const QUOTED_INSTRUCTION =
   /### Instructions\n\n[^\n]*\n\n(`{3,})md\n([\s\S]*?)\n\1\n/g;
 
-describe('published schema reference', () => {
-  it('quotes every outline instruction verbatim (#1952)', () => {
+describe('outline schema docs', () => {
+  it('quotes every outline instruction verbatim', () => {
     const schema = parseSchema(
       fs.readFileSync(path.join(SCHEMA_DIR, 'schema.yaml'), 'utf-8')
     );
@@ -53,7 +40,7 @@ describe('published schema reference', () => {
     });
   });
 
-  it('keeps the tasks guidance on the published page (#1952)', () => {
+  it('keeps the tasks guidance on docs/schema.md', () => {
     const doc = fs.readFileSync(DOC_PATH, 'utf-8').replace(/\r\n?/g, '\n');
     expect(doc).toContain('Each group lands the tests and docs its own work calls for');
     expect(doc).toContain('Each task states how to verify it');

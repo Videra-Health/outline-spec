@@ -1,552 +1,78 @@
 # Workflows
 
-This guide covers common workflow patterns for OpenSpec and when to use each one. For basic setup, see [Getting Started](getting-started.md). For command reference, see [Commands](commands.md).
+A change moves through three steps: propose, apply, land. Each is a skill and a slash command in your AI tool ([Skills and commands](skills.md)), and each drives the CLI underneath.
 
-## Philosophy: Actions, Not Phases
+## Propose
 
-Traditional workflows force you through phases: planning, then implementation, then done. But real work doesn't fit neatly into boxes.
+`/outline-spec:propose "add digital wallets"` creates `outline-spec/changes/<name>/` and writes its artifacts in order:
 
-OPSX takes a different approach:
+- `outline.md`: the proposal and the spec edits ([Outlines](outlines.md)).
+- `design.md`: only when the change needs technical decisions explained.
+- `tasks.md`: a checklist of implementation tasks, ending with the land step.
 
-```text
-Traditional (phase-locked):
+The agent reads the specs the change touches before writing the outline, and runs `outline-spec validate <change>` to check that the outline lands cleanly against them.
 
-  PLANNING ────────► IMPLEMENTING ────────► DONE
-      │                    │
-      │   "Can't go back"  │
-      └────────────────────┘
+To step through artifacts one at a time instead, use `new` and then `continue`. `ff` writes every artifact implementation needs in one pass. To think an idea through first, use `explore`. These are in [Skills and commands](skills.md#workflows).
 
-OPSX (fluid actions):
+Review the outline before applying. `outline-spec show <change> --diff` prints the spec text the change would produce.
 
-  proposal ──► specs ──► design ──► tasks ──► implement
+## Apply
+
+`/outline-spec:apply` works through `tasks.md`, writing code and checking off each task (`- [ ]` to `- [x]`). It stops to ask when a task is unclear or blocked.
+
+If the plan changes while you build, `/outline-spec:update` revises the change's artifacts and keeps them consistent with each other. It never edits code.
+
+## Land
+
+`/outline-spec:land` finishes the change:
+
+1. It warns about unchecked tasks and asks before going on.
+2. It runs `outline-spec validate <change>`.
+3. It runs `outline-spec land <change> --dry-run` and shows you the resulting spec text.
+4. It runs `outline-spec land <change> --yes`, which writes the specs and deletes the change folder.
+
+Commit the result. There is no archive folder: git history keeps the change.
+
+`/outline-spec:archive` and `outline-spec archive` are kept as old names for land.
+
+## Parallel changes
+
+Any number of changes can be open at once. Because outline edits address single details by label, two changes that edit different details of the same requirement both land cleanly, in either order.
+
+`outline-spec pending` lists what each open change touches and where two touch the same item:
+
+```
+a
+  widgets › Spin › a
+b
+  widgets › Spin › a
+  widgets › Spin › b
+
+overlaps:
+  widgets › Spin › a: a, b
 ```
 
-**Key principles:**
+An overlap is a warning. Whichever change lands second has to agree with the text the first one left.
 
-- **Actions, not phases** - Commands are things you can do, not stages you're stuck in
-- **Dependencies are enablers** - They show what's possible, not what's required next
+## When a change no longer fits
 
-> **Customization:** OPSX workflows are driven by schemas that define artifact sequences. See [Customization](customization.md) for details on creating custom schemas.
+If another change landed first and edited the same item, the second change's struck text no longer matches. Validation reports it, and land refuses and writes nothing:
 
-## Workflow at a Glance
-
-The default workflow stays fluid: exploration and verification are optional, and
-you can update planning artifacts whenever implementation reveals something new.
-
-```mermaid
-flowchart TD
-    Idea["Idea or problem"] --> Explore["/opsx:explore<br/>(optional)"]
-    Idea --> Propose["/opsx:propose"]
-    Explore --> Propose
-    Propose --> Review{"Planning artifacts<br/>ready?"}
-    Review -->|"Refine"| Update["/opsx:update"]
-    Update --> Review
-    Review -->|"Implement"| Apply["/opsx:apply"]
-    Apply -->|"Plan changed"| Update
-    Apply --> Archive["/opsx:archive"]
-    Apply --> Verify["/opsx:verify<br/>(optional, custom selection)"]
-    Apply --> Sync["/opsx:sync<br/>(optional before archive)"]
-    Verify --> Verified{"Ready to archive?"}
-    Verified -->|"Fix implementation"| Apply
-    Verified -->|"Revise plan"| Update
-    Verified -->|"Ready"| Sync
-    Verified -->|"Ready"| Archive
-    Sync --> Archive
+```
+$ outline-spec land b
+✖ Error: Cannot land 'b'; nothing was written:
+widgets › Spin › a: struck text doesn't match the live item
+Fix: Fix outline.md in outline-spec/changes/b/ so it matches the live specs, then rerun.
 ```
 
-The AI assistant drives the workflow, while the CLI provides deterministic
-scaffolding, status, and artifact instructions:
+To fix it:
 
-```mermaid
-sequenceDiagram
-    actor Human
-    participant Assistant as AI assistant
-    participant CLI as OpenSpec CLI
-    participant Files as Planning and implementation files
+1. Read the live item: `outline-spec show widgets --item "Spin.a"`.
+2. Edit the change's `outline.md` so it strikes the live text exactly, addresses live labels, and puts new items after the last label at their level.
+3. Run `outline-spec validate b`, then land again.
 
-    Human->>Assistant: /opsx:propose "change"
-    Assistant->>CLI: openspec new change
-    CLI->>Files: Scaffold change metadata
-    Assistant->>CLI: Request status and artifact instructions
-    CLI-->>Assistant: Build order, paths, and templates
-    Assistant->>Files: Write schema-defined planning artifacts
-    Assistant-->>Human: Present artifacts for review
+Never edit the live specs by hand to make a change fit. `outline.md` is the only place a change edits specs, and the land skill follows the same rule.
 
-    Human->>Assistant: /opsx:apply
-    Assistant->>CLI: Request apply instructions
-    CLI-->>Assistant: Context files and task state
-    Assistant->>Files: Implement tasks and update checkboxes
-    Assistant-->>Human: Report implementation status
+## Labels and gaps
 
-    Human->>Assistant: /opsx:archive
-    Assistant->>CLI: Request archive inputs and artifact status
-    CLI-->>Assistant: Planning paths and artifact completion
-    Assistant->>Files: Read task state and compare delta specs
-    opt Delta specs exist
-        Assistant-->>Human: Offer to sync before archiving
-        alt Sync accepted
-            Human->>Assistant: Confirm sync
-            Assistant->>Files: Merge delta specs into main specs
-        else Sync skipped
-            Human->>Assistant: Archive without syncing
-        end
-    end
-    Assistant->>Files: Move the change into the archive
-    Assistant-->>Human: Report archive location and sync result
-
-    Note over Human,CLI: CLI alternative: openspec archive change-name --yes skips confirmation prompts. It still validates, then applies any delta specs and archives
-```
-
-## Two Modes
-
-### Default Quick Path (`core` profile)
-
-New installs default to `core`, which provides:
-- `/opsx:explore`
-- `/opsx:propose`
-- `/opsx:apply`
-- `/opsx:update`
-- `/opsx:sync`
-- `/opsx:archive`
-
-Typical flow:
-
-```text
-/opsx:explore ──► /opsx:propose ──► /opsx:apply ──► /opsx:sync ──► /opsx:archive
-  (optional)
-```
-
-#### Start by exploring (the habit worth forming)
-
-`/opsx:explore` is part of the default profile, not an advanced add-on. It's the move to make whenever you have a problem but not yet a plan, which, with an AI assistant, is most of the time.
-
-```text
-You: /opsx:explore
-
-AI:  What would you like to explore?
-
-You: Our search results feel stale. I'm not sure if it's caching,
-     indexing, or the query itself.
-
-AI:  Let me look... [reads the search service and cache layer]
-     It's the index: it only rebuilds nightly, so edits don't show
-     up until the next day. Two options: rebuild on write (simple,
-     more load) or a short-TTL cache invalidation (more moving parts,
-     less load). Given your write volume is low, rebuild-on-write is
-     the cleaner fix. Want to scope it?
-
-You: Yes.
-
-You: /opsx:propose rebuild-search-index-on-write
-```
-
-Explore never writes code, and writes nothing else unless you ask, or say yes when it offers. It's a free, no-stakes conversation that turns a vague worry into a precise change, so the proposal that follows is sharp. Already know exactly what you want? Skip it and go straight to `/opsx:propose`. Full guide: [Explore First](explore.md).
-
-### Expanded/Full Workflow (custom selection)
-
-If you want explicit scaffold-and-build commands (`/opsx:new`, `/opsx:continue`, `/opsx:ff`, `/opsx:verify`, `/opsx:bulk-archive`, `/opsx:onboard`), enable them with:
-
-```bash
-openspec config profile
-openspec update
-```
-
-## Workflow Patterns (Expanded Mode)
-
-### Quick Feature
-
-When you know what you want to build and just need to execute:
-
-```text
-/opsx:new ──► /opsx:ff ──► /opsx:apply ──► /opsx:verify ──► /opsx:archive
-```
-
-**Example conversation:**
-
-```text
-You: /opsx:new add-logout-button
-
-AI:  Created openspec/changes/add-logout-button/
-     Ready to create: proposal
-
-You: /opsx:ff
-
-AI:  Creating all planning artifacts...
-     ✓ proposal.md
-     ✓ specs/
-     ✓ design.md
-     ✓ tasks.md
-     Ready for implementation!
-
-You: /opsx:apply
-
-AI:  Working through tasks...
-     ✓ Added logout button to header
-     ✓ Implemented session clearing
-     ✓ Added confirmation dialog
-     All tasks complete!
-
-You: /opsx:archive
-
-AI:  ✓ Merged specs
-     ✓ Archived change
-```
-
-**Best for:** Small to medium features, bug fixes, straightforward changes.
-
-### Exploratory
-
-When requirements are unclear or you need to investigate first:
-
-```text
-/opsx:explore ──► /opsx:new ──► /opsx:continue ──► ... ──► /opsx:apply
-```
-
-**Example conversation:**
-
-```text
-You: /opsx:explore
-
-AI:  What would you like to explore?
-
-You: I want to improve page load performance but I'm not sure
-     where the bottlenecks are.
-
-AI:  Let me help investigate...
-     [Analyzes bundle sizes, identifies slow queries, reviews
-     component render patterns]
-
-     I found three main bottlenecks:
-     1. Large unoptimized images
-     2. Synchronous data fetching in ProductList
-     3. Re-renders from context changes
-
-     Which would you like to address first?
-
-You: Let's tackle the data fetching issue.
-
-You: /opsx:new optimize-product-list-fetching
-
-AI:  Created change. Ready to create: proposal
-
-You: /opsx:continue
-
-AI:  Creating proposal based on our exploration...
-     [Writes proposal incorporating investigation insights]
-
-     Ready to create: specs, design
-     Which would you like next?
-
-You: /opsx:continue
-
-AI:  Creating specs...
-```
-
-**Best for:** Performance optimization, debugging, architectural decisions, unclear requirements.
-
-### Parallel Changes
-
-Work on multiple changes at once:
-
-```text
-Change A: /opsx:new ──► /opsx:ff ──► /opsx:apply (in progress)
-                                         │
-                                    context switch
-                                         │
-Change B: /opsx:new ──► /opsx:ff ──────► /opsx:apply
-```
-
-**Example conversation:**
-
-```text
-You: I'm working on add-dark-mode but got pulled into a bug fix
-
-You: /opsx:new fix-login-redirect
-
-AI:  Created openspec/changes/fix-login-redirect/
-
-You: /opsx:ff
-
-AI:  ✓ Created planning artifacts
-
-You: /opsx:apply
-
-AI:  Working on fix-login-redirect...
-     [Implements the fix]
-     All tasks complete!
-
-You: /opsx:archive
-
-AI:  ✓ Archived fix-login-redirect
-
-You: Let's get back to dark mode
-
-You: /opsx:apply add-dark-mode
-
-AI:  Resuming add-dark-mode...
-     Picking up at task 2.3: Update Header...
-```
-
-**Best for:** Parallel work streams, urgent interrupts, team collaboration.
-
-When you have multiple completed changes, use `/opsx:bulk-archive`:
-
-```text
-You: /opsx:bulk-archive
-
-AI:  Found 3 completed changes:
-     - add-dark-mode (all tasks done)
-     - fix-login-redirect (all tasks done)
-     - update-footer (all tasks done)
-
-     Checking for spec conflicts...
-     ⚠ add-dark-mode and update-footer both touch specs/ui/
-
-     Inspecting codebase to resolve...
-     Both changes are implemented. Will apply in chronological order.
-
-     Archive all 3 changes?
-
-You: Yes
-
-AI:  ✓ Archived add-dark-mode
-     ✓ Archived fix-login-redirect
-     ✓ Archived update-footer
-     Specs merged in order: add-dark-mode → update-footer
-```
-
-Bulk archive detects when multiple changes touch the same specs and resolves conflicts by checking what's actually implemented.
-
-### Completing a Change
-
-The recommended completion flow:
-
-```text
-/opsx:apply ──► /opsx:verify ──► /opsx:archive
-                    │                 │
-              validates          prompts to sync
-              implementation     if needed
-```
-
-#### Verify: Check Your Work
-
-`/opsx:verify` validates implementation against your artifacts across three dimensions:
-
-```text
-You: /opsx:verify
-
-AI:  Verifying add-auth...
-
-     COMPLETENESS
-     ✓ All 12 tasks in tasks.md are checked
-     ✓ All requirements in specs have corresponding code
-     ⚠ Scenario "Session timeout after inactivity" not tested
-
-     CORRECTNESS
-     ✓ Implementation matches spec intent
-     ✓ Edge cases from scenarios are handled
-     ✓ Error states match spec definitions
-
-     COHERENCE
-     ✓ Design decisions reflected in code structure
-     ✓ Naming conventions consistent with design.md
-     ⚠ Design mentions "event-driven" but implementation uses polling
-
-     SUMMARY
-     ─────────────────────────────
-     Critical issues: 0
-     Warnings: 2
-     Ready to archive: Yes (with warnings)
-
-     Recommendations:
-     1. Add test for session timeout scenario
-     2. Consider refactoring to event-driven as designed, or update design.md
-```
-
-**What verify checks:**
-
-| Dimension | What it validates |
-|-----------|------------------|
-| Completeness | All tasks done, all requirements implemented, scenarios covered |
-| Correctness | Implementation matches spec intent, edge cases handled |
-| Coherence | Design decisions reflected in code, patterns consistent |
-
-Verify won't block archive, but it surfaces issues you might want to address first.
-
-#### Archive: Finalize the Change
-
-`/opsx:archive` completes the change and moves it to the archive:
-
-```text
-You: /opsx:archive
-
-AI:  Archiving add-auth...
-
-     Artifact status:
-     ✓ proposal.md exists
-     ✓ specs/ exists
-     ✓ design.md exists
-     ✓ tasks.md exists (12/12 tasks complete)
-
-     Delta specs: Not yet synced to main
-     → Would you like to sync now?
-
-You: Yes
-
-AI:  ✓ Synced specs to openspec/specs/auth/spec.md
-     ✓ Moved to openspec/changes/archive/2025-01-24-add-auth/
-
-     Change archived successfully.
-```
-
-Archive will prompt if specs aren't synced. It won't block on incomplete tasks, but it will warn you.
-
-## When to Use What
-
-### `/opsx:ff` vs `/opsx:continue`
-
-| Situation | Use |
-|-----------|-----|
-| Clear requirements, ready to build | `/opsx:ff` |
-| Exploring, want to review each step | `/opsx:continue` |
-| Want to iterate on proposal before specs | `/opsx:continue` |
-| Time pressure, need to move fast | `/opsx:ff` |
-| Complex change, want control | `/opsx:continue` |
-
-**Rule of thumb:** If you can describe the full scope upfront, use `/opsx:ff`. If you're figuring it out as you go, use `/opsx:continue`.
-
-### When to Update vs Start Fresh
-
-A common question: when is updating an existing change okay, and when should you start a new one?
-
-**Update the existing change when:**
-
-- Same intent, refined execution
-- Scope narrows (MVP first, rest later)
-- Learning-driven corrections (codebase isn't what you expected)
-- Design tweaks based on implementation discoveries
-
-**Start a new change when:**
-
-- Intent fundamentally changed
-- Scope exploded to different work entirely
-- Original change can be marked "done" standalone
-- Patches would confuse more than clarify
-
-```text
-                     ┌─────────────────────────────────────┐
-                     │     Is this the same work?          │
-                     └──────────────┬──────────────────────┘
-                                    │
-                 ┌──────────────────┼──────────────────┐
-                 │                  │                  │
-                 ▼                  ▼                  ▼
-          Same intent?      >50% overlap?      Can original
-          Same problem?     Same scope?        be "done" without
-                 │                  │          these changes?
-                 │                  │                  │
-       ┌────────┴────────┐  ┌──────┴──────┐   ┌───────┴───────┐
-       │                 │  │             │   │               │
-      YES               NO YES           NO  NO              YES
-       │                 │  │             │   │               │
-       ▼                 ▼  ▼             ▼   ▼               ▼
-    UPDATE            NEW  UPDATE       NEW  UPDATE          NEW
-```
-
-**Example: "Add dark mode"**
-
-- "Need to also support custom themes" → New change (scope exploded)
-- "System preference detection is harder than expected" → Update (same intent)
-- "Let's ship toggle first, add preferences later" → Update then archive, then new change
-
-## Best Practices
-
-### Keep Changes Focused
-
-One logical unit of work per change. If you're doing "add feature X and also refactor Y", consider two separate changes.
-
-**Why it matters:**
-- Easier to review and understand
-- Cleaner archive history
-- Can ship independently
-- Simpler rollback if needed
-
-### Use `/opsx:explore` for Unclear Requirements
-
-Before committing to a change, explore the problem space:
-
-```text
-You: /opsx:explore
-
-AI:  What would you like to explore?
-
-You: How should we handle rate limiting for our API?
-
-AI:  Let me investigate your current setup and options...
-     [Researches codebase, considers patterns]
-
-     I see three approaches we could take:
-     1. Middleware-based (simple, per-endpoint)
-     2. Redis-backed (scalable, shared state)
-     3. Token bucket per user (fair, complex)
-
-     Your current stack suggests #1 or #2. What's your scale?
-```
-
-Exploration clarifies thinking before any code gets written.
-
-### Verify Before Archiving
-
-Use `/opsx:verify` to check implementation matches artifacts:
-
-```text
-You: /opsx:verify
-
-AI:  Verifying add-dark-mode...
-
-     ✓ All tasks in tasks.md are checked
-     ✓ Requirements in specs have corresponding code
-     ✓ Design decisions are reflected in implementation
-
-     Ready to archive!
-```
-
-Catches mismatches before you close out the change.
-
-### Name Changes Clearly
-
-Good names make `openspec list` useful:
-
-```text
-Good:                          Avoid:
-add-dark-mode                  feature-1
-fix-login-redirect             update
-optimize-product-query         changes
-implement-2fa                  wip
-```
-
-## Command Quick Reference
-
-For full command details and options, see [Commands](commands.md).
-
-| Command | Purpose | When to Use |
-|---------|---------|-------------|
-| `/opsx:propose` | Create change + planning artifacts | Fast default path (`core` profile) |
-| `/opsx:explore` | Think through ideas with the AI | Start here when unsure: unclear requirements, investigation, comparing options |
-| `/opsx:new` | Start a change scaffold | Expanded mode, explicit artifact control |
-| `/opsx:continue` | Create next artifact | Expanded mode, step-by-step artifact creation |
-| `/opsx:ff` | Create all planning artifacts | Expanded mode, clear scope |
-| `/opsx:apply` | Implement tasks | Ready to write code |
-| `/opsx:verify` | Validate implementation | Expanded mode, before archiving |
-| `/opsx:sync` | Merge delta specs | Expanded mode, optional |
-| `/opsx:archive` | Complete the change | All work finished |
-| `/opsx:bulk-archive` | Archive multiple changes | Expanded mode, parallel work |
-
-## Next Steps
-
-- [Writing Good Specs](writing-specs.md) - What a strong requirement and scenario look like, and how to right-size a change
-- [Reviewing a Change](reviewing-changes.md) - The two-minute pass on a drafted plan before any code
-- [OpenSpec on a Team](team-workflow.md) - How changes fit branches and pull requests
-- [Commands](commands.md) - Full command reference with options
-- [Concepts](concepts.md) - Deep dive into specs, artifacts, and schemas
-- [Customization](customization.md) - Create custom workflows
+Removed items leave gaps in the labels. `outline-spec relabel <spec>` renumbers a spec without gaps, and refuses while any open change edits that spec. Run it when nothing is pending against the spec, or not at all. Gaps are harmless.

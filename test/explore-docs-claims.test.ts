@@ -22,21 +22,13 @@ import { fileURLToPath } from 'node:url';
 // unless you ask" is the wording this very test recommends.
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-// The pages that pitch explore to a user. Both trees ship: `docs/` is what
-// README links today, `docs-lab/` is what the documentation site publishes
-// (`website/content/docs` is generated from it and is not committed).
+// Every page that describes the workflows.
 const PAGES = [
   'README.md',
   'docs/README.md',
-  'docs/commands.md',
-  'docs/examples.md',
-  'docs/explore.md',
-  'docs/faq.md',
   'docs/getting-started.md',
-  'docs/glossary.md',
-  'docs/overview.md',
+  'docs/skills.md',
   'docs/workflows.md',
-  'docs-lab/start/quickstart.md',
 ];
 
 /**
@@ -65,13 +57,7 @@ const FORBIDDEN: readonly RegExp[] = [
 ];
 
 /** Lines that contain a forbidden phrase without making the claim. */
-const ALLOW = [
-  // docs/commands.md and docs/troubleshooting.md quote this CLI message.
-  /"No artifacts ready"/,
-  // docs/commands.md describes which artifacts `/outline-spec:update` leaves to
-  // `/outline-spec:continue`. "no files yet" is about an update target, not explore.
-  /Artifacts with no files yet remain with/,
-];
+const ALLOW: RegExp[] = [];
 
 const TEST_FILE = 'test/explore-docs-claims.test.ts';
 
@@ -109,7 +95,7 @@ describe('explore documentation', () => {
   // A forbidden-phrase list cannot tell "the correction was deleted" from
   // "this page never mentioned capture", and a bare /captur/ match passes on
   // "explore automatically captures every artifact". So pin the contract, not
-  // the word, on the two pages that describe capture in full: some capture
+  // the word, on the page that describes capture in full: some capture
   // line names the user's trigger, the `outline-spec new change` path, and the
   // named-artifacts scope; no capture line claims explore does it unprompted
   // or wholesale; and the page keeps the never-writes-code guarantee.
@@ -136,7 +122,7 @@ describe('explore documentation', () => {
     });
   }
 
-  for (const page of ['docs/explore.md', 'docs/commands.md']) {
+  for (const page of ['docs/skills.md']) {
     it(`${page} still documents the user-requested capture contract (#1833)`, () => {
       const content = fs.readFileSync(path.join(REPO_ROOT, ...page.split('/')), 'utf-8');
       const lines = content.split(/\r?\n/);

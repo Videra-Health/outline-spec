@@ -2343,7 +2343,7 @@ describe('InitCommand - profile and detection features', () => {
     const skillContent = await fs.readFile(skillFile, 'utf-8');
     expect(skillContent).not.toContain('/outline-spec:');
     expect(skillContent).not.toMatch(HYPHEN_COMMAND_REF);
-    // Kimi Code documents /skill:<name> invocations (docs/supported-tools.md)
+    // Kimi Code documents /skill:<name> invocations (docs/skills.md)
     expect(skillContent).toContain('/skill:outline-spec-');
 
     // The getting-started hint must point at the skill, not a missing command

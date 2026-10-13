@@ -264,7 +264,7 @@ describe('getTransformerForTool', () => {
     // skills must never reference /outline-spec:* commands that were not generated.
     expect(getTransformerForTool('vibe', 'both', 'none', undefined)).toBe(transformToSkillReferences);
     expect(getTransformerForTool('hermes', 'both', 'none', undefined)).toBe(transformToSkillReferences);
-    // Kimi Code documents /skill:<name> invocations (docs/supported-tools.md)
+    // Kimi Code documents /skill:<name> invocations (docs/skills.md)
     for (const delivery of ['both', 'commands', 'skills'] as const) {
       const transformer = getTransformerForTool('kimi', delivery, 'none', undefined);
       expect(transformer?.('/outline-spec:propose')).toBe('/skill:outline-spec-propose');
