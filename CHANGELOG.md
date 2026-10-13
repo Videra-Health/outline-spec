@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+- **Tables.** An outline item can carry a Markdown table whose first column is `id`, for facts about many things (every ship, every catalog item). A change edits a live table by row id and column header: `~~old~~ **new**` cells, new and struck rows, and bold, struck, or renamed columns. Archive checks struck cells against the live table and writes tables unpadded; hand-aligned tables are normalized when their spec is archived into. Format: [docs/outlines.md](docs/outlines.md#tables).
+- `validate` checks table ids, headers, and cell counts, warns on a blank column, and warns on a ``(see `spec` Item, Column)`` reference that doesn't resolve.
+- `pending` reports table edits per cell, row, and column, and overlaps at that grain. `show --item Catalog.m60` returns one row; an item's JSON includes its `table`.
+
 ## 0.1.0
 
 First release of outline-spec, forked from OpenSpec 1.14.1.

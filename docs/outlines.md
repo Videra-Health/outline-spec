@@ -21,6 +21,7 @@ How a shopper pays for the items in their cart.
 - The first line is `# ` and the spec's folder name. The text after it, up to the first item, is the spec's purpose.
 - Each numbered item is a requirement: its name, a colon, and one sentence. The name is how changes find it, so keep `: ` out of names.
 - Details nest under a requirement, two spaces per level, labeled `a.`, then `i.`, then `1.` by depth, and the cycle repeats.
+- An item may carry a table of facts about many things ([Tables](#tables)).
 - One sentence per item. A spec describes behavior someone can observe, not how the code does it.
 
 ### Labels never shift
@@ -123,9 +124,102 @@ Requirement `3` is gone and leaves a gap. No other label moved.
 - a `(patch)` requirement, or a detail label being edited or removed, doesn't exist;
 - a new requirement already exists (mark it `(patch)` instead) or has no sentence;
 - a new detail reuses a label in use, or doesn't come after the last label at its level;
-- a new spec has no purpose, or a removed spec doesn't exist.
+- a new spec has no purpose, or a removed spec doesn't exist;
+- a table edit doesn't fit the live table ([Tables](#editing-a-table)).
 
 Nothing is written when any check fails. [Workflows](workflows.md#when-a-change-no-longer-fits) covers fixing a change that stopped fitting.
+
+## Tables
+
+When an item lists the same few facts for many things (every ship, every catalog item), give it a table instead of a run-on list.
+
+```
+# ships
+The hulls the yards sell.
+
+1. Catalog: Every yard sells these hulls.
+  | id | Name | Mass t | Cost | Cooling MW |
+  |---|---|---|---|---|
+  | prototype | Prototype | 40 | 12000 | 2 |
+  | m60 | M-60 Courier | 25 | 8000 | 1 |
+  | overdrive | Overdrive | 30 | 15000 | 3 |
+  a. A hull's cost includes its factory fit.
+2. Fit budgets: Each hull has a fit budget.
+  b. Slots by hull:
+    | id | Slots |
+    |---|---|
+    | prototype | 4 |
+    | m60 | 2 |
+```
+
+- A table belongs to one item, a requirement or a detail at any depth. It sits directly under the item, indented one level deeper, before the item's details. An item has at most one table.
+- It is a Markdown table: a header row, a separator row, then data rows. The first column is `id`.
+- Ids are unique within the table and match `^[a-z0-9][a-z0-9_.-]*$`. Use the thing's id in the code or data when it has a readable one, otherwise a kebab-case slug of its name. Never change an id; edit a name column instead. Tables in different specs may share ids, since `prototype` is the same ship everywhere.
+- Every row has as many cells as the header. A blank cell is empty. Cells are one line; write `\|` for a pipe inside a cell.
+- Archiving writes tables unpadded: one space either side of each cell and `|---|` separators. A wide new cell then never re-pads the other rows, so parallel changes don't conflict in git. Any padding or alignment parses, but a hand-aligned table is normalized the next time a change archives into its spec.
+
+### Editing a table
+
+Under `## Requirements`, reach the item the way you would to edit a detail, and repeat its table with the `id` column and only the columns the change touches. Columns are matched by their exact header text and rows by id. Rows and columns the change doesn't list stay as they are.
+
+- A blank or unmarked cell changes nothing. Unmarked text may repeat the live value for readability; it isn't checked.
+- `~~old~~ **new**` edits a cell. The struck text must match the live cell.
+- An id the live table lacks is a new row, written plainly. It goes at the end, blank in the columns the change doesn't list.
+- A struck id, `~~m60~~`, removes its row.
+- A bold header, `**Crew**`, adds a column at the end. Listed rows get their value, the rest are blank.
+- A struck header, `~~Cooling MW~~`, removes a column. `~~Old~~ **New**` renames one.
+- A table under an item that has none becomes its table, every row new. A new requirement or detail just includes its table.
+- Removing an item removes its table.
+
+This change renames `Catalog`, reprices the courier, retires the overdrive, adds a hauler, adds a crew column, renames the mass column, drops cooling, and gives the courier another slot:
+
+```
+## Requirements
+1. ships:
+  a. ~~Catalog~~ **Hull catalog** (patch):
+    | id | Cost | ~~Cooling MW~~ | ~~Mass t~~ **Mass (t)** | **Crew** | Name |
+    |---|---|---|---|---|---|
+    | m60 | ~~8000~~ **8500** |  |  | 2 | M-60 Courier |
+    | ~~overdrive~~ |  |  |  |  |  |
+    | hauler | 9000 |  | 80 | 6 | Hauler |
+  b. Fit budgets (patch):
+    b.
+      | id | Slots |
+      |---|---|
+      | m60 | ~~2~~ **3** |
+```
+
+The result:
+
+```
+1. Hull catalog: Every yard sells these hulls.
+  | id | Name | Mass (t) | Cost | Crew |
+  |---|---|---|---|---|
+  | prototype | Prototype | 40 | 12000 |  |
+  | m60 | M-60 Courier | 25 | 8500 | 2 |
+  | hauler | Hauler | 80 | 9000 | 6 |
+  a. A hull's cost includes its factory fit.
+2. Fit budgets: Each hull has a fit budget.
+  b. Slots by hull:
+    | id | Slots |
+    |---|---|
+    | prototype | 4 |
+    | m60 | 3 |
+```
+
+`Name` is listed only so the rows read well; its unmarked cells change nothing. `outline-spec pending` reports this change's table edits as `ships › Catalog › m60 › Cost` (a cell), `ships › Catalog › overdrive` (a row added or removed), and `ships › Catalog › [Crew]` (a column added, removed, or renamed), and lists an overlap when two changes touch the same cell, row, or column.
+
+Archiving a table edit stops, naming `spec › item › id › column`, when:
+
+- struck text doesn't match the live cell;
+- a header that isn't bold names no live column, or a bold one names a column that exists;
+- a struck id has no row, a bold id already has one, or the change edits an id or the `id` header;
+- a row's cell count doesn't match the change's header;
+- the resulting table breaks a table rule (bad or duplicate id, wrong cell count).
+
+### Referring to a column
+
+Another spec refers to a column instead of copying its numbers: ``(see `ships` Catalog, Cost)``. The item is a requirement name, or a path as `show --item` takes it (`Fit budgets.b`). `outline-spec validate` warns when the spec, item, table, or column doesn't exist.
 
 ## Why outlines
 

@@ -10,6 +10,10 @@
       i. <Deeper detail>
     b. <Detail>
   b. <Existing requirement name> (patch):
+    | id | <Column you change> | **<New column>** |
+    |---|---|---|
+    | <id> | ~~<old value>~~ **<new value>** | <value> |
+    | <new-id> | <value> | <value> |
     b. <Words kept> ~~<words dropped>~~ **<words added>**
     c.
       ii. <A deeper detail, reached through c.> ~~<dropped>~~ **<added>**

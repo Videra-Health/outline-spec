@@ -60,6 +60,21 @@ Edits:
 - State each rule once, in the spec that owns it; other specs reference it
   as "(see `spec-name`)".
 
+Tables:
+- When an item lists the same few facts for many things (every ship, catalog
+  item, good), give it a table instead of a run-on list: directly under the
+  item, indented one level, first column `id`. Its details follow the table.
+- An id is the thing's id in the code or data when it has a readable one,
+  otherwise a kebab-case slug of its name. Never change an id; edit the name
+  column instead.
+- To edit a live table, repeat it under its item (the `(patch)` requirement or
+  the detail's label) with the `id` column and only the columns you touch. Mark a changed cell `~~old~~ **new**` and
+  leave untouched cells blank. A new id is a new row; a struck id `~~id~~`
+  removes its row. A bold header `**Col**` adds a column at the end, a struck
+  header removes one, and `~~Old~~ **New**` renames one.
+- Another spec refers to a column as "(see `spec-name` Item, Column)" instead
+  of copying its numbers.
+
 A spec describes observable behavior, not implementation: no internal
 function names, library choices, or step-by-step plans. Those belong in
 design.md or tasks.md.

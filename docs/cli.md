@@ -95,7 +95,7 @@ Applies a change's `outline.md` to the live specs and deletes the change folder.
 
 ### outline-spec pending
 
-Lists what each open change touches (`spec › requirement › label`) and where two changes touch the same item. Flags: `--json`, `--store <id>`.
+Lists what each open change touches (`spec › requirement › label`; for tables, `… › <id> › <Column>` per cell, `… › <id>` per added or removed row, `… › [Column]` per column change) and where two changes touch the same item, cell, row, or column. Flags: `--json`, `--store <id>`.
 
 ### outline-spec relabel <spec>
 
@@ -119,7 +119,7 @@ Shows a change or a spec.
 |---|---|
 | `--type change\|spec` | Disambiguate a name used by both. |
 | `--diff` | For a change: the spec text archiving it would produce. |
-| `--item <path>` | For a spec: one requirement or detail, as `"Payment"` or `"Cart total.b.i"`. |
+| `--item <path>` | For a spec: one requirement or detail, as `"Payment"` or `"Cart total.b.i"`, printed with its table. A table row id after the item's path gives that row, as `"Catalog.m60"` or `"Fit budgets.b.prototype"` (JSON: `row` as `{ column: cell }`). |
 | `--json`, `--no-interactive`, `--store <id>` | |
 
 ### outline-spec validate [item]
