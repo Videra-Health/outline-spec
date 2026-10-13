@@ -19,10 +19,6 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
         takesValue: true,
       },
       {
-        name: 'force',
-        description: 'Auto-cleanup legacy files without prompting',
-      },
-      {
         name: 'profile',
         description: 'Override global config profile (core or custom)',
         takesValue: true,

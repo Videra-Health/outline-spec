@@ -37,17 +37,6 @@ import {
   CommandAdapterRegistry,
 } from './command-generation/index.js';
 import {
-  detectLegacyArtifacts,
-  cleanupLegacyArtifacts,
-  formatCleanupSummary,
-  formatDeferredGlobalPromptSummary,
-  formatDetectionSummary,
-  getLegacyGlobalPromptMatches,
-  omitGlobalLegacyPromptFiles,
-  pickGlobalLegacyPromptFiles,
-  type LegacyDetectionResult,
-} from './legacy-cleanup.js';
-import {
   SKILL_NAMES,
   getToolsWithSkillsDir,
   getToolSkillStatus,
@@ -70,7 +59,7 @@ import {
   sharedSkillRootOwner,
   writeSharedSkillTarget,
 } from './shared-skill-target.js';
-import { migrateIfNeeded, migrateLegacyToolDirs, describeLegacyMigration, keptInPlaceNotice, hasMovableContent, scanInstalledWorkflows as scanInstalledWorkflowsShared } from './migration.js';
+import { migrateIfNeeded, migrateLegacyToolDirs, describeLegacyMigration, keptInPlaceNotice, hasMovableContent } from './migration.js';
 import {
   resolveCommandSurfaceCapability,
   resolveCommandInvocation,
@@ -132,7 +121,6 @@ const WORKFLOW_TO_SKILL_DIR: Record<string, string> = {
 type InitCommandOptions = {
   tools?: string;
   language?: string;
-  force?: boolean;
   interactive?: boolean;
   profile?: string;
   /** Commander's --no-animation flag: false disables the welcome animation. */
@@ -156,14 +144,6 @@ type ValidatedInitTool = {
   writesSkills: boolean;
 };
 
-/**
- * Holds the global Codex prompt matches that must wait until replacement skills
- * are generated before cleanup can continue.
- */
-type DeferredLegacyCleanup = {
-  detection: LegacyDetectionResult;
-};
-
 // -----------------------------------------------------------------------------
 // Init Command Class
 // -----------------------------------------------------------------------------
@@ -171,7 +151,6 @@ type DeferredLegacyCleanup = {
 export class InitCommand {
   private readonly toolsArg?: string;
   private readonly language?: string;
-  private readonly force: boolean;
   private readonly interactiveOption?: boolean;
   private readonly profileOverride?: string;
   private readonly animation: boolean;
@@ -180,7 +159,6 @@ export class InitCommand {
   constructor(options: InitCommandOptions = {}) {
     this.toolsArg = options.tools;
     this.language = this.normalizeLanguage(options.language);
-    this.force = options.force ?? false;
     this.interactiveOption = options.interactive;
     this.profileOverride = options.profile;
     this.animation = options.animation ?? true;
@@ -198,7 +176,7 @@ export class InitCommand {
     // Pointer guard (slice 3.2): a config-only openspec/ with a store:
     // declaration is externalized planning, not a root to extend — and a
     // subdirectory of such a repo must not silently grow a nested root.
-    // Refuse before legacy cleanup, migration, or prompts touch anything.
+    // Refuse before migration or prompts touch anything.
     // In extend mode the walk finds projectPath itself; otherwise it
     // finds the nearest ancestor root (so pointer-repo subdirectories
     // refuse exactly where a normal command would resolve the pointer).
@@ -239,12 +217,6 @@ export class InitCommand {
         'Run init in the store root, or edit the store config directly.'
       );
     }
-
-    // Pointer repos keep their local planning files untouched. Normal init may
-    // still remove OpenSpec-managed artifacts from older layouts.
-    const deferredLegacyCleanup = integrationsOnly
-      ? null
-      : await this.handleLegacyCleanup(projectPath, extendMode);
 
     // Migrate OpenSpec-managed skills left in renamed tool directories
     // (e.g. .kimi -> .kimi-code) before detection so they stay recognized.
@@ -313,12 +285,6 @@ export class InitCommand {
       validatedTools,
       copilotDecision.write
     );
-
-    // Legacy cleanup was deferred to avoid interfering with skill/command generation;
-    // now that outputs are written, finalize the cleanup (e.g. remove stale files).
-    if (deferredLegacyCleanup) {
-      await this.finalizeDeferredLegacyCleanup(projectPath, deferredLegacyCleanup);
-    }
 
     // Create config.yaml if needed. A pointer repo already has the config that
     // declares its store, so preserve it byte-for-byte.
@@ -486,146 +452,6 @@ export class InitCommand {
     const globalCfg = getGlobalConfig();
     const activeProfile: Profile = this.resolveProfileOverride() ?? globalCfg.profile ?? 'core';
     return [...getProfileWorkflows(activeProfile, globalCfg.workflows)];
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // LEGACY CLEANUP
-  // ═══════════════════════════════════════════════════════════
-
-  /**
-   * Cleans repo-local legacy artifacts immediately and defers global Codex prompt
-   * cleanup until replacement skills have been installed.
-   */
-  private async handleLegacyCleanup(projectPath: string, extendMode: boolean): Promise<DeferredLegacyCleanup | null> {
-    // Detect legacy artifacts
-    const detection = await detectLegacyArtifacts(projectPath);
-
-    if (!detection.hasLegacyArtifacts) {
-      return null; // No legacy artifacts found
-    }
-
-    const immediateDetection = omitGlobalLegacyPromptFiles(detection);
-
-    // Show what was detected
-    const immediateSummary = formatDetectionSummary(immediateDetection);
-    if (immediateSummary) {
-      console.log();
-      console.log(immediateSummary);
-      console.log();
-    }
-
-    // Show which global prompts are deferred — they'll only be removed once
-    // the corresponding replacement skills are installed during generation.
-    const deferredSummary = formatDeferredGlobalPromptSummary(detection);
-    if (deferredSummary) {
-      console.log(deferredSummary);
-      console.log();
-    }
-
-    const canPrompt = this.canPromptInteractively();
-
-    if (this.force || !canPrompt) {
-      // --force flag or non-interactive mode: proceed with cleanup automatically.
-      // Legacy slash commands are 100% OpenSpec-managed, and config file cleanup
-      // only removes markers (never deletes files), so auto-cleanup is safe.
-      await this.performImmediateLegacyCleanup(projectPath, detection);
-      return detection.globalSlashCommandFiles.length > 0 ? { detection } : null;
-    }
-
-    // Interactive mode: prompt for confirmation
-    const { confirm } = await import('@inquirer/prompts');
-    const shouldCleanup = await confirm({
-      message: 'Upgrade and clean up legacy files?',
-      default: true,
-    });
-
-    if (!shouldCleanup) {
-      console.log(chalk.dim('Initialization cancelled.'));
-      console.log(chalk.dim('Run with --force to skip this prompt, or manually remove legacy files.'));
-      process.exit(0);
-    }
-
-    await this.performImmediateLegacyCleanup(projectPath, detection);
-    return detection.globalSlashCommandFiles.length > 0 ? { detection } : null;
-  }
-
-  /**
-   * Applies the safe subset of legacy cleanup that does not depend on newly
-   * generated Codex skills.
-   */
-  private async performImmediateLegacyCleanup(
-    projectPath: string,
-    detection: LegacyDetectionResult
-  ): Promise<void> {
-    const immediateDetection = omitGlobalLegacyPromptFiles(detection);
-    if (!immediateDetection.hasLegacyArtifacts) {
-      return;
-    }
-
-    await this.performLegacyCleanup(projectPath, immediateDetection);
-  }
-
-  /**
-   * Removes only the legacy global Codex prompts whose workflows now have
-   * replacement skills in the project.
-   */
-  private async finalizeDeferredLegacyCleanup(
-    projectPath: string,
-    deferredCleanup: DeferredLegacyCleanup
-  ): Promise<void> {
-    const availableCodexWorkflows = await this.getInstalledWorkflowsForTool(projectPath, 'codex');
-    const removableMatches = getLegacyGlobalPromptMatches(deferredCleanup.detection)
-      .filter((prompt) => prompt.workflowIds.every((workflowId) => availableCodexWorkflows.has(workflowId)));
-
-    if (removableMatches.length > 0) {
-      await this.performLegacyCleanup(
-        projectPath,
-        pickGlobalLegacyPromptFiles(
-          deferredCleanup.detection,
-          removableMatches.map((prompt) => prompt.path)
-        )
-      );
-    }
-
-    const blockedMatches = getLegacyGlobalPromptMatches(deferredCleanup.detection)
-      .filter((prompt) => !removableMatches.some((match) => match.path === prompt.path));
-
-    if (blockedMatches.length > 0) {
-      console.log(chalk.yellow('Preserved deferred global prompts without replacement skills:'));
-      for (const prompt of blockedMatches) {
-        console.log(chalk.dim(`  - ${prompt.toolId}: ${prompt.path}`));
-      }
-      console.log();
-    }
-  }
-
-  /**
-   * Reads the currently installed workflow IDs for a single tool from the
-   * generated skill layout on disk.
-   */
-  private async getInstalledWorkflowsForTool(projectPath: string, toolId: string): Promise<Set<string>> {
-    const tool = AI_TOOLS.find((candidate) => candidate.value === toolId);
-    if (!tool) {
-      return new Set<string>();
-    }
-
-    return new Set(scanInstalledWorkflowsShared(projectPath, [tool]));
-  }
-
-  private async performLegacyCleanup(projectPath: string, detection: LegacyDetectionResult): Promise<void> {
-    const spinner = ora('Cleaning up legacy files...').start();
-
-    const result = await cleanupLegacyArtifacts(projectPath, detection);
-
-    spinner.succeed('Legacy files cleaned up');
-
-    const summary = formatCleanupSummary(result);
-    if (summary) {
-      console.log();
-      console.log(summary);
-    }
-
-    console.log();
   }
 
   // ═══════════════════════════════════════════════════════════

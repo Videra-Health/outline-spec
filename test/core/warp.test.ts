@@ -10,7 +10,6 @@ import { getAvailableTools } from '../../src/core/available-tools.js';
 import { resolveCommandSurfaceCapability } from '../../src/core/command-surface.js';
 import { CommandAdapterRegistry } from '../../src/core/command-generation/registry.js';
 import type { GlobalConfig } from '../../src/core/global-config.js';
-import { LEGACY_GLOBAL_SLASH_COMMAND_PATHS } from '../../src/core/legacy-cleanup.js';
 import { ALL_WORKFLOWS, CORE_WORKFLOWS } from '../../src/core/profiles.js';
 import { getSkillTemplates } from '../../src/core/shared/skill-generation.js';
 import { getConfiguredTools, getToolSkillStatus } from '../../src/core/shared/tool-detection.js';
@@ -46,8 +45,6 @@ describe('Warp integration', () => {
     vi.stubEnv('XDG_DATA_HOME', path.join(tempDir, 'data'));
     vi.stubEnv('USERPROFILE', path.join(tempDir, 'home'));
     vi.spyOn(os, 'homedir').mockReturnValue(path.join(tempDir, 'home'));
-    vi.spyOn(LEGACY_GLOBAL_SLASH_COMMAND_PATHS.codex, 'resolvePromptDir')
-      .mockReturnValue(path.join(tempDir, 'codex-prompts'));
     vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
@@ -69,7 +66,7 @@ describe('Warp integration', () => {
     'initializes core skills with %s delivery and advertises invocable skill names',
     async (delivery) => {
       mockState.config.delivery = delivery;
-      await new InitCommand({ tools: 'warp', force: true }).execute(projectPath);
+      await new InitCommand({ tools: 'warp' }).execute(projectPath);
 
       expect(await installedSkills()).toEqual(
         getSkillTemplates(CORE_WORKFLOWS).map(({ dirName }) => dirName).sort()
@@ -94,7 +91,7 @@ describe('Warp integration', () => {
 
   it('installs the full workflow set and rewrites onboarding references', async () => {
     mockState.config = { profile: 'custom', workflows: [...ALL_WORKFLOWS], delivery: 'both' };
-    await new InitCommand({ tools: 'warp', force: true }).execute(projectPath);
+    await new InitCommand({ tools: 'warp' }).execute(projectPath);
 
     expect(await installedSkills()).toEqual(getSkillTemplates().map(({ dirName }) => dirName).sort());
     const onboarding = await fs.readFile(skillPath('openspec-onboard'), 'utf8');
@@ -116,7 +113,7 @@ describe('Warp integration', () => {
     for (const [filePath, content] of Object.entries(preserved)) {
       await writeProjectFile(filePath, content);
     }
-    await new InitCommand({ tools: 'warp', force: true }).execute(projectPath);
+    await new InitCommand({ tools: 'warp' }).execute(projectPath);
     for (const [filePath, content] of Object.entries(preserved)) {
       expect(await fs.readFile(path.join(projectPath, filePath), 'utf8')).toBe(content);
     }
@@ -137,7 +134,7 @@ describe('Warp integration', () => {
   });
 
   it('refreshes outdated skills without force and stays current after commands-only reinitialization', async () => {
-    await new InitCommand({ tools: 'warp', force: true }).execute(projectPath);
+    await new InitCommand({ tools: 'warp' }).execute(projectPath);
     const original = await fs.readFile(skillPath('openspec-explore'), 'utf8');
     const outdated = original.replace(/generatedBy: "[^"]+"/, 'generatedBy: "0.0.1"');
     expect(outdated).not.toBe(original);
@@ -147,7 +144,7 @@ describe('Warp integration', () => {
     expect(await fs.readFile(skillPath('openspec-explore'), 'utf8')).toBe(original);
 
     mockState.config.delivery = 'commands';
-    await new InitCommand({ tools: 'warp', force: true }).execute(projectPath);
+    await new InitCommand({ tools: 'warp' }).execute(projectPath);
     expect(await installedSkills()).toEqual(
       getSkillTemplates(CORE_WORKFLOWS).map(({ dirName }) => dirName).sort()
     );

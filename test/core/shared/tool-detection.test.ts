@@ -379,7 +379,7 @@ Content here
       const { saveGlobalConfig } = await import('../../../src/core/global-config.js');
       saveGlobalConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
 
-      const initCommand = new InitCommand({ tools: 'claude', force: true });
+      const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
       const { version } = await import('../../../package.json');
@@ -405,7 +405,7 @@ Content here
       const { saveGlobalConfig } = await import('../../../src/core/global-config.js');
       saveGlobalConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
 
-      const initCommand = new InitCommand({ tools: toolId, force: true });
+      const initCommand = new InitCommand({ tools: toolId });
       await initCommand.execute(testDir);
 
       const { version } = await import('../../../package.json');
@@ -438,7 +438,7 @@ Content here
         workflows: customWorkflows,
       });
 
-      const initCommand = new InitCommand({ tools: 'claude', force: true });
+      const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
       const { version } = await import('../../../package.json');
@@ -463,7 +463,7 @@ Content here
       const { saveGlobalConfig } = await import('../../../src/core/global-config.js');
       saveGlobalConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
 
-      const initCommand = new InitCommand({ tools: 'claude', force: true });
+      const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
       // A Windows clone with core.autocrlf re-materializes committed command
@@ -489,7 +489,7 @@ Content here
       const { saveGlobalConfig } = await import('../../../src/core/global-config.js');
       saveGlobalConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
 
-      const initCommand = new InitCommand({ tools: 'claude', force: true });
+      const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
       // A workflow that is no longer selected still has a command file on disk
@@ -511,7 +511,7 @@ Content here
       const { saveGlobalConfig } = await import('../../../src/core/global-config.js');
       saveGlobalConfig({ featureFlags: {}, profile: 'core', delivery: 'both' });
 
-      const initCommand = new InitCommand({ tools: 'claude', force: true });
+      const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
       // Corrupt a skill file so its generatedBy version can no longer be read,
@@ -534,7 +534,7 @@ Content here
       const { saveGlobalConfig } = await import('../../../src/core/global-config.js');
       saveGlobalConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
 
-      const initCommand = new InitCommand({ tools: 'claude', force: true });
+      const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
       // Modify one command file

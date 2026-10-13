@@ -39,7 +39,7 @@ describe('profile handoff CLI regressions (#1734)', () => {
     await fs.mkdir(configDir, { recursive: true });
     const configFile = path.join(configDir, 'config.json');
     await fs.writeFile(configFile, JSON.stringify({ profile: 'core', delivery }));
-    await cli(['init', '--tools', 'claude', '--profile', 'core', '--no-animation', '--force']);
+    await cli(['init', '--tools', 'claude', '--profile', 'core', '--no-animation']);
 
     const files = [
       ...(delivery !== 'commands' ? getSkillTemplates(CORE_WORKFLOWS).map(({ dirName }) =>

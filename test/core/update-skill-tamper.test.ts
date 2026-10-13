@@ -58,7 +58,7 @@ describe('update detects a tampered SKILL.md', () => {
     mockState.config = { featureFlags: {}, profile: 'core', delivery: 'both' };
     vi.restoreAllMocks();
 
-    await new InitCommand({ tools: 'claude', force: true }).execute(testDir);
+    await new InitCommand({ tools: 'claude' }).execute(testDir);
     skillFile = path.join(
       testDir,
       '.claude',
