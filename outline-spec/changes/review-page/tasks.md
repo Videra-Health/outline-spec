@@ -31,5 +31,5 @@
 
 ## 5. Archive
 
-- [ ] 5.1 Run `pnpm build && pnpm exec tsc --noEmit && pnpm lint && pnpm test`.
+- [x] 5.1 Run `pnpm build && pnpm exec tsc --noEmit && pnpm lint && pnpm test`.
 - [ ] 5.2 Run `outline-spec validate review-page`, then `outline-spec archive review-page` to apply outline.md to the live specs.

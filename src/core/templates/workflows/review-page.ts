@@ -4,7 +4,7 @@
 
 /** Renders, publishes, and records the change's review page; `workflow` is the `--for` value. */
 export function reviewPageStep(workflow: 'propose' | 'update'): string {
-  return `render the page the developer reads to check the change (append \`--store "<store-id>"\` when a registered store is selected):
+  return `render the page the developer reads to check the change:
    \`\`\`bash
    outline-spec review "<name>" --for ${workflow} --out "<folder>/review-<name>.html" --json
    \`\`\`

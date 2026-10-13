@@ -174,6 +174,7 @@ describe('command completion registry', () => {
       'new change',
       'pending',
       'relabel',
+      'review',
       'schemas',
       'show',
       'status',
