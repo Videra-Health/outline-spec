@@ -161,10 +161,13 @@ const PAYLOAD = /(<script type="application\/json" id="outline-spec-review">)[\s
 
 export const hasPayloadSlot = (template: string): boolean => PAYLOAD.test(template);
 
-/** Fills the template's payload script; `<` is escaped so file text can't end the tag. */
+/** Fills the template's payload script and `{{change}}`; `<` is escaped so file text can't end the tag. */
 export function fillTemplate(template: string, payload: ReviewPayload): string {
   const json = JSON.stringify(payload).replace(/</g, '\\u003c');
-  return template.replace(PAYLOAD, (_m, open: string, close: string) => `${open}${json}${close}`);
+  const name = payload.change.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+  return template
+    .replace(/\{\{change\}\}/g, () => name)
+    .replace(PAYLOAD, (_m, open: string, close: string) => `${open}${json}${close}`);
 }
 
 /** `<tmp>/outline-spec-review/<hash>-<basename>/<change>.html`, one folder per project. */

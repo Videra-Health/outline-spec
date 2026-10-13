@@ -144,3 +144,13 @@ apply:
   instruction: |
     Read context files, work through pending tasks, mark complete as you go.
     Pause if you hit blockers or need clarification.
+
+review:
+  template: review.html
+  tabs:
+    - title: Outline
+      from: [outline.md]
+    - title: Diagrams
+      from: [diagrams.md, design.md]
+    - title: Spec changes
+      view: spec-changes

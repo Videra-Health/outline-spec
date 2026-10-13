@@ -199,6 +199,33 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
     ],
   },
   {
+    name: 'review',
+    description: "Render a change's review page to an HTML file and print its path",
+    acceptsPositional: true,
+    positionalType: 'change-id',
+    positionals: [{ name: 'change-name', type: 'change-id' }],
+    flags: [
+      COMMON_FLAGS.json,
+      {
+        name: 'for',
+        description: 'Render only when review-on includes this workflow (propose or update)',
+        takesValue: true,
+        values: ['propose', 'update'],
+      },
+      {
+        name: 'url',
+        description: "Record the page's published link without rendering",
+        takesValue: true,
+      },
+      {
+        name: 'out',
+        description: 'Write the page here instead of the temp directory',
+        takesValue: true,
+      },
+      COMMON_FLAGS.store,
+    ],
+  },
+  {
     name: 'relabel',
     description: "Close gaps in a spec's labels (refused while a change edits it)",
     acceptsPositional: true,

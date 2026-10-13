@@ -445,6 +445,25 @@ program
   });
 
 program
+  .command('review <change-name>')
+  .description("Render a change's review page to an HTML file and print its path")
+  .option('--json', 'Output as JSON')
+  .option('--for <workflow>', 'Render only when review-on includes this workflow (propose or update)')
+  .option('--url <link>', "Record the page's published link without rendering")
+  .option('--out <path>', 'Write the page here instead of the temp directory')
+  .option('--store <id>', STORE_OPTION_DESCRIPTION)
+  .addOption(hiddenStorePathOption())
+  .action(async (changeName: string, options: { json?: boolean; for?: string; url?: string; out?: string; store?: string; storePath?: string }) => {
+    try {
+      const { reviewCommand } = await import('../commands/review.js');
+      await reviewCommand(changeName, options);
+    } catch (error) {
+      await failWithError(error, { enabled: options.json, payload: { path: null }, fallbackCode: 'review_error' });
+      process.exit(1);
+    }
+  });
+
+program
   .command('relabel <spec>')
   .description("Close gaps in a spec's labels (refused while a change edits it)")
   .option('--store <id>', STORE_OPTION_DESCRIPTION)

@@ -1,0 +1,457 @@
+<title>{{change}} proposal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a drafting-room review sheet. Header and verdict up top, tabs below, spec changes as live/after columns. */
+:root {
+  --bg: #f5f7f9;
+  --surface: #ffffff;
+  --sunk: #eceff3;
+  --fg: #18202b;
+  --muted: #5a6676;
+  --rule: #d6dce4;
+  --ink: #1d5c86;
+  --ink-soft: #e1edf5;
+  --add-fg: #12602d;
+  --add-bg: #dcf2e2;
+  --del-fg: #a01d1d;
+  --del-bg: #fbe1de;
+  --edit-fg: #6b4a00;
+  --edit-bg: #fbefd2;
+  --pass: #12602d;
+  --fail: #a01d1d;
+  --warn: #6b4a00;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.5rem;
+  --step-3: 2.125rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11161d; --surface: #182029; --sunk: #0d1218; --fg: #e4e9ef; --muted: #98a4b3; --rule: #2a3542;
+    --ink: #7fbbe6; --ink-soft: #1b3346;
+    --add-fg: #8fe0a6; --add-bg: #143823; --del-fg: #ffaaa2; --del-bg: #4a1d1f; --edit-fg: #f2cd73; --edit-bg: #3b2f10;
+    --pass: #8fe0a6; --fail: #ffaaa2; --warn: #f2cd73;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11161d; --surface: #182029; --sunk: #0d1218; --fg: #e4e9ef; --muted: #98a4b3; --rule: #2a3542;
+  --ink: #7fbbe6; --ink-soft: #1b3346;
+  --add-fg: #8fe0a6; --add-bg: #143823; --del-fg: #ffaaa2; --del-bg: #4a1d1f; --edit-fg: #f2cd73; --edit-bg: #3b2f10;
+  --pass: #8fe0a6; --fail: #ffaaa2; --warn: #f2cd73;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 400 var(--step-0)/1.6 var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+.page { max-width: 72rem; margin: 0 auto; padding-inline: 1rem; padding-block: 2rem 4rem; display: grid; gap: 1.25rem; }
+@media (min-width: 48rem) { .page { padding-inline: 2rem; } }
+
+.masthead { display: grid; gap: 0.25rem; }
+.eyebrow { font: 500 var(--step--1)/1.2 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.masthead h1 { margin: 0; font: 600 var(--step-3)/1.1 var(--font-display); letter-spacing: -0.01em; text-wrap: balance; overflow-wrap: anywhere; }
+.masthead .meta { color: var(--muted); font-size: var(--step--1); }
+
+.banner { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); display: grid; }
+.banner > div { padding: 0.75rem 1rem; display: flex; gap: 0.75rem; align-items: baseline; min-width: 0; }
+.banner > div + div { border-top: 1px solid var(--rule); }
+.banner .mark { font: 600 var(--step-0)/1 var(--font-mono); flex: none; width: 1.25rem; text-align: center; }
+.banner .body { min-width: 0; display: grid; gap: 0.35rem; }
+.banner strong { font-weight: 600; }
+.banner.pass .verdict .mark, .banner.pass .verdict strong { color: var(--pass); }
+.banner.fail { border-color: var(--fail); }
+.banner.fail .verdict .mark, .banner.fail .verdict strong { color: var(--fail); }
+.banner .overlap .mark, .banner .overlap strong { color: var(--warn); }
+.banner ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.2rem; }
+.banner code, .chip, .path { font-family: var(--font-mono); font-size: 0.85em; overflow-wrap: anywhere; }
+
+.tabs { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; background: var(--bg); display: flex; gap: 0.25rem; border-bottom: 1px solid var(--rule); overflow-x: auto; scrollbar-width: none; }
+.tabs button {
+  appearance: none; border: 0; background: none; color: var(--muted); cursor: pointer; white-space: nowrap;
+  font: 500 var(--step-0)/1 var(--font-body); padding: 0.85rem 0.9rem 0.75rem; border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tabs button:hover { color: var(--fg); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+.tabs button:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; border-radius: 4px; }
+.tabs .count { font: 500 var(--step--1)/1 var(--font-mono); color: var(--muted); margin-left: 0.35rem; }
+
+/* Markdown tabs */
+.files { display: grid; gap: 2.5rem; }
+.file { min-width: 0; display: grid; gap: 0.5rem; }
+.file-name { font: 500 var(--step--1)/1 var(--font-mono); color: var(--muted); }
+.md { max-width: 46rem; min-width: 0; }
+.md > :first-child { margin-top: 0; }
+.md h1, .md h2, .md h3, .md h4 { font-family: var(--font-display); font-weight: 600; line-height: 1.2; text-wrap: balance; }
+.md h1 { font-size: var(--step-2); margin: 0 0 0.75rem; }
+.md h2 { font-size: var(--step-1); margin: 2rem 0 0.6rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--rule); }
+.md h3 { font-size: var(--step-0); margin: 1.5rem 0 0.4rem; }
+.md p, .md ul, .md ol { margin: 0 0 0.85rem; }
+.md li + li { margin-top: 0.25rem; }
+.md a { color: var(--ink); }
+.md code { font: 0.86em var(--font-mono); background: var(--sunk); padding: 0.1em 0.3em; border-radius: 3px; overflow-wrap: anywhere; }
+.md pre { background: var(--sunk); padding: 0.85rem 1rem; border-radius: 6px; overflow-x: auto; line-height: 1.45; }
+.md pre code { background: none; padding: 0; font-size: var(--step--1); overflow-wrap: normal; }
+.md sub { color: var(--muted); font-size: var(--step--1); }
+.md blockquote { margin: 0 0 0.85rem; padding-left: 1rem; border-left: 3px solid var(--rule); color: var(--muted); }
+.table-wrap { overflow-x: auto; margin: 0 0 0.85rem; }
+.md table, .req-text table { border-collapse: collapse; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
+.md th, .md td, .req-text th, .req-text td { border: 1px solid var(--rule); padding: 0.3rem 0.6rem; text-align: left; vertical-align: top; }
+.md th, .req-text th { background: var(--sunk); font-weight: 600; }
+.diagram { overflow-x: auto; margin: 0 0 1rem; padding: 1rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; }
+.diagram svg { max-width: 100%; height: auto; }
+
+/* Outline requirements: labeled items, with marks read as a diff */
+.outline { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: 0.3rem; }
+.outline .outline { margin: 0.3rem 0 0; padding-left: 1.4rem; }
+.outline li { display: grid; grid-template-columns: 2.1rem minmax(0, 1fr); align-items: baseline; }
+.outline .label { font: 500 var(--step--1)/1 var(--font-mono); color: var(--muted); }
+.outline li > .outline, .outline li > .table-wrap { grid-column: 2; }
+.outline.depth-0 > li > .item-text { font-weight: 500; }
+del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration: line-through; text-decoration-thickness: 1px; border-radius: 2px; padding: 0 0.1em; }
+.outline strong, .seg-add { color: var(--add-fg); background: var(--add-bg); font-weight: 500; border-radius: 2px; padding: 0 0.1em; text-decoration: none; }
+
+/* Spec changes */
+.specs { display: grid; gap: 2.25rem; }
+.spec { display: grid; gap: 0.75rem; min-width: 0; }
+.spec-head { display: flex; flex-wrap: wrap; gap: 0.5rem 0.75rem; align-items: center; padding-bottom: 0.5rem; border-bottom: 2px solid var(--fg); }
+.spec-head h2 { margin: 0; font: 600 var(--step-2)/1.1 var(--font-display); overflow-wrap: anywhere; }
+.spec-head .summary { margin-left: auto; color: var(--muted); font: 400 var(--step--1)/1 var(--font-mono); }
+.purpose { color: var(--muted); max-width: 46rem; white-space: pre-wrap; }
+.tag { font: 600 0.6875rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; padding: 0.3rem 0.45rem; border-radius: 3px; flex: none; }
+.tag.added, .tag.new { color: var(--add-fg); background: var(--add-bg); }
+.tag.removed { color: var(--del-fg); background: var(--del-bg); }
+.tag.edited { color: var(--edit-fg); background: var(--edit-bg); }
+.req { border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); min-width: 0; }
+.req-head { display: flex; flex-wrap: wrap; gap: 0.4rem 0.6rem; align-items: center; padding: 0.65rem 1rem; border-bottom: 1px solid var(--rule); }
+.req-head h3 { margin: 0; font: 600 var(--step-1)/1.25 var(--font-display); overflow-wrap: anywhere; }
+.req-head .label { font: 500 var(--step--1)/1 var(--font-mono); color: var(--muted); }
+.req-head .was { color: var(--muted); font-size: var(--step--1); }
+.req-head .was s { color: var(--del-fg); }
+.req-body { display: grid; grid-template-columns: minmax(0, 1fr); }
+.req-body.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.req-body.two > .side + .side { border-left: 1px solid var(--rule); }
+@media (max-width: 44rem) {
+  .req-body.two { grid-template-columns: minmax(0, 1fr); }
+  .req-body.two > .side + .side { border-left: 0; border-top: 1px solid var(--rule); }
+}
+.side { padding: 0.75rem 1rem 0.9rem; min-width: 0; display: grid; gap: 0.35rem; align-content: start; }
+.side-label { font: 500 0.6875rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.req-text { min-width: 0; overflow-x: auto; }
+.req-text .line { white-space: pre-wrap; overflow-wrap: anywhere; }
+.req-text .line + .line { margin-top: 0.2rem; }
+.req-text .line.item { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); padding-left: calc(var(--depth, 0) * 1.4rem); }
+.req-text .line > .label { font: 500 var(--step--1)/1.6 var(--font-mono); color: var(--muted); }
+.req-text .line > .label.seg-add, .req-text .line > .label.seg-del { justify-self: start; }
+.req-text code { font: 0.86em var(--font-mono); background: var(--sunk); padding: 0.05em 0.25em; border-radius: 3px; }
+.req-text .seg-add code, .req-text .seg-del code { background: transparent; }
+.req.removed .req-text { color: var(--muted); }
+.edits { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; padding: 0.6rem 1rem; border-top: 1px solid var(--rule); background: var(--sunk); border-radius: 0 0 6px 6px; }
+.edits .side-label { margin-right: 0.25rem; }
+.chip { padding: 0.15rem 0.4rem; border-radius: 3px; background: var(--surface); border: 1px solid var(--rule); }
+.empty { color: var(--muted); padding: 1rem 0; }
+.notice { border: 1px solid var(--fail); border-radius: 6px; padding: 0.85rem 1rem; display: grid; gap: 0.4rem; }
+.notice pre { margin: 0; white-space: pre-wrap; font: var(--step--1)/1.5 var(--font-mono); color: var(--fail); overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: no-preference) { .tabs button { transition: color 120ms, border-color 120ms; } }
+</style>
+
+<div class="page">
+  <header class="masthead">
+    <span class="eyebrow">outline-spec · change review</span>
+    <h1 id="change-name"></h1>
+    <span class="meta" id="generated"></span>
+  </header>
+  <section class="banner" id="banner" aria-label="Validation"></section>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Review sections"></nav>
+  <main id="panels"></main>
+</div>
+
+<script type="application/json" id="outline-spec-review"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js"></script>
+<script>
+(function () {
+  const data = JSON.parse(document.getElementById('outline-spec-review').textContent || '{}');
+  const $ = (sel) => document.querySelector(sel);
+  const el = (tag, attrs, ...kids) => {
+    const n = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (k === 'class') n.className = v; else if (k === 'html') n.innerHTML = v; else n.setAttribute(k, v);
+    }
+    for (const kid of kids.flat()) if (kid != null) n.append(kid);
+    return n;
+  };
+  const hasMarked = typeof window.marked !== 'undefined';
+  const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const inline = (s) => (hasMarked ? marked.parseInline(s) : escapeHtml(s));
+  const block = (s) => (hasMarked ? marked.parse(s) : `<pre>${escapeHtml(s)}</pre>`);
+
+  // Masthead
+  $('#change-name').textContent = data.change || 'Change';
+  if (data.generatedAt) {
+    const when = new Date(data.generatedAt);
+    $('#generated').textContent = `Rendered ${isNaN(when) ? data.generatedAt : when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`;
+  }
+
+  // Banner
+  const banner = $('#banner');
+  const b = data.banner || { valid: true, errors: [], overlaps: [] };
+  banner.classList.add(b.valid ? 'pass' : 'fail');
+  if (b.valid) {
+    banner.append(el('div', { class: 'verdict' }, el('span', { class: 'mark', 'aria-hidden': 'true' }, '✓'),
+      el('div', { class: 'body' }, el('span', {}, el('strong', {}, 'Passes validate. '), 'The outline archives cleanly against the live specs.'))));
+  } else {
+    banner.append(el('div', { class: 'verdict' }, el('span', { class: 'mark', 'aria-hidden': 'true' }, '✕'),
+      el('div', { class: 'body' },
+        el('span', {}, el('strong', {}, `Fails validate with ${b.errors.length} ${b.errors.length === 1 ? 'error' : 'errors'}. `), 'Fix these before approving.'),
+        el('ul', {}, b.errors.map((e) => el('li', {}, el('code', {}, e)))))));
+  }
+  for (const o of b.overlaps || []) {
+    banner.append(el('div', { class: 'overlap' }, el('span', { class: 'mark', 'aria-hidden': 'true' }, '!'),
+      el('div', { class: 'body' },
+        el('span', {}, el('strong', {}, `Overlaps ${o.change}`), ` on ${o.requirements.length === 1 ? 'one requirement' : `${o.requirements.length} requirements`}.`),
+        el('ul', {}, o.requirements.map((r) => el('li', {}, el('code', {}, r)))))));
+  }
+
+  // Outline rendering: "## Requirements" items become a labeled tree instead of Markdown lists
+  const ITEM = /^( *)([0-9]+|[a-z]+)\.(?: (.*))?$/;
+  function renderTable(lines) {
+    const cells = (l) => l.trim().replace(/^\|/, '').replace(/\|$/, '').split(/(?<!\\)\|/).map((c) => c.trim().replace(/\\\|/g, '|'));
+    const head = cells(lines[0]);
+    const rows = lines.slice(2).map(cells);
+    return el('div', { class: 'table-wrap' }, el('table', {},
+      el('thead', {}, el('tr', {}, head.map((h) => el('th', { html: inline(h) })))),
+      el('tbody', {}, rows.map((r) => el('tr', {}, r.map((c) => el('td', { html: inline(c) })))))));
+  }
+  function renderOutline(text) {
+    const root = el('ol', { class: 'outline depth-0' });
+    const items = []; // latest item at each depth
+    const sublist = (li, depth) => {
+      let list = [...li.children].find((c) => c.matches('ol.outline'));
+      if (!list) li.append(list = el('ol', { class: `outline depth-${depth}` }));
+      return list;
+    };
+    const lines = text.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (/^ *\|/.test(line)) {
+        const tbl = [];
+        while (i < lines.length && /^ *\|/.test(lines[i])) tbl.push(lines[i++]);
+        i--;
+        const owner = items[Math.floor((line.length - line.trimStart().length) / 2) - 1];
+        (owner || root).append(renderTable(tbl));
+        continue;
+      }
+      const m = ITEM.exec(line);
+      if (!m) continue;
+      const depth = Math.min(Math.floor(m[1].length / 2), items.length);
+      const li = el('li', {}, el('span', { class: 'label' }, `${m[2]}.`), el('span', { class: 'item-text', html: inline(m[3] || '') }));
+      (depth === 0 ? root : sublist(items[depth - 1], depth)).append(li);
+      items[depth] = li;
+      items.length = depth + 1;
+    }
+    return root;
+  }
+  function renderMarkdown(name, text) {
+    const wrap = el('div', { class: 'md' });
+    const req = name === 'outline.md' ? /^## Requirements\s*$/m.exec(text) : null;
+    if (!req) { wrap.innerHTML = block(text); return finishMarkdown(wrap); }
+    const before = text.slice(0, req.index);
+    const rest = text.slice(req.index + req[0].length);
+    const next = /^## /m.exec(rest);
+    const items = next ? rest.slice(0, next.index) : rest;
+    wrap.innerHTML = block(before) + block('## Requirements');
+    wrap.append(renderOutline(items));
+    if (next) wrap.insertAdjacentHTML('beforeend', block(rest.slice(next.index)));
+    return finishMarkdown(wrap);
+  }
+  function finishMarkdown(wrap) {
+    wrap.querySelectorAll('table').forEach((t) => {
+      if (t.parentElement.classList.contains('table-wrap')) return;
+      const w = el('div', { class: 'table-wrap' });
+      t.replaceWith(w);
+      w.append(t);
+    });
+    wrap.querySelectorAll('pre > code.language-mermaid').forEach((code) => {
+      const d = el('div', { class: 'diagram' });
+      d.dataset.source = code.textContent;
+      code.parentElement.replaceWith(d);
+      diagrams.push(d);
+    });
+    return wrap;
+  }
+
+  // Spec changes
+  // Backtick spans become code only within one piece, so a span never crosses a diff mark
+  const code = (s) => escapeHtml(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+  const piece = (p) => (p.cls ? `<span class="${p.cls}">${code(p.text)}</span>` : code(p.text));
+  const segsHtml = (segs, side) => segs
+    .filter((s) => (side === 'live' ? !s.added : !s.removed))
+    .map((s) => piece({ text: s.text, cls: s.added ? 'seg-add' : s.removed ? 'seg-del' : '' }))
+    .join('');
+  // Splits segments into lines of pieces, so each line is its own element
+  function segLines(segs, side) {
+    const lines = [[]];
+    for (const s of segs) {
+      if (side === 'live' ? s.added : s.removed) continue;
+      const cls = s.added ? 'seg-add' : s.removed ? 'seg-del' : '';
+      s.text.split('\n').forEach((t, i) => {
+        if (i > 0) lines.push([]);
+        if (t) lines[lines.length - 1].push({ text: t, cls });
+      });
+    }
+    return lines;
+  }
+  const LABEL = /^( *)([0-9]+|[a-z]+)\. /;
+  function textBlock(lines) {
+    const box = el('div', { class: 'req-text' });
+    for (const pieces of lines) {
+      const line = el('div', { class: 'line' });
+      const first = pieces[0];
+      const m = first && LABEL.exec(first.text);
+      if (m) {
+        line.classList.add('item');
+        line.style.setProperty('--depth', String(m[1].length / 2));
+        line.append(el('span', { class: `label ${first.cls}` }, `${m[2]}.`));
+        pieces[0] = { text: first.text.slice(m[0].length), cls: first.cls };
+      }
+      line.append(el('span', { class: 'text', html: pieces.map(piece).join('') || (m ? '' : '&nbsp;') }));
+      box.append(line);
+    }
+    return box;
+  }
+  const plainLines = (text) => text.split('\n').map((t) => (t ? [{ text: t, cls: '' }] : []));
+  function renderRequirement(spec, r) {
+    const head = el('div', { class: 'req-head' },
+      el('span', { class: 'label' }, `${r.label}.`),
+      el('h3', {}, r.name),
+      r.renamedFrom ? el('span', { class: 'was' }, 'renamed from ', el('s', {}, r.renamedFrom)) : null,
+      el('span', { class: `tag ${r.kind}` }, r.kind));
+    const body = el('div', { class: 'req-body' });
+    const side = (label, lines) => el('div', { class: 'side' }, el('span', { class: 'side-label' }, label), textBlock(lines));
+    if (r.kind === 'edited') {
+      body.classList.add('two');
+      body.append(side('Live', segLines(r.segments, 'live')), side('After archive', segLines(r.segments, 'after')));
+    } else if (r.kind === 'added') {
+      body.append(side('After archive', plainLines(r.after || '')));
+    } else {
+      body.append(side('Live, dropped on archive', plainLines(r.live || '')));
+    }
+    const card = el('article', { class: `req ${r.kind}`, id: `req-${spec}-${r.label}` }, head, body);
+    if (r.tableEdits && r.tableEdits.length) {
+      card.append(el('div', { class: 'edits' }, el('span', { class: 'side-label' }, 'Table edits'), r.tableEdits.map((t) => el('span', { class: 'chip' }, t))));
+    }
+    return card;
+  }
+  function renderSpecChanges(tab) {
+    const wrap = el('div', { class: 'specs' });
+    if (tab.error) {
+      wrap.append(el('div', { class: 'notice' },
+        el('strong', {}, 'Spec changes appear once the outline applies cleanly to the live specs.'),
+        el('pre', {}, tab.error)));
+      return wrap;
+    }
+    if (!tab.specs.length) { wrap.append(el('p', { class: 'empty' }, 'This change edits no specs.')); return wrap; }
+    for (const s of tab.specs) {
+      const counts = ['added', 'edited', 'removed'].map((k) => [k, s.requirements.filter((r) => r.kind === k).length]).filter(([, n]) => n);
+      const head = el('div', { class: 'spec-head' },
+        el('h2', {}, s.name),
+        s.status !== 'changed' ? el('span', { class: `tag ${s.status}` }, s.status === 'new' ? 'new spec' : 'removed spec') : null,
+        el('span', { class: 'summary' }, counts.map(([k, n]) => `${n} ${k}`).join(' · ')));
+      const section = el('section', { class: 'spec', id: `spec-${s.name}` }, head);
+      if (s.purpose && s.status === 'changed') section.append(el('div', { class: 'purpose', html: `Purpose: ${segsHtml(s.purpose, 'live')} → ${segsHtml(s.purpose, 'after')}` }));
+      else if (s.purpose) section.append(el('div', { class: 'purpose' }, s.purpose.map((p) => p.text).join('')));
+      section.append(...s.requirements.map((r) => renderRequirement(s.name, r)));
+      wrap.append(section);
+    }
+    return wrap;
+  }
+
+  // Tabs
+  const diagrams = [];
+  const tabs = data.tabs || [];
+  const slug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'tab';
+  const tabBar = $('#tabs');
+  const panels = $('#panels');
+  const buttons = tabs.map((tab, i) => {
+    const id = slug(tab.title);
+    const count = tab.kind === 'spec-changes' && !tab.error ? tab.specs.reduce((n, s) => n + s.requirements.length, 0) : null;
+    const btn = el('button', { role: 'tab', id: `tab-${id}`, 'aria-controls': `panel-${id}`, 'aria-selected': 'false', tabindex: '-1' },
+      tab.title, count != null ? el('span', { class: 'count' }, String(count)) : null);
+    const panel = el('section', { role: 'tabpanel', id: `panel-${id}`, 'aria-labelledby': `tab-${id}` });
+    panel.hidden = true;
+    if (tab.kind === 'spec-changes') panel.append(renderSpecChanges(tab));
+    else panel.append(el('div', { class: 'files' }, tab.files.map((f) =>
+      el('div', { class: 'file' }, tab.files.length > 1 ? el('span', { class: 'file-name' }, f.name) : null, renderMarkdown(f.name, f.markdown)))));
+    btn.addEventListener('click', () => select(i, true));
+    btn.addEventListener('keydown', (e) => {
+      const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+      if (step) { e.preventDefault(); select((i + step + tabs.length) % tabs.length, true); buttons[(i + step + tabs.length) % tabs.length].focus(); }
+    });
+    tabBar.append(btn);
+    panels.append(panel);
+    return { btn, panel, id };
+  });
+  function select(i, remember) {
+    buttons.forEach((t, j) => {
+      t.btn.setAttribute('aria-selected', String(i === j));
+      t.btn.tabIndex = i === j ? 0 : -1;
+      t.panel.hidden = i !== j;
+    });
+    if (remember) history.replaceState(null, '', `#${buttons[i].id}`);
+  }
+  if (buttons.length) {
+    const fromHash = buttons.findIndex((t) => `#${t.id}` === location.hash);
+    select(fromHash >= 0 ? fromHash : 0, false);
+  } else {
+    panels.append(el('p', { class: 'empty' }, 'This change has none of the files the review page shows.'));
+  }
+
+  // Mermaid, themed from the page tokens and redrawn when the theme flips
+  async function drawDiagrams() {
+    if (!diagrams.length) return;
+    if (typeof window.mermaid === 'undefined') {
+      diagrams.forEach((d) => { d.innerHTML = `<pre>${escapeHtml(d.dataset.source)}</pre>`; });
+      return;
+    }
+    const css = getComputedStyle(document.documentElement);
+    const v = (name) => css.getPropertyValue(name).trim();
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme: 'base',
+      fontFamily: v('--font-body'),
+      themeVariables: {
+        background: v('--surface'), primaryColor: v('--ink-soft'), primaryTextColor: v('--fg'), primaryBorderColor: v('--ink'),
+        secondaryColor: v('--sunk'), tertiaryColor: v('--surface'), lineColor: v('--muted'), textColor: v('--fg'),
+        actorBkg: v('--ink-soft'), actorBorder: v('--ink'), actorTextColor: v('--fg'), signalColor: v('--fg'), signalTextColor: v('--fg'),
+        labelBoxBkgColor: v('--sunk'), labelBoxBorderColor: v('--rule'), labelTextColor: v('--fg'), loopTextColor: v('--fg'),
+        noteBkgColor: v('--edit-bg'), noteTextColor: v('--fg'), noteBorderColor: v('--rule'), activationBkgColor: v('--sunk'),
+      },
+    });
+    for (const [i, d] of diagrams.entries()) {
+      try {
+        const { svg } = await mermaid.render(`diagram-${i}-${Date.now()}`, d.dataset.source);
+        d.innerHTML = svg;
+      } catch (e) {
+        d.innerHTML = `<pre>${escapeHtml(d.dataset.source)}</pre>`;
+      }
+    }
+  }
+  drawDiagrams();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawDiagrams);
+  new MutationObserver(drawDiagrams).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+})();
+</script>
