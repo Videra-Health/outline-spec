@@ -176,3 +176,23 @@ The instruction sent to the agent when it implements the change.
 Read context files, work through pending tasks, mark complete as you go.
 Pause if you hit blockers or need clarification.
 ```
+
+## review
+
+The review page `outline-spec review <change>` renders ([CLI](cli.md#review)). The schema's `review` block names the page template, in `templates/`, and its tabs:
+
+```yaml
+review:
+  template: review.html
+  tabs:
+    - title: Outline
+      from: [outline.md]
+    - title: Diagrams
+      from: [diagrams.md, design.md]
+    - title: Spec changes
+      view: spec-changes
+```
+
+Each tab has a `title` and exactly one of `from`, change files rendered as Markdown in order, or `view`, a view the CLI computes. `spec-changes` is the one view: every spec the change touches and every requirement it adds, edits, or removes, with live and after-archive text side by side. A file tab skips files the change doesn't have and is left off when it has none. `template` defaults to `review.html`; a forked schema can replace the file. A schema with no `review` block has no review page. `outline-spec schema validate` reports a bad tab or a missing template, and a project can swap the tabs with `review.tabs` in `config.yaml` ([Configuration](configuration.md)).
+
+The template holds one `<script type="application/json" id="outline-spec-review"></script>` that the CLI fills with the page's data: `change`, `generatedAt`, `banner` (`valid`, `errors`, `overlaps`), and `tabs`, each `{ title, kind: "markdown", files: [{ name, markdown }] }` or `{ title, kind: "spec-changes", specs }`.

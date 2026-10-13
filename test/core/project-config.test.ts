@@ -630,6 +630,47 @@ rules:
       });
     });
 
+    describe('review parsing', () => {
+      function writeConfig(body: string): void {
+        const configDir = path.join(tempDir, 'outline-spec');
+        fs.mkdirSync(configDir, { recursive: true });
+        fs.writeFileSync(path.join(configDir, 'config.yaml'), body);
+      }
+
+      it('includes a valid review-on field', () => {
+        writeConfig('schema: outline\nreview-on: [propose]\n');
+        expect(readProjectConfig(tempDir)?.reviewOn).toEqual(['propose']);
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+      });
+
+      it('keeps an empty review-on, which turns the page off', () => {
+        writeConfig('schema: outline\nreview-on: []\n');
+        expect(readProjectConfig(tempDir)?.reviewOn).toEqual([]);
+      });
+
+      it('warns about an unknown workflow and keeps the rest', () => {
+        writeConfig('schema: outline\nreview-on: [propose, deploy]\n');
+        expect(readProjectConfig(tempDir)?.reviewOn).toEqual(['propose']);
+        expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Unknown workflow 'deploy'"));
+      });
+
+      it('includes valid review tabs', () => {
+        writeConfig('schema: outline\nreview: { tabs: [{ title: Outline, from: [outline.md] }] }\n');
+        expect(readProjectConfig(tempDir)?.review).toEqual({ tabs: [{ title: 'Outline', from: ['outline.md'] }] });
+        expect(consoleWarnSpy).not.toHaveBeenCalled();
+      });
+
+      it('drops an invalid tab with a warning and keeps the others', () => {
+        writeConfig(
+          'schema: outline\nreview:\n  tabs:\n    - title: Broken\n    - title: Specs\n      view: spec-changes\n'
+        );
+        const config = readProjectConfig(tempDir);
+        expect(config?.review).toEqual({ tabs: [{ title: 'Specs', view: 'spec-changes' }] });
+        expect(config?.schema).toBe('outline');
+        expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid tab 1 in 'review.tabs'"));
+      });
+    });
+
     describe('references parsing', () => {
       function writeConfig(body: string): void {
         const configDir = path.join(tempDir, 'outline-spec');

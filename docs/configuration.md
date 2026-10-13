@@ -24,6 +24,15 @@ operations:
   archive:
     guidance:
       - Summarize the archived spec edits before finishing
+
+review-on: [propose]
+
+review:
+  tabs:
+    - title: Outline
+      from: [outline.md]
+    - title: Spec changes
+      view: spec-changes
 ```
 
 | Key | Effect |
@@ -33,6 +42,8 @@ operations:
 | `rules` | Extra rules for one artifact, keyed by artifact id (`outline`, `design`, `diagrams`, `tasks`, or a custom schema's ids). |
 | `operations` | Advisory guidance for `apply` and `archive`. |
 | `store` | A store id to use as the root when this `outline-spec/` folder has no `specs/` or `changes/` ([Stores](stores.md)). |
+| `review-on` | The workflows that render the review page: `propose`, `update`, or both (the default). `review-on: []` turns the page off. |
+| `review` | `review.tabs` replaces the schema's review tabs, written as in a schema's [review block](schema.md#review). |
 | `references` | Store ids whose specs are listed in instructions output, as ids or `{ id, remote }` ([Stores](stores.md#references)). |
 
 Put in `context` only what an agent can't learn by reading the code: constraints, conventions, the language to write in. A bad field is dropped with a warning; it never fails a command. `config.yml` is read when `config.yaml` doesn't exist.

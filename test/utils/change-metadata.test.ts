@@ -10,6 +10,7 @@ import {
   ChangeMetadataError,
   listUnknownChangeMetadataKeys,
   formatUnknownChangeMetadataKeysMessage,
+  setChangeReviewUrl,
 } from '../../src/utils/change-metadata.js';
 import { ChangeMetadataSchema } from '../../src/core/change-metadata/index.js';
 
@@ -218,6 +219,45 @@ describe('writeChangeMetadata', () => {
         created: '2025-01-05',
       })
     ).toThrow(/Unknown schema 'unknown-schema'/);
+  });
+});
+
+describe('setChangeReviewUrl', () => {
+  let testDir: string;
+  let changeDir: string;
+  const metaPath = () => path.join(changeDir, '.outline-spec.yaml');
+
+  beforeEach(async () => {
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-test-'));
+    changeDir = path.join(testDir, 'outline-spec', 'changes', 'test-change');
+    await fs.mkdir(changeDir, { recursive: true });
+  });
+
+  afterEach(async () => {
+    await fs.rm(testDir, { recursive: true, force: true });
+  });
+
+  it('round-trips reviewUrl through read and write', () => {
+    writeChangeMetadata(changeDir, { schema: 'outline', created: '2025-01-05' });
+    setChangeReviewUrl(changeDir, 'https://claude.ai/artifact/abc', 'outline');
+    expect(readChangeMetadata(changeDir)).toEqual({
+      schema: 'outline',
+      created: '2025-01-05',
+      reviewUrl: 'https://claude.ai/artifact/abc',
+    });
+  });
+
+  it('keeps comments and replaces an earlier link', async () => {
+    await fs.writeFile(metaPath(), '# planned in standup\nschema: outline\nreviewUrl: https://old\n');
+    setChangeReviewUrl(changeDir, 'https://new', 'outline');
+    const content = await fs.readFile(metaPath(), 'utf-8');
+    expect(content).toContain('# planned in standup');
+    expect(readChangeMetadata(changeDir)?.reviewUrl).toBe('https://new');
+  });
+
+  it('creates the file with the schema when none exists', () => {
+    setChangeReviewUrl(changeDir, 'https://x', 'outline');
+    expect(readChangeMetadata(changeDir)).toEqual({ schema: 'outline', reviewUrl: 'https://x' });
   });
 });
 

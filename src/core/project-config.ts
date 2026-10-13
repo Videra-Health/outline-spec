@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { getStoreMetadataPath } from './store/foundation.js';
 import { removedSchemaHint } from './artifact-graph/resolver.js';
+import { ReviewTabSchema, type ReviewTab } from './artifact-graph/types.js';
 
 export const OPERATION_IDS = ['apply', 'archive'] as const;
 export type OperationId = (typeof OPERATION_IDS)[number];
@@ -95,8 +96,14 @@ export interface DeclarationEntry {
   remote?: string;
 }
 
+export const REVIEW_WORKFLOWS = ['propose', 'update'] as const;
+export type ReviewWorkflow = (typeof REVIEW_WORKFLOWS)[number];
+
 export type ProjectConfig = z.infer<typeof ProjectConfigSchema> & {
   references?: DeclarationEntry[];
+  /** `review-on`: the workflows that render the review page. */
+  reviewOn?: ReviewWorkflow[];
+  review?: { tabs: ReviewTab[] };
 };
 
 export interface OperationInputs {
@@ -245,6 +252,42 @@ function parseDeclarationList(raw: unknown): DeclarationEntry[] | undefined {
     );
   }
   return byId.size > 0 ? [...byId.values()] : undefined;
+}
+
+function parseReviewOn(raw: unknown): ReviewWorkflow[] | undefined {
+  if (raw === undefined) return undefined;
+  if (!Array.isArray(raw)) {
+    console.warn(`Invalid 'review-on' field in config (must be a list of: ${REVIEW_WORKFLOWS.join(', ')})`);
+    return undefined;
+  }
+  const known = new Set<string>(REVIEW_WORKFLOWS);
+  const out: ReviewWorkflow[] = [];
+  for (const entry of raw) {
+    if (typeof entry === 'string' && known.has(entry)) {
+      if (!out.includes(entry as ReviewWorkflow)) out.push(entry as ReviewWorkflow);
+    } else {
+      console.warn(
+        `Unknown workflow '${String(entry)}' in 'review-on', ignoring it. Supported workflows: ${REVIEW_WORKFLOWS.join(', ')}`
+      );
+    }
+  }
+  return out;
+}
+
+function parseReview(raw: unknown): { tabs: ReviewTab[] } | undefined {
+  if (raw === undefined) return undefined;
+  const tabsRaw = raw && typeof raw === 'object' && !Array.isArray(raw) ? (raw as Record<string, unknown>).tabs : undefined;
+  if (!Array.isArray(tabsRaw)) {
+    console.warn(`Invalid 'review' field in config (must be an object with a 'tabs' list), ignoring it`);
+    return undefined;
+  }
+  const tabs: ReviewTab[] = [];
+  tabsRaw.forEach((tab, i) => {
+    const result = ReviewTabSchema.safeParse(tab);
+    if (result.success) tabs.push(result.data);
+    else console.warn(`Invalid tab ${i + 1} in 'review.tabs' (${result.error.issues[0]?.message}), ignoring it`);
+  });
+  return tabs.length > 0 ? { tabs } : undefined;
 }
 
 export const MAX_CONTEXT_SIZE = 50 * 1024; // 50KB hard limit, shared with the references index
@@ -411,6 +454,16 @@ export function readProjectConfig(projectRoot: string): ProjectConfig | null {
     const references = parseDeclarationList(raw.references);
     if (references) {
       config.references = references;
+    }
+
+    const reviewOn = parseReviewOn((raw as Record<string, unknown>)['review-on']);
+    if (reviewOn) {
+      config.reviewOn = reviewOn;
+    }
+
+    const review = parseReview(raw.review);
+    if (review) {
+      config.review = review;
     }
 
     // Parse store pointer field: a string, or dropped with a warning.

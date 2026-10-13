@@ -27,6 +27,7 @@ export const CHANGE_METADATA_KNOWN_KEYS = [
   'goal',
   'affected_areas',
   'initiative',
+  'reviewUrl',
 ] as const;
 
 export type ChangeMetadataKnownKey = (typeof CHANGE_METADATA_KNOWN_KEYS)[number];
@@ -44,6 +45,8 @@ export const ChangeMetadataSchema = z.object({
   goal: z.string().min(1).optional(),
   affected_areas: z.array(z.string().min(1)).optional(),
   initiative: InitiativeLinkSchema.optional(),
+  // The review page's published link, recorded by `outline-spec review --url`
+  reviewUrl: z.string().min(1).optional(),
 });
 
 export type ChangeMetadata = z.infer<typeof ChangeMetadataSchema>;

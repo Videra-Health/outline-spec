@@ -208,6 +208,21 @@ export function readChangeMetadata(
   return parseResult.data;
 }
 
+/** Records the review page's link, keeping the file's other keys and comments. */
+export function setChangeReviewUrl(changeDir: string, url: string, schema: string, projectRoot?: string): void {
+  const metaPath = path.join(changeDir, METADATA_FILENAME);
+  if (!fs.existsSync(metaPath)) {
+    writeChangeMetadata(changeDir, { schema, reviewUrl: url }, projectRoot);
+    return;
+  }
+  const doc = yaml.parseDocument(fs.readFileSync(metaPath, 'utf-8'));
+  if (doc.errors.length > 0 || !yaml.isMap(doc.contents)) {
+    throw new ChangeMetadataError(`Invalid YAML in metadata file, can't record reviewUrl`, metaPath);
+  }
+  doc.set('reviewUrl', url);
+  fs.writeFileSync(metaPath, doc.toString(), 'utf-8');
+}
+
 export interface ResolveSchemaForChangeOptions {
   metadata?: ChangeMetadata | null;
   /** Pre-read project config; suppresses the fallback config read when provided. */
