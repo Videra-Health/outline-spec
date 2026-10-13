@@ -41,6 +41,7 @@ export function getOutlineSpecProposeSkillTemplate(): SkillTemplate {
 I'll create a change with the artifacts your schema defines. With the default outline schema that is:
 - outline.md (the proposal and its spec edits, as a labeled outline)
 - design.md (how - only when the change needs technical decisions explained)
+- diagrams.md (the few views that explain the change)
 - tasks.md (implementation steps, ending with archiving the change)
 
 outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done.
@@ -142,7 +143,7 @@ ${PROJECT_ROOT_GUARD}
 
    b. **Continue until every artifact in the required set exists (not just \`apply.requires\`)**
       - After creating each artifact, re-run \`outline-spec status --change "<name>" --json\`
-      - The required set is \`applyRequires\` plus every artifact reachable from those by following the \`requires\` edges in \`status --json\` - walk them transitively (the outline schema closes over outline and tasks). Leave artifacts outside that set alone
+      - The required set is \`applyRequires\` plus every artifact reachable from those by following the \`requires\` edges in \`status --json\` - walk them transitively (for the outline schema that is outline and tasks; also write its design, when needed, and diagrams before tasks, though tasks does not require them). Leave artifacts outside that set alone
       - \`status\` is file-existence only, so an \`applyRequires\` artifact reading \`done\` does NOT mean its dependencies exist - writing \`tasks.md\` early marks \`tasks\` done while \`outline.md\` was never written. Use each artifact's \`requires\` edges, not its \`status\`, to build the required set: a \`done\` artifact still lists what it depends on
       - Create every artifact in the required set that is missing, then re-check - creating one can unblock others
       - Skip one only when its own \`instruction\` says it is conditional: run \`outline-spec instructions <artifact-id> --change "<name>" --json\` and skip only if its \`instruction\` field marks it optional (e.g. "create only when..."). The outline schema's \`design.md\` qualifies; \`outline.md\` never does. Tell the user, and do not reconsider it
@@ -206,6 +207,7 @@ export function getOutlineSpecProposeCommandTemplate(): CommandTemplate {
 I'll create a change with the artifacts your schema defines. With the default outline schema that is:
 - outline.md (the proposal and its spec edits, as a labeled outline)
 - design.md (how - only when the change needs technical decisions explained)
+- diagrams.md (the few views that explain the change)
 - tasks.md (implementation steps, ending with archiving the change)
 
 outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done.
@@ -307,7 +309,7 @@ ${PROJECT_ROOT_GUARD}
 
    b. **Continue until every artifact in the required set exists (not just \`apply.requires\`)**
       - After creating each artifact, re-run \`outline-spec status --change "<name>" --json\`
-      - The required set is \`applyRequires\` plus every artifact reachable from those by following the \`requires\` edges in \`status --json\` - walk them transitively (the outline schema closes over outline and tasks). Leave artifacts outside that set alone
+      - The required set is \`applyRequires\` plus every artifact reachable from those by following the \`requires\` edges in \`status --json\` - walk them transitively (for the outline schema that is outline and tasks; also write its design, when needed, and diagrams before tasks, though tasks does not require them). Leave artifacts outside that set alone
       - \`status\` is file-existence only, so an \`applyRequires\` artifact reading \`done\` does NOT mean its dependencies exist - writing \`tasks.md\` early marks \`tasks\` done while \`outline.md\` was never written. Use each artifact's \`requires\` edges, not its \`status\`, to build the required set: a \`done\` artifact still lists what it depends on
       - Create every artifact in the required set that is missing, then re-check - creating one can unblock others
       - Skip one only when its own \`instruction\` says it is conditional: run \`outline-spec instructions <artifact-id> --change "<name>" --json\` and skip only if its \`instruction\` field marks it optional (e.g. "create only when..."). The outline schema's \`design.md\` qualifies; \`outline.md\` never does. Tell the user, and do not reconsider it

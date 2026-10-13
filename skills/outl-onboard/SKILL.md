@@ -57,7 +57,7 @@ I'll walk you through a complete change cycle—from idea to implementation—us
 1. Pick a small, real task in your codebase
 2. Explore the problem briefly
 3. Create a change (the container for our work)
-4. Build the artifacts: outline → design (if needed) → tasks
+4. Build the artifacts: outline → design (if needed) → diagrams → tasks
 5. Implement the tasks
 6. Archive the change into the specs
 
@@ -180,7 +180,7 @@ Now let's create a change to hold our work.
 ```
 ## Creating a Change
 
-A "change" in outline-spec is a container for all the thinking and planning around a piece of work. It lives at the `changeRoot` reported by `outline-spec status --change "<name>" --json` and holds your artifacts—outline, design, tasks.
+A "change" in outline-spec is a container for all the thinking and planning around a piece of work. It lives at the `changeRoot` reported by `outline-spec status --change "<name>" --json` and holds your artifacts—outline, design, diagrams, tasks.
 
 Let me create one for our task.
 ```
@@ -199,6 +199,7 @@ The folder structure:
 <changeRoot>/
 ├── outline.md     ← What we're doing and the spec edits it makes
 ├── design.md      ← How we'll build it (only if needed)
+├── diagrams.md    ← Views that explain the change
 └── tasks.md       ← Implementation checklist
 ```
 
@@ -279,6 +280,19 @@ The design captures **how** we'll build it—technical decisions and tradeoffs. 
 ```
 
 **DO:** Decide whether this change needs a design. If it does, draft design.md following `outline-spec instructions design --change "<name>" --json`, show it, and save it to the `resolvedOutputPath`. If not, say so and move on.
+
+---
+
+## Phase 7: Diagrams
+
+**EXPLAIN:**
+```
+## Diagrams
+
+Diagrams show the change at a glance: a sequence diagram, call tree, state machine, data shape, or table, whichever few make the point.
+```
+
+**DO:** Draft diagrams.md following `outline-spec instructions diagrams --change "<name>" --json`, show it, and save it to the `resolvedOutputPath`.
 
 ---
 

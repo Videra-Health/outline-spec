@@ -53,7 +53,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    ```
 
    This returns:
-   - `contextFiles`: artifact ID -> array of concrete file paths (varies by schema - for outline: outline, design if present, tasks)
+   - `contextFiles`: artifact ID -> array of concrete file paths (varies by schema - for outline: outline, design if present, diagrams, tasks)
    - Progress (total, complete, remaining)
    - Task list with status, source path, and source line
    - Dynamic instruction based on current state
@@ -87,7 +87,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 
    Read every file path listed under `contextFiles` from the apply instructions output.
    The files depend on the schema being used:
-   - **outline**: outline.md (the change's spec edits, by requirement name and label), design.md if present, tasks.md
+   - **outline**: outline.md (the change's spec edits, by requirement name and label), design.md if present, diagrams.md, tasks.md
    - Other schemas: follow the contextFiles from CLI output
 
    Do not copy `context` or `operationGuidance` verbatim into implementation
