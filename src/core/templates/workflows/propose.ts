@@ -8,6 +8,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 import { optionalWorkflow } from '../optional-workflow.js';
 import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 import { PROJECT_ROOT_GUARD } from './project-root.js';
+import { reviewPageStep } from './review-page.js';
 
 /**
  * The implementation handoff. `apply` is not guaranteed to be installed, so
@@ -156,7 +157,11 @@ ${PROJECT_ROOT_GUARD}
       - Ask the user to clarify
       - Then continue with creation
 
-7. **Show final status**
+7. **Publish the review page**
+
+   Once every artifact in the required set exists, ${reviewPageStep('propose')}
+
+8. **Show final status**
    \`\`\`bash
    outline-spec status --change "<name>"
    \`\`\`
@@ -166,6 +171,7 @@ ${PROJECT_ROOT_GUARD}
 After completing all artifacts, summarize:
 - Change name and location
 - List of artifacts created with brief descriptions, plus any conditional artifact you skipped and why
+- The review page's link, or its file path, when step 7 rendered it
 - What's ready: "All artifacts needed for implementation are ready."
 - Prompt: "The artifacts are ready for review. When you are ready, ${SKILL_APPLY_HANDOFF}."
 
@@ -322,7 +328,11 @@ ${PROJECT_ROOT_GUARD}
       - Ask the user to clarify
       - Then continue with creation
 
-7. **Show final status**
+7. **Publish the review page**
+
+   Once every artifact in the required set exists, ${reviewPageStep('propose')}
+
+8. **Show final status**
    \`\`\`bash
    outline-spec status --change "<name>"
    \`\`\`
@@ -332,6 +342,7 @@ ${PROJECT_ROOT_GUARD}
 After completing all artifacts, summarize:
 - Change name and location
 - List of artifacts created with brief descriptions, plus any conditional artifact you skipped and why
+- The review page's link, or its file path, when step 7 rendered it
 - What's ready: "All artifacts needed for implementation are ready."
 - Prompt: "The artifacts are ready for review. When you are ready, ${COMMAND_APPLY_HANDOFF}."
 

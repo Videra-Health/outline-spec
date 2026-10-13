@@ -25,9 +25,9 @@
 
 ## 4. Workflows
 
-- [ ] 4.1 In `src/core/templates/workflows/propose.ts`, after all artifacts exist: run `review --for propose --out <a folder the page tool publishes from> --json`; if enabled and the agent can publish an HTML page, publish it privately (at `reviewUrl` when set) and open it, record with `--url`; otherwise give the path; say nothing when disabled.
-- [ ] 4.2 Same in `update-change.ts`, run only when the revision rewrote `outline.md`, with `--for update`.
-- [ ] 4.3 `pnpm generate:skills && pnpm regen:parity-hashes`; parity tests pass.
+- [x] 4.1 In `src/core/templates/workflows/propose.ts`, after all artifacts exist: run `review --for propose --out <a folder the page tool publishes from> --json`; if enabled and the agent can publish an HTML page, publish it privately (at `reviewUrl` when set) and open it, record with `--url`; otherwise give the path; say nothing when disabled.
+- [x] 4.2 Same in `update-change.ts`, run only when the revision rewrote `outline.md`, with `--for update`.
+- [x] 4.3 `pnpm generate:skills && pnpm regen:parity-hashes`; parity tests pass.
 
 ## 5. Archive
 

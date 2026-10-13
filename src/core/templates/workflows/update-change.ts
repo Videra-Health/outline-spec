@@ -5,6 +5,7 @@ import type { SkillTemplate, CommandTemplate } from '../types.js';
 import { optionalWorkflow } from '../optional-workflow.js';
 import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 import { PROJECT_ROOT_GUARD } from './project-root.js';
+import { reviewPageStep } from './review-page.js';
 
 /**
  * Passages that hand off to `/outl:continue` or `/outl:new`. Neither workflow
@@ -146,16 +147,21 @@ ${CONTINUE_SCOPE_NOTE}
    - Change already implemented (tasks checked off / already applied) -> the code may no longer match the revised plan; ${APPLY_REVISION_HANDOFF}.
    - Everything done and implemented -> ${ARCHIVE_HANDOFF}.
 
+7. **Republish the review page**
+
+   Only when this revision changed the artifact holding the spec edits (the outline under \`## Requirements\`), ${reviewPageStep('update')}
+
 **Output**
 
 After each invocation, show:
 - Which artifacts were revised (and which proposed revisions were rejected)
+- The review page's link, or its file path, when step 7 rendered it
 - Any file created under a glob artifact that was already partially populated
 - ${CONTINUE_DEFERRED}
 - Where the change stands and the recommended next command
 
 **Guardrails**
-- Planning artifacts only - NEVER edit implementation code. If the revised plan implies code changes, ${APPLY_GUARDRAIL}.
+- Planning artifacts only - NEVER edit implementation code. The review page and its recorded link are the only other files this workflow touches. If the revised plan implies code changes, ${APPLY_GUARDRAIL}.
 - Use the artifact ids and paths reported by \`outline-spec status\`; never branch on hardcoded artifact names.
 - Edit only the concrete files in \`existingOutputPaths\`; never write to a glob \`resolvedOutputPath\`.
 - Do not advance the build frontier: if an artifact has empty \`existingOutputPaths\` and status \`ready\` or \`blocked\`, ${CONTINUE_FRONTIER}. Leave \`skipped\` artifacts untouched. The only new-file scope is a confirmed concrete path under a glob artifact whose \`existingOutputPaths\` is non-empty.

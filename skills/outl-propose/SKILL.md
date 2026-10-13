@@ -140,7 +140,18 @@ In both branches, never create the root as a side effect: do not run `outline-sp
       - Ask the user to clarify
       - Then continue with creation
 
-7. **Show final status**
+7. **Publish the review page**
+
+   Once every artifact in the required set exists, render the page the developer reads to check the change (append `--store "<store-id>"` when a registered store is selected):
+   ```bash
+   outline-spec review "<name>" --for propose --out "<folder>/review-<name>.html" --json
+   ```
+   Pick `<folder>` so your page tool can publish from it; in Claude Code, that is your scratchpad directory. Without a page tool, omit `--out`.
+   - `enabled: false`: the project turned the page off for this workflow. Skip the rest of this step and don't mention the page.
+   - If you can publish a private HTML page (for example, Claude Code's Artifact tool), publish the file at `path` so only the developer can see it, and open it for them. When the JSON has `reviewUrl`, publish to that link so the developer keeps one page. After the first publish, record the link: `outline-spec review "<name>" --url "<link>"`.
+   - Otherwise, give the developer the file at `path` to open in a browser.
+
+8. **Show final status**
    ```bash
    outline-spec status --change "<name>"
    ```
@@ -150,6 +161,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 After completing all artifacts, summarize:
 - Change name and location
 - List of artifacts created with brief descriptions, plus any conditional artifact you skipped and why
+- The review page's link, or its file path, when step 7 rendered it
 - What's ready: "All artifacts needed for implementation are ready."
 - Prompt: "The artifacts are ready for review. When you are ready, run `/outl-apply-change` or ask me to apply this change."
 

@@ -92,16 +92,28 @@ This workflow revises artifacts that already exist; `/outl-continue-change` is w
    - Change already implemented (tasks checked off / already applied) -> the code may no longer match the revised plan; suggest `/outl-apply-change` to carry the revision into code.
    - Everything done and implemented -> suggest `/outl-archive-change`.
 
+7. **Republish the review page**
+
+   Only when this revision changed the artifact holding the spec edits (the outline under `## Requirements`), render the page the developer reads to check the change (append `--store "<store-id>"` when a registered store is selected):
+   ```bash
+   outline-spec review "<name>" --for update --out "<folder>/review-<name>.html" --json
+   ```
+   Pick `<folder>` so your page tool can publish from it; in Claude Code, that is your scratchpad directory. Without a page tool, omit `--out`.
+   - `enabled: false`: the project turned the page off for this workflow. Skip the rest of this step and don't mention the page.
+   - If you can publish a private HTML page (for example, Claude Code's Artifact tool), publish the file at `path` so only the developer can see it, and open it for them. When the JSON has `reviewUrl`, publish to that link so the developer keeps one page. After the first publish, record the link: `outline-spec review "<name>" --url "<link>"`.
+   - Otherwise, give the developer the file at `path` to open in a browser.
+
 **Output**
 
 After each invocation, show:
 - Which artifacts were revised (and which proposed revisions were rejected)
+- The review page's link, or its file path, when step 7 rendered it
 - Any file created under a glob artifact that was already partially populated
 - Anything deferred to `/outl-continue-change` (artifacts with no files yet and status `ready` or `blocked`, never `skipped` artifacts)
 - Where the change stands and the recommended next command
 
 **Guardrails**
-- Planning artifacts only - NEVER edit implementation code. If the revised plan implies code changes, stop and point to `/outl-apply-change`.
+- Planning artifacts only - NEVER edit implementation code. The review page and its recorded link are the only other files this workflow touches. If the revised plan implies code changes, stop and point to `/outl-apply-change`.
 - Use the artifact ids and paths reported by `outline-spec status`; never branch on hardcoded artifact names.
 - Edit only the concrete files in `existingOutputPaths`; never write to a glob `resolvedOutputPath`.
 - Do not advance the build frontier: if an artifact has empty `existingOutputPaths` and status `ready` or `blocked`, that is `/outl-continue-change`'s job. Leave `skipped` artifacts untouched. The only new-file scope is a confirmed concrete path under a glob artifact whose `existingOutputPaths` is non-empty.
