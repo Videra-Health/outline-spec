@@ -42,7 +42,7 @@ jobs:
               - 'pnpm-workspace.yaml'
               - 'scripts/update-flake.sh'
               - '.github/workflows/ci.yml'
-              # The Nix build runs `openspec completion generate`, so a change to
+              # The Nix build runs `outline-spec completion generate`, so a change to
               # the generator can break packaging without touching flake.nix.
               - 'src/commands/completion.ts'
               - 'src/core/completions/**'
@@ -233,19 +233,19 @@ jobs:
                   flake.overlays.default
                   (_final: prev: {
                     nodejs_22 = prev.nodejs_22.overrideAttrs (_: {
-                      pname = "openspec-test-nodejs";
+                      pname = "outline-spec-test-nodejs";
                     });
                   })
                 ];
               };
-              overridden = pkgs.openspec.overrideAttrs (_: { version = "0.0.0-test"; });
+              overridden = pkgs.outline-spec.overrideAttrs (_: { version = "0.0.0-test"; });
             in
-            assert pkgs.openspec.drvPath == flake.packages.${system}.default.drvPath;
-            assert pkgs.openspec.drvPath == flake.packages.${system}.openspec.drvPath;
+            assert pkgs.outline-spec.drvPath == flake.packages.${system}.default.drvPath;
+            assert pkgs.outline-spec.drvPath == flake.packages.${system}.outline-spec.drvPath;
             # stdenv selects the dev output of multi-output native build inputs.
             assert builtins.any (input: input.drvPath == composed.nodejs_22.drvPath)
-              composed.openspec.nativeBuildInputs;
-            assert composed.openspec.drvPath != pkgs.openspec.drvPath;
+              composed.outline-spec.nativeBuildInputs;
+            assert composed.outline-spec.drvPath != pkgs.outline-spec.drvPath;
             assert overridden.version == "0.0.0-test";
             assert overridden.pnpmDeps.version == "0.0.0-test";
             true
@@ -260,20 +260,20 @@ jobs:
             echo "Error: Nix build output 'result' symlink not found"
             exit 1
           fi
-          if [ ! -f "result/bin/openspec" ]; then
-            echo "Error: openspec binary not found in build output"
+          if [ ! -f "result/bin/outline-spec" ]; then
+            echo "Error: outline-spec binary not found in build output"
             exit 1
           fi
           for completion in \
-            "share/bash-completion/completions/openspec.bash" \
-            "share/fish/vendor_completions.d/openspec.fish" \
-            "share/zsh/site-functions/_openspec"; do
+            "share/bash-completion/completions/outline-spec.bash" \
+            "share/fish/vendor_completions.d/outline-spec.fish" \
+            "share/zsh/site-functions/_outline_spec"; do
             if [ ! -s "result/$completion" ]; then
               echo "Error: completion script missing or empty: $completion"
               exit 1
             fi
           done
-          if [ "$(head -1 result/share/zsh/site-functions/_openspec)" != "#compdef openspec" ]; then
+          if [ "$(head -1 result/share/zsh/site-functions/_outline_spec)" != "#compdef outline-spec" ]; then
             echo "Error: zsh completion is not autoloadable (missing #compdef header)"
             exit 1
           fi
@@ -282,7 +282,7 @@ jobs:
       - name: Test binary execution
         run: |
           VERSION=$(nix run . -- --version)
-          echo "OpenSpec version: $VERSION"
+          echo "outline-spec version: $VERSION"
           if [ -z "$VERSION" ]; then
             echo "Error: Version command returned empty output"
             exit 1

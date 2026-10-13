@@ -1,6 +1,6 @@
-# OpenSpec Scripts
+# outline-spec Scripts
 
-Utility scripts for OpenSpec maintenance and development.
+Utility scripts for outline-spec maintenance and development.
 
 ## update-flake.sh
 

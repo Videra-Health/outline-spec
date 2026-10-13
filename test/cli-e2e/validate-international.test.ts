@@ -8,9 +8,9 @@ const tempRoots: string[] = [];
 
 /** Create a temporary project containing a non-English main spec. */
 async function prepareNonEnglishSpec(): Promise<string> {
-  const projectDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-i18n-validation-'));
+  const projectDir = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-i18n-validation-'));
   tempRoots.push(projectDir);
-  const specDir = path.join(projectDir, 'openspec', 'specs', '日志记录');
+  const specDir = path.join(projectDir, 'outline-spec', 'specs', '日志记录');
   await fs.mkdir(specDir, { recursive: true });
   await fs.writeFile(
     path.join(specDir, 'spec.md'),
@@ -26,11 +26,11 @@ async function prepareNonEnglishSpec(): Promise<string> {
 
 /** Create a temporary project containing a non-English change that adds a spec. */
 async function prepareNonEnglishChange(): Promise<string> {
-  const projectDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-i18n-change-validation-'));
+  const projectDir = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-i18n-change-validation-'));
   tempRoots.push(projectDir);
-  const changeDir = path.join(projectDir, 'openspec', 'changes', '添加日志');
+  const changeDir = path.join(projectDir, 'outline-spec', 'changes', '添加日志');
   await fs.mkdir(changeDir, { recursive: true });
-  await fs.mkdir(path.join(projectDir, 'openspec', 'specs'), { recursive: true });
+  await fs.mkdir(path.join(projectDir, 'outline-spec', 'specs'), { recursive: true });
   await fs.writeFile(
     path.join(changeDir, 'outline.md'),
     `## Proposal

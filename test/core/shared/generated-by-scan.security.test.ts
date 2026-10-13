@@ -10,7 +10,7 @@ import { isLegacyCodexSkillEquivalentToCurrent } from '../../../src/core/shared/
  * Both scans used an `m`-anchored `^\s*`, where `\s` crosses newlines, so the
  * engine re-scanned the whole whitespace run from every line start - work
  * quadratic in the size of the run, so a hostile (or merely malformed)
- * SKILL.md of a few hundred KB stalled `openspec update` for many seconds and
+ * SKILL.md of a few hundred KB stalled `outline-spec update` for many seconds and
  * a larger one for minutes. These bound the work instead of asserting an
  * exact time.
  */
@@ -18,7 +18,7 @@ describe('generatedBy scanning is not super-linear', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-generated-by-scan-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-generated-by-scan-'));
   });
 
   afterEach(() => {

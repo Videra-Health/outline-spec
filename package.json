@@ -1,21 +1,24 @@
 {
-  "name": "@fission-ai/openspec",
-  "version": "1.14.1",
-  "description": "AI-native system for spec-driven development",
+  "name": "outline-spec",
+  "version": "0.1.0",
+  "description": "Outline specs for AI-assisted development",
   "keywords": [
-    "openspec",
+    "outline-spec",
     "specs",
     "cli",
     "ai",
     "development"
   ],
-  "homepage": "https://github.com/Fission-AI/OpenSpec",
+  "homepage": "https://github.com/heneryville/outline-spec",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Fission-AI/OpenSpec"
+    "url": "https://github.com/heneryville/outline-spec"
+  },
+  "bugs": {
+    "url": "https://github.com/heneryville/outline-spec/issues"
   },
   "license": "MIT",
-  "author": "OpenSpec Contributors",
+  "author": "outline-spec contributors",
   "type": "module",
   "packageManager": "pnpm@10.34.5",
   "publishConfig": {
@@ -28,7 +31,7 @@
     }
   },
   "bin": {
-    "openspec": "./bin/openspec.js"
+    "outline-spec": "./bin/outline-spec.js"
   },
   "files": [
     "dist",
@@ -44,7 +47,7 @@
     "generate:skills": "node scripts/generate-skillssh.mjs",
     "regen:parity-hashes": "node scripts/regen-parity-hashes.mjs",
     "dev": "tsc --watch",
-    "dev:cli": "pnpm build && node bin/openspec.js",
+    "dev:cli": "pnpm build && node bin/outline-spec.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",

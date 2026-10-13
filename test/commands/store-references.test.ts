@@ -6,7 +6,7 @@ import * as path from 'node:path';
 import { getGlobalDataDir, registerStore } from '../../src/core/index.js';
 import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
 import { snapshotDirectory as snapshot } from '../helpers/fs-snapshot.js';
-import { createOpenSpecRoot, writeSpec } from '../helpers/openspec-fixtures.js';
+import { createOutlineSpecRoot, writeSpec } from '../helpers/outline-spec-fixtures.js';
 
 describe('store references in instructions (3.1)', () => {
   let tempDir: string;
@@ -16,7 +16,7 @@ describe('store references in instructions (3.1)', () => {
   let storeRoot: string;
 
   beforeEach(async () => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-store-refs-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-store-refs-'));
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
       XDG_CONFIG_HOME: path.join(tempDir, 'config'),
@@ -25,14 +25,14 @@ describe('store references in instructions (3.1)', () => {
     globalDataDir = getGlobalDataDir({ env });
 
     storeRoot = path.join(tempDir, 'team-context');
-    createOpenSpecRoot(storeRoot);
+    createOutlineSpecRoot(storeRoot);
     writeSpec(storeRoot, 'billing', '# billing\nUsage-based invoicing.\n\n1. Metering: The system meters usage.\n');
     await registerStore({ id: 'team-context', localPath: storeRoot, globalDataDir });
 
     appRepo = path.join(tempDir, 'app-repo');
-    createOpenSpecRoot(appRepo);
+    createOutlineSpecRoot(appRepo);
     fs.writeFileSync(
-      path.join(appRepo, 'openspec', 'config.yaml'),
+      path.join(appRepo, 'outline-spec', 'config.yaml'),
       'schema: outline\nreferences:\n  - team-context\n'
     );
   });
@@ -64,7 +64,7 @@ describe('store references in instructions (3.1)', () => {
         store_id: 'team-context',
         root: fs.realpathSync.native(storeRoot),
         specs: [{ id: 'billing', summary: 'Usage-based invoicing.' }],
-        fetch: 'openspec show <spec-id> --type spec --store team-context',
+        fetch: 'outline-spec show <spec-id> --type spec --store team-context',
         status: [],
       },
     ]);
@@ -104,7 +104,7 @@ describe('store references in instructions (3.1)', () => {
   });
 
   it('omits the references field entirely when none are declared', async () => {
-    fs.writeFileSync(path.join(appRepo, 'openspec', 'config.yaml'), 'schema: outline\n');
+    fs.writeFileSync(path.join(appRepo, 'outline-spec', 'config.yaml'), 'schema: outline\n');
     await createChange(appRepo, 'plain-change');
 
     const result = await runCLI(
@@ -119,7 +119,7 @@ describe('store references in instructions (3.1)', () => {
     // A store whose config copy-pasted its own id: the omitted-not-empty
     // contract must hold so field presence stays a reliable signal.
     fs.writeFileSync(
-      path.join(storeRoot, 'openspec', 'config.yaml'),
+      path.join(storeRoot, 'outline-spec', 'config.yaml'),
       'schema: outline\nreferences:\n  - team-context\n'
     );
     await createChange(appRepo, 'self-ref-change', ['--store', 'team-context']);
@@ -137,11 +137,11 @@ describe('store references in instructions (3.1)', () => {
     // The store declares its own upstream reference; the cwd declares a
     // different one. With --store, the index must be the store's.
     const upstreamRoot = path.join(tempDir, 'upstream-context');
-    createOpenSpecRoot(upstreamRoot);
+    createOutlineSpecRoot(upstreamRoot);
     writeSpec(upstreamRoot, 'platform-rules', '# platform-rules\nPlatform rules.\n\n1. Rule: The platform has rules.\n');
     await registerStore({ id: 'upstream-context', localPath: upstreamRoot, globalDataDir });
     fs.writeFileSync(
-      path.join(storeRoot, 'openspec', 'config.yaml'),
+      path.join(storeRoot, 'outline-spec', 'config.yaml'),
       'schema: outline\nreferences:\n  - upstream-context\n'
     );
 
@@ -157,12 +157,12 @@ describe('store references in instructions (3.1)', () => {
 
   it('never follows a referenced store\'s own references (one level deep)', async () => {
     const upstreamRoot = path.join(tempDir, 'upstream-context');
-    createOpenSpecRoot(upstreamRoot);
+    createOutlineSpecRoot(upstreamRoot);
     await registerStore({ id: 'upstream-context', localPath: upstreamRoot, globalDataDir });
     // team-context references upstream-context; the app repo references
     // only team-context. upstream-context must not appear.
     fs.writeFileSync(
-      path.join(storeRoot, 'openspec', 'config.yaml'),
+      path.join(storeRoot, 'outline-spec', 'config.yaml'),
       'schema: outline\nreferences:\n  - upstream-context\n'
     );
 
@@ -178,7 +178,7 @@ describe('store references in instructions (3.1)', () => {
 
   it('keeps non-instruction commands byte-identical and the store untouched', async () => {
     const plainRepo = path.join(tempDir, 'plain-repo');
-    createOpenSpecRoot(plainRepo);
+    createOutlineSpecRoot(plainRepo);
 
     const storeBefore = snapshot(storeRoot);
     const outputs: Record<string, string[]> = {};
@@ -213,10 +213,10 @@ describe('store references in instructions (3.1)', () => {
     // No per-change link metadata in the app repo's change.
     const metadataPath = path.join(
       appRepo,
-      'openspec',
+      'outline-spec',
       'changes',
       'parity-check',
-      '.openspec.yaml'
+      '.outline-spec.yaml'
     );
     if (fs.existsSync(metadataPath)) {
       expect(fs.readFileSync(metadataPath, 'utf-8')).not.toContain('reference');
@@ -237,7 +237,7 @@ describe('store references in instructions (3.1)', () => {
     expect(fetchResult.stdout).toContain('Usage-based invoicing.');
 
     // The design lands in the app repo's own root, citing the store spec.
-    const changeDir = path.join(appRepo, 'openspec', 'changes', 'billing-rework');
+    const changeDir = path.join(appRepo, 'outline-spec', 'changes', 'billing-rework');
     fs.writeFileSync(
       path.join(changeDir, 'outline.md'),
       '## Proposal\nDerives from team-context/billing (see referenced stores).\n\n## Requirements\n1. invoicing: Invoices customers.\n  a. Upstream billing: The system invoices per the upstream requirement (team-context/billing).\n'

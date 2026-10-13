@@ -9,7 +9,7 @@ import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
 /**
  * Initiative-link creation was removed from normal change flows in the
  * store-root-selection slice: `new change` no longer accepts `--initiative`
- * and `openspec set change` is gone. Existing initiative metadata from the
+ * and `outline-spec set change` is gone. Existing initiative metadata from the
  * beta remains readable and untouched; this suite covers that legacy
  * behavior.
  */
@@ -19,14 +19,14 @@ describe('legacy repo-local change initiative metadata', () => {
 
   beforeEach(() => {
     tempDir = fs.realpathSync.native(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-change-initiative-link-'))
+      fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-change-initiative-link-'))
     );
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
       XDG_CONFIG_HOME: path.join(tempDir, 'config'),
       OPEN_SPEC_INTERACTIVE: '0',
     };
-    fs.mkdirSync(path.join(tempDir, 'openspec', 'changes'), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, 'outline-spec', 'changes'), { recursive: true });
   });
 
   afterEach(() => {
@@ -44,7 +44,7 @@ describe('legacy repo-local change initiative metadata', () => {
   }
 
   function changeDir(id: string): string {
-    return path.join(tempDir, 'openspec', 'changes', id);
+    return path.join(tempDir, 'outline-spec', 'changes', id);
   }
 
   function createLegacyLinkedChange(id: string): string {
@@ -55,7 +55,7 @@ describe('legacy repo-local change initiative metadata', () => {
       '## Why\nLegacy change.\n\n## What Changes\n- **billing:** Something\n'
     );
     fs.writeFileSync(
-      path.join(dir, '.openspec.yaml'),
+      path.join(dir, '.outline-spec.yaml'),
       'schema: outline\ninitiative:\n  store: platform\n  id: billing-launch\n'
     );
     return dir;
@@ -63,7 +63,7 @@ describe('legacy repo-local change initiative metadata', () => {
 
   it('keeps reading existing initiative metadata without modifying it', async () => {
     const dir = createLegacyLinkedChange('legacy-change');
-    const metadataPath = path.join(dir, '.openspec.yaml');
+    const metadataPath = path.join(dir, '.outline-spec.yaml');
     const before = fs.readFileSync(metadataPath, 'utf-8');
 
     const status = await runCLI(['status', '--change', 'legacy-change', '--json'], {
@@ -112,7 +112,7 @@ describe('legacy repo-local change initiative metadata', () => {
     expect(fs.existsSync(changeDir('linked-change'))).toBe(false);
   });
 
-  it('no longer provides openspec set change', async () => {
+  it('no longer provides outline-spec set change', async () => {
     createLegacyLinkedChange('legacy-change');
 
     const result = await runCLI(

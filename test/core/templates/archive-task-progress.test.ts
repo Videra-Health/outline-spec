@@ -13,7 +13,7 @@ import { runCLI } from '../../helpers/run-cli.js';
 // Go through getSkillTemplates/getCommandTemplates rather than the raw
 // templates: these workflows carry optional-workflow blocks, and only these
 // entry points resolve them against an installed set. Building from the raw
-// template leaves `[[opsx:if-workflow ...]]` in the text, which skill
+// template leaves `[[outline-spec:if-workflow ...]]` in the text, which skill
 // generation rejects.
 const WORKFLOWS = ['land', 'archive'];
 const skill = (workflowId: string): string =>
@@ -44,23 +44,23 @@ describe('land task discovery uses schema-resolved CLI progress', () => {
   }
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-land-task-guidance-'));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-land-task-guidance-'));
     env = {
       XDG_DATA_HOME: path.join(root, 'data'),
       XDG_CONFIG_HOME: path.join(root, 'config'),
     };
-    await write('openspec/config.yaml', 'schema: custom\n');
-    await fs.mkdir(path.join(root, 'openspec/specs'), { recursive: true });
+    await write('outline-spec/config.yaml', 'schema: custom\n');
+    await fs.mkdir(path.join(root, 'outline-spec/specs'), { recursive: true });
     // Include another change so callers must match the selected name, not
     // take the first list entry or aggregate progress across the whole root.
-    await write('openspec/changes/other/tasks.md', '- [x] Unrelated completed work\n');
+    await write('outline-spec/changes/other/tasks.md', '- [x] Unrelated completed work\n');
     await registerStore({ id: storeId, localPath: root, globalDataDir: getGlobalDataDir({ env }) });
 
     // The caller's nearest root contains the same change name, but its tasks
     // are all done. Omitting --store must therefore produce different progress.
     callerRoot = path.join(root, 'caller');
-    await write('caller/openspec/config.yaml', 'schema: outline\n');
-    await write('caller/openspec/changes/selected/tasks.md', '- [x] Local work is done\n');
+    await write('caller/outline-spec/config.yaml', 'schema: outline\n');
+    await write('caller/outline-spec/changes/selected/tasks.md', '- [x] Local work is done\n');
   });
 
   afterEach(async () => {
@@ -72,7 +72,7 @@ describe('land task discovery uses schema-resolved CLI progress', () => {
       ['custom output', 'planning/work-items.md', ['planning/work-items.md']],
       ['multiple outputs', 'work/*.md', ['work/backend.md', 'work/frontend.md']],
     ] as const)(`${surface}: counts unfinished tasks in %s`, async (_label, generates, files) => {
-      await write('openspec/schemas/custom/schema.yaml', [
+      await write('outline-spec/schemas/custom/schema.yaml', [
         'name: custom',
         'version: 1',
         'artifacts:',
@@ -85,14 +85,14 @@ describe('land task discovery uses schema-resolved CLI progress', () => {
         '  requires: [implementation]',
         `  tracks: "${generates}"`,
       ].join('\n'));
-      await write('openspec/changes/selected/.openspec.yaml', 'schema: custom\n');
+      await write('outline-spec/changes/selected/.outline-spec.yaml', 'schema: custom\n');
       for (const file of files) {
-        await write(`openspec/changes/selected/${file}`, '- [ x ] Finished\n- [~] Pending\n- [ ] Pending\n');
+        await write(`outline-spec/changes/selected/${file}`, '- [ x ] Finished\n- [~] Pending\n- [ ] Pending\n');
       }
 
       // Execute the lookup actually taught in the task-checking step.
       const step = content.split('3. **')[1].split('4. **')[0];
-      const command = step.match(/`openspec (list[^`]*)`/);
+      const command = step.match(/`outline-spec (list[^`]*)`/);
       expect(command, surface).not.toBeNull();
       expect(step).toContain('`completedTasks < totalTasks`');
       expect(step).not.toContain('artifactPaths.tasks');
@@ -122,7 +122,7 @@ describe('land task discovery uses schema-resolved CLI progress', () => {
         completedTasks: files.length,
         status: 'in-progress',
       });
-      await expect(fs.access(path.join(root, 'openspec/changes/selected/tasks.md'))).rejects.toThrow();
+      await expect(fs.access(path.join(root, 'outline-spec/changes/selected/tasks.md'))).rejects.toThrow();
     });
   }
 });

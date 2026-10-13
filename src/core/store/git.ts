@@ -147,7 +147,7 @@ export async function commitStoreFiles(
   try {
     await execGitWrite(['add', '--', ...pathspecs], { cwd: storeRoot });
     await execGitWrite(
-      ['commit', '-m', `Initialize OpenSpec store ${id}`, '--', ...pathspecs],
+      ['commit', '-m', `Initialize outline-spec store ${id}`, '--', ...pathspecs],
       { cwd: storeRoot }
     );
   } catch (error) {
@@ -202,7 +202,7 @@ async function gitProbe(storeRoot: string, args: string[]): Promise<string | nul
     if (isProbeResourceFailure(error)) {
       process.emitWarning(
         `git ${args.join(' ')} did not complete in ${storeRoot}; store Git facts are unavailable for this run.`,
-        'OpenSpecGitProbeWarning'
+        'OutlineSpecGitProbeWarning'
       );
     }
     return null;

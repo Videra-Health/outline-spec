@@ -11,7 +11,7 @@ import { escapeTomlBasicString, escapeTomlMultilineBasicString } from '../toml.j
 
 /**
  * EasyCode adapter for command generation.
- * File path: .easycode/commands/opsx/<id>.toml
+ * File path: .easycode/commands/outline-spec/<id>.toml
  *
  * Format:
  *   description = "<basic-string>"         single-line, backslash/quote-safe
@@ -21,7 +21,7 @@ export const easycodeAdapter: ToolCommandAdapter = {
   toolId: 'easycode',
 
   getFilePath(commandId: string): string {
-    return path.join('.easycode', 'commands', 'opsx', `${commandId}.toml`);
+    return path.join('.easycode', 'commands', 'outline-spec', `${commandId}.toml`);
   },
 
   formatFile(content: CommandContent): string {

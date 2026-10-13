@@ -14,7 +14,7 @@ const INPUT_HEADING = /^\*\*Input\*\*:/m;
 
 /**
  * AtomCode adapter for command generation.
- * File path: .atomcode/commands/opsx-<id>.md
+ * File path: .atomcode/commands/outline-spec-<id>.md
  * Frontmatter: name, description, args
  *
  * AtomCode's custom-command parser reads name and args literally without YAML
@@ -31,7 +31,7 @@ export const atomcodeAdapter: ToolCommandAdapter = {
   toolId: 'atomcode',
 
   getFilePath(commandId: string): string {
-    return path.join('.atomcode', 'commands', `opsx-${commandId}.md`);
+    return path.join('.atomcode', 'commands', `outline-spec-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {
@@ -41,7 +41,7 @@ export const atomcodeAdapter: ToolCommandAdapter = {
     const acceptsInput = INPUT_HEADING.test(content.body);
     const argumentsBlock = acceptsInput ? '\n**Provided arguments**: $ARGUMENTS\n' : '';
     return `---
-name: opsx-${content.id}
+name: outline-spec-${content.id}
 ${description}args: ${acceptsInput ? 'optional' : 'none'}
 ---
 ${argumentsBlock}

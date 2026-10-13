@@ -48,7 +48,7 @@ describe('npm source installation', () => {
   }
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-npm-source-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-npm-source-'));
     sourceDir = path.join(tempDir, 'source with spaces');
     fs.mkdirSync(path.join(sourceDir, 'src'), { recursive: true });
     const pnpm = createFakeTool(tempDir, 'pnpm', { exitCode: 99 });
@@ -70,7 +70,7 @@ describe('npm source installation', () => {
     // Exercise the real lifecycle hooks and compiler without registry access or
     // copying the full application into every fixture.
     fs.writeFileSync(path.join(sourceDir, 'package.json'), JSON.stringify({
-      name: 'openspec-source-fixture',
+      name: 'outline-spec-source-fixture',
       version: '1.0.0',
       type: 'module',
       files: ['dist'],
@@ -94,7 +94,7 @@ describe('npm source installation', () => {
     fs.mkdirSync(consumerDir);
     fs.writeFileSync(path.join(consumerDir, 'package.json'), '{"private":true}');
     succeed('npm', ['install', '--omit=dev', spec], consumerDir);
-    const installed = path.join(consumerDir, 'node_modules', 'openspec-source-fixture');
+    const installed = path.join(consumerDir, 'node_modules', 'outline-spec-source-fixture');
     expect(succeed(process.execPath, [path.join(installed, 'dist', 'index.js')], consumerDir).trim())
       .toBe('source install works');
     expect(fs.existsSync(path.join(installed, 'dist', 'index.d.ts'))).toBe(true);
@@ -116,7 +116,7 @@ describe('npm source installation', () => {
     fs.writeFileSync(path.join(sourceDir, 'dist', 'stale.js'), 'stale');
     succeed('npm', ['pack']);
     expect(fs.existsSync(path.join(sourceDir, 'dist', 'stale.js'))).toBe(false);
-    installAndRun(path.join(sourceDir, 'openspec-source-fixture-1.0.0.tgz'));
+    installAndRun(path.join(sourceDir, 'outline-spec-source-fixture-1.0.0.tgz'));
   }, 60_000);
 
   it.each([false, true])('refuses to pack without build dependencies (stale artifacts: %s)', (stale) => {

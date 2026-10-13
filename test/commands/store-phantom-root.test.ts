@@ -3,18 +3,18 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-import { classifyOpenSpecDir } from '../../src/core/project-config.js';
+import { classifyOutlineSpecDir } from '../../src/core/project-config.js';
 import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
-import { createOpenSpecRoot } from '../helpers/openspec-fixtures.js';
+import { createOutlineSpecRoot } from '../helpers/outline-spec-fixtures.js';
 
 /**
- * The guide's store layout is `~/openspec/<id>`. With the id `specs` or
- * `changes`, the store folder is itself `~/openspec/specs` or
- * `~/openspec/changes`, which gave `$HOME` a planning shape. `$HOME` then
+ * The guide's store layout is `~/outline-spec/<id>`. With the id `specs` or
+ * `changes`, the store folder is itself `~/outline-spec/specs` or
+ * `~/outline-spec/changes`, which gave `$HOME` a planning shape. `$HOME` then
  * became the nearest root for every command under the home tree: the global
  * `defaultStore` was never consulted and new changes landed outside the store.
  */
-describe('a store named specs or changes at ~/openspec/<id>', () => {
+describe('a store named specs or changes at ~/outline-spec/<id>', () => {
   let tempDir: string;
   let home: string;
   let workDir: string;
@@ -22,7 +22,7 @@ describe('a store named specs or changes at ~/openspec/<id>', () => {
 
   beforeEach(() => {
     tempDir = fs.realpathSync.native(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-store-phantom-root-'))
+      fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-store-phantom-root-'))
     );
     home = path.join(tempDir, 'home');
     workDir = path.join(home, 'src', 'web-app');
@@ -48,9 +48,9 @@ describe('a store named specs or changes at ~/openspec/<id>', () => {
     }
   }
 
-  /** `store setup <id> --path ~/openspec/<id>`, then `config set defaultStore <id>`. */
+  /** `store setup <id> --path ~/outline-spec/<id>`, then `config set defaultStore <id>`. */
   async function setupDefaultStore(id: string): Promise<string> {
-    const storeRoot = path.join(home, 'openspec', id);
+    const storeRoot = path.join(home, 'outline-spec', id);
     const setup = await runCLI(
       ['store', 'setup', id, '--path', storeRoot, '--no-init-git', '--json'],
       { cwd: tempDir, env }
@@ -98,15 +98,15 @@ describe('a store named specs or changes at ~/openspec/<id>', () => {
   );
 
   it.each(['specs', 'changes'])(
-    'new change lands in the store named %s, not under $HOME/openspec',
+    'new change lands in the store named %s, not under $HOME/outline-spec',
     async (id) => {
       const storeRoot = await setupDefaultStore(id);
 
       const result = await runCLI(['new', 'change', 'probe-change', '--json'], { cwd: workDir, env });
 
       expect(result.exitCode).toBe(0);
-      expect(fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'probe-change'))).toBe(true);
-      expect(fs.existsSync(path.join(home, 'openspec', 'changes', 'probe-change'))).toBe(false);
+      expect(fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'probe-change'))).toBe(true);
+      expect(fs.existsSync(path.join(home, 'outline-spec', 'changes', 'probe-change'))).toBe(false);
     },
     60_000
   );
@@ -114,7 +114,7 @@ describe('a store named specs or changes at ~/openspec/<id>', () => {
   it('resolves the store itself as the nearest root from inside it', async () => {
     const storeRoot = await setupDefaultStore('specs');
 
-    expect(await rootFrom(path.join(storeRoot, 'openspec', 'changes'))).toEqual({
+    expect(await rootFrom(path.join(storeRoot, 'outline-spec', 'changes'))).toEqual({
       path: canonical(storeRoot),
       source: 'nearest',
     });
@@ -122,14 +122,14 @@ describe('a store named specs or changes at ~/openspec/<id>', () => {
 
   it('keeps a real project root at $HOME as the nearest root', async () => {
     await setupDefaultStore('team-plans');
-    createOpenSpecRoot(home);
+    createOutlineSpecRoot(home);
 
     expect(await rootFrom(workDir)).toEqual({ path: canonical(home), source: 'nearest' });
   }, 60_000);
 
   it('keeps $HOME a root when its changes/ is real planning, even beside a store named specs', async () => {
     await setupDefaultStore('specs');
-    fs.mkdirSync(path.join(home, 'openspec', 'changes'), { recursive: true });
+    fs.mkdirSync(path.join(home, 'outline-spec', 'changes'), { recursive: true });
 
     expect(await rootFrom(workDir)).toEqual({ path: canonical(home), source: 'nearest' });
   }, 60_000);
@@ -152,11 +152,11 @@ describe('a store named specs or changes at ~/openspec/<id>', () => {
   );
 });
 
-describe('classifyOpenSpecDir planning shape', () => {
+describe('classifyOutlineSpecDir planning shape', () => {
   let projectRoot: string;
 
   beforeEach(() => {
-    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-classify-'));
+    projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-classify-'));
   });
 
   afterEach(() => {
@@ -164,33 +164,33 @@ describe('classifyOpenSpecDir planning shape', () => {
   });
 
   function makeStoreFolder(relativePath: string, id: string): void {
-    const metadataDir = path.join(projectRoot, relativePath, '.openspec-store');
+    const metadataDir = path.join(projectRoot, relativePath, '.outline-spec-store');
     fs.mkdirSync(metadataDir, { recursive: true });
     fs.writeFileSync(path.join(metadataDir, 'store.yaml'), `version: 1\nid: ${id}\n`);
   }
 
-  it.each(['specs', 'changes'])('counts a plain openspec/%s directory as planning', (dir) => {
-    fs.mkdirSync(path.join(projectRoot, 'openspec', dir), { recursive: true });
+  it.each(['specs', 'changes'])('counts a plain outline-spec/%s directory as planning', (dir) => {
+    fs.mkdirSync(path.join(projectRoot, 'outline-spec', dir), { recursive: true });
 
-    expect(classifyOpenSpecDir(projectRoot).hasPlanningShape).toBe(true);
+    expect(classifyOutlineSpecDir(projectRoot).hasPlanningShape).toBe(true);
   });
 
-  it.each(['specs', 'changes'])('does not count openspec/%s when it is a store root', (dir) => {
-    makeStoreFolder(path.join('openspec', dir), dir);
+  it.each(['specs', 'changes'])('does not count outline-spec/%s when it is a store root', (dir) => {
+    makeStoreFolder(path.join('outline-spec', dir), dir);
 
-    expect(classifyOpenSpecDir(projectRoot).hasPlanningShape).toBe(false);
+    expect(classifyOutlineSpecDir(projectRoot).hasPlanningShape).toBe(false);
   });
 
   it('counts the other directory when only one of them is a store root', () => {
-    makeStoreFolder(path.join('openspec', 'specs'), 'specs');
-    fs.mkdirSync(path.join(projectRoot, 'openspec', 'changes'), { recursive: true });
+    makeStoreFolder(path.join('outline-spec', 'specs'), 'specs');
+    fs.mkdirSync(path.join(projectRoot, 'outline-spec', 'changes'), { recursive: true });
 
-    expect(classifyOpenSpecDir(projectRoot).hasPlanningShape).toBe(true);
+    expect(classifyOutlineSpecDir(projectRoot).hasPlanningShape).toBe(true);
   });
 
   it('still counts a specs directory whose store metadata sits deeper inside it', () => {
-    makeStoreFolder(path.join('openspec', 'specs', 'billing'), 'billing');
+    makeStoreFolder(path.join('outline-spec', 'specs', 'billing'), 'billing');
 
-    expect(classifyOpenSpecDir(projectRoot).hasPlanningShape).toBe(true);
+    expect(classifyOutlineSpecDir(projectRoot).hasPlanningShape).toBe(true);
   });
 });

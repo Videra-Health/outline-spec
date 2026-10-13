@@ -4,7 +4,7 @@ import path from 'path';
 import { tmpdir } from 'os';
 import { runCLI } from '../helpers/run-cli.js';
 
-describe('openspec validate checks task checkbox formatting (#354)', () => {
+describe('outline-spec validate checks task checkbox formatting (#354)', () => {
   let projectDir: string;
 
   const write = async (relative: string, content: string) => {
@@ -79,42 +79,42 @@ describe('openspec validate checks task checkbox formatting (#354)', () => {
   ].join('\n');
 
   beforeAll(async () => {
-    projectDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-task-checkboxes-e2e-'));
+    projectDir = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-task-checkboxes-e2e-'));
 
-    await write('openspec/changes/bullet-tasks/outline.md', validOutline);
+    await write('outline-spec/changes/bullet-tasks/outline.md', validOutline);
     await write(
-      'openspec/changes/bullet-tasks/tasks.md',
+      'outline-spec/changes/bullet-tasks/tasks.md',
       ['# Tasks', '', '## 1. Implementation', '', '- Add the parser', '- Add the tests', ''].join(
         '\n'
       )
     );
 
-    await write('openspec/changes/checkbox-tasks/outline.md', validOutline);
+    await write('outline-spec/changes/checkbox-tasks/outline.md', validOutline);
     await write(
-      'openspec/changes/checkbox-tasks/tasks.md',
+      'outline-spec/changes/checkbox-tasks/tasks.md',
       ['## 1. Implementation', '', '- [ ] 1.1 Add the parser', '- A supporting note', ''].join('\n')
     );
 
-    await write('openspec/schemas/glob-tasks/schema.yaml', globTasksSchema);
-    await write('openspec/changes/nested-bullets/.openspec.yaml', 'schema: glob-tasks\n');
-    await write('openspec/changes/nested-bullets/outline.md', validOutline);
-    await write('openspec/changes/nested-bullets/backend/tasks.md', '- build the api\n');
-    await write('openspec/changes/nested-bullets/frontend/tasks.md', '- [ ] 2.1 build the ui\n');
+    await write('outline-spec/schemas/glob-tasks/schema.yaml', globTasksSchema);
+    await write('outline-spec/changes/nested-bullets/.outline-spec.yaml', 'schema: glob-tasks\n');
+    await write('outline-spec/changes/nested-bullets/outline.md', validOutline);
+    await write('outline-spec/changes/nested-bullets/backend/tasks.md', '- build the api\n');
+    await write('outline-spec/changes/nested-bullets/frontend/tasks.md', '- [ ] 2.1 build the ui\n');
 
-    await write('openspec/changes/nested-all-bullets/.openspec.yaml', 'schema: glob-tasks\n');
-    await write('openspec/changes/nested-all-bullets/outline.md', validOutline);
-    await write('openspec/changes/nested-all-bullets/backend/tasks.md', '- build the api\n');
-    await write('openspec/changes/nested-all-bullets/frontend/tasks.md', '- build the ui\n');
+    await write('outline-spec/changes/nested-all-bullets/.outline-spec.yaml', 'schema: glob-tasks\n');
+    await write('outline-spec/changes/nested-all-bullets/outline.md', validOutline);
+    await write('outline-spec/changes/nested-all-bullets/backend/tasks.md', '- build the api\n');
+    await write('outline-spec/changes/nested-all-bullets/frontend/tasks.md', '- build the ui\n');
 
-    await write('openspec/schemas/implicit-tasks/schema.yaml', implicitTasksSchema);
-    await write('openspec/changes/implicit-tracking/.openspec.yaml', 'schema: implicit-tasks\n');
-    await write('openspec/changes/implicit-tracking/outline.md', validOutline);
-    await write('openspec/changes/implicit-tracking/tasks.md', '- build the api\n');
+    await write('outline-spec/schemas/implicit-tasks/schema.yaml', implicitTasksSchema);
+    await write('outline-spec/changes/implicit-tracking/.outline-spec.yaml', 'schema: implicit-tasks\n');
+    await write('outline-spec/changes/implicit-tracking/outline.md', validOutline);
+    await write('outline-spec/changes/implicit-tracking/tasks.md', '- build the api\n');
 
-    await write('openspec/schemas/no-tasks-artifact/schema.yaml', untrackedTasksSchema);
-    await write('openspec/changes/untracked-tasks/.openspec.yaml', 'schema: no-tasks-artifact\n');
-    await write('openspec/changes/untracked-tasks/outline.md', validOutline);
-    await write('openspec/changes/untracked-tasks/tasks.md', '- an untracked bullet\n');
+    await write('outline-spec/schemas/no-tasks-artifact/schema.yaml', untrackedTasksSchema);
+    await write('outline-spec/changes/untracked-tasks/.outline-spec.yaml', 'schema: no-tasks-artifact\n');
+    await write('outline-spec/changes/untracked-tasks/outline.md', validOutline);
+    await write('outline-spec/changes/untracked-tasks/tasks.md', '- an untracked bullet\n');
   });
 
   afterAll(async () => {
@@ -231,19 +231,19 @@ describe('openspec validate checks task checkbox formatting (#354)', () => {
     async () => {
       // The claim is about the whole tracked set, and the checkboxes could be
       // in exactly the file that would not open.
-      const dir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-task-unreadable-e2e-'));
+      const dir = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-task-unreadable-e2e-'));
       const writeIn = async (relative: string, content: string) => {
         const file = path.join(dir, relative);
         await fs.mkdir(path.dirname(file), { recursive: true });
         await fs.writeFile(file, content, 'utf-8');
         return file;
       };
-      await writeIn('openspec/schemas/glob-tasks/schema.yaml', globTasksSchema);
-      await writeIn('openspec/changes/half-read/.openspec.yaml', 'schema: glob-tasks\n');
-      await writeIn('openspec/changes/half-read/outline.md', validOutline);
-      await writeIn('openspec/changes/half-read/backend/tasks.md', '- build the api\n');
+      await writeIn('outline-spec/schemas/glob-tasks/schema.yaml', globTasksSchema);
+      await writeIn('outline-spec/changes/half-read/.outline-spec.yaml', 'schema: glob-tasks\n');
+      await writeIn('outline-spec/changes/half-read/outline.md', validOutline);
+      await writeIn('outline-spec/changes/half-read/backend/tasks.md', '- build the api\n');
       const locked = await writeIn(
-        'openspec/changes/half-read/frontend/tasks.md',
+        'outline-spec/changes/half-read/frontend/tasks.md',
         '- [ ] 2.1 build the ui\n'
       );
       await fs.chmod(locked, 0o000);

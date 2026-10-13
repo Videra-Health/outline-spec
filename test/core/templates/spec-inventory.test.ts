@@ -8,19 +8,19 @@ import {
 } from '../../../src/core/shared/skill-generation.js';
 import {
   getExploreSkillTemplate,
-  getOpsxExploreCommandTemplate,
+  getOutlineSpecExploreCommandTemplate,
 } from '../../../src/core/templates/skill-templates.js';
 import { loadSchema } from '../../../src/core/artifact-graph/schema.js';
 
-// #1689: 1.9.0 removed openspec/AGENTS.md, which carried the spec index, and
+// #1689: 1.9.0 removed outline-spec/AGENTS.md, which carried the spec index, and
 // nothing that replaced it ever named the verb that lists specs. Measured
-// across one repo's generated surfaces: `openspec list --json` (the CHANGE
-// list) appeared 10 times, `openspec list --specs` zero times. An agent told
+// across one repo's generated surfaces: `outline-spec list --json` (the CHANGE
+// list) appeared 10 times, `outline-spec list --specs` zero times. An agent told
 // to "read the existing specs first" reaches for the one enumeration verb it
 // was taught, gets the in-flight change list, and reports the step complete
 // against the wrong object.
-const SPEC_INVENTORY = 'openspec list --specs';
-const SPEC_READ = 'openspec show "<spec>" --type spec';
+const SPEC_INVENTORY = 'outline-spec list --specs';
+const SPEC_READ = 'outline-spec show "<spec>" --type spec';
 
 // Assertions about the guidance attached to the command are scoped to a window
 // after it rather than to the whole body, so an unrelated occurrence elsewhere
@@ -40,7 +40,7 @@ function instructionFor(artifactId: string): string {
 
 const exploreBodies: Array<[string, string]> = [
   ['explore skill', getExploreSkillTemplate().instructions],
-  ['explore command', getOpsxExploreCommandTemplate().content],
+  ['explore command', getOutlineSpecExploreCommandTemplate().content],
 ];
 
 describe('spec inventory vocabulary (#1689)', () => {
@@ -64,11 +64,11 @@ describe('spec inventory vocabulary (#1689)', () => {
   });
 
   it('distinguishes the change list from the spec inventory in explore', () => {
-    // Naming the command is not enough on its own: `openspec list` defaults to
+    // Naming the command is not enough on its own: `outline-spec list` defaults to
     // changes, so the two enumerations have to be told apart explicitly.
     for (const [label, body] of exploreBodies) {
-      expect(body, label).toContain('openspec list --json');
-      expect(body, label).toContain('`openspec list` on its own never shows it');
+      expect(body, label).toContain('outline-spec list --json');
+      expect(body, label).toContain('`outline-spec list` on its own never shows it');
     }
   });
 
@@ -76,7 +76,7 @@ describe('spec inventory vocabulary (#1689)', () => {
     expect(instructionFor('outline')).toContain(SPEC_INVENTORY);
   });
 
-  // A bare `openspec list --specs` reads the local inventory, so under a
+  // A bare `outline-spec list --specs` reads the local inventory, so under a
   // selected store it confirms a capability path against the wrong root.
   // Every site that names the command must carry the store qualifier with it.
   it('carries the store qualifier everywhere it names the command', () => {
@@ -102,9 +102,9 @@ describe('spec inventory vocabulary (#1689)', () => {
 
   // Reading the inventory back by raw path defeats the fix under a store: the
   // ids `list --specs --store <id>` returns are not present under the local
-  // `openspec/specs/`, so the read either fails or silently lands on a
+  // `outline-spec/specs/`, so the read either fails or silently lands on a
   // same-named local capability - the wrong-object failure #1689 is about.
-  // `openspec show` resolves against the same root the listing came from.
+  // `outline-spec show` resolves against the same root the listing came from.
   it('reads a listed capability with the store-aware command', () => {
     const sites: Array<[string, string]> = [
       ...exploreBodies,

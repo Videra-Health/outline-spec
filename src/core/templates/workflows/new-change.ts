@@ -15,20 +15,20 @@ import { PROJECT_ROOT_GUARD } from './project-root.js';
  */
 const FIRST_ARTIFACT_PROMPT = optionalWorkflow(
   'continue',
-  'Run `/opsx:continue` or just describe what this change is about and I\'ll draft it.',
+  'Run `/outline-spec:continue` or just describe what this change is about and I\'ll draft it.',
   'Just describe what this change is about and I\'ll draft it.'
 );
 
 const EXISTING_CHANGE_HINT = optionalWorkflow(
   'continue',
-  'suggest using `/opsx:continue` instead',
+  'suggest using `/outline-spec:continue` instead',
   'say so and ask whether to resume that change or pick a different name'
 );
 
 export function getNewChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-new-change',
-    description: 'Start a new OpenSpec change using the experimental artifact workflow. Use when the user wants to create a new feature, fix, or modification with a structured step-by-step approach. Also use when the user says "openspec new change" or "opsx new".',
+    name: 'outline-spec-new-change',
+    description: 'Start a new outline-spec change using the experimental artifact workflow. Use when the user wants to create a new feature, fix, or modification with a structured step-by-step approach. Also use when the user says "outline-spec new change".',
     instructions: `Start a new change using the experimental artifact-driven approach.
 
 ${STORE_SELECTION_GUIDANCE}
@@ -54,20 +54,20 @@ ${PROJECT_ROOT_GUARD}
 
    **Use a different schema only if the user mentions:**
    - A specific schema name → use \`--schema <name>\`
-   - "show workflows" or "what workflows" → run \`openspec schemas --json\` and let them choose
+   - "show workflows" or "what workflows" → run \`outline-spec schemas --json\` and let them choose
 
    **Otherwise**: Omit \`--schema\` to use the default.
 
 3. **Create the change directory**
    \`\`\`bash
-   openspec new change "<name>"
+   outline-spec new change "<name>"
    \`\`\`
    Add \`--schema <name>\` only if the user requested a specific workflow.
    This creates a scaffolded change in the planning home resolved by the CLI.
 
 4. **Show the artifact status**
    \`\`\`bash
-   openspec status --change "<name>" --json
+   outline-spec status --change "<name>" --json
    \`\`\`
    Use the returned \`planningHome\`, \`changeRoot\`, \`artifactPaths\`, and \`nextSteps\` instead of assuming repo-local paths.
 
@@ -75,7 +75,7 @@ ${PROJECT_ROOT_GUARD}
    The first artifact depends on the schema (e.g., \`outline\` for the default outline schema).
    Check the status output to find the first artifact with status "ready".
    \`\`\`bash
-   openspec instructions <first-artifact-id> --change "<name>"
+   outline-spec instructions <first-artifact-id> --change "<name>"
    \`\`\`
    This outputs the template and context for creating the first artifact.
 
@@ -97,15 +97,15 @@ After completing the steps, summarize:
 - If a change with that name already exists, suggest continuing that change instead
 - Pass --schema if using a non-default workflow`,
     license: 'MIT',
-    compatibility: 'Requires openspec CLI.',
-    metadata: { author: 'openspec', version: '1.0' },
+    compatibility: 'Requires outline-spec CLI.',
+    metadata: { author: 'outline-spec', version: '1.0' },
   };
 }
 
-export function getOpsxNewCommandTemplate(): CommandTemplate {
+export function getOutlineSpecNewCommandTemplate(): CommandTemplate {
   return {
-    name: 'OPSX: New',
-    description: 'Start a new change using the experimental artifact workflow (OPSX)',
+    name: 'outline-spec: New',
+    description: 'Start a new change using the experimental artifact workflow (outline-spec)',
     category: 'Workflow',
     tags: ['workflow', 'artifacts', 'experimental'],
     content: `Start a new change using the experimental artifact-driven approach.
@@ -114,7 +114,7 @@ ${STORE_SELECTION_GUIDANCE}
 
 ${PROJECT_ROOT_GUARD}
 
-**Input**: The argument after \`/opsx:new\` is the change name (kebab-case), OR a description of what the user wants to build.
+**Input**: The argument after \`/outline-spec:new\` is the change name (kebab-case), OR a description of what the user wants to build.
 
 **Steps**
 
@@ -133,27 +133,27 @@ ${PROJECT_ROOT_GUARD}
 
    **Use a different schema only if the user mentions:**
    - A specific schema name → use \`--schema <name>\`
-   - "show workflows" or "what workflows" → run \`openspec schemas --json\` and let them choose
+   - "show workflows" or "what workflows" → run \`outline-spec schemas --json\` and let them choose
 
    **Otherwise**: Omit \`--schema\` to use the default.
 
 3. **Create the change directory**
    \`\`\`bash
-   openspec new change "<name>"
+   outline-spec new change "<name>"
    \`\`\`
    Add \`--schema <name>\` only if the user requested a specific workflow.
    This creates a scaffolded change in the planning home resolved by the CLI.
 
 4. **Show the artifact status**
    \`\`\`bash
-   openspec status --change "<name>" --json
+   outline-spec status --change "<name>" --json
    \`\`\`
    Use the returned \`planningHome\`, \`changeRoot\`, \`artifactPaths\`, and \`nextSteps\` instead of assuming repo-local paths.
 
 5. **Get instructions for the first artifact**
    The first artifact depends on the schema. Check the status output to find the first artifact with status "ready".
    \`\`\`bash
-   openspec instructions <first-artifact-id> --change "<name>"
+   outline-spec instructions <first-artifact-id> --change "<name>"
    \`\`\`
    This outputs the template and context for creating the first artifact.
 

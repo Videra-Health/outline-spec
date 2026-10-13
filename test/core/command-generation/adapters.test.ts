@@ -47,7 +47,7 @@ import { parse as parseToml } from 'smol-toml';
 describe('command-generation/adapters', () => {
   const sampleContent: CommandContent = {
     id: 'explore',
-    name: 'OpenSpec Explore',
+    name: 'outline-spec Explore',
     description: 'Enter explore mode for thinking',
     category: 'Workflow',
     tags: ['workflow', 'explore', 'experimental'],
@@ -61,21 +61,21 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = claudeAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.claude', 'commands', 'opsx', 'explore.md'));
+      expect(filePath).toBe(path.join('.claude', 'commands', 'outline-spec', 'explore.md'));
     });
 
     it('should generate correct file path for different command IDs', () => {
-      expect(claudeAdapter.getFilePath('new')).toBe(path.join('.claude', 'commands', 'opsx', 'new.md'));
-      expect(claudeAdapter.getFilePath('bulk-archive')).toBe(path.join('.claude', 'commands', 'opsx', 'bulk-archive.md'));
+      expect(claudeAdapter.getFilePath('new')).toBe(path.join('.claude', 'commands', 'outline-spec', 'new.md'));
+      expect(claudeAdapter.getFilePath('bulk-archive')).toBe(path.join('.claude', 'commands', 'outline-spec', 'bulk-archive.md'));
     });
 
     it('should format file with correct YAML frontmatter', () => {
       const output = claudeAdapter.formatFile(sampleContent);
 
       expect(output).toContain('---\n');
-      expect(output).toContain('name: "OpenSpec Explore"');
+      expect(output).toContain('name: "outline-spec Explore"');
       expect(output).toContain('description: "Enter explore mode for thinking"');
-      expect(output).toContain('allowed-tools: Bash(openspec:*)');
+      expect(output).toContain('allowed-tools: Bash(outline-spec:*)');
       expect(output).toContain('category: "Workflow"');
       expect(output).toContain('tags: ["workflow", "explore", "experimental"]');
       expect(output).toContain('---\n\n');
@@ -94,22 +94,22 @@ describe('command-generation/adapters', () => {
       expect(cursorAdapter.toolId).toBe('cursor');
     });
 
-    it('should generate correct file path with opsx- prefix', () => {
+    it('should generate correct file path with outline-spec- prefix', () => {
       const filePath = cursorAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.cursor', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.cursor', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should generate correct file paths for different commands', () => {
-      expect(cursorAdapter.getFilePath('new')).toBe(path.join('.cursor', 'commands', 'opsx-new.md'));
-      expect(cursorAdapter.getFilePath('bulk-archive')).toBe(path.join('.cursor', 'commands', 'opsx-bulk-archive.md'));
+      expect(cursorAdapter.getFilePath('new')).toBe(path.join('.cursor', 'commands', 'outline-spec-new.md'));
+      expect(cursorAdapter.getFilePath('bulk-archive')).toBe(path.join('.cursor', 'commands', 'outline-spec-bulk-archive.md'));
     });
 
     it('should format file with Cursor-specific frontmatter', () => {
       const output = cursorAdapter.formatFile(sampleContent);
 
       expect(output).toContain('---\n');
-      expect(output).toContain('name: "/opsx-explore"');
-      expect(output).toContain('id: "opsx-explore"');
+      expect(output).toContain('name: "/outline-spec-explore"');
+      expect(output).toContain('id: "outline-spec-explore"');
       expect(output).toContain('category: "Workflow"');
       expect(output).toContain('description: "Enter explore mode for thinking"');
       expect(output).toContain('---\n\n');
@@ -127,9 +127,9 @@ describe('command-generation/adapters', () => {
       expect(commandCodeAdapter.toolId).toBe('command-code');
     });
 
-    it('should generate correct file path with opsx- prefix', () => {
+    it('should generate correct file path with outline-spec- prefix', () => {
       const filePath = commandCodeAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.commandcode', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.commandcode', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should format the documented plain Markdown command body', () => {
@@ -138,10 +138,10 @@ describe('command-generation/adapters', () => {
       expect(output).not.toContain('description:');
     });
 
-    it('should pass invocation arguments into the OpenSpec input contract', () => {
+    it('should pass invocation arguments into the outline-spec input contract', () => {
       const output = commandCodeAdapter.formatFile({
         ...sampleContent,
-        body: '# OpenSpec command\n\n**Input**: A change name or description.\n\nRun the workflow.',
+        body: '# outline-spec command\n\n**Input**: A change name or description.\n\nRun the workflow.',
       });
       expect(output).toContain(
         '**Input**: A change name or description.\n**Provided arguments**: $ARGUMENTS'
@@ -175,13 +175,13 @@ describe('command-generation/adapters', () => {
     it('is generated by generateCommand with hyphen command references', () => {
       const contentWithCommands: CommandContent = {
         ...sampleContent,
-        body: 'Use /opsx:new to start, then /opsx:apply to implement.',
+        body: 'Use /outline-spec:new to start, then /outline-spec:apply to implement.',
       };
       const output = generateCommand(contentWithCommands, commandCodeAdapter).fileContent;
-      expect(output).toContain('/opsx-new');
-      expect(output).toContain('/opsx-apply');
-      expect(output).not.toContain('/opsx:new');
-      expect(output).not.toContain('/opsx:apply');
+      expect(output).toContain('/outline-spec-new');
+      expect(output).toContain('/outline-spec-apply');
+      expect(output).not.toContain('/outline-spec:new');
+      expect(output).not.toContain('/outline-spec:apply');
     });
   });
 
@@ -192,14 +192,14 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = devinAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.devin', 'workflows', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.devin', 'workflows', 'outline-spec-explore.md'));
     });
 
     it('should format file with YAML frontmatter', () => {
       const output = devinAdapter.formatFile(sampleContent);
 
       expect(output).toContain('---\n');
-      expect(output).toContain('name: "OpenSpec Explore"');
+      expect(output).toContain('name: "outline-spec Explore"');
       expect(output).toContain('description: "Enter explore mode for thinking"');
       expect(output).toContain('category: "Workflow"');
       expect(output).toContain('tags: ["workflow", "explore", "experimental"]');
@@ -207,7 +207,7 @@ describe('command-generation/adapters', () => {
       expect(output).toContain('This is the command body.');
     });
 
-    // The body's `/opsx:*` references are rewritten to the `/opsx-*` form
+    // The body's `/outline-spec:*` references are rewritten to the `/outline-spec-*` form
     // Devin registers by the generator, not here — adapters are pure
     // formatters. Covered for devin in invocation.test.ts.
 
@@ -229,7 +229,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = amazonQAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.amazonq', 'prompts', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.amazonq', 'prompts', 'outline-spec-explore.md'));
     });
 
     it('should format file with description frontmatter', () => {
@@ -248,7 +248,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = antigravityAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.agents', 'workflows', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.agents', 'workflows', 'outline-spec-explore.md'));
     });
 
     it('should format file with description frontmatter', () => {
@@ -267,12 +267,12 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = atomcodeAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.atomcode', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.atomcode', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should generate correct file paths for different commands', () => {
-      expect(atomcodeAdapter.getFilePath('new')).toBe(path.join('.atomcode', 'commands', 'opsx-new.md'));
-      expect(atomcodeAdapter.getFilePath('bulk-archive')).toBe(path.join('.atomcode', 'commands', 'opsx-bulk-archive.md'));
+      expect(atomcodeAdapter.getFilePath('new')).toBe(path.join('.atomcode', 'commands', 'outline-spec-new.md'));
+      expect(atomcodeAdapter.getFilePath('bulk-archive')).toBe(path.join('.atomcode', 'commands', 'outline-spec-bulk-archive.md'));
     });
 
     it.each(getCommandContents())('should register $id with its invocation name and declared arguments', (content) => {
@@ -281,7 +281,7 @@ describe('command-generation/adapters', () => {
       const acceptsInput = /^\*\*Input\*\*:/m.test(content.body);
 
       expect(frontmatter).toEqual({
-        name: `opsx-${content.id}`,
+        name: `outline-spec-${content.id}`,
         description: content.description,
         args: acceptsInput ? 'optional' : 'none',
       });
@@ -292,7 +292,7 @@ describe('command-generation/adapters', () => {
       // ArgsRequirement::None and silently drops every argument. `name` and
       // `args` must therefore stay unquoted -- do not route them through the
       // shared escapeYamlValue helper, which always double-quotes.
-      expect(output).toContain(`\nname: opsx-${content.id}\n`);
+      expect(output).toContain(`\nname: outline-spec-${content.id}\n`);
       expect(output).toContain(`\nargs: ${acceptsInput ? 'optional' : 'none'}\n`);
       expect(output).toContain(content.body);
       // $ARGUMENTS is only worth shipping where the workflow reads it.
@@ -324,11 +324,11 @@ describe('command-generation/adapters', () => {
 
       const output = atomcodeAdapter.formatFile(content);
 
-      expect(output).toContain(`\nname: opsx-${content.id}\n`);
+      expect(output).toContain(`\nname: outline-spec-${content.id}\n`);
       expect(output).toContain('\nargs: optional\n');
       // Still valid YAML for frontmatter consumers, and round-trips exactly.
       expect(parseYaml(output.match(/^---\n([\s\S]*?)\n---/)![1])).toEqual({
-        name: `opsx-${content.id}`,
+        name: `outline-spec-${content.id}`,
         description: content.description,
         args: 'optional',
       });
@@ -337,14 +337,14 @@ describe('command-generation/adapters', () => {
     it('should leave command reference rewriting to the shared generator', () => {
       const content: CommandContent = {
         ...sampleContent,
-        body: 'Run /opsx:apply to implement. Then /opsx:archive when done.',
+        body: 'Run /outline-spec:apply to implement. Then /outline-spec:archive when done.',
       };
 
       expect(atomcodeAdapter.formatFile(content)).toContain(content.body);
       const generated = generateCommand(content, atomcodeAdapter);
-      expect(generated.fileContent).toContain('/opsx-apply');
-      expect(generated.fileContent).toContain('/opsx-archive');
-      expect(generated.fileContent).not.toContain('/opsx:');
+      expect(generated.fileContent).toContain('/outline-spec-apply');
+      expect(generated.fileContent).toContain('/outline-spec-archive');
+      expect(generated.fileContent).not.toContain('/outline-spec:');
     });
   });
 
@@ -355,7 +355,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = auggieAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.augment', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.augment', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should format file with description and argument-hint', () => {
@@ -376,12 +376,12 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = bobAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.bob', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.bob', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should generate correct file paths for different commands', () => {
-      expect(bobAdapter.getFilePath('new')).toBe(path.join('.bob', 'commands', 'opsx-new.md'));
-      expect(bobAdapter.getFilePath('bulk-archive')).toBe(path.join('.bob', 'commands', 'opsx-bulk-archive.md'));
+      expect(bobAdapter.getFilePath('new')).toBe(path.join('.bob', 'commands', 'outline-spec-new.md'));
+      expect(bobAdapter.getFilePath('bulk-archive')).toBe(path.join('.bob', 'commands', 'outline-spec-bulk-archive.md'));
     });
 
     it('should format file with description and argument-hint frontmatter', () => {
@@ -396,13 +396,13 @@ describe('command-generation/adapters', () => {
     it('is generated by generateCommand with hyphen command references', () => {
       const contentWithRefs: CommandContent = {
         ...sampleContent,
-        body: 'Run /opsx:apply to implement. Then use /opsx:verify.',
+        body: 'Run /outline-spec:apply to implement. Then use /outline-spec:verify.',
       };
       const output = generateCommand(contentWithRefs, bobAdapter).fileContent;
-      expect(output).toContain('/opsx-apply');
-      expect(output).toContain('/opsx-verify');
-      expect(output).not.toContain('/opsx:apply');
-      expect(output).not.toContain('/opsx:verify');
+      expect(output).toContain('/outline-spec-apply');
+      expect(output).toContain('/outline-spec-verify');
+      expect(output).not.toContain('/outline-spec:apply');
+      expect(output).not.toContain('/outline-spec:verify');
     });
 
     it('should escape YAML special characters in description', () => {
@@ -440,12 +440,12 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = clineAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.clinerules', 'workflows', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.clinerules', 'workflows', 'outline-spec-explore.md'));
     });
 
     it('should format file with markdown header (no YAML frontmatter)', () => {
       const output = clineAdapter.formatFile(sampleContent);
-      expect(output).toContain('# OpenSpec Explore');
+      expect(output).toContain('# outline-spec Explore');
       expect(output).toContain('Enter explore mode for thinking');
       expect(output).toContain('This is the command body.');
       expect(output).not.toContain('---');
@@ -457,15 +457,15 @@ describe('command-generation/adapters', () => {
       expect(codebuddyAdapter.toolId).toBe('codebuddy');
     });
 
-    it('should generate correct file path with nested opsx folder', () => {
+    it('should generate correct file path with nested outline-spec folder', () => {
       const filePath = codebuddyAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.codebuddy', 'commands', 'opsx', 'explore.md'));
+      expect(filePath).toBe(path.join('.codebuddy', 'commands', 'outline-spec', 'explore.md'));
     });
 
     it('should format file with name, description, and argument-hint', () => {
       const output = codebuddyAdapter.formatFile(sampleContent);
       expect(output).toContain('---\n');
-      expect(output).toContain('name: "OpenSpec Explore"');
+      expect(output).toContain('name: "outline-spec Explore"');
       expect(output).toContain('description: "Enter explore mode for thinking"');
       expect(output).toContain('argument-hint: "[command arguments]"');
       expect(output).toContain('---\n\n');
@@ -480,7 +480,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate a project prompt path', () => {
       expect(codeStudioAdapter.getFilePath('explore')).toBe(
-        path.join('.codestudio', 'prompts', 'opsx-explore.prompt.md')
+        path.join('.codestudio', 'prompts', 'outline-spec-explore.prompt.md')
       );
     });
 
@@ -501,13 +501,13 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path with .prompt extension', () => {
       const filePath = continueAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.continue', 'prompts', 'opsx-explore.prompt'));
+      expect(filePath).toBe(path.join('.continue', 'prompts', 'outline-spec-explore.prompt'));
     });
 
     it('should format file with name, description, and invokable', () => {
       const output = continueAdapter.formatFile(sampleContent);
       expect(output).toContain('---\n');
-      expect(output).toContain('name: "opsx-explore"');
+      expect(output).toContain('name: "outline-spec-explore"');
       expect(output).toContain('description: "Enter explore mode for thinking"');
       expect(output).toContain('invokable: true');
       expect(output).toContain(
@@ -525,7 +525,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = costrictAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.cospec', 'openspec', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.cospec', 'outline-spec', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should format file with description and argument-hint', () => {
@@ -543,15 +543,15 @@ describe('command-generation/adapters', () => {
       expect(crushAdapter.toolId).toBe('crush');
     });
 
-    it('should generate correct file path with nested opsx folder', () => {
+    it('should generate correct file path with nested outline-spec folder', () => {
       const filePath = crushAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.crush', 'commands', 'opsx', 'explore.md'));
+      expect(filePath).toBe(path.join('.crush', 'commands', 'outline-spec', 'explore.md'));
     });
 
     it('should format file with name, description, category, and tags', () => {
       const output = crushAdapter.formatFile(sampleContent);
       expect(output).toContain('---\n');
-      expect(output).toContain('name: "OpenSpec Explore"');
+      expect(output).toContain('name: "outline-spec Explore"');
       expect(output).toContain('description: "Enter explore mode for thinking"');
       expect(output).toContain('category: "Workflow"');
       expect(output).toContain('tags: ["workflow", "explore", "experimental"]');
@@ -567,7 +567,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = factoryAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.factory', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.factory', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should format file with description and argument-hint', () => {
@@ -583,7 +583,7 @@ describe('command-generation/adapters', () => {
   describe.each([geminiAdapter, easycodeAdapter])('$toolId TOML adapter', (adapter) => {
     it('should generate correct file path with .toml extension', () => {
       const filePath = adapter.getFilePath('explore');
-      expect(filePath).toBe(path.join(`.${adapter.toolId}`, 'commands', 'opsx', 'explore.toml'));
+      expect(filePath).toBe(path.join(`.${adapter.toolId}`, 'commands', 'outline-spec', 'explore.toml'));
     });
 
     it('should format file in TOML format', () => {
@@ -685,7 +685,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path with .prompt.md extension', () => {
       const filePath = githubCopilotAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.github', 'prompts', 'opsx-explore.prompt.md'));
+      expect(filePath).toBe(path.join('.github', 'prompts', 'outline-spec-explore.prompt.md'));
     });
 
     it('should format file with description frontmatter', () => {
@@ -704,14 +704,14 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = iflowAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.iflow', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.iflow', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should format file with name, id, category, and description', () => {
       const output = iflowAdapter.formatFile(sampleContent);
       expect(output).toContain('---\n');
-      expect(output).toContain('name: "/opsx-explore"');
-      expect(output).toContain('id: "opsx-explore"');
+      expect(output).toContain('name: "/outline-spec-explore"');
+      expect(output).toContain('id: "outline-spec-explore"');
       expect(output).toContain('category: "Workflow"');
       expect(output).toContain('description: "Enter explore mode for thinking"');
       expect(output).toContain('---\n\n');
@@ -726,7 +726,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = kilocodeAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.kilo', 'command', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.kilo', 'command', 'outline-spec-explore.md'));
     });
 
     it('should format file without frontmatter', () => {
@@ -743,7 +743,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = opencodeAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.opencode', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.opencode', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should format file with description frontmatter', () => {
@@ -754,10 +754,10 @@ describe('command-generation/adapters', () => {
       expect(output).toContain('This is the command body.');
     });
 
-    it('should pass invocation arguments into the OpenSpec input contract', () => {
+    it('should pass invocation arguments into the outline-spec input contract', () => {
       const output = opencodeAdapter.formatFile({
         ...sampleContent,
-        body: '# OpenSpec command\n\n**Input**: A change name or description.\n\nRun the workflow.',
+        body: '# outline-spec command\n\n**Input**: A change name or description.\n\nRun the workflow.',
       });
       expect(output).toContain(
         '**Input**: A change name or description.\n**Provided arguments**: $ARGUMENTS'
@@ -820,28 +820,28 @@ describe('command-generation/adapters', () => {
     it('is generated by generateCommand with hyphen command references', () => {
       const contentWithCommands: CommandContent = {
         ...sampleContent,
-        body: 'Use /opsx:new to start, then /opsx:apply to implement.',
+        body: 'Use /outline-spec:new to start, then /outline-spec:apply to implement.',
       };
       const output = generateCommand(contentWithCommands, opencodeAdapter).fileContent;
-      expect(output).toContain('/opsx-new');
-      expect(output).toContain('/opsx-apply');
-      expect(output).not.toContain('/opsx:new');
-      expect(output).not.toContain('/opsx:apply');
+      expect(output).toContain('/outline-spec-new');
+      expect(output).toContain('/outline-spec-apply');
+      expect(output).not.toContain('/outline-spec:new');
+      expect(output).not.toContain('/outline-spec:apply');
     });
 
     it('is generated by generateCommand with every reference hyphenated', () => {
       const contentWithMultipleCommands: CommandContent = {
         ...sampleContent,
-        body: `/opsx:explore for ideas
-/opsx:new to create
-/opsx:continue to proceed
-/opsx:apply to implement`,
+        body: `/outline-spec:explore for ideas
+/outline-spec:new to create
+/outline-spec:continue to proceed
+/outline-spec:apply to implement`,
       };
       const output = generateCommand(contentWithMultipleCommands, opencodeAdapter).fileContent;
-      expect(output).toContain('/opsx-explore');
-      expect(output).toContain('/opsx-new');
-      expect(output).toContain('/opsx-continue');
-      expect(output).toContain('/opsx-apply');
+      expect(output).toContain('/outline-spec-explore');
+      expect(output).toContain('/outline-spec-new');
+      expect(output).toContain('/outline-spec-continue');
+      expect(output).toContain('/outline-spec-apply');
     });
   });
 
@@ -850,15 +850,15 @@ describe('command-generation/adapters', () => {
       expect(qoderAdapter.toolId).toBe('qoder');
     });
 
-    it('should generate correct file path with nested opsx folder', () => {
+    it('should generate correct file path with nested outline-spec folder', () => {
       const filePath = qoderAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.qoder', 'commands', 'opsx', 'explore.md'));
+      expect(filePath).toBe(path.join('.qoder', 'commands', 'outline-spec', 'explore.md'));
     });
 
     it('should format file with name, description, category, and tags', () => {
       const output = qoderAdapter.formatFile(sampleContent);
       expect(output).toContain('---\n');
-      expect(output).toContain('name: "OpenSpec Explore"');
+      expect(output).toContain('name: "outline-spec Explore"');
       expect(output).toContain('description: "Enter explore mode for thinking"');
       expect(output).toContain('category: "Workflow"');
       expect(output).toContain('tags: ["workflow", "explore", "experimental"]');
@@ -874,7 +874,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path with .md extension', () => {
       const filePath = qwenAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.qwen', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.qwen', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should format file with description frontmatter', () => {
@@ -894,16 +894,16 @@ describe('command-generation/adapters', () => {
     });
 
     it('is generated by generateCommand with hyphen command references', () => {
-      // Qwen commands are invoked by filename (/opsx-<id>), like bob/opencode.
+      // Qwen commands are invoked by filename (/outline-spec-<id>), like bob/opencode.
       const contentWithRefs: CommandContent = {
         ...sampleContent,
-        body: 'Run /opsx:apply to implement. Then use /opsx:archive.',
+        body: 'Run /outline-spec:apply to implement. Then use /outline-spec:archive.',
       };
       const output = generateCommand(contentWithRefs, qwenAdapter).fileContent;
-      expect(output).toContain('/opsx-apply');
-      expect(output).toContain('/opsx-archive');
-      expect(output).not.toContain('/opsx:apply');
-      expect(output).not.toContain('/opsx:archive');
+      expect(output).toContain('/outline-spec-apply');
+      expect(output).toContain('/outline-spec-archive');
+      expect(output).not.toContain('/outline-spec:apply');
+      expect(output).not.toContain('/outline-spec:archive');
     });
   });
 
@@ -914,7 +914,7 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path with .md extension', () => {
       const filePath = gigacodeAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.gigacode', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.gigacode', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should format file with description frontmatter', () => {
@@ -934,16 +934,16 @@ describe('command-generation/adapters', () => {
     });
 
     it('is generated by generateCommand with hyphen command references', () => {
-      // GigaCode commands are invoked by filename (/opsx-<id>), like Qwen Code.
+      // GigaCode commands are invoked by filename (/outline-spec-<id>), like Qwen Code.
       const contentWithRefs: CommandContent = {
         ...sampleContent,
-        body: 'Run /opsx:apply to implement. Then use /opsx:archive.',
+        body: 'Run /outline-spec:apply to implement. Then use /outline-spec:archive.',
       };
       const output = generateCommand(contentWithRefs, gigacodeAdapter).fileContent;
-      expect(output).toContain('/opsx-apply');
-      expect(output).toContain('/opsx-archive');
-      expect(output).not.toContain('/opsx:apply');
-      expect(output).not.toContain('/opsx:archive');
+      expect(output).toContain('/outline-spec-apply');
+      expect(output).toContain('/outline-spec-archive');
+      expect(output).not.toContain('/outline-spec:apply');
+      expect(output).not.toContain('/outline-spec:archive');
     });
   });
 
@@ -954,12 +954,12 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = piAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.pi', 'prompts', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.pi', 'prompts', 'outline-spec-explore.md'));
     });
 
     it('should generate correct file paths for different commands', () => {
-      expect(piAdapter.getFilePath('new')).toBe(path.join('.pi', 'prompts', 'opsx-new.md'));
-      expect(piAdapter.getFilePath('bulk-archive')).toBe(path.join('.pi', 'prompts', 'opsx-bulk-archive.md'));
+      expect(piAdapter.getFilePath('new')).toBe(path.join('.pi', 'prompts', 'outline-spec-new.md'));
+      expect(piAdapter.getFilePath('bulk-archive')).toBe(path.join('.pi', 'prompts', 'outline-spec-bulk-archive.md'));
     });
 
     it('should format file with description frontmatter', () => {
@@ -973,19 +973,19 @@ describe('command-generation/adapters', () => {
     it('is generated by generateCommand with hyphen command references', () => {
       const contentWithRefs: CommandContent = {
         ...sampleContent,
-        body: 'Run /opsx:apply to implement. Then /opsx:archive when done.',
+        body: 'Run /outline-spec:apply to implement. Then /outline-spec:archive when done.',
       };
 
       const output = generateCommand(contentWithRefs, piAdapter).fileContent;
-      expect(output).toContain('/opsx-apply');
-      expect(output).toContain('/opsx-archive');
-      expect(output).not.toContain('/opsx:apply');
+      expect(output).toContain('/outline-spec-apply');
+      expect(output).toContain('/outline-spec-archive');
+      expect(output).not.toContain('/outline-spec:apply');
     });
 
     it('should inject template arguments into the input section', () => {
       const contentWithInput: CommandContent = {
         ...sampleContent,
-        body: '**Input**: The argument after `/opsx:explore` is the topic.\n\n**Steps**\n1. Think.',
+        body: '**Input**: The argument after `/outline-spec:explore` is the topic.\n\n**Steps**\n1. Think.',
       };
 
       const output = piAdapter.formatFile(contentWithInput);
@@ -1018,12 +1018,12 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = ohMyPiAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.omp', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.omp', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should generate correct file paths for different commands', () => {
-      expect(ohMyPiAdapter.getFilePath('new')).toBe(path.join('.omp', 'commands', 'opsx-new.md'));
-      expect(ohMyPiAdapter.getFilePath('bulk-archive')).toBe(path.join('.omp', 'commands', 'opsx-bulk-archive.md'));
+      expect(ohMyPiAdapter.getFilePath('new')).toBe(path.join('.omp', 'commands', 'outline-spec-new.md'));
+      expect(ohMyPiAdapter.getFilePath('bulk-archive')).toBe(path.join('.omp', 'commands', 'outline-spec-bulk-archive.md'));
     });
 
     it('should format file with description frontmatter', () => {
@@ -1037,12 +1037,12 @@ describe('command-generation/adapters', () => {
     it('is generated by generateCommand with hyphen command references', () => {
       const contentWithRefs: CommandContent = {
         ...sampleContent,
-        body: 'Run /opsx:apply to implement. Then /opsx:archive when done.',
+        body: 'Run /outline-spec:apply to implement. Then /outline-spec:archive when done.',
       };
       const output = generateCommand(contentWithRefs, ohMyPiAdapter).fileContent;
-      expect(output).toContain('/opsx-apply');
-      expect(output).toContain('/opsx-archive');
-      expect(output).not.toContain('/opsx:apply');
+      expect(output).toContain('/outline-spec-apply');
+      expect(output).toContain('/outline-spec-archive');
+      expect(output).not.toContain('/outline-spec:apply');
     });
 
     it('should escape YAML special characters in description', () => {
@@ -1075,11 +1075,11 @@ describe('command-generation/adapters', () => {
     it('injects $@ alongside generateCommand\'s hyphen rewrite', () => {
       const contentWithInput: CommandContent = {
         ...sampleContent,
-        body: '**Input**: The argument is the change name.\n\nRun /opsx:apply.',
+        body: '**Input**: The argument is the change name.\n\nRun /outline-spec:apply.',
       };
       const output = generateCommand(contentWithInput, ohMyPiAdapter).fileContent;
       expect(output).toContain('**Provided arguments**: $@');
-      expect(output).toContain('/opsx-apply');
+      expect(output).toContain('/outline-spec-apply');
     });
 
     it('should not inject $@ when $@ is already present in the body', () => {
@@ -1108,12 +1108,12 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = roocodeAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.roo', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.roo', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should format file with markdown header (no YAML frontmatter)', () => {
       const output = roocodeAdapter.formatFile(sampleContent);
-      expect(output).toContain('# OpenSpec Explore');
+      expect(output).toContain('# outline-spec Explore');
       expect(output).toContain('Enter explore mode for thinking');
       expect(output).toContain('This is the command body.');
       expect(output).not.toContain('---');
@@ -1127,19 +1127,19 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = traeAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.trae', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.trae', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should generate correct file paths for different commands', () => {
-      expect(traeAdapter.getFilePath('new')).toBe(path.join('.trae', 'commands', 'opsx-new.md'));
-      expect(traeAdapter.getFilePath('bulk-archive')).toBe(path.join('.trae', 'commands', 'opsx-bulk-archive.md'));
+      expect(traeAdapter.getFilePath('new')).toBe(path.join('.trae', 'commands', 'outline-spec-new.md'));
+      expect(traeAdapter.getFilePath('bulk-archive')).toBe(path.join('.trae', 'commands', 'outline-spec-bulk-archive.md'));
     });
 
     it('should format file with name and description frontmatter', () => {
       const output = traeAdapter.formatFile(sampleContent);
 
       expect(output).toContain('---\n');
-      expect(output).toContain('name: "OpenSpec Explore"');
+      expect(output).toContain('name: "outline-spec Explore"');
       expect(output).toContain('description: "Enter explore mode for thinking"');
       expect(output).toContain('---\n\n');
       expect(output).toContain('This is the command body.\n\nWith multiple lines.');
@@ -1196,14 +1196,14 @@ describe('command-generation/adapters', () => {
       expect(zcodeAdapter.toolId).toBe('zcode');
     });
 
-    it('should generate correct file path under .zcode/commands/opsx', () => {
+    it('should generate correct file path under .zcode/commands/outline-spec', () => {
       const filePath = zcodeAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.zcode', 'commands', 'opsx', 'explore.md'));
+      expect(filePath).toBe(path.join('.zcode', 'commands', 'outline-spec', 'explore.md'));
     });
 
     it('should generate correct file paths for different command IDs', () => {
-      expect(zcodeAdapter.getFilePath('new')).toBe(path.join('.zcode', 'commands', 'opsx', 'new.md'));
-      expect(zcodeAdapter.getFilePath('bulk-archive')).toBe(path.join('.zcode', 'commands', 'opsx', 'bulk-archive.md'));
+      expect(zcodeAdapter.getFilePath('new')).toBe(path.join('.zcode', 'commands', 'outline-spec', 'new.md'));
+      expect(zcodeAdapter.getFilePath('bulk-archive')).toBe(path.join('.zcode', 'commands', 'outline-spec', 'bulk-archive.md'));
     });
 
     it('should keep command paths under .zcode and never reference .agents', () => {
@@ -1218,7 +1218,7 @@ describe('command-generation/adapters', () => {
       const output = zcodeAdapter.formatFile(sampleContent);
 
       expect(output).toContain('---\n');
-      expect(output).toContain('name: "OpenSpec Explore"');
+      expect(output).toContain('name: "outline-spec Explore"');
       expect(output).toContain('description: "Enter explore mode for thinking"');
       expect(output).toContain('category: "Workflow"');
       expect(output).toContain('tags: ["workflow", "explore", "experimental"]');
@@ -1258,9 +1258,9 @@ describe('command-generation/adapters', () => {
     it('should escape special characters in name', () => {
       const output = zcodeAdapter.formatFile({
         ...sampleContent,
-        name: 'OpenSpec: Explore',
+        name: 'outline-spec: Explore',
       });
-      expect(output).toContain('name: "OpenSpec: Explore"');
+      expect(output).toContain('name: "outline-spec: Explore"');
     });
 
     it('should escape special characters in category', () => {
@@ -1303,17 +1303,17 @@ describe('command-generation/adapters', () => {
       // path.join handles platform-specific separators
       const filePath = claudeAdapter.getFilePath('test');
       // On any platform, path.join returns the correct separator
-      expect(filePath.split(path.sep)).toEqual(['.claude', 'commands', 'opsx', 'test.md']);
+      expect(filePath.split(path.sep)).toEqual(['.claude', 'commands', 'outline-spec', 'test.md']);
     });
 
     it('Cursor adapter uses path.join for paths', () => {
       const filePath = cursorAdapter.getFilePath('test');
-      expect(filePath.split(path.sep)).toEqual(['.cursor', 'commands', 'opsx-test.md']);
+      expect(filePath.split(path.sep)).toEqual(['.cursor', 'commands', 'outline-spec-test.md']);
     });
 
     it('Devin adapter uses path.join for paths', () => {
       const filePath = devinAdapter.getFilePath('test');
-      expect(filePath.split(path.sep)).toEqual(['.devin', 'workflows', 'opsx-test.md']);
+      expect(filePath.split(path.sep)).toEqual(['.devin', 'workflows', 'outline-spec-test.md']);
     });
 
     it('All adapters use path.join for paths', () => {
@@ -1341,12 +1341,12 @@ describe('command-generation/adapters', () => {
 
     it('should generate correct file path', () => {
       const filePath = codeassistantAdapter.getFilePath('explore');
-      expect(filePath).toBe(path.join('.codeassistant', 'commands', 'opsx-explore.md'));
+      expect(filePath).toBe(path.join('.codeassistant', 'commands', 'outline-spec-explore.md'));
     });
 
     it('should generate correct file path for different command IDs', () => {
-      expect(codeassistantAdapter.getFilePath('new')).toBe(path.join('.codeassistant', 'commands', 'opsx-new.md'));
-      expect(codeassistantAdapter.getFilePath('bulk-archive')).toBe(path.join('.codeassistant', 'commands', 'opsx-bulk-archive.md'));
+      expect(codeassistantAdapter.getFilePath('new')).toBe(path.join('.codeassistant', 'commands', 'outline-spec-new.md'));
+      expect(codeassistantAdapter.getFilePath('bulk-archive')).toBe(path.join('.codeassistant', 'commands', 'outline-spec-bulk-archive.md'));
     });
 
     it('should format file with correct YAML frontmatter', () => {
@@ -1361,17 +1361,17 @@ describe('command-generation/adapters', () => {
     it('generates registered commands with hyphenated workflow references', () => {
       const content: CommandContent = {
         ...sampleContent,
-        body: 'Use /opsx:propose, /opsx:update, and /opsx:land. Keep /opsx:unknown.',
+        body: 'Use /outline-spec:propose, /outline-spec:update, and /outline-spec:land. Keep /outline-spec:unknown.',
       };
       const adapter = CommandAdapterRegistry.get('codeassistant');
       expect(adapter).toBe(codeassistantAdapter);
       const generated = generateCommand(content, adapter!);
 
-      expect(generated.path).toBe(path.join('.codeassistant', 'commands', 'opsx-explore.md'));
+      expect(generated.path).toBe(path.join('.codeassistant', 'commands', 'outline-spec-explore.md'));
       expect(generated.fileContent).toContain(
-        'Use /opsx-propose, /opsx-update, and /opsx-land. Keep /opsx:unknown.'
+        'Use /outline-spec-propose, /outline-spec-update, and /outline-spec-land. Keep /outline-spec:unknown.'
       );
-      expect(content.body).toContain('/opsx:propose');
+      expect(content.body).toContain('/outline-spec:propose');
     });
   });
 

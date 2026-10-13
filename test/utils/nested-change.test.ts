@@ -12,8 +12,8 @@ describe('nested change detection (#1846)', () => {
   let changesDir: string;
 
   beforeEach(async () => {
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-nested-'));
-    changesDir = path.join(tempDir, 'openspec', 'changes');
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-nested-'));
+    changesDir = path.join(tempDir, 'outline-spec', 'changes');
     await fs.mkdir(changesDir, { recursive: true });
   });
 
@@ -32,7 +32,7 @@ describe('nested change detection (#1846)', () => {
       ['proposal.md'],
       ['tasks.md'],
       ['design.md'],
-      ['.openspec.yaml'],
+      ['.outline-spec.yaml'],
     ])('when the nested directory carries %s', async (marker) => {
       await write(path.join('mobile', 'refresh-token', marker));
 
@@ -94,8 +94,8 @@ describe('nested change detection (#1846)', () => {
   });
 
   describe('leaves real changes alone', () => {
-    it('ignores a scaffolded change with only .openspec.yaml', async () => {
-      await write(path.join('add-auth', '.openspec.yaml'), 'schema: outline\n');
+    it('ignores a scaffolded change with only .outline-spec.yaml', async () => {
+      await write(path.join('add-auth', '.outline-spec.yaml'), 'schema: outline\n');
 
       expect(await findNestedChangesIn(changesDir, 'add-auth')).toBeUndefined();
     });
@@ -121,7 +121,7 @@ describe('nested change detection (#1846)', () => {
     it('ignores a change whose root artifacts live in a subdirectory', async () => {
       // A custom schema may generate every root artifact into a subdirectory
       // (`generates: rfc/proposal.md`). Created by hand, such a change has no
-      // .openspec.yaml, so without the delta-specs signal it would read as a
+      // .outline-spec.yaml, so without the delta-specs signal it would read as a
       // namespace folder wrapping a change called "rfc".
       await write(path.join('hand-made', 'rfc', 'proposal.md'));
       await write(path.join('hand-made', 'rfc', 'tasks.md'));
@@ -135,7 +135,7 @@ describe('nested change detection (#1846)', () => {
       // exists, so neither the root markers nor specs/ can vouch for it. The
       // project's schema can - the file sits exactly where it generates.
       const projectRoot = path.dirname(path.dirname(changesDir));
-      const schemaDir = path.join(projectRoot, 'openspec', 'schemas', 'rfc-flow');
+      const schemaDir = path.join(projectRoot, 'outline-spec', 'schemas', 'rfc-flow');
       await fs.mkdir(schemaDir, { recursive: true });
       await fs.writeFile(
         path.join(schemaDir, 'schema.yaml'),
@@ -151,7 +151,7 @@ describe('nested change detection (#1846)', () => {
           '',
         ].join('\n')
       );
-      await fs.writeFile(path.join(projectRoot, 'openspec', 'config.yaml'), 'schema: rfc-flow\n');
+      await fs.writeFile(path.join(projectRoot, 'outline-spec', 'config.yaml'), 'schema: rfc-flow\n');
       await write(path.join('hand-made', 'rfc', 'proposal.md'));
 
       expect(await findNestedChangesIn(changesDir, 'hand-made')).toBeUndefined();
@@ -215,7 +215,7 @@ describe('nested change detection (#1846)', () => {
     const message = describeNestedChange(finding);
 
     expect(message).toContain('"mobile" is not a change');
-    expect(message).toContain('openspec/changes/mobile/refresh-token/');
+    expect(message).toContain('outline-spec/changes/mobile/refresh-token/');
     expect(message).toContain('"mobile-refresh-token"');
   });
 });

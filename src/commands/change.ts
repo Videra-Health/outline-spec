@@ -36,11 +36,11 @@ export class ChangeCommand {
   }
 
   private getChangesPath(): string {
-    return path.join(this.rootPath ?? process.cwd(), 'openspec', 'changes');
+    return path.join(this.rootPath ?? process.cwd(), 'outline-spec', 'changes');
   }
 
   private getSpecsPath(): string {
-    return path.join(this.rootPath ?? process.cwd(), 'openspec', 'specs');
+    return path.join(this.rootPath ?? process.cwd(), 'outline-spec', 'specs');
   }
 
   /** Prints a change's outline.md; --diff adds the spec text each touched spec would have once landed. */
@@ -64,7 +64,7 @@ export class ChangeCommand {
             ? 'No change specified. No active changes found.'
             : `No change specified. Available IDs: ${changes.join(', ')}`
         );
-        console.error('Hint: use "openspec list" to view available changes.');
+        console.error('Hint: use "outline-spec list" to view available changes.');
         process.exitCode = 1;
         return;
       }
@@ -84,7 +84,7 @@ export class ChangeCommand {
       if (nested) throw new Error(describeNestedChange(nested));
       throw new Error(
         `Change "${changeName}" has no ${CHANGE_OUTLINE} yet. ` +
-          `Run "openspec status --change ${changeName}" to see which artifact comes next.`
+          `Run "outline-spec status --change ${changeName}" to see which artifact comes next.`
       );
     }
 
@@ -133,7 +133,7 @@ export class ChangeCommand {
       return;
     }
     for (const s of landed) {
-      console.log(s.text !== undefined ? `\n--- openspec/specs/${s.name}/spec.md (${s.action})\n${s.text.trimEnd()}` : `\n--- openspec/specs/${s.name}/spec.md (deleted)`);
+      console.log(s.text !== undefined ? `\n--- outline-spec/specs/${s.name}/spec.md (${s.action})\n${s.text.trimEnd()}` : `\n--- outline-spec/specs/${s.name}/spec.md (deleted)`);
     }
   }
 
@@ -143,7 +143,7 @@ export class ChangeCommand {
    * - JSON: array of { id, title, specCount, taskStatus }, sorted by id
    */
   async list(options?: { json?: boolean; long?: boolean }): Promise<void> {
-    const changesPath = path.join(process.cwd(), 'openspec', 'changes');
+    const changesPath = path.join(process.cwd(), 'outline-spec', 'changes');
     const changes = await getActiveChangeIds();
     const specCount = (name: string): number | null => {
       try {
@@ -183,7 +183,7 @@ export class ChangeCommand {
   }
 
   async validate(changeName?: string, options?: { strict?: boolean; json?: boolean; noInteractive?: boolean }): Promise<void> {
-    const changesPath = path.join(process.cwd(), 'openspec', 'changes');
+    const changesPath = path.join(process.cwd(), 'outline-spec', 'changes');
 
     if (!changeName) {
       const changes = await getActiveChangeIds();
@@ -199,7 +199,7 @@ export class ChangeCommand {
             ? 'No change specified. No active changes found.'
             : `No change specified. Available IDs: ${changes.join(', ')}`
         );
-        console.error('Hint: use "openspec list" to view available changes.');
+        console.error('Hint: use "outline-spec list" to view available changes.');
         process.exitCode = 1;
         return;
       }
@@ -232,7 +232,7 @@ export class ChangeCommand {
       if (!report.valid) {
         console.error('Next steps:');
         console.error('  - Edit outline.md so its "## Requirements" items match the live specs');
-        console.error(`  - Preview the result: openspec land ${changeName} --dry-run`);
+        console.error(`  - Preview the result: outline-spec land ${changeName} --dry-run`);
       }
     }
     if (!report.valid) process.exitCode = 1;

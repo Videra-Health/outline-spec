@@ -10,7 +10,7 @@ import {
 import { writeStoreMetadataState } from '../../src/core/store/foundation.js';
 import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
 import { cleanupTempPath } from '../helpers/temp-cleanup.js';
-import { writeSpec } from '../helpers/openspec-fixtures.js';
+import { writeSpec } from '../helpers/outline-spec-fixtures.js';
 
 const VALID_OUTLINE = `## Proposal
 Billing needs work.
@@ -51,7 +51,7 @@ describe('store root selection for normal commands', () => {
 
   beforeEach(async () => {
     tempDir = fs.realpathSync.native(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-store-root-selection-'))
+      fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-store-root-selection-'))
     );
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
@@ -68,15 +68,15 @@ describe('store root selection for normal commands', () => {
     cleanupTempPath(tempDir);
   });
 
-  function createOpenSpecRoot(rootDir: string): void {
-    fs.mkdirSync(path.join(rootDir, 'openspec', 'specs'), { recursive: true });
-    fs.mkdirSync(path.join(rootDir, 'openspec', 'changes'), { recursive: true });
-    fs.writeFileSync(path.join(rootDir, 'openspec', 'config.yaml'), 'schema: outline\n');
+  function createOutlineSpecRoot(rootDir: string): void {
+    fs.mkdirSync(path.join(rootDir, 'outline-spec', 'specs'), { recursive: true });
+    fs.mkdirSync(path.join(rootDir, 'outline-spec', 'changes'), { recursive: true });
+    fs.writeFileSync(path.join(rootDir, 'outline-spec', 'config.yaml'), 'schema: outline\n');
   }
 
   async function registerStoreFixture(id: string): Promise<string> {
     const root = path.join(tempDir, 'stores', id);
-    createOpenSpecRoot(root);
+    createOutlineSpecRoot(root);
     await registerStore({ id, localPath: root, globalDataDir });
     return fs.realpathSync.native(root);
   }
@@ -86,7 +86,7 @@ describe('store root selection for normal commands', () => {
     name: string,
     options: { outline?: string; tasksDone?: boolean } = {}
   ): string {
-    const changeDir = path.join(rootDir, 'openspec', 'changes', name);
+    const changeDir = path.join(rootDir, 'outline-spec', 'changes', name);
     fs.mkdirSync(changeDir, { recursive: true });
     fs.writeFileSync(
       path.join(changeDir, 'tasks.md'),
@@ -106,8 +106,8 @@ describe('store root selection for normal commands', () => {
     }
   }
 
-  function expectNoLocalOpenSpec(): void {
-    expect(fs.existsSync(path.join(appRepo, 'openspec'))).toBe(false);
+  function expectNoLocalOutlineSpec(): void {
+    expect(fs.existsSync(path.join(appRepo, 'outline-spec'))).toBe(false);
   }
 
   it.each(['local', 'store', 'declared', 'global_default'] as const)(
@@ -116,12 +116,12 @@ describe('store root selection for normal commands', () => {
       const selectedRoot = source === 'local' ? appRepo : storeRoot;
       const storeArgs = source === 'store' ? ['--store', 'team-context'] : [];
       if (source === 'local' || source === 'store') {
-        createOpenSpecRoot(appRepo);
+        createOutlineSpecRoot(appRepo);
       } else if (source === 'declared') {
-        fs.mkdirSync(path.join(appRepo, 'openspec'), { recursive: true });
-        fs.writeFileSync(path.join(appRepo, 'openspec', 'config.yaml'), 'store: team-context\n');
+        fs.mkdirSync(path.join(appRepo, 'outline-spec'), { recursive: true });
+        fs.writeFileSync(path.join(appRepo, 'outline-spec', 'config.yaml'), 'store: team-context\n');
       } else {
-        const configDir = path.join(tempDir, 'config', 'openspec');
+        const configDir = path.join(tempDir, 'config', 'outline-spec');
         fs.mkdirSync(configDir, { recursive: true });
         fs.writeFileSync(path.join(configDir, 'config.json'), JSON.stringify({ defaultStore: 'team-context' }));
       }
@@ -181,16 +181,16 @@ describe('store root selection for normal commands', () => {
         env,
       });
       expect(result.exitCode).toBe(0);
-      expect(result.stderr).toContain(`Using OpenSpec root: team-context (${storeRoot})`);
+      expect(result.stderr).toContain(`Using outline-spec root: team-context (${storeRoot})`);
       expect(result.stdout).toContain("Created change 'add-billing'");
       expect(result.stdout).toContain(
-        path.join(storeRoot, 'openspec', 'changes', 'add-billing')
+        path.join(storeRoot, 'outline-spec', 'changes', 'add-billing')
       );
 
       expect(
-        fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'add-billing'))
+        fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'add-billing'))
       ).toBe(true);
-      expectNoLocalOpenSpec();
+      expectNoLocalOutlineSpec();
     });
 
     it('includes the shared root block and absolute paths in new change JSON', async () => {
@@ -208,14 +208,14 @@ describe('store root selection for normal commands', () => {
       });
       expect(path.isAbsolute(json.change.path)).toBe(true);
       expect(json.change.path).toBe(
-        path.join(storeRoot, 'openspec', 'changes', 'add-billing')
+        path.join(storeRoot, 'outline-spec', 'changes', 'add-billing')
       );
-      expectNoLocalOpenSpec();
+      expectNoLocalOutlineSpec();
     });
 
     it('wins over the nearest local root', async () => {
       const localRepo = path.join(tempDir, 'local-repo');
-      createOpenSpecRoot(localRepo);
+      createOutlineSpecRoot(localRepo);
       createChange(localRepo, 'local-change');
       createChange(storeRoot, 'store-change');
 
@@ -234,9 +234,9 @@ describe('store root selection for normal commands', () => {
 
     it('lists an empty team store before any changes exist', async () => {
       const blankStoreRoot = path.join(tempDir, 'stores', 'blank-context');
-      fs.mkdirSync(path.join(blankStoreRoot, 'openspec'), { recursive: true });
+      fs.mkdirSync(path.join(blankStoreRoot, 'outline-spec'), { recursive: true });
       fs.writeFileSync(
-        path.join(blankStoreRoot, 'openspec', 'config.yaml'),
+        path.join(blankStoreRoot, 'outline-spec', 'config.yaml'),
         'schema: outline\n'
       );
       await writeStoreMetadataState(blankStoreRoot, {
@@ -323,13 +323,13 @@ describe('store root selection for normal commands', () => {
       expect(validateJson.items[0]).toMatchObject({ id: 'store-change', valid: true });
       expect(validateJson.root.store_id).toBe('team-context');
 
-      expectNoLocalOpenSpec();
+      expectNoLocalOutlineSpec();
     });
 
     it('loads apply and archive operation inputs from the selected store root', async () => {
       createChange(storeRoot, 'store-change');
       fs.writeFileSync(
-        path.join(storeRoot, 'openspec', 'config.yaml'),
+        path.join(storeRoot, 'outline-spec', 'config.yaml'),
         `schema: outline
 context: Store context
 operations:
@@ -363,7 +363,7 @@ operations:
         operationGuidance: ['Store archive guidance'],
         root: { path: storeRoot, store_id: 'team-context' },
       });
-      expectNoLocalOpenSpec();
+      expectNoLocalOutlineSpec();
     });
 
     it('runs bulk validation against the selected store', async () => {
@@ -395,15 +395,15 @@ operations:
       expect(json.root.store_id).toBe('team-context');
 
       expect(
-        fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'store-change'))
+        fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'store-change'))
       ).toBe(false);
       expect(
-        fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'archive'))
+        fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'archive'))
       ).toBe(false);
       expect(
-        fs.readFileSync(path.join(storeRoot, 'openspec', 'specs', 'billing', 'spec.md'), 'utf-8')
+        fs.readFileSync(path.join(storeRoot, 'outline-spec', 'specs', 'billing', 'spec.md'), 'utf-8')
       ).toBe(outlineSpec('billing', 'Bills customers.', 'Billing: The system creates bills.'));
-      expectNoLocalOpenSpec();
+      expectNoLocalOutlineSpec();
     });
 
     it('accepts archive as an alias of land with a rename note on stderr', async () => {
@@ -414,7 +414,7 @@ operations:
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
-      expect(result.stderr).toContain('"openspec archive" is now "openspec land"');
+      expect(result.stderr).toContain('"outline-spec archive" is now "outline-spec land"');
       expect(parseJson(result).landed).toBe('store-change');
     });
   });
@@ -429,7 +429,7 @@ operations:
       });
       expect(result.exitCode).toBe(0);
       expect(result.stdout.startsWith('## Proposal')).toBe(true);
-      expect(result.stderr).toContain(`Using OpenSpec root: team-context (${storeRoot})`);
+      expect(result.stderr).toContain(`Using outline-spec root: team-context (${storeRoot})`);
     });
 
     it('diffs an outline against the selected store\'s main specs', async () => {
@@ -445,7 +445,7 @@ operations:
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('--- openspec/specs/billing/spec.md (updated)');
+      expect(result.stdout).toContain('--- outline-spec/specs/billing/spec.md (updated)');
       expect(result.stdout).toContain('1. Billing: The system creates bills monthly.');
       expect(result.stdout).not.toContain('decoy');
     });
@@ -459,7 +459,7 @@ operations:
       );
       expect(result.exitCode).toBe(0);
       expect(result.stdout.startsWith('<artifact id="design"')).toBe(true);
-      expect(result.stderr).toContain('Using OpenSpec root: team-context');
+      expect(result.stderr).toContain('Using outline-spec root: team-context');
     });
 
     it('writes the status banner to stderr in human mode', async () => {
@@ -470,9 +470,9 @@ operations:
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
-      expect(result.stderr).toContain(`Using OpenSpec root: team-context (${storeRoot})`);
+      expect(result.stderr).toContain(`Using outline-spec root: team-context (${storeRoot})`);
       expect(result.stdout).toContain('Change: store-change');
-      expect(result.stdout).not.toContain('Using OpenSpec root');
+      expect(result.stdout).not.toContain('Using outline-spec root');
     });
   });
 
@@ -486,8 +486,8 @@ operations:
       const output = result.stdout + result.stderr;
       expect(output).toContain('store register');
       expect(output).toContain('--store <id>');
-      expectNoLocalOpenSpec();
-      expect(fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'nope'))).toBe(false);
+      expectNoLocalOutlineSpec();
+      expect(fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'nope'))).toBe(false);
     });
 
     it('rejects show --store-path despite allowUnknownOption', async () => {
@@ -562,7 +562,7 @@ operations:
       expect(result.exitCode).toBe(1);
       expect(result.stdout + result.stderr).toContain('store doctor');
       // No scaffolding or repair happened.
-      expect(fs.existsSync(path.join(brokenRoot, 'openspec'))).toBe(false);
+      expect(fs.existsSync(path.join(brokenRoot, 'outline-spec'))).toBe(false);
     });
   });
 
@@ -573,14 +573,14 @@ operations:
       const output = result.stdout + result.stderr;
       expect(output).toContain('team-context');
       expect(output).toContain('--store <id>');
-      expect(output).toContain('openspec init');
-      expectNoLocalOpenSpec();
+      expect(output).toContain('outline-spec init');
+      expectNoLocalOutlineSpec();
     });
 
     it('treats leftover workspace state as no root at all', async () => {
-      fs.mkdirSync(path.join(appRepo, '.openspec-workspace'), { recursive: true });
+      fs.mkdirSync(path.join(appRepo, '.outline-spec-workspace'), { recursive: true });
       fs.writeFileSync(
-        path.join(appRepo, '.openspec-workspace', 'view.yaml'),
+        path.join(appRepo, '.outline-spec-workspace', 'view.yaml'),
         'version: 1\nname: platform\ncontext: null\nlinks: {}\n'
       );
 
@@ -591,10 +591,10 @@ operations:
 
     it('ignores leftover workspace state when a nearby root exists', async () => {
       const localRepo = path.join(tempDir, 'workspace-repo');
-      createOpenSpecRoot(localRepo);
-      fs.mkdirSync(path.join(localRepo, '.openspec-workspace'), { recursive: true });
+      createOutlineSpecRoot(localRepo);
+      fs.mkdirSync(path.join(localRepo, '.outline-spec-workspace'), { recursive: true });
       fs.writeFileSync(
-        path.join(localRepo, '.openspec-workspace', 'view.yaml'),
+        path.join(localRepo, '.outline-spec-workspace', 'view.yaml'),
         'version: 1\nname: platform\ncontext: null\nlinks: {}\n'
       );
       createChange(localRepo, 'local-change');
@@ -637,7 +637,7 @@ operations:
     });
 
     // Creating a change in a directory that was never set up silently
-    // materializes `openspec/` there (#1645). The creation stays zero-config,
+    // materializes `outline-spec/` there (#1645). The creation stays zero-config,
     // but a human who did not mean to adopt this directory has to be told.
     it('says so when the first change creates the root in an unset-up directory', async () => {
       const isolatedEnv = {
@@ -651,13 +651,13 @@ operations:
       });
       expect(created.exitCode).toBe(0);
       const firstOutput = created.stdout + created.stderr;
-      expect(firstOutput).toContain('no OpenSpec root was found here');
+      expect(firstOutput).toContain('no outline-spec root was found here');
       // Naming the directory it created is the point: the reader has to know
       // what to delete if this was not the project they meant. The path is
       // relative to where the command ran, so it reads the same on Windows.
-      expect(firstOutput).toContain('created at openspec/.');
-      expect(firstOutput).toContain('openspec init');
-      expect(fs.existsSync(path.join(appRepo, 'openspec', 'changes', 'adopt-me'))).toBe(true);
+      expect(firstOutput).toContain('created at outline-spec/.');
+      expect(firstOutput).toContain('outline-spec init');
+      expect(fs.existsSync(path.join(appRepo, 'outline-spec', 'changes', 'adopt-me'))).toBe(true);
 
       // The root exists now, so the notice must not repeat on every change.
       const second = await runCLI(['new', 'change', 'already-adopted'], {
@@ -665,7 +665,7 @@ operations:
         env: isolatedEnv,
       });
       expect(second.exitCode).toBe(0);
-      expect(second.stdout + second.stderr).not.toContain('no OpenSpec root was found here');
+      expect(second.stdout + second.stderr).not.toContain('no outline-spec root was found here');
     });
 
     // Run from a subdirectory and the subdirectory is what gets adopted - the
@@ -683,12 +683,12 @@ operations:
         env: isolatedEnv,
       });
       expect(created.exitCode).toBe(0);
-      expect(created.stdout + created.stderr).toContain('created at openspec/.');
+      expect(created.stdout + created.stderr).toContain('created at outline-spec/.');
 
-      expect(fs.existsSync(path.join(nested, 'openspec', 'changes', 'adopt-the-subdir'))).toBe(
+      expect(fs.existsSync(path.join(nested, 'outline-spec', 'changes', 'adopt-the-subdir'))).toBe(
         true
       );
-      expect(fs.existsSync(path.join(appRepo, 'openspec'))).toBe(false);
+      expect(fs.existsSync(path.join(appRepo, 'outline-spec'))).toBe(false);
     });
 
     it('keeps the notice out of JSON output', async () => {
@@ -702,7 +702,7 @@ operations:
         env: isolatedEnv,
       });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).not.toContain('no OpenSpec root was found here');
+      expect(result.stdout).not.toContain('no outline-spec root was found here');
 
       // `root.source` is how a caller in JSON mode learns the same fact.
       const json = parseJson(result);
@@ -714,8 +714,8 @@ operations:
         ...env,
         XDG_DATA_HOME: path.join(tempDir, 'data-empty'),
       };
-      fs.mkdirSync(path.join(appRepo, 'openspec'), { recursive: true });
-      fs.writeFileSync(path.join(appRepo, 'openspec', 'project.md'), '# Project\n');
+      fs.mkdirSync(path.join(appRepo, 'outline-spec'), { recursive: true });
+      fs.writeFileSync(path.join(appRepo, 'outline-spec', 'project.md'), '# Project\n');
 
       const result = await runCLI(['list', '--json'], { cwd: appRepo, env: isolatedEnv });
       expect(result.exitCode).toBe(0);
@@ -746,7 +746,7 @@ operations:
         expect(result.exitCode).toBe(1);
         expect(result.stdout).toBe('');
         expect(result.stderr).toContain(
-          'Error: No OpenSpec root found from the current directory.'
+          'Error: No outline-spec root found from the current directory.'
         );
         expect(result.stderr).not.toContain('No items found to validate.');
         expect(result.stderr).not.toContain('No active changes found.');
@@ -781,14 +781,14 @@ operations:
         expect(json.status[0]).toEqual(
           expect.objectContaining({
             severity: 'error',
-            code: 'no_openspec_root',
-            message: 'No OpenSpec root found from the current directory.',
+            code: 'no_outline_spec_root',
+            message: 'No outline-spec root found from the current directory.',
           })
         );
       }
     });
 
-    // The generated workflows read `root` from `openspec list --json` to decide
+    // The generated workflows read `root` from `outline-spec list --json` to decide
     // whether a project is set up (#1645). That answer has to stay honest when
     // stores are registered but this directory has no root of its own -
     // an implicit root here would read as "set up" and the workflow would
@@ -815,7 +815,7 @@ operations:
         ...env,
         XDG_DATA_HOME: path.join(tempDir, 'data-empty'),
       };
-      createOpenSpecRoot(appRepo);
+      createOutlineSpecRoot(appRepo);
 
       const result = await runCLI(['validate', '--all', '--json'], {
         cwd: appRepo,
@@ -845,7 +845,7 @@ operations:
       });
       expect(result.exitCode).toBe(1);
       expect(result.stderr).toContain("Unknown item 'missing'.");
-      expect(result.stderr).not.toContain('No OpenSpec root found');
+      expect(result.stderr).not.toContain('No outline-spec root found');
     });
   });
 
@@ -866,9 +866,9 @@ operations:
 
     it('reports no active changes for a selected empty store without init guidance', async () => {
       const blankStoreRoot = path.join(tempDir, 'stores', 'land-blank-context');
-      fs.mkdirSync(path.join(blankStoreRoot, 'openspec'), { recursive: true });
+      fs.mkdirSync(path.join(blankStoreRoot, 'outline-spec'), { recursive: true });
       fs.writeFileSync(
-        path.join(blankStoreRoot, 'openspec', 'config.yaml'),
+        path.join(blankStoreRoot, 'outline-spec', 'config.yaml'),
         'schema: outline\n'
       );
       await writeStoreMetadataState(blankStoreRoot, {
@@ -909,7 +909,7 @@ operations:
       expect(json.status[0].code).toBe('land_conflicts');
       // The change was not landed.
       expect(
-        fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'bad-change'))
+        fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'bad-change'))
       ).toBe(true);
     });
 
@@ -952,13 +952,13 @@ operations:
       // "Nothing was written" must be true: the good spec was not created
       // and the bad target is byte-identical.
       expect(
-        fs.existsSync(path.join(storeRoot, 'openspec', 'specs', 'aaa-good', 'spec.md'))
+        fs.existsSync(path.join(storeRoot, 'outline-spec', 'specs', 'aaa-good', 'spec.md'))
       ).toBe(false);
       expect(
-        fs.readFileSync(path.join(storeRoot, 'openspec', 'specs', 'zzz-bad', 'spec.md'), 'utf-8')
+        fs.readFileSync(path.join(storeRoot, 'outline-spec', 'specs', 'zzz-bad', 'spec.md'), 'utf-8')
       ).toBe(badTargetContent);
       expect(
-        fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'two-spec-change'))
+        fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'two-spec-change'))
       ).toBe(true);
     });
 
@@ -975,7 +975,7 @@ operations:
       expect(json.landed).toBeNull();
       expect(json.status[0].code).toBe('land_conflicts');
       expect(
-        fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'modified-change'))
+        fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'modified-change'))
       ).toBe(true);
     });
 
@@ -990,7 +990,7 @@ operations:
       const json = parseJson(result);
       expect(json.status[0].code).toBe('land_tasks_incomplete');
       expect(
-        fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'wip-change'))
+        fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'wip-change'))
       ).toBe(true);
     });
   });
@@ -998,7 +998,7 @@ operations:
   describe('initiative links are retired from normal change flows', () => {
     it('rejects --initiative and creates no files', async () => {
       const localRepo = path.join(tempDir, 'initiative-repo');
-      createOpenSpecRoot(localRepo);
+      createOutlineSpecRoot(localRepo);
 
       const result = await runCLI(
         ['new', 'change', 'linked-change', '--initiative', 'billing-launch'],
@@ -1008,20 +1008,20 @@ operations:
       const output = result.stdout + result.stderr;
       expect(output).toContain('--initiative is no longer supported');
       expect(
-        fs.existsSync(path.join(localRepo, 'openspec', 'changes', 'linked-change'))
+        fs.existsSync(path.join(localRepo, 'outline-spec', 'changes', 'linked-change'))
       ).toBe(false);
     });
 
-    it('removes openspec set change entirely', async () => {
+    it('removes outline-spec set change entirely', async () => {
       const localRepo = path.join(tempDir, 'set-change-repo');
-      createOpenSpecRoot(localRepo);
+      createOutlineSpecRoot(localRepo);
       createChange(localRepo, 'existing-change');
       const metadataPath = path.join(
         localRepo,
-        'openspec',
+        'outline-spec',
         'changes',
         'existing-change',
-        '.openspec.yaml'
+        '.outline-spec.yaml'
       );
 
       const result = await runCLI(
@@ -1033,7 +1033,7 @@ operations:
       expect(fs.existsSync(metadataPath)).toBe(false);
 
       const help = await runCLI(['--help'], { cwd: localRepo, env });
-      expect(help.stdout).not.toContain('Set checked-in OpenSpec metadata');
+      expect(help.stdout).not.toContain('Set checked-in outline-spec metadata');
       expect(help.stdout).not.toMatch(/^\s*set\s/m);
     });
   });
@@ -1045,12 +1045,12 @@ operations:
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('openspec new change <change-id> --store fresh-context');
+      expect(result.stdout).toContain('outline-spec new change <change-id> --store fresh-context');
     });
 
     it('shows --store usage after register', async () => {
       const registerRoot = path.join(tempDir, 'register-context');
-      createOpenSpecRoot(registerRoot);
+      createOutlineSpecRoot(registerRoot);
       await writeStoreMetadataState(registerRoot, {
         version: 1,
         id: 'register-context',
@@ -1061,7 +1061,7 @@ operations:
         env,
       });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('openspec new change <change-id> --store register-context');
+      expect(result.stdout).toContain('outline-spec new change <change-id> --store register-context');
     });
   });
 });

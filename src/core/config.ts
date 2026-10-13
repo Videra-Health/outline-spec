@@ -1,25 +1,25 @@
-export const OPENSPEC_DIR_NAME = 'openspec';
+export const OUTLINE_SPEC_DIR_NAME = 'outline-spec';
 
-export const OPENSPEC_SKILL_NAMES = [
-  'openspec-explore',
-  'openspec-new-change',
-  'openspec-continue-change',
-  'openspec-apply-change',
-  'openspec-update-change',
-  'openspec-ff-change',
-  'openspec-land-change',
-  'openspec-archive-change',
-  'openspec-verify-change',
-  'openspec-onboard',
-  'openspec-propose',
+export const OUTLINE_SPEC_SKILL_NAMES = [
+  'outline-spec-explore',
+  'outline-spec-new-change',
+  'outline-spec-continue-change',
+  'outline-spec-apply-change',
+  'outline-spec-update-change',
+  'outline-spec-ff-change',
+  'outline-spec-land-change',
+  'outline-spec-archive-change',
+  'outline-spec-verify-change',
+  'outline-spec-onboard',
+  'outline-spec-propose',
 ] as const;
 
-export const OPENSPEC_MARKERS = {
-  start: '<!-- OPENSPEC:START -->',
-  end: '<!-- OPENSPEC:END -->'
+export const OUTLINE_SPEC_MARKERS = {
+  start: '<!-- OUTLINE_SPEC:START -->',
+  end: '<!-- OUTLINE_SPEC:END -->'
 };
 
-export interface OpenSpecConfig {
+export interface OutlineSpecConfig {
   aiTools: string[];
 }
 
@@ -70,7 +70,7 @@ export const AI_TOOLS: AIToolOption[] = [
   { name: 'GigaCode', value: 'gigacode', available: true, successLabel: 'GigaCode', skillsDir: '.gigacode' },
   { name: 'Grok Build', value: 'grok', available: true, successLabel: 'Grok Build', skillsDir: '.grok' },
   { name: 'GSD', value: 'gsd', available: true, successLabel: 'GSD', skillsDir: '.agents', detectionPaths: ['.gsd'] },
-  { name: 'Hermes Agent', value: 'hermes', available: true, successLabel: 'Hermes Agent', skillsDir: '.hermes', detectionPaths: ['.hermes', 'HERMES.md', '.hermes.md'], setupNote: "Hermes only loads skills from ~/.hermes/skills by default. Add this project's .hermes/skills directory to skills.external_dirs in ~/.hermes/config.yaml so Hermes picks up the generated OpenSpec skills." },
+  { name: 'Hermes Agent', value: 'hermes', available: true, successLabel: 'Hermes Agent', skillsDir: '.hermes', detectionPaths: ['.hermes', 'HERMES.md', '.hermes.md'], setupNote: "Hermes only loads skills from ~/.hermes/skills by default. Add this project's .hermes/skills directory to skills.external_dirs in ~/.hermes/config.yaml so Hermes picks up the generated outline-spec skills." },
   { name: 'iFlow', value: 'iflow', available: true, successLabel: 'iFlow', skillsDir: '.iflow' },
   { name: 'Junie', value: 'junie', available: true, successLabel: 'Junie', skillsDir: '.junie', requiresIdeRestart: true },
   { name: 'Kilo Code', value: 'kilocode', available: true, successLabel: 'Kilo Code', skillsDir: '.kilocode', requiresIdeRestart: true },
@@ -97,7 +97,7 @@ export const AI_TOOLS: AIToolOption[] = [
   // `.agents/` for more than skills, so the root alone says nothing about skills.
   // A project that does keep skills there is a project this target fits, the same
   // way `.claude/` selects Claude Code — the signal is the user's setup, not
-  // OpenSpec's own files.
+  // outline-spec's own files.
   // The picker is searchable, so this entry also answers to the words someone
   // whose assistant is not on the list actually types (#653) — it is named for
   // a directory, which none of them would guess. Aliases are single words: the

@@ -19,10 +19,10 @@ export type OnboardingCommand = {
 };
 
 /**
- * Longest description the welcome screen can render. It shows these beside a
- * 24-column art column and only animates at MIN_WIDTH (60) columns or wider; a
- * longer line wraps, and the animation's cursor-up count assumes unwrapped
- * lines. See src/ui/welcome-screen.ts.
+ * Longest description the welcome screen can render. It shows these under each
+ * command beside a 24-column art column and only animates at MIN_WIDTH (60)
+ * columns or wider; a longer line wraps, and the animation's cursor-up count
+ * assumes unwrapped lines. See src/ui/welcome-screen.ts.
  */
 export const DESCRIPTION_BUDGET = 17;
 
@@ -32,10 +32,10 @@ export const DESCRIPTION_BUDGET = 17;
  * then implement.
  */
 const ONBOARDING_COMMANDS: readonly OnboardingCommand[] = [
-  { workflow: 'propose', command: '/opsx:propose', description: 'Start a change' },
-  { workflow: 'new', command: '/opsx:new', description: 'Scaffold a change' },
-  { workflow: 'continue', command: '/opsx:continue', description: 'Next artifact' },
-  { workflow: 'apply', command: '/opsx:apply', description: 'Implement tasks' },
+  { workflow: 'propose', command: '/outline-spec:propose', description: 'Start a change' },
+  { workflow: 'new', command: '/outline-spec:new', description: 'Scaffold a change' },
+  { workflow: 'continue', command: '/outline-spec:continue', description: 'Next artifact' },
+  { workflow: 'apply', command: '/outline-spec:apply', description: 'Implement tasks' },
 ];
 
 /**
@@ -55,7 +55,7 @@ export function getOnboardingCommands(
  *
  * Setup output otherwise never names the workflows that exist but were not
  * installed, so a user on the default profile has no way to learn that
- * `/opsx:ff` and friends are one command away. The docs say it; nobody reads
+ * `/outline-spec:ff` and friends are one command away. The docs say it; nobody reads
  * the docs before typing a command that isn't there.
  */
 export function formatOptionalWorkflowsNote(
@@ -70,11 +70,11 @@ export function formatOptionalWorkflowsNote(
 
   const label = missing.length === 1 ? 'workflow is' : 'workflows are';
   const pronoun = missing.length === 1 ? 'it' : 'them';
-  // `openspec config profile` offers to apply to this project before it
-  // exits, and prints the `openspec update` guidance itself when declined, so
+  // `outline-spec config profile` offers to apply to this project before it
+  // exits, and prints the `outline-spec update` guidance itself when declined, so
   // naming a second command here would be one step too many.
   return [
     `Note: ${missing.length} more ${label} available (${missing.join(', ')}).`,
-    `Add ${pronoun} with \`openspec config profile\`.`,
+    `Add ${pronoun} with \`outline-spec config profile\`.`,
   ];
 }

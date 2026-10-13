@@ -9,8 +9,8 @@ describe('status --all', () => {
   let changesDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-status-all-'));
-    changesDir = path.join(tempDir, 'openspec', 'changes');
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-status-all-'));
+    changesDir = path.join(tempDir, 'outline-spec', 'changes');
     await fs.mkdir(changesDir, { recursive: true });
   });
 
@@ -157,7 +157,7 @@ describe('status --all', () => {
     const brokenDir = await createTestChange('broken-change');
     // An unknown schema in the metadata makes loadChangeContext throw
     await fs.writeFile(
-      path.join(brokenDir, '.openspec.yaml'),
+      path.join(brokenDir, '.outline-spec.yaml'),
       'schema: no-such-schema\n'
     );
 
@@ -204,24 +204,24 @@ describe('status --all', () => {
     // The point of the batch view is one screen saying what each change needs
     // next - a single shared line, or a line for only one change, would not.
     expect(result.stdout).toContain(
-      'Next: openspec instructions design --change "first-change" --json'
+      'Next: outline-spec instructions design --change "first-change" --json'
     );
     expect(result.stdout).toContain(
-      'Next: openspec instructions tasks --change "second-change" --json'
+      'Next: outline-spec instructions tasks --change "second-change" --json'
     );
   });
 
   it('prints no next-step line for a change that failed to load', async () => {
     await createTestChange('good-change', ['design']);
     const brokenDir = await createTestChange('broken-change');
-    await fs.writeFile(path.join(brokenDir, '.openspec.yaml'), 'schema: does-not-exist\n');
+    await fs.writeFile(path.join(brokenDir, '.outline-spec.yaml'), 'schema: does-not-exist\n');
 
     const result = await runCLI(['status', '--all'], { cwd: tempDir });
 
     // A failed entry has no artifact statuses to reason about, so it must not
     // be given a next step alongside its diagnostic.
     expect(getOutput(result)).toContain('✗ broken-change');
-    expect(result.stdout).toContain('Next: openspec instructions tasks --change "good-change"');
+    expect(result.stdout).toContain('Next: outline-spec instructions tasks --change "good-change"');
     expect(result.stdout).not.toContain('--change "broken-change"');
   });
 
@@ -229,7 +229,7 @@ describe('status --all', () => {
     await createTestChange('good-change', ['design']);
     const brokenDir = await createTestChange('broken-change');
     await fs.writeFile(
-      path.join(brokenDir, '.openspec.yaml'),
+      path.join(brokenDir, '.outline-spec.yaml'),
       'schema: no-such-schema\n'
     );
 
@@ -288,7 +288,7 @@ describe('status --all', () => {
   describe('--schema interaction', () => {
     /** Writes a minimal project-local schema so an override is distinguishable from the default. */
     async function createProjectSchema(schemaName: string): Promise<void> {
-      const schemaDir = path.join(tempDir, 'openspec', 'schemas', schemaName);
+      const schemaDir = path.join(tempDir, 'outline-spec', 'schemas', schemaName);
       await fs.mkdir(schemaDir, { recursive: true });
       await fs.writeFile(
         path.join(schemaDir, 'schema.yaml'),
@@ -358,7 +358,7 @@ describe('status --all', () => {
       await createTestChange('good-change');
       const brokenDir = await createTestChange('broken-change');
       await fs.writeFile(
-        path.join(brokenDir, '.openspec.yaml'),
+        path.join(brokenDir, '.outline-spec.yaml'),
         'schema: no-such-schema\n'
       );
 

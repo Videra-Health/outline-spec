@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { COMMAND_REF, HYPHEN_COMMAND_REF } from '../helpers/command-refs.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import os from 'os';
@@ -9,6 +10,7 @@ import { saveGlobalConfig, getGlobalConfig } from '../../src/core/global-config.
 import { MAX_CONTEXT_SIZE, readProjectConfig } from '../../src/core/project-config.js';
 import { FileSystemUtils } from '../../src/utils/file-system.js';
 import { ALL_WORKFLOWS } from '../../src/core/profiles.js';
+
 
 const { confirmMock, showWelcomeScreenMock, searchableMultiSelectMock } = vi.hoisted(() => ({
   confirmMock: vi.fn(),
@@ -34,10 +36,10 @@ describe('InitCommand', () => {
   let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(async () => {
-    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-init-test-'));
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-init-test-'));
     originalEnv = { ...process.env };
     // Use a temp dir for global config to avoid reading real config
-    configTempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-config-init-'));
+    configTempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-config-init-'));
     process.env.XDG_CONFIG_HOME = configTempDir;
     process.env.CODEX_HOME = path.join(testDir, 'codex-home');
     process.env.HOME = path.join(testDir, 'home');
@@ -59,16 +61,16 @@ describe('InitCommand', () => {
   });
 
   describe('execute with --tools flag', () => {
-    it('should create OpenSpec directory structure', async () => {
+    it('should create outline-spec directory structure', async () => {
       const initCommand = new InitCommand({ tools: 'claude' });
 
       await initCommand.execute(testDir);
 
-      const openspecPath = path.join(testDir, 'openspec');
-      expect(await directoryExists(openspecPath)).toBe(true);
-      expect(await directoryExists(path.join(openspecPath, 'specs'))).toBe(true);
-      expect(await directoryExists(path.join(openspecPath, 'changes'))).toBe(true);
-      expect(await directoryExists(path.join(openspecPath, 'changes', 'archive'))).toBe(false);
+      const outlineSpecPath = path.join(testDir, 'outline-spec');
+      expect(await directoryExists(outlineSpecPath)).toBe(true);
+      expect(await directoryExists(path.join(outlineSpecPath, 'specs'))).toBe(true);
+      expect(await directoryExists(path.join(outlineSpecPath, 'changes'))).toBe(true);
+      expect(await directoryExists(path.join(outlineSpecPath, 'changes', 'archive'))).toBe(false);
     });
 
     it('should create .gitkeep files in empty directories', async () => {
@@ -76,31 +78,31 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      const openspecPath = path.join(testDir, 'openspec');
-      expect(await fileExists(path.join(openspecPath, 'specs', '.gitkeep'))).toBe(true);
-      expect(await fileExists(path.join(openspecPath, 'changes', '.gitkeep'))).toBe(true);
+      const outlineSpecPath = path.join(testDir, 'outline-spec');
+      expect(await fileExists(path.join(outlineSpecPath, 'specs', '.gitkeep'))).toBe(true);
+      expect(await fileExists(path.join(outlineSpecPath, 'changes', '.gitkeep'))).toBe(true);
     });
 
     it('should restore missing directories and anchors in extend mode', async () => {
       const initCommand1 = new InitCommand({ tools: 'claude' });
       await initCommand1.execute(testDir);
 
-      const openspecPath = path.join(testDir, 'openspec');
+      const outlineSpecPath = path.join(testDir, 'outline-spec');
 
       // Older projects may lose these empty directories when cloned.
-      await fs.rm(path.join(openspecPath, 'specs'), { recursive: true });
-      await fs.rm(path.join(openspecPath, 'changes'), { recursive: true });
+      await fs.rm(path.join(outlineSpecPath, 'specs'), { recursive: true });
+      await fs.rm(path.join(outlineSpecPath, 'changes'), { recursive: true });
 
-      // Re-run init (triggers extend mode since openspec dir already exists)
+      // Re-run init (triggers extend mode since outline-spec dir already exists)
       const initCommand2 = new InitCommand({ tools: 'claude' });
       await initCommand2.execute(testDir);
 
-      expect(await fileExists(path.join(openspecPath, 'specs', '.gitkeep'))).toBe(true);
-      expect(await fileExists(path.join(openspecPath, 'changes', '.gitkeep'))).toBe(true);
+      expect(await fileExists(path.join(outlineSpecPath, 'specs', '.gitkeep'))).toBe(true);
+      expect(await fileExists(path.join(outlineSpecPath, 'changes', '.gitkeep'))).toBe(true);
     });
 
     it('should preserve existing directory anchor contents when re-running init', async () => {
-      const marker = path.join(testDir, 'openspec', 'specs', '.gitkeep');
+      const marker = path.join(testDir, 'outline-spec', 'specs', '.gitkeep');
       await fs.mkdir(path.dirname(marker), { recursive: true });
       await fs.writeFile(marker, 'Keep this directory in Git.\n');
 
@@ -110,8 +112,8 @@ describe('InitCommand', () => {
     });
 
     it('should not add anchors to populated directories', async () => {
-      const specsPath = path.join(testDir, 'openspec', 'specs');
-      const changesPath = path.join(testDir, 'openspec', 'changes');
+      const specsPath = path.join(testDir, 'outline-spec', 'specs');
+      const changesPath = path.join(testDir, 'outline-spec', 'changes');
       await fs.mkdir(specsPath, { recursive: true });
       await fs.mkdir(changesPath, { recursive: true });
       await fs.writeFile(path.join(specsPath, '.custom'), 'keep me');
@@ -128,7 +130,7 @@ describe('InitCommand', () => {
       async (dangling) => {
         const target = path.join(configTempDir, 'outside-target');
         if (!dangling) await fs.writeFile(target, 'do not overwrite');
-        const marker = path.join(testDir, 'openspec', 'specs', '.gitkeep');
+        const marker = path.join(testDir, 'outline-spec', 'specs', '.gitkeep');
         await fs.mkdir(path.dirname(marker), { recursive: true });
         await fs.symlink(target, marker);
 
@@ -148,7 +150,7 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      const configPath = path.join(testDir, 'openspec', 'config.yaml');
+      const configPath = path.join(testDir, 'outline-spec', 'config.yaml');
       expect(await fileExists(configPath)).toBe(true);
 
       const content = await fs.readFile(configPath, 'utf-8');
@@ -163,12 +165,12 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      const configPath = path.join(testDir, 'openspec', 'config.yaml');
+      const configPath = path.join(testDir, 'outline-spec', 'config.yaml');
       const content = await fs.readFile(configPath, 'utf-8');
       expect(content).toContain('context: |');
       expect(content).toContain('  Language: Portuguese (pt-BR)');
       expect(content).toContain('  All artifacts must be written in Portuguese (pt-BR).');
-      expect(content).toContain('  Keep OpenSpec structural headings (such as ## Requirements) in English.');
+      expect(content).toContain('  Keep outline-spec structural headings (such as ## Requirements) in English.');
       expect(readProjectConfig(testDir)?.context).toContain('Language: Portuguese (pt-BR)');
 
       await initCommand.execute(testDir);
@@ -176,39 +178,39 @@ describe('InitCommand', () => {
     });
 
     it('should not overwrite an existing config when --language is used', async () => {
-      const openspecPath = path.join(testDir, 'openspec');
-      await fs.mkdir(path.join(openspecPath, 'changes'), { recursive: true });
-      await fs.mkdir(path.join(openspecPath, 'specs'), { recursive: true });
-      const configPath = path.join(openspecPath, 'config.yaml');
+      const outlineSpecPath = path.join(testDir, 'outline-spec');
+      await fs.mkdir(path.join(outlineSpecPath, 'changes'), { recursive: true });
+      await fs.mkdir(path.join(outlineSpecPath, 'specs'), { recursive: true });
+      const configPath = path.join(outlineSpecPath, 'config.yaml');
       const originalConfig = 'schema: outline\ncontext: |\n  Keep this context exactly.\n';
       await fs.writeFile(configPath, originalConfig, 'utf-8');
 
       const initCommand = new InitCommand({ tools: 'none', language: 'French' });
 
       await expect(initCommand.execute(testDir)).rejects.toThrow(
-        '--language does not overwrite an existing OpenSpec config',
+        '--language does not overwrite an existing outline-spec config',
       );
       expect(await fs.readFile(configPath, 'utf-8')).toBe(originalConfig);
     });
 
     it('should protect an existing config.yml when --language is used', async () => {
-      const openspecPath = path.join(testDir, 'openspec');
-      await fs.mkdir(path.join(openspecPath, 'changes'), { recursive: true });
-      await fs.mkdir(path.join(openspecPath, 'specs'), { recursive: true });
-      const configPath = path.join(openspecPath, 'config.yml');
+      const outlineSpecPath = path.join(testDir, 'outline-spec');
+      await fs.mkdir(path.join(outlineSpecPath, 'changes'), { recursive: true });
+      await fs.mkdir(path.join(outlineSpecPath, 'specs'), { recursive: true });
+      const configPath = path.join(outlineSpecPath, 'config.yml');
       const originalConfig = 'schema: outline\ncontext: Keep this YAML context.\n';
       await fs.writeFile(configPath, originalConfig, 'utf-8');
 
       const initCommand = new InitCommand({ tools: 'none', language: 'French' });
 
       await expect(initCommand.execute(testDir)).rejects.toThrow(
-        '--language does not overwrite an existing OpenSpec config',
+        '--language does not overwrite an existing outline-spec config',
       );
       expect(await fs.readFile(configPath, 'utf-8')).toBe(originalConfig);
     });
 
     it('should accept language context at the exact project context size limit', async () => {
-      const language = 'x'.repeat(25_541);
+      const language = 'x'.repeat(25_539);
       const initCommand = new InitCommand({ tools: 'none', language });
 
       await initCommand.execute(testDir);
@@ -237,38 +239,38 @@ describe('InitCommand', () => {
       for (const language of invalidLanguages) {
         expect(() => new InitCommand({ tools: 'none', language })).toThrow();
       }
-      expect(await fileExists(path.join(testDir, 'openspec'))).toBe(false);
+      expect(await fileExists(path.join(testDir, 'outline-spec'))).toBe(false);
     });
 
     it('should reject an unwritable language config before creating other files', async () => {
       const configPath = path.join(
         FileSystemUtils.canonicalizeExistingPath(testDir),
-        'openspec',
+        'outline-spec',
         'config.yaml'
       );
       vi.spyOn(FileSystemUtils, 'canWriteFile').mockResolvedValue(false);
       const initCommand = new InitCommand({ tools: 'claude', language: 'French' });
 
       await expect(initCommand.execute(testDir)).rejects.toThrow(
-        'Cannot create openspec/config.yaml for --language',
+        'Cannot create outline-spec/config.yaml for --language',
       );
       expect(FileSystemUtils.canWriteFile).toHaveBeenCalledWith(configPath);
-      expect(await fileExists(path.join(testDir, 'openspec'))).toBe(false);
+      expect(await fileExists(path.join(testDir, 'outline-spec'))).toBe(false);
       expect(await fileExists(path.join(testDir, '.claude'))).toBe(false);
     });
 
     it.skipIf(process.platform === 'win32')(
       'should reject a dangling language config symlink before creating other files',
       async () => {
-        const openspecPath = path.join(testDir, 'openspec');
-        await fs.mkdir(path.join(openspecPath, 'changes'), { recursive: true });
-        await fs.mkdir(path.join(openspecPath, 'specs'), { recursive: true });
-        const configPath = path.join(openspecPath, 'config.yaml');
+        const outlineSpecPath = path.join(testDir, 'outline-spec');
+        await fs.mkdir(path.join(outlineSpecPath, 'changes'), { recursive: true });
+        await fs.mkdir(path.join(outlineSpecPath, 'specs'), { recursive: true });
+        const configPath = path.join(outlineSpecPath, 'config.yaml');
         await fs.symlink(path.join(testDir, 'missing-config.yaml'), configPath);
         const initCommand = new InitCommand({ tools: 'claude', language: 'French' });
 
         await expect(initCommand.execute(testDir)).rejects.toThrow(
-          'Cannot create openspec/config.yaml for --language',
+          'Cannot create outline-spec/config.yaml for --language',
         );
         expect((await fs.lstat(configPath)).isSymbolicLink()).toBe(true);
         expect(await fileExists(path.join(testDir, '.claude'))).toBe(false);
@@ -281,7 +283,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'none', language: 'French' });
 
       await expect(initCommand.execute(testDir)).rejects.toThrow(
-        'Failed to create openspec/config.yaml for --language: disk full',
+        'Failed to create outline-spec/config.yaml for --language: disk full',
       );
     });
 
@@ -290,7 +292,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'none' });
 
       await expect(initCommand.execute(testDir)).resolves.toBeUndefined();
-      expect(await fileExists(path.join(testDir, 'openspec', 'config.yaml'))).toBe(false);
+      expect(await fileExists(path.join(testDir, 'outline-spec', 'config.yaml'))).toBe(false);
     });
 
     it('should create core profile skills for Claude Code by default', async () => {
@@ -300,12 +302,12 @@ describe('InitCommand', () => {
 
       // Core profile: propose, explore, apply, update, land, archive
       const coreSkillNames = [
-        'openspec-propose',
-        'openspec-explore',
-        'openspec-apply-change',
-        'openspec-update-change',
-        'openspec-land-change',
-        'openspec-archive-change',
+        'outline-spec-propose',
+        'outline-spec-explore',
+        'outline-spec-apply-change',
+        'outline-spec-update-change',
+        'outline-spec-land-change',
+        'outline-spec-archive-change',
       ];
 
       for (const skillName of coreSkillNames) {
@@ -320,10 +322,10 @@ describe('InitCommand', () => {
 
       // Non-core skills should NOT be created
       const nonCoreSkillNames = [
-        'openspec-new-change',
-        'openspec-continue-change',
-        'openspec-ff-change',
-        'openspec-verify-change',
+        'outline-spec-new-change',
+        'outline-spec-continue-change',
+        'outline-spec-ff-change',
+        'outline-spec-verify-change',
       ];
 
       for (const skillName of nonCoreSkillNames) {
@@ -344,13 +346,13 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       await expect(
-        fs.access(path.join(testDir, '.claude', 'skills', 'openspec-archive-change', 'SKILL.md'))
+        fs.access(path.join(testDir, '.claude', 'skills', 'outline-spec-archive-change', 'SKILL.md'))
       ).resolves.toBeUndefined();
       await expect(
-        fs.access(path.join(testDir, '.claude', 'skills', 'openspec-land-change', 'SKILL.md'))
+        fs.access(path.join(testDir, '.claude', 'skills', 'outline-spec-land-change', 'SKILL.md'))
       ).resolves.toBeUndefined();
       await expect(
-        fs.access(path.join(testDir, '.claude', 'commands', 'opsx', 'land.md'))
+        fs.access(path.join(testDir, '.claude', 'commands', 'outline-spec', 'land.md'))
       ).resolves.toBeUndefined();
     });
 
@@ -361,12 +363,12 @@ describe('InitCommand', () => {
 
       // Core profile: propose, explore, apply, update, land, archive
       const coreCommandNames = [
-        'opsx/propose.md',
-        'opsx/explore.md',
-        'opsx/apply.md',
-        'opsx/update.md',
-        'opsx/land.md',
-        'opsx/archive.md',
+        'outline-spec/propose.md',
+        'outline-spec/explore.md',
+        'outline-spec/apply.md',
+        'outline-spec/update.md',
+        'outline-spec/land.md',
+        'outline-spec/archive.md',
       ];
 
       for (const cmdName of coreCommandNames) {
@@ -376,10 +378,10 @@ describe('InitCommand', () => {
 
       // Non-core commands should NOT be created
       const nonCoreCommandNames = [
-        'opsx/new.md',
-        'opsx/continue.md',
-        'opsx/ff.md',
-        'opsx/verify.md',
+        'outline-spec/new.md',
+        'outline-spec/continue.md',
+        'outline-spec/ff.md',
+        'outline-spec/verify.md',
       ];
 
       for (const cmdName of nonCoreCommandNames) {
@@ -399,13 +401,13 @@ describe('InitCommand', () => {
 
       const initCommand = new InitCommand({ tools: 'claude' });
       await expect(initCommand.execute(testDir)).rejects.toThrow(
-        'OpenSpec setup failed for: Claude Code'
+        'outline-spec setup failed for: Claude Code'
       );
 
       expect(await fs.readdir(outsideDir)).toEqual([]);
       expect((await fs.lstat(path.join(testDir, '.claude'))).isSymbolicLink()).toBe(true);
       expect(vi.mocked(console.log).mock.calls.flat().join('\n')).toContain(
-        'OpenSpec Setup Incomplete'
+        'outline-spec Setup Incomplete'
       );
     });
 
@@ -423,13 +425,13 @@ describe('InitCommand', () => {
         copilotCloud: true,
       });
       await expect(initCommand.execute(testDir)).rejects.toThrow(
-        'OpenSpec setup failed for: GitHub Copilot'
+        'outline-spec setup failed for: GitHub Copilot'
       );
 
       expect(await fs.readdir(outsideDir)).toEqual([]);
       expect((await fs.lstat(path.join(testDir, '.github'))).isSymbolicLink()).toBe(true);
       expect(vi.mocked(console.log).mock.calls.flat().join('\n')).toContain(
-        'OpenSpec Setup Incomplete'
+        'outline-spec Setup Incomplete'
       );
     });
 
@@ -441,7 +443,7 @@ describe('InitCommand', () => {
         testDir,
         '.claude',
         'skills',
-        'openspec-propose',
+        'outline-spec-propose',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(skillFile), { recursive: true });
@@ -449,7 +451,7 @@ describe('InitCommand', () => {
 
       const initCommand = new InitCommand({ tools: 'claude' });
       await expect(initCommand.execute(testDir)).rejects.toThrow(
-        'OpenSpec setup failed for: Claude Code'
+        'outline-spec setup failed for: Claude Code'
       );
 
       expect(await fs.readFile(outsideFile, 'utf-8')).toBe(originalContent);
@@ -459,7 +461,7 @@ describe('InitCommand', () => {
     it('should not write MiniMax skills through a linked directory outside the global skills root', async () => {
       const outsideDir = path.join(configTempDir, 'outside-minimax');
       const skillsRoot = path.join(testDir, 'home', '.minimax', 'skills');
-      const linkedSkillDir = path.join(skillsRoot, 'openspec-propose');
+      const linkedSkillDir = path.join(skillsRoot, 'outline-spec-propose');
       await fs.mkdir(outsideDir, { recursive: true });
       await fs.mkdir(skillsRoot, { recursive: true });
       await fs.symlink(
@@ -470,13 +472,13 @@ describe('InitCommand', () => {
 
       const initCommand = new InitCommand({ tools: 'minimax-code' });
       await expect(initCommand.execute(testDir)).rejects.toThrow(
-        'OpenSpec setup failed for: MiniMax Code'
+        'outline-spec setup failed for: MiniMax Code'
       );
 
       expect(await fs.readdir(outsideDir)).toEqual([]);
       expect((await fs.lstat(linkedSkillDir)).isSymbolicLink()).toBe(true);
       expect(vi.mocked(console.log).mock.calls.flat().join('\n')).toContain(
-        'OpenSpec Setup Incomplete'
+        'outline-spec Setup Incomplete'
       );
     });
 
@@ -487,15 +489,15 @@ describe('InitCommand', () => {
 
       const generatedFiles = [
         ...[
-          'openspec-propose',
-          'openspec-explore',
-          'openspec-apply-change',
-          'openspec-update-change',
-          'openspec-land-change',
-          'openspec-archive-change',
+          'outline-spec-propose',
+          'outline-spec-explore',
+          'outline-spec-apply-change',
+          'outline-spec-update-change',
+          'outline-spec-land-change',
+          'outline-spec-archive-change',
         ].map((name) => path.join(testDir, '.claude', 'skills', name, 'SKILL.md')),
         ...['propose', 'explore', 'apply', 'update', 'land', 'archive'].map((name) =>
-          path.join(testDir, '.claude', 'commands', 'opsx', `${name}.md`)
+          path.join(testDir, '.claude', 'commands', 'outline-spec', `${name}.md`)
         ),
       ];
       const generatedContents = await Promise.all(
@@ -507,7 +509,7 @@ describe('InitCommand', () => {
           'treat `--store <id>` as sticky for the rest of the workflow'
         );
         expect(content).toContain(
-          'openspec status --change "<name>" --json --store "<id>"'
+          'outline-spec status --change "<name>" --json --store "<id>"'
         );
       }
 
@@ -521,36 +523,36 @@ describe('InitCommand', () => {
             testDir,
             '.claude',
             'skills',
-            'openspec-update-change',
+            'outline-spec-update-change',
             'SKILL.md'
           ),
           'utf-8'
         ),
         await fs.readFile(
-          path.join(testDir, '.claude', 'commands', 'opsx', 'update.md'),
+          path.join(testDir, '.claude', 'commands', 'outline-spec', 'update.md'),
           'utf-8'
         ),
       ];
 
       for (const content of updateVariants) {
-        expect(content).not.toContain('/opsx:continue');
-        expect(content).not.toContain('/opsx:new');
+        expect(content).not.toContain('/outline-spec:continue');
+        expect(content).not.toContain('/outline-spec:new');
         expect(content).not.toContain('is an optional workflow and may not be installed');
         expect(content).toContain('it never creates missing ones');
-        expect(content).toContain('openspec status --change "<name>" --json');
+        expect(content).toContain('outline-spec status --change "<name>" --json');
         expect(content).toContain(
-          'openspec instructions "<artifact-id>" --change "<name>" --json'
+          'outline-spec instructions "<artifact-id>" --change "<name>" --json'
         );
-        expect(content).toContain('openspec new change "<new-change-name>"');
+        expect(content).toContain('outline-spec new change "<new-change-name>"');
       }
 
       const applyVariants = [
         await fs.readFile(
-          path.join(testDir, '.claude', 'skills', 'openspec-apply-change', 'SKILL.md'),
+          path.join(testDir, '.claude', 'skills', 'outline-spec-apply-change', 'SKILL.md'),
           'utf-8'
         ),
         await fs.readFile(
-          path.join(testDir, '.claude', 'commands', 'opsx', 'apply.md'),
+          path.join(testDir, '.claude', 'commands', 'outline-spec', 'apply.md'),
           'utf-8'
         ),
       ];
@@ -558,26 +560,26 @@ describe('InitCommand', () => {
       for (const content of applyVariants) {
         // The core profile has no `continue`, so the blocked-state handoff
         // must be the CLI recovery in full, not a workflow this install lacks.
-        expect(content).not.toContain('/opsx:continue');
-        expect(content).toContain('openspec status --change "<name>" --json');
+        expect(content).not.toContain('/outline-spec:continue');
+        expect(content).toContain('outline-spec status --change "<name>" --json');
         expect(content).toContain('next `ready` artifact (not `skipped` or `blocked`)');
         expect(content).toContain(
-          'openspec instructions "<artifact-id>" --change "<name>" --json'
+          'outline-spec instructions "<artifact-id>" --change "<name>" --json'
         );
         expect(content).toContain('Keep the selected `--store <id>` on both commands');
       }
 
       const landFiles = [
-        path.join(testDir, '.claude', 'skills', 'openspec-land-change', 'SKILL.md'),
-        path.join(testDir, '.claude', 'commands', 'opsx', 'land.md'),
+        path.join(testDir, '.claude', 'skills', 'outline-spec-land-change', 'SKILL.md'),
+        path.join(testDir, '.claude', 'commands', 'outline-spec', 'land.md'),
       ];
 
       // Land validates and previews before it writes anything.
       for (const file of landFiles) {
         const content = await fs.readFile(file, 'utf-8');
-        const validation = content.indexOf('openspec validate "<name>"');
-        const dryRun = content.indexOf('openspec land "<name>" --dry-run');
-        const land = content.indexOf('openspec land "<name>" --yes');
+        const validation = content.indexOf('outline-spec validate "<name>"');
+        const dryRun = content.indexOf('outline-spec land "<name>" --dry-run');
+        const land = content.indexOf('outline-spec land "<name>" --yes');
 
         expect(validation).toBeGreaterThanOrEqual(0);
         expect(dryRun).toBeGreaterThan(validation);
@@ -590,7 +592,7 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.cursor', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.cursor', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
     });
 
@@ -602,10 +604,10 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.devin', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.devin', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
       expect(
-        await fileExists(path.join(testDir, '.windsurf', 'skills', 'openspec-explore', 'SKILL.md'))
+        await fileExists(path.join(testDir, '.windsurf', 'skills', 'outline-spec-explore', 'SKILL.md'))
       ).toBe(false);
     });
 
@@ -615,14 +617,14 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       // Core profile skills land under .zcode/skills
-      const exploreSkill = path.join(testDir, '.zcode', 'skills', 'openspec-explore', 'SKILL.md');
-      const proposeSkill = path.join(testDir, '.zcode', 'skills', 'openspec-propose', 'SKILL.md');
+      const exploreSkill = path.join(testDir, '.zcode', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const proposeSkill = path.join(testDir, '.zcode', 'skills', 'outline-spec-propose', 'SKILL.md');
       expect(await fileExists(exploreSkill)).toBe(true);
       expect(await fileExists(proposeSkill)).toBe(true);
 
-      // Core profile commands land under .zcode/commands/opsx
-      const exploreCmd = path.join(testDir, '.zcode', 'commands', 'opsx', 'explore.md');
-      const proposeCmd = path.join(testDir, '.zcode', 'commands', 'opsx', 'propose.md');
+      // Core profile commands land under .zcode/commands/outline-spec
+      const exploreCmd = path.join(testDir, '.zcode', 'commands', 'outline-spec', 'explore.md');
+      const proposeCmd = path.join(testDir, '.zcode', 'commands', 'outline-spec', 'propose.md');
       expect(await fileExists(exploreCmd)).toBe(true);
       expect(await fileExists(proposeCmd)).toBe(true);
 
@@ -647,32 +649,32 @@ describe('InitCommand', () => {
 
         await new InitCommand({ tools: 'codeassistant' }).execute(testDir);
 
-        const skillFile = path.join(testDir, '.codeassistant', 'skills', 'openspec-apply-change', 'SKILL.md');
-        const commandFile = path.join(testDir, '.codeassistant', 'commands', 'opsx-apply.md');
+        const skillFile = path.join(testDir, '.codeassistant', 'skills', 'outline-spec-apply-change', 'SKILL.md');
+        const commandFile = path.join(testDir, '.codeassistant', 'commands', 'outline-spec-apply.md');
         expect(await fileExists(skillFile)).toBe(delivery !== 'commands');
         expect(await fileExists(commandFile)).toBe(delivery !== 'skills');
 
         if (delivery !== 'commands') {
           const skillContent = await fs.readFile(skillFile, 'utf-8');
-          expect(skillContent).toContain(delivery === 'skills' ? 'the openspec-land-change skill' : '/opsx-land');
-          expect(skillContent).not.toContain('/opsx:');
+          expect(skillContent).toContain(delivery === 'skills' ? 'the outline-spec-land-change skill' : '/outline-spec-land');
+          expect(skillContent).not.toContain('/outline-spec:');
           if (delivery === 'skills') {
-            expect(skillContent).not.toContain('/openspec-');
-            expect(skillContent).not.toContain('/opsx-');
+            expect(skillContent).not.toMatch(/\/outline-spec-[a-z]+-change|\/outline-spec-(?:explore|onboard|propose)\b/);
+            expect(skillContent).not.toMatch(HYPHEN_COMMAND_REF);
           }
         }
         if (delivery !== 'skills') {
           const commandContent = await fs.readFile(commandFile, 'utf-8');
           expect(commandContent).toMatch(/^---\ndescription: /);
-          expect(commandContent).toContain('/opsx-land');
-          expect(commandContent).not.toContain('/opsx:');
+          expect(commandContent).toContain('/outline-spec-land');
+          expect(commandContent).not.toContain('/outline-spec:');
         }
 
         const logCalls = vi.mocked(console.log).mock.calls.flat().map(String);
         const startHint = logCalls.find((entry) => entry.includes('Start your first change'));
         expect(startHint).toContain(delivery === 'skills'
-          ? 'ask SourceCraft Code Assistant to use the openspec-propose skill with "your idea"'
-          : '/opsx-propose');
+          ? 'ask SourceCraft Code Assistant to use the outline-spec-propose skill with "your idea"'
+          : '/outline-spec-propose');
       }
     );
 
@@ -686,7 +688,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'agents' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.agents', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
 
       const commandsDir = path.join(testDir, '.agents', 'commands');
@@ -710,14 +712,14 @@ describe('InitCommand', () => {
       await new InitCommand({ tools: 'amp' }).execute(testDir);
 
       const skillsDir = path.join(testDir, '.agents', 'skills');
-      const skillFile = path.join(skillsDir, 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(skillsDir, 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
-      expect(await fs.readFile(path.join(skillsDir, '.openspec-target'), 'utf-8')).toBe('amp\n');
+      expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('amp\n');
 
       const skillContent = await fs.readFile(skillFile, 'utf-8');
-      expect(skillContent).toContain('name: openspec-explore');
-      expect(skillContent).toContain('/openspec-');
-      expect(skillContent).not.toContain('/opsx:');
+      expect(skillContent).toContain('name: outline-spec-explore');
+      expect(skillContent).toContain('/outline-spec-');
+      expect(skillContent).not.toContain('/outline-spec:');
       expect(await directoryExists(path.join(testDir, '.agents', 'commands'))).toBe(false);
 
       const logCalls = vi.mocked(console.log).mock.calls.flat().map(String);
@@ -738,13 +740,13 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'gsd' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.agents', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
       expect(await directoryExists(path.join(testDir, '.gsd', 'agents'))).toBe(false);
 
       const skillContent = await fs.readFile(skillFile, 'utf-8');
-      expect(skillContent).toContain('the openspec-propose skill');
-      expect(skillContent).not.toContain('/opsx:propose');
+      expect(skillContent).toContain('the outline-spec-propose skill');
+      expect(skillContent).not.toContain('/outline-spec:propose');
 
       const logCalls = vi.mocked(console.log).mock.calls.flat().map(String);
       expect(
@@ -769,7 +771,7 @@ describe('InitCommand', () => {
         'home',
         '.minimax',
         'skills',
-        'openspec-explore',
+        'outline-spec-explore',
         'SKILL.md'
       );
       expect(await fileExists(skillFile)).toBe(true);
@@ -803,7 +805,7 @@ describe('InitCommand', () => {
         'home',
         '.minimax',
         'skills',
-        'openspec-explore',
+        'outline-spec-explore',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(skillFile), { recursive: true });
@@ -826,7 +828,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'kimi' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.kimi-code', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.kimi-code', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
 
       const commandsDir = path.join(testDir, '.kimi-code', 'commands');
@@ -851,12 +853,12 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       // Skills install under .commandcode/skills (Command Code's native skill surface)
-      const skillFile = path.join(testDir, '.commandcode', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.commandcode', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
 
       // Adapter-backed: Command Code reads custom slash commands from
-      // .commandcode/commands/opsx-<id>.md, invoked as /opsx-<id>.
-      const commandFile = path.join(testDir, '.commandcode', 'commands', 'opsx-explore.md');
+      // .commandcode/commands/outline-spec-<id>.md, invoked as /outline-spec-<id>.
+      const commandFile = path.join(testDir, '.commandcode', 'commands', 'outline-spec-explore.md');
       expect(await fileExists(commandFile)).toBe(true);
       const commandContent = await fs.readFile(commandFile, 'utf-8');
       expect(commandContent).toContain('**Provided arguments**: $ARGUMENTS');
@@ -874,7 +876,7 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       // commands-only delivery: the adapter still writes commands...
-      const commandFile = path.join(testDir, '.commandcode', 'commands', 'opsx-explore.md');
+      const commandFile = path.join(testDir, '.commandcode', 'commands', 'outline-spec-explore.md');
       expect(await fileExists(commandFile)).toBe(true);
       const commandContent = await fs.readFile(commandFile, 'utf-8');
       expect(commandContent).toContain('**Provided arguments**: $ARGUMENTS');
@@ -893,7 +895,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'codeartsagent' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.codeartsdoer', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.codeartsdoer', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
 
       const commandsDir = path.join(testDir, '.codeartsdoer', 'commands');
@@ -918,7 +920,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'rovodev' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.rovodev', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.rovodev', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
 
       const commandsDir = path.join(testDir, '.rovodev', 'commands');
@@ -926,22 +928,22 @@ describe('InitCommand', () => {
 
       // Rovo has no slash-command surface: skills are invoked by natural
       // language, so no generated skill may tell the user to type a
-      // `/openspec-*` or `/opsx…` command that its CLI never registers.
+      // `/outline-spec-*` or `/outline-spec…` command that its CLI never registers.
       const skillsRoot = path.join(testDir, '.rovodev', 'skills');
       const skillDirs = await fs.readdir(skillsRoot);
       expect(skillDirs.length).toBeGreaterThan(0);
       for (const dir of skillDirs) {
         const body = await fs.readFile(path.join(skillsRoot, dir, 'SKILL.md'), 'utf-8');
-        expect(body, `${dir}/SKILL.md should not reference /openspec-* commands`).not.toMatch(/\/openspec-/);
-        expect(body, `${dir}/SKILL.md should not reference /opsx commands`).not.toMatch(/\/opsx[:-]/);
+        expect(body, `${dir}/SKILL.md should not reference /outline-spec-* commands`).not.toMatch(/\/outline-spec-/);
+        expect(body, `${dir}/SKILL.md should not reference /outline-spec commands`).not.toMatch(/\/outline-spec[:-]/);
       }
       // The apply skill hands off to other workflows; confirm the handoff is
       // spelled as a natural-language skill reference.
       const applyBody = await fs.readFile(
-        path.join(skillsRoot, 'openspec-apply-change', 'SKILL.md'),
+        path.join(skillsRoot, 'outline-spec-apply-change', 'SKILL.md'),
         'utf-8',
       );
-      expect(applyBody).toMatch(/the openspec-land-change skill/);
+      expect(applyBody).toMatch(/the outline-spec-land-change skill/);
 
       const rovoLogCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
       expect(rovoLogCalls.some((entry) => entry.includes('Created: Rovo Dev CLI'))).toBe(true);
@@ -953,8 +955,8 @@ describe('InitCommand', () => {
       // The getting-started hint must not advertise a dead slash command.
       const hintLine = rovoLogCalls.find((entry) => entry.includes('Start your first change'));
       expect(hintLine).toBeDefined();
-      expect(hintLine).not.toMatch(/\/openspec-/);
-      expect(hintLine).toContain('the openspec-propose skill');
+      expect(hintLine).not.toMatch(/\/outline-spec-/);
+      expect(hintLine).toContain('the outline-spec-propose skill');
     });
 
     it('should support DeepSeek Harness as an adapterless skills-only tool', async () => {
@@ -967,14 +969,14 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'dsh' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.dsh', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.dsh', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
 
       const commandsDir = path.join(testDir, '.dsh', 'commands');
       expect(await directoryExists(commandsDir)).toBe(false);
 
-      // dsh's user-facing `/name` gesture answers to `/openspec-*`, so no
-      // generated skill may reference `/opsx:` commands that dsh never loads.
+      // dsh's user-facing `/name` gesture answers to `/outline-spec-*`, so no
+      // generated skill may reference `/outline-spec:` commands that dsh never loads.
       const skillsRoot = path.join(testDir, '.dsh', 'skills');
       const skillDirs = await fs.readdir(skillsRoot);
       expect(skillDirs.length).toBeGreaterThan(0);
@@ -987,13 +989,13 @@ describe('InitCommand', () => {
         expect(frontmatter.name).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
         expect(typeof frontmatter.description).toBe('string');
         expect(frontmatter.description.trim().length).toBeGreaterThan(0);
-        expect(body, `${dir}/SKILL.md should not reference /opsx commands`).not.toMatch(/\/opsx[:-]/);
+        expect(body, `${dir}/SKILL.md should not reference /outline-spec commands`).not.toMatch(COMMAND_REF);
       }
       const applyBody = await fs.readFile(
-        path.join(skillsRoot, 'openspec-apply-change', 'SKILL.md'),
+        path.join(skillsRoot, 'outline-spec-apply-change', 'SKILL.md'),
         'utf-8',
       );
-      expect(applyBody).toMatch(/\/openspec-land-change/);
+      expect(applyBody).toMatch(/\/outline-spec-land-change/);
 
       const dshLogCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
       expect(dshLogCalls.some((entry) => entry.includes('Created: DeepSeek Harness'))).toBe(true);
@@ -1003,11 +1005,11 @@ describe('InitCommand', () => {
         ),
       ).toBe(true);
       // The getting-started hint must use the skill name dsh actually loads
-      // when the user types it (`/openspec-propose`).
+      // when the user types it (`/outline-spec-propose`).
       const hintLine = dshLogCalls.find((entry) => entry.includes('Start your first change'));
       expect(hintLine).toBeDefined();
-      expect(hintLine).toContain('/openspec-propose');
-      expect(hintLine).not.toContain('/opsx:');
+      expect(hintLine).toContain('/outline-spec-propose');
+      expect(hintLine).not.toContain('/outline-spec:');
     });
 
     it('should explain commands-only delivery for DeepSeek Harness without generating unusable artifacts', async () => {
@@ -1027,7 +1029,7 @@ describe('InitCommand', () => {
       expect(logCalls.some((entry) => entry.includes('Start your first change'))).toBe(false);
       const correction = logCalls.find((entry) => entry.includes('No skills or commands were generated'));
       expect(correction).toContain('DeepSeek Harness');
-      expect(correction).toContain('openspec config set delivery both');
+      expect(correction).toContain('outline-spec config set delivery both');
     });
 
     it('should support Hermes Agent as an adapterless skills-only tool with a setup note', async () => {
@@ -1040,7 +1042,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'hermes' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.hermes', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.hermes', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
 
       const commandsDir = path.join(testDir, '.hermes', 'commands');
@@ -1071,21 +1073,21 @@ describe('InitCommand', () => {
 
       const skillsDir = path.join(testDir, '.grok', 'skills');
       const skillNames = [
-        'openspec-apply-change',
-        'openspec-archive-change',
-        'openspec-explore',
-        'openspec-land-change',
-        'openspec-propose',
-        'openspec-update-change',
+        'outline-spec-apply-change',
+        'outline-spec-archive-change',
+        'outline-spec-explore',
+        'outline-spec-land-change',
+        'outline-spec-propose',
+        'outline-spec-update-change',
       ];
       expect((await fs.readdir(skillsDir)).sort()).toEqual(skillNames);
       for (const skillName of skillNames) {
         const content = await fs.readFile(path.join(skillsDir, skillName, 'SKILL.md'), 'utf-8');
         expect(content).toContain(`name: ${skillName}`);
-        expect(content).not.toMatch(/\/opsx[:-]/);
+        expect(content).not.toMatch(COMMAND_REF);
       }
-      const applyContent = await fs.readFile(path.join(skillsDir, 'openspec-apply-change', 'SKILL.md'), 'utf-8');
-      expect(applyContent).toContain('/openspec-land-change');
+      const applyContent = await fs.readFile(path.join(skillsDir, 'outline-spec-apply-change', 'SKILL.md'), 'utf-8');
+      expect(applyContent).toContain('/outline-spec-land-change');
 
       const commandsDir = path.join(testDir, '.grok', 'commands');
       expect(await directoryExists(commandsDir)).toBe(false);
@@ -1097,16 +1099,16 @@ describe('InitCommand', () => {
         )).toBe(true);
       }
       const startHint = logCalls.find((entry) => entry.includes('Start your first change'));
-      expect(startHint).toContain('/openspec-propose');
-      expect(startHint).not.toContain('/opsx:');
+      expect(startHint).toContain('/outline-spec-propose');
+      expect(startHint).not.toContain('/outline-spec:');
     });
 
-    it('should migrate OpenSpec skills from legacy .kimi to .kimi-code during init', async () => {
-      const legacySkillDir = path.join(testDir, '.kimi', 'skills', 'openspec-explore');
+    it('should migrate outline-spec skills from legacy .kimi to .kimi-code during init', async () => {
+      const legacySkillDir = path.join(testDir, '.kimi', 'skills', 'outline-spec-explore');
       await fs.mkdir(legacySkillDir, { recursive: true });
       await fs.writeFile(
         path.join(legacySkillDir, 'SKILL.md'),
-        `---\nname: openspec-explore\nmetadata:\n  author: openspec\n  version: "0.9"\n---\n\nOld instructions content\n`
+        `---\nname: outline-spec-explore\nmetadata:\n  author: outline-spec\n  version: "0.9"\n---\n\nOld instructions content\n`
       );
       await fs.writeFile(path.join(testDir, '.kimi', 'config.toml'), 'user config');
 
@@ -1114,7 +1116,7 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       // Regenerated in the new location, legacy managed skill removed
-      const newSkill = path.join(testDir, '.kimi-code', 'skills', 'openspec-explore', 'SKILL.md');
+      const newSkill = path.join(testDir, '.kimi-code', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(newSkill)).toBe(true);
       expect(await directoryExists(legacySkillDir)).toBe(false);
 
@@ -1133,11 +1135,11 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       // Skills should be created
-      const skillFile = path.join(testDir, '.trae', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.trae', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
 
       // Commands should also be created (Trae has an adapter)
-      const commandFile = path.join(testDir, '.trae', 'commands', 'opsx-explore.md');
+      const commandFile = path.join(testDir, '.trae', 'commands', 'outline-spec-explore.md');
       expect(await fileExists(commandFile)).toBe(true);
 
       const commandContent = await fs.readFile(commandFile, 'utf-8');
@@ -1158,13 +1160,13 @@ describe('InitCommand', () => {
         const initCommand = new InitCommand({ tools: 'codex' });
         await initCommand.execute(testDir);
 
-        const skillFile = path.join(testDir, '.agents', 'skills', 'openspec-explore', 'SKILL.md');
+        const skillFile = path.join(testDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md');
         expect(await fileExists(skillFile)).toBe(true);
         expect(
-          await fileExists(path.join(testDir, '.codex', 'skills', 'openspec-explore', 'SKILL.md'))
+          await fileExists(path.join(testDir, '.codex', 'skills', 'outline-spec-explore', 'SKILL.md'))
         ).toBe(false);
 
-        const promptFile = path.join(process.env.CODEX_HOME!, 'prompts', 'opsx-explore.md');
+        const promptFile = path.join(process.env.CODEX_HOME!, 'prompts', 'outline-spec-explore.md');
         expect(await fileExists(promptFile)).toBe(false);
       }
     );
@@ -1175,12 +1177,12 @@ describe('InitCommand', () => {
 
       const skillsDir = path.join(testDir, '.agents', 'skills');
       const proposeSkill = await fs.readFile(
-        path.join(skillsDir, 'openspec-propose', 'SKILL.md'),
+        path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(proposeSkill).toContain('$openspec-apply-change');
-      expect(proposeSkill).toContain('/openspec-apply-change');
-      expect(await fs.readFile(path.join(skillsDir, '.openspec-target'), 'utf-8')).toBe('codex\n');
+      expect(proposeSkill).toContain('$outline-spec-apply-change');
+      expect(proposeSkill).toContain('/outline-spec-apply-change');
+      expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('codex\n');
 
       const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls
         .flat()
@@ -1200,16 +1202,16 @@ describe('InitCommand', () => {
 
         const skillsDir = path.join(testDir, '.agents', 'skills');
         const proposeSkill = await fs.readFile(
-          path.join(skillsDir, 'openspec-propose', 'SKILL.md'),
+          path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'),
           'utf-8'
         );
-        expect(proposeSkill).toContain('$openspec-apply-change');
-        expect(proposeSkill).toContain('/openspec-apply-change');
-        expect(await fs.readFile(path.join(skillsDir, '.openspec-target'), 'utf-8')).toBe(
+        expect(proposeSkill).toContain('$outline-spec-apply-change');
+        expect(proposeSkill).toContain('/outline-spec-apply-change');
+        expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe(
           'codex\n'
         );
         expect(
-          await fileExists(path.join(testDir, '.agents', 'workflows', 'opsx-propose.md'))
+          await fileExists(path.join(testDir, '.agents', 'workflows', 'outline-spec-propose.md'))
         ).toBe(true);
       }
     );
@@ -1220,12 +1222,12 @@ describe('InitCommand', () => {
       await new InitCommand({ tools: 'antigravity' }).execute(testDir);
 
       const skillsDir = path.join(testDir, '.agents', 'skills');
-      expect(await fs.readFile(path.join(skillsDir, '.openspec-target'), 'utf-8')).toBe('agents\n');
+      expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('agents\n');
       expect(
-        await fs.readFile(path.join(skillsDir, 'openspec-propose', 'SKILL.md'), 'utf-8')
-      ).toContain('/openspec-apply-change');
+        await fs.readFile(path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'), 'utf-8')
+      ).toContain('/outline-spec-apply-change');
       expect(
-        await fileExists(path.join(testDir, '.agents', 'workflows', 'opsx-propose.md'))
+        await fileExists(path.join(testDir, '.agents', 'workflows', 'outline-spec-propose.md'))
       ).toBe(true);
     });
 
@@ -1235,42 +1237,42 @@ describe('InitCommand', () => {
       await new InitCommand({ tools: 'agents' }).execute(testDir);
 
       const skillsDir = path.join(testDir, '.agents', 'skills');
-      expect(await fs.readFile(path.join(skillsDir, '.openspec-target'), 'utf-8')).toBe('codex\n');
+      expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('codex\n');
       const proposeSkill = await fs.readFile(
-        path.join(skillsDir, 'openspec-propose', 'SKILL.md'),
+        path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(proposeSkill).toContain('$openspec-apply-change');
-      expect(proposeSkill).toContain('/openspec-apply-change');
+      expect(proposeSkill).toContain('$outline-spec-apply-change');
+      expect(proposeSkill).toContain('/outline-spec-apply-change');
     });
 
     it('upgrades an Antigravity-owned shared tree when Codex is added', async () => {
       await new InitCommand({ tools: 'antigravity' }).execute(testDir);
       expect(
-        await fs.readFile(path.join(testDir, '.agents', 'skills', '.openspec-target'), 'utf-8')
+        await fs.readFile(path.join(testDir, '.agents', 'skills', '.outline-spec-target'), 'utf-8')
       ).toBe('antigravity\n');
 
       await new InitCommand({ tools: 'codex' }).execute(testDir);
 
       const skillsDir = path.join(testDir, '.agents', 'skills');
-      expect(await fs.readFile(path.join(skillsDir, '.openspec-target'), 'utf-8')).toBe('codex\n');
+      expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('codex\n');
       const proposeSkill = await fs.readFile(
-        path.join(skillsDir, 'openspec-propose', 'SKILL.md'),
+        path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(proposeSkill).toContain('$openspec-apply-change');
+      expect(proposeSkill).toContain('$outline-spec-apply-change');
       expect(
-        await fileExists(path.join(testDir, '.agents', 'workflows', 'opsx-propose.md'))
+        await fileExists(path.join(testDir, '.agents', 'workflows', 'outline-spec-propose.md'))
       ).toBe(true);
     });
 
     it('migrates generated Antigravity files without touching custom legacy files', async () => {
       await new InitCommand({ tools: 'antigravity' }).execute(testDir);
-      const legacyWorkflow = path.join(testDir, '.agent', 'workflows', 'opsx-propose.md');
+      const legacyWorkflow = path.join(testDir, '.agent', 'workflows', 'outline-spec-propose.md');
       const customWorkflow = path.join(testDir, '.agent', 'workflows', 'my-workflow.md');
       await fs.mkdir(path.dirname(legacyWorkflow), { recursive: true });
       await fs.copyFile(
-        path.join(testDir, '.agents', 'workflows', 'opsx-propose.md'),
+        path.join(testDir, '.agents', 'workflows', 'outline-spec-propose.md'),
         legacyWorkflow
       );
       await fs.writeFile(customWorkflow, '# mine\n');
@@ -1280,10 +1282,10 @@ describe('InitCommand', () => {
       expect(await fileExists(legacyWorkflow)).toBe(false);
       expect(await fs.readFile(customWorkflow, 'utf-8')).toBe('# mine\n');
       expect(
-        await fileExists(path.join(testDir, '.agents', 'workflows', 'opsx-propose.md'))
+        await fileExists(path.join(testDir, '.agents', 'workflows', 'outline-spec-propose.md'))
       ).toBe(true);
       expect(
-        await fs.readFile(path.join(testDir, '.agents', 'skills', '.openspec-target'), 'utf-8')
+        await fs.readFile(path.join(testDir, '.agents', 'skills', '.outline-spec-target'), 'utf-8')
       ).toBe('codex\n');
     });
 
@@ -1293,18 +1295,18 @@ describe('InitCommand', () => {
 
       const skillsDir = path.join(testDir, '.agents', 'skills');
       const proposeSkill = await fs.readFile(
-        path.join(skillsDir, 'openspec-propose', 'SKILL.md'),
+        path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(proposeSkill).toContain('$openspec-apply-change');
-      expect(proposeSkill).toContain('/openspec-apply-change');
-      expect(await fs.readFile(path.join(skillsDir, '.openspec-target'), 'utf-8')).toBe('codex\n');
+      expect(proposeSkill).toContain('$outline-spec-apply-change');
+      expect(proposeSkill).toContain('/outline-spec-apply-change');
+      expect(await fs.readFile(path.join(skillsDir, '.outline-spec-target'), 'utf-8')).toBe('codex\n');
     });
 
     it('should migrate legacy Codex skills only after init writes their replacements', async () => {
       await new InitCommand({ tools: 'codex' }).execute(testDir);
       await fs.rename(path.join(testDir, '.agents'), path.join(testDir, '.codex'));
-      await fs.rm(path.join(testDir, '.codex', 'skills', '.openspec-target'));
+      await fs.rm(path.join(testDir, '.codex', 'skills', '.outline-spec-target'));
       const customSkill = path.join(testDir, '.codex', 'skills', 'custom', 'SKILL.md');
       await fs.mkdir(path.dirname(customSkill), { recursive: true });
       await fs.writeFile(customSkill, 'user skill');
@@ -1312,10 +1314,10 @@ describe('InitCommand', () => {
       await new InitCommand({ tools: 'codex' }).execute(testDir);
 
       expect(
-        await fileExists(path.join(testDir, '.agents', 'skills', 'openspec-propose', 'SKILL.md'))
+        await fileExists(path.join(testDir, '.agents', 'skills', 'outline-spec-propose', 'SKILL.md'))
       ).toBe(true);
       expect(
-        await fileExists(path.join(testDir, '.codex', 'skills', 'openspec-propose', 'SKILL.md'))
+        await fileExists(path.join(testDir, '.codex', 'skills', 'outline-spec-propose', 'SKILL.md'))
       ).toBe(false);
       expect(await fs.readFile(customSkill, 'utf-8')).toBe('user skill');
     });
@@ -1373,8 +1375,8 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      const claudeSkill = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
-      const cursorSkill = path.join(testDir, '.cursor', 'skills', 'openspec-explore', 'SKILL.md');
+      const claudeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const cursorSkill = path.join(testDir, '.cursor', 'skills', 'outline-spec-explore', 'SKILL.md');
 
       expect(await fileExists(claudeSkill)).toBe(true);
       expect(await fileExists(cursorSkill)).toBe(true);
@@ -1393,11 +1395,11 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       const proposeFiles = [
-        path.join(testDir, '.factory', 'commands', 'opsx-propose.md'),
-        path.join(testDir, '.cursor', 'commands', 'opsx-propose.md'),
-        path.join(testDir, '.kilo', 'command', 'opsx-propose.md'),
-        path.join(testDir, '.pi', 'prompts', 'opsx-propose.md'),
-        path.join(testDir, '.agents', 'skills', 'openspec-propose', 'SKILL.md'),
+        path.join(testDir, '.factory', 'commands', 'outline-spec-propose.md'),
+        path.join(testDir, '.cursor', 'commands', 'outline-spec-propose.md'),
+        path.join(testDir, '.kilo', 'command', 'outline-spec-propose.md'),
+        path.join(testDir, '.pi', 'prompts', 'outline-spec-propose.md'),
+        path.join(testDir, '.agents', 'skills', 'outline-spec-propose', 'SKILL.md'),
       ];
 
       for (const proposeFile of proposeFiles) {
@@ -1426,10 +1428,10 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       // Check a few representative tools
-      const claudeSkill = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
-      const codeArtsSkill = path.join(testDir, '.codeartsdoer', 'skills', 'openspec-explore', 'SKILL.md');
-      const cursorSkill = path.join(testDir, '.cursor', 'skills', 'openspec-explore', 'SKILL.md');
-      const devinSkill = path.join(testDir, '.devin', 'skills', 'openspec-explore', 'SKILL.md');
+      const claudeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const codeArtsSkill = path.join(testDir, '.codeartsdoer', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const cursorSkill = path.join(testDir, '.cursor', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const devinSkill = path.join(testDir, '.devin', 'skills', 'outline-spec-explore', 'SKILL.md');
 
       expect(await fileExists(claudeSkill)).toBe(true);
       expect(await fileExists(codeArtsSkill)).toBe(true);
@@ -1437,11 +1439,11 @@ describe('InitCommand', () => {
       expect(await fileExists(devinSkill)).toBe(true);
 
       const sharedPropose = await fs.readFile(
-        path.join(testDir, '.agents', 'skills', 'openspec-propose', 'SKILL.md'),
+        path.join(testDir, '.agents', 'skills', 'outline-spec-propose', 'SKILL.md'),
         'utf-8'
       );
-      expect(sharedPropose).toContain('$openspec-apply-change');
-      expect(sharedPropose).toContain('/openspec-apply-change');
+      expect(sharedPropose).toContain('$outline-spec-apply-change');
+      expect(sharedPropose).toContain('/outline-spec-apply-change');
     });
 
     it('should skip tool configuration with --tools none option', async () => {
@@ -1449,9 +1451,9 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      // Should create OpenSpec structure but no skills
-      const openspecPath = path.join(testDir, 'openspec');
-      expect(await directoryExists(openspecPath)).toBe(true);
+      // Should create outline-spec structure but no skills
+      const outlineSpecPath = path.join(testDir, 'outline-spec');
+      expect(await directoryExists(outlineSpecPath)).toBe(true);
 
       // No tool-specific directories should be created
       const claudeSkillsDir = path.join(testDir, '.claude', 'skills');
@@ -1469,8 +1471,8 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      const claudeSkill = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
-      const cursorSkill = path.join(testDir, '.cursor', 'skills', 'openspec-explore', 'SKILL.md');
+      const claudeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const cursorSkill = path.join(testDir, '.cursor', 'skills', 'outline-spec-explore', 'SKILL.md');
 
       expect(await fileExists(claudeSkill)).toBe(true);
       expect(await fileExists(cursorSkill)).toBe(true);
@@ -1486,9 +1488,9 @@ describe('InitCommand', () => {
 
     it('should not create config.yaml if it already exists', async () => {
       // Pre-create config.yaml
-      const openspecDir = path.join(testDir, 'openspec');
-      await fs.mkdir(openspecDir, { recursive: true });
-      const configPath = path.join(openspecDir, 'config.yaml');
+      const outlineSpecDir = path.join(testDir, 'outline-spec');
+      await fs.mkdir(outlineSpecDir, { recursive: true });
+      const configPath = path.join(outlineSpecDir, 'config.yaml');
       const existingContent = 'schema: custom-schema\n';
       await fs.writeFile(configPath, existingContent);
 
@@ -1505,8 +1507,8 @@ describe('InitCommand', () => {
 
       await initCommand.execute(newDir);
 
-      const openspecPath = path.join(newDir, 'openspec');
-      expect(await directoryExists(openspecPath)).toBe(true);
+      const outlineSpecPath = path.join(newDir, 'outline-spec');
+      expect(await directoryExists(outlineSpecPath)).toBe(true);
     });
 
     it('should work in extend mode (re-running init)', async () => {
@@ -1518,8 +1520,8 @@ describe('InitCommand', () => {
       await initCommand2.execute(testDir);
 
       // Both tools should have skills
-      const claudeSkill = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
-      const cursorSkill = path.join(testDir, '.cursor', 'skills', 'openspec-explore', 'SKILL.md');
+      const claudeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
+      const cursorSkill = path.join(testDir, '.cursor', 'skills', 'outline-spec-explore', 'SKILL.md');
 
       expect(await fileExists(claudeSkill)).toBe(true);
       expect(await fileExists(cursorSkill)).toBe(true);
@@ -1529,7 +1531,7 @@ describe('InitCommand', () => {
       const initCommand1 = new InitCommand({ tools: 'claude' });
       await initCommand1.execute(testDir);
 
-      const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
       const originalContent = await fs.readFile(skillFile, 'utf-8');
 
       // Modify the file
@@ -1549,12 +1551,12 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
       const content = await fs.readFile(skillFile, 'utf-8');
 
       // Should have YAML frontmatter
       expect(content).toMatch(/^---\n/);
-      expect(content).toContain('name: openspec-explore');
+      expect(content).toContain('name: outline-spec-explore');
       expect(content).toContain('description:');
       expect(content).toContain('license:');
       expect(content).toContain('compatibility:');
@@ -1566,7 +1568,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
       const content = await fs.readFile(skillFile, 'utf-8');
 
       expect(content).toContain('Enter explore mode');
@@ -1577,27 +1579,27 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-propose', 'SKILL.md');
+      const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-propose', 'SKILL.md');
       const content = await fs.readFile(skillFile, 'utf-8');
 
-      expect(content).toContain('name: openspec-propose');
+      expect(content).toContain('name: outline-spec-propose');
     });
 
     it('should include apply-change skill instructions', async () => {
       const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-apply-change', 'SKILL.md');
+      const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-apply-change', 'SKILL.md');
       const content = await fs.readFile(skillFile, 'utf-8');
 
-      expect(content).toContain('name: openspec-apply-change');
+      expect(content).toContain('name: outline-spec-apply-change');
     });
 
     it('should embed generatedBy version in skill files', async () => {
       const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
       const content = await fs.readFile(skillFile, 'utf-8');
 
       // Should contain generatedBy field with a version string
@@ -1610,7 +1612,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'claude' });
       await initCommand.execute(testDir);
 
-      const cmdFile = path.join(testDir, '.claude', 'commands', 'opsx', 'explore.md');
+      const cmdFile = path.join(testDir, '.claude', 'commands', 'outline-spec', 'explore.md');
       const content = await fs.readFile(cmdFile, 'utf-8');
 
       // Claude commands use YAML frontmatter
@@ -1623,7 +1625,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'cursor' });
       await initCommand.execute(testDir);
 
-      const cmdFile = path.join(testDir, '.cursor', 'commands', 'opsx-explore.md');
+      const cmdFile = path.join(testDir, '.cursor', 'commands', 'outline-spec-explore.md');
       expect(await fileExists(cmdFile)).toBe(true);
 
       const content = await fs.readFile(cmdFile, 'utf-8');
@@ -1642,7 +1644,7 @@ describe('InitCommand', () => {
         async (filePath: any, ...args: any[]) => {
           if (
             typeof filePath === 'string' &&
-            filePath.includes('.openspec-test-')
+            filePath.includes('.outline-spec-test-')
           ) {
             throw new Error('EACCES: permission denied');
           }
@@ -1686,21 +1688,21 @@ describe('InitCommand', () => {
 
         const skillsDir = path.join(testDir, '.atomcode', 'skills');
         const commandsDir = path.join(testDir, '.atomcode', 'commands');
-        const applySkill = path.join(skillsDir, 'openspec-apply-change', 'SKILL.md');
+        const applySkill = path.join(skillsDir, 'outline-spec-apply-change', 'SKILL.md');
         expect(await fileExists(applySkill)).toBe(delivery !== 'commands');
         expect(await directoryExists(commandsDir)).toBe(delivery !== 'skills');
 
         if (delivery !== 'commands') {
           const content = await fs.readFile(applySkill, 'utf-8');
-          expect(content).not.toContain('/opsx:');
-          expect(content).toContain(delivery === 'skills' ? '/openspec-' : '/opsx-');
+          expect(content).not.toContain('/outline-spec:');
+          expect(content).toContain(delivery === 'skills' ? '/outline-spec-' : '/outline-spec-');
         }
 
         if (delivery !== 'skills') {
           const commandFiles = await fs.readdir(commandsDir);
           expect(commandFiles.sort()).toEqual([
-            'opsx-apply.md', 'opsx-archive.md', 'opsx-explore.md',
-            'opsx-land.md', 'opsx-propose.md', 'opsx-update.md',
+            'outline-spec-apply.md', 'outline-spec-archive.md', 'outline-spec-explore.md',
+            'outline-spec-land.md', 'outline-spec-propose.md', 'outline-spec-update.md',
           ]);
           for (const filename of commandFiles) {
             const content = await fs.readFile(path.join(commandsDir, filename), 'utf-8');
@@ -1712,10 +1714,10 @@ describe('InitCommand', () => {
               args: 'optional',
             });
             expect(content).toContain('$ARGUMENTS');
-            expect(content).not.toContain('/opsx:');
+            expect(content).not.toContain('/outline-spec:');
           }
-          const applyCommand = await fs.readFile(path.join(commandsDir, 'opsx-apply.md'), 'utf-8');
-          expect(applyCommand).toContain('/opsx-');
+          const applyCommand = await fs.readFile(path.join(commandsDir, 'outline-spec-apply.md'), 'utf-8');
+          expect(applyCommand).toContain('/outline-spec-');
         }
       }
     );
@@ -1724,17 +1726,17 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: toolId });
       await initCommand.execute(testDir);
 
-      const commandsDir = path.join(testDir, `.${toolId}`, 'commands', 'opsx');
+      const commandsDir = path.join(testDir, `.${toolId}`, 'commands', 'outline-spec');
       const commandIds = ['apply', 'archive', 'explore', 'land', 'propose', 'update'];
       expect((await fs.readdir(commandsDir)).sort()).toEqual(commandIds.map((id) => `${id}.toml`));
       for (const commandId of commandIds) {
         const content = parseToml(await fs.readFile(path.join(commandsDir, `${commandId}.toml`), 'utf-8'));
         expect(content.description).toEqual(expect.any(String));
-        expect(content.prompt).toContain('openspec');
+        expect(content.prompt).toContain('outline-spec');
       }
 
-      const skillFile = path.join(testDir, `.${toolId}`, 'skills', 'openspec-explore', 'SKILL.md');
-      expect(await fs.readFile(skillFile, 'utf-8')).toContain('name: openspec-explore');
+      const skillFile = path.join(testDir, `.${toolId}`, 'skills', 'outline-spec-explore', 'SKILL.md');
+      expect(await fs.readFile(skillFile, 'utf-8')).toContain('name: outline-spec-explore');
     });
 
     it.each(['both', 'skills', 'commands'] as const)(
@@ -1744,12 +1746,12 @@ describe('InitCommand', () => {
         await new InitCommand({ tools: 'easycode' }).execute(testDir);
 
         const skillsDir = path.join(testDir, '.easycode', 'skills');
-        for (const skillName of ['openspec-explore', 'openspec-new-change']) {
+        for (const skillName of ['outline-spec-explore', 'outline-spec-new-change']) {
           expect(await fileExists(path.join(skillsDir, skillName, 'SKILL.md'))).toBe(delivery !== 'commands');
         }
-        expect(await fileExists(path.join(skillsDir, 'openspec-propose', 'SKILL.md'))).toBe(false);
+        expect(await fileExists(path.join(skillsDir, 'outline-spec-propose', 'SKILL.md'))).toBe(false);
 
-        const commandsDir = path.join(testDir, '.easycode', 'commands', 'opsx');
+        const commandsDir = path.join(testDir, '.easycode', 'commands', 'outline-spec');
         if (delivery === 'skills') {
           expect(await directoryExists(commandsDir)).toBe(false);
         } else {
@@ -1757,7 +1759,7 @@ describe('InitCommand', () => {
           for (const filename of ['explore.toml', 'new.toml']) {
             const content = parseToml(await fs.readFile(path.join(commandsDir, filename), 'utf-8'));
             expect(content.description).toEqual(expect.any(String));
-            expect(content.prompt).toContain('openspec');
+            expect(content.prompt).toContain('outline-spec');
           }
         }
       }
@@ -1767,7 +1769,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'windsurf' });
       await initCommand.execute(testDir);
 
-      const cmdFile = path.join(testDir, '.devin', 'workflows', 'opsx-explore.md');
+      const cmdFile = path.join(testDir, '.devin', 'workflows', 'outline-spec-explore.md');
       expect(await fileExists(cmdFile)).toBe(true);
     });
 
@@ -1775,15 +1777,15 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'devin' });
       await initCommand.execute(testDir);
 
-      const cmdFile = path.join(testDir, '.devin', 'workflows', 'opsx-apply.md');
+      const cmdFile = path.join(testDir, '.devin', 'workflows', 'outline-spec-apply.md');
       expect(await fileExists(cmdFile)).toBe(true);
 
       const content = await fs.readFile(cmdFile, 'utf-8');
       expect(content).toMatch(/^---\nname: "/);
       expect(content).toContain('category: "Workflow"');
-      // Devin discovers `.devin/workflows/opsx-apply.md` as `/opsx-apply`.
-      expect(content).toContain('/opsx-');
-      expect(content).not.toContain('/opsx:');
+      // Devin discovers `.devin/workflows/outline-spec-apply.md` as `/outline-spec-apply`.
+      expect(content).toContain('/outline-spec-');
+      expect(content).not.toContain('/outline-spec:');
     });
 
     it('should generate Devin Desktop skills that reference skills, not workflows', async () => {
@@ -1791,25 +1793,25 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       // The Devin Local agent has no workflows, so skill bodies must point at
-      // `/openspec-*` skills, which both Devin agents accept.
-      const skillFile = path.join(testDir, '.devin', 'skills', 'openspec-apply-change', 'SKILL.md');
+      // `/outline-spec-*` skills, which both Devin agents accept.
+      const skillFile = path.join(testDir, '.devin', 'skills', 'outline-spec-apply-change', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
 
       const content = await fs.readFile(skillFile, 'utf-8');
-      expect(content).toContain('/openspec-apply-change');
-      expect(content).not.toContain('/opsx:');
-      expect(content).not.toContain('/opsx-');
+      expect(content).toContain('/outline-spec-apply-change');
+      expect(content).not.toContain('/outline-spec:');
+      expect(content).not.toMatch(HYPHEN_COMMAND_REF);
     });
 
     it('should generate Continue prompt files', async () => {
       const initCommand = new InitCommand({ tools: 'continue' });
       await initCommand.execute(testDir);
 
-      const cmdFile = path.join(testDir, '.continue', 'prompts', 'opsx-explore.prompt');
+      const cmdFile = path.join(testDir, '.continue', 'prompts', 'outline-spec-explore.prompt');
       expect(await fileExists(cmdFile)).toBe(true);
 
       const content = await fs.readFile(cmdFile, 'utf-8');
-      expect(content).toContain('name: "opsx-explore"');
+      expect(content).toContain('name: "outline-spec-explore"');
       expect(content).toContain('invokable: true');
       expect(content).toContain(
         '---\n\nThis workflow prompt is already active. Follow its instructions directly. Do not call a tool named after this workflow.\n\nEnter explore mode.'
@@ -1820,7 +1822,7 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'cline' });
       await initCommand.execute(testDir);
 
-      const cmdFile = path.join(testDir, '.clinerules', 'workflows', 'opsx-explore.md');
+      const cmdFile = path.join(testDir, '.clinerules', 'workflows', 'outline-spec-explore.md');
       expect(await fileExists(cmdFile)).toBe(true);
     });
 
@@ -1828,12 +1830,12 @@ describe('InitCommand', () => {
       const initCommand = new InitCommand({ tools: 'github-copilot' });
       await initCommand.execute(testDir);
 
-      const cmdFile = path.join(testDir, '.github', 'prompts', 'opsx-explore.prompt.md');
+      const cmdFile = path.join(testDir, '.github', 'prompts', 'outline-spec-explore.prompt.md');
       const skillFile = path.join(
         testDir,
         '.github',
         'skills',
-        'openspec-explore',
+        'outline-spec-explore',
         'SKILL.md'
       );
       expect(await fileExists(cmdFile)).toBe(true);
@@ -1856,12 +1858,12 @@ describe('InitCommand', () => {
         copilotCloud: true,
       });
       await expect(initCommand.execute(testDir)).rejects.toThrow(
-        'OpenSpec setup failed for: GitHub Copilot'
+        'outline-spec setup failed for: GitHub Copilot'
       );
 
       await expect(fs.stat(setupStepsPath)).rejects.toMatchObject({ code: 'ENOENT' });
       expect(vi.mocked(console.log).mock.calls.flat().join('\n')).toContain(
-        'OpenSpec Setup Incomplete'
+        'outline-spec Setup Incomplete'
       );
     });
 
@@ -1871,17 +1873,17 @@ describe('InitCommand', () => {
 
       // Local Copilot command files are unaffected by the cloud opt-in.
       expect(
-        await fileExists(path.join(testDir, '.github', 'prompts', 'opsx-explore.prompt.md'))
+        await fileExists(path.join(testDir, '.github', 'prompts', 'outline-spec-explore.prompt.md'))
       ).toBe(true);
       // Cloud files are NOT written without an explicit opt-in.
       await expect(
         fs.stat(path.join(testDir, '.github', 'workflows', 'copilot-setup-steps.yml'))
       ).rejects.toMatchObject({ code: 'ENOENT' });
       await expect(
-        fs.stat(path.join(testDir, '.github', 'agents', 'openspec.agent.md'))
+        fs.stat(path.join(testDir, '.github', 'agents', 'outline-spec.agent.md'))
       ).rejects.toMatchObject({ code: 'ENOENT' });
       // An undecided run leaves config untouched (no githubCopilot key).
-      const config = await fs.readFile(path.join(testDir, 'openspec', 'config.yaml'), 'utf8');
+      const config = await fs.readFile(path.join(testDir, 'outline-spec', 'config.yaml'), 'utf8');
       expect(config).not.toContain('githubCopilot');
     });
 
@@ -1895,7 +1897,7 @@ describe('InitCommand', () => {
       await expect(
         fs.readFile(path.join(testDir, '.github', 'workflows', 'copilot-setup-steps.yml'), 'utf8')
       ).resolves.toContain('copilot-setup-steps:');
-      const config = await fs.readFile(path.join(testDir, 'openspec', 'config.yaml'), 'utf8');
+      const config = await fs.readFile(path.join(testDir, 'outline-spec', 'config.yaml'), 'utf8');
       expect(config).toContain('githubCopilot:');
       expect(config).toContain('cloudAgent: true');
     });
@@ -1910,7 +1912,7 @@ describe('InitCommand', () => {
       await expect(
         fs.stat(path.join(testDir, '.github', 'workflows', 'copilot-setup-steps.yml'))
       ).rejects.toMatchObject({ code: 'ENOENT' });
-      const config = await fs.readFile(path.join(testDir, 'openspec', 'config.yaml'), 'utf8');
+      const config = await fs.readFile(path.join(testDir, 'outline-spec', 'config.yaml'), 'utf8');
       expect(config).toContain('cloudAgent: false');
     });
   });
@@ -1922,10 +1924,10 @@ describe('InitCommand - profile and detection features', () => {
   let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(async () => {
-    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-init-profile-test-'));
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-init-profile-test-'));
     originalEnv = { ...process.env };
     // Use a temp dir for global config to avoid polluting real config
-    configTempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-config-test-'));
+    configTempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-config-test-'));
     process.env.XDG_CONFIG_HOME = configTempDir;
     process.env.CODEX_HOME = path.join(testDir, 'codex-home');
     process.env.HOME = path.join(testDir, 'home');
@@ -1958,11 +1960,11 @@ describe('InitCommand - profile and detection features', () => {
     await initCommand.execute(testDir);
 
     // Core profile skills should be created
-    const proposeSkill = path.join(testDir, '.claude', 'skills', 'openspec-propose', 'SKILL.md');
+    const proposeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-propose', 'SKILL.md');
     expect(await fileExists(proposeSkill)).toBe(true);
 
     // Non-core skills (from the custom profile) should NOT be created
-    const newChangeSkill = path.join(testDir, '.claude', 'skills', 'openspec-new-change', 'SKILL.md');
+    const newChangeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-new-change', 'SKILL.md');
     expect(await fileExists(newChangeSkill)).toBe(false);
   });
 
@@ -1985,14 +1987,14 @@ describe('InitCommand - profile and detection features', () => {
       const initCommand = new InitCommand({ interactive: false });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, `.${tool}`, 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, `.${tool}`, 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
     }
   );
 
   it('should preserve global Codex prompts when only generic agents skills are installed', async () => {
     const promptDir = path.join(process.env.CODEX_HOME!, 'prompts');
-    const legacyPrompt = path.join(promptDir, 'opsx-apply.md');
+    const legacyPrompt = path.join(promptDir, 'outline-spec-apply.md');
     await fs.mkdir(promptDir, { recursive: true });
     await fs.writeFile(legacyPrompt, 'legacy apply prompt');
 
@@ -2001,7 +2003,7 @@ describe('InitCommand - profile and detection features', () => {
 
     expect(await fileExists(legacyPrompt)).toBe(true);
     expect(await fs.readFile(
-      path.join(testDir, '.agents', 'skills', '.openspec-target'),
+      path.join(testDir, '.agents', 'skills', '.outline-spec-target'),
       'utf-8'
     )).toBe('agents\n');
   });
@@ -2015,22 +2017,22 @@ describe('InitCommand - profile and detection features', () => {
       testDir,
       '.agents',
       'skills',
-      'openspec-apply-change',
+      'outline-spec-apply-change',
       'SKILL.md'
     );
     expect(await fileExists(skillFile)).toBe(true);
     const skillContent = await fs.readFile(skillFile, 'utf-8');
-    expect(skillContent).toContain('/openspec-land-change');
-    expect(skillContent).not.toContain('$openspec-land-change');
+    expect(skillContent).toContain('/outline-spec-land-change');
+    expect(skillContent).not.toContain('$outline-spec-land-change');
     expect(await fs.readFile(
-      path.join(testDir, '.agents', 'skills', '.openspec-target'),
+      path.join(testDir, '.agents', 'skills', '.outline-spec-target'),
       'utf-8'
     )).toBe('zed\n');
   });
 
   it('should preserve legacy Codex prompts without replacement skills during non-interactive init', async () => {
     const promptDir = path.join(process.env.CODEX_HOME!, 'prompts');
-    const legacyPrompt = path.join(promptDir, 'opsx-onboard.md');
+    const legacyPrompt = path.join(promptDir, 'outline-spec-onboard.md');
     await fs.mkdir(promptDir, { recursive: true });
     await fs.writeFile(legacyPrompt, 'legacy onboard prompt');
 
@@ -2039,23 +2041,23 @@ describe('InitCommand - profile and detection features', () => {
 
     expect(await fileExists(legacyPrompt)).toBe(true);
     expect(await fileExists(
-      path.join(testDir, '.agents', 'skills', 'openspec-explore', 'SKILL.md')
+      path.join(testDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md')
     )).toBe(true);
     expect(await fileExists(
-      path.join(testDir, '.agents', 'skills', 'openspec-onboard', 'SKILL.md')
+      path.join(testDir, '.agents', 'skills', 'outline-spec-onboard', 'SKILL.md')
     )).toBe(false);
   });
 
   it('should preselect configured tools but not directory-detected tools in extend mode', async () => {
-    // Simulate existing OpenSpec project (extend mode).
-    await fs.mkdir(path.join(testDir, 'openspec'), { recursive: true });
+    // Simulate existing outline-spec project (extend mode).
+    await fs.mkdir(path.join(testDir, 'outline-spec'), { recursive: true });
 
-    // Configured with OpenSpec
-    const claudeSkillDir = path.join(testDir, '.claude', 'skills', 'openspec-explore');
+    // Configured with outline-spec
+    const claudeSkillDir = path.join(testDir, '.claude', 'skills', 'outline-spec-explore');
     await fs.mkdir(claudeSkillDir, { recursive: true });
     await fs.writeFile(path.join(claudeSkillDir, 'SKILL.md'), 'configured');
 
-    // Directory detected only (not configured with OpenSpec)
+    // Directory detected only (not configured with outline-spec)
     await fs.mkdir(path.join(testDir, '.github'), { recursive: true });
     await fs.writeFile(path.join(testDir, '.github', 'copilot-instructions.md'), '');
 
@@ -2078,7 +2080,7 @@ describe('InitCommand - profile and detection features', () => {
   });
 
   it('should preselect detected tools for first-time interactive setup', async () => {
-    // First-time init: no openspec/ directory and no configured OpenSpec skills.
+    // First-time init: no outline-spec/ directory and no configured outline-spec skills.
     await fs.mkdir(path.join(testDir, '.github'), { recursive: true });
     await fs.writeFile(path.join(testDir, '.github', 'copilot-instructions.md'), '');
 
@@ -2145,7 +2147,7 @@ describe('InitCommand - profile and detection features', () => {
     expect(
       await fileExists(path.join(testDir, '.github', 'workflows', 'copilot-setup-steps.yml'))
     ).toBe(true);
-    const config = await fs.readFile(path.join(testDir, 'openspec', 'config.yaml'), 'utf8');
+    const config = await fs.readFile(path.join(testDir, 'outline-spec', 'config.yaml'), 'utf8');
     expect(config).toContain('cloudAgent: true');
     expect(confirmMock).toHaveBeenCalledWith(
       expect.objectContaining({ message: expect.stringContaining('copilot-setup-steps.yml') })
@@ -2165,9 +2167,9 @@ describe('InitCommand - profile and detection features', () => {
     ).rejects.toMatchObject({ code: 'ENOENT' });
     // Local Copilot prompt files are unaffected by the cloud decision.
     expect(
-      await fileExists(path.join(testDir, '.github', 'prompts', 'opsx-explore.prompt.md'))
+      await fileExists(path.join(testDir, '.github', 'prompts', 'outline-spec-explore.prompt.md'))
     ).toBe(true);
-    const config = await fs.readFile(path.join(testDir, 'openspec', 'config.yaml'), 'utf8');
+    const config = await fs.readFile(path.join(testDir, 'outline-spec', 'config.yaml'), 'utf8');
     expect(config).toContain('cloudAgent: false');
   });
 
@@ -2179,7 +2181,7 @@ describe('InitCommand - profile and detection features', () => {
     await new InitCommand({ tools: 'github-copilot', copilotCloud: false }).execute(testDir);
 
     expect(await fileExists(setupStepsPath)).toBe(false);
-    const config = await fs.readFile(path.join(testDir, 'openspec', 'config.yaml'), 'utf8');
+    const config = await fs.readFile(path.join(testDir, 'outline-spec', 'config.yaml'), 'utf8');
     expect(config).toContain('cloudAgent: false');
   });
 
@@ -2203,7 +2205,7 @@ describe('InitCommand - profile and detection features', () => {
 
   it('opting in over a user-owned cloud file never claims that file was written', async () => {
     const setupRel = path.join('.github', 'workflows', 'copilot-setup-steps.yml');
-    const agentRel = path.join('.github', 'agents', 'openspec.agent.md');
+    const agentRel = path.join('.github', 'agents', 'outline-spec.agent.md');
     const setupStepsPath = path.join(testDir, setupRel);
     await fs.mkdir(path.dirname(setupStepsPath), { recursive: true });
     await fs.writeFile(setupStepsPath, 'name: my own workflow\n');
@@ -2231,20 +2233,20 @@ describe('InitCommand - profile and detection features', () => {
     await initCommand.execute(testDir);
 
     // Custom profile skills should be created
-    const exploreSkill = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
-    const newChangeSkill = path.join(testDir, '.claude', 'skills', 'openspec-new-change', 'SKILL.md');
+    const exploreSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
+    const newChangeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-new-change', 'SKILL.md');
     expect(await fileExists(exploreSkill)).toBe(true);
     expect(await fileExists(newChangeSkill)).toBe(true);
 
     // Non-selected skills should NOT be created
-    const proposeSkill = path.join(testDir, '.claude', 'skills', 'openspec-propose', 'SKILL.md');
+    const proposeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-propose', 'SKILL.md');
     expect(await fileExists(proposeSkill)).toBe(false);
   });
 
   it('should migrate commands-only extend mode to custom profile without injecting propose', async () => {
-    await fs.mkdir(path.join(testDir, 'openspec'), { recursive: true });
-    await fs.mkdir(path.join(testDir, '.claude', 'commands', 'opsx'), { recursive: true });
-    await fs.writeFile(path.join(testDir, '.claude', 'commands', 'opsx', 'explore.md'), '# explore\n');
+    await fs.mkdir(path.join(testDir, 'outline-spec'), { recursive: true });
+    await fs.mkdir(path.join(testDir, '.claude', 'commands', 'outline-spec'), { recursive: true });
+    await fs.writeFile(path.join(testDir, '.claude', 'commands', 'outline-spec', 'explore.md'), '# explore\n');
 
     const initCommand = new InitCommand({ tools: 'claude' });
     await initCommand.execute(testDir);
@@ -2254,13 +2256,13 @@ describe('InitCommand - profile and detection features', () => {
     expect(config.delivery).toBe('commands');
     expect(config.workflows).toEqual(['explore']);
 
-    const exploreCommand = path.join(testDir, '.claude', 'commands', 'opsx', 'explore.md');
-    const proposeCommand = path.join(testDir, '.claude', 'commands', 'opsx', 'propose.md');
+    const exploreCommand = path.join(testDir, '.claude', 'commands', 'outline-spec', 'explore.md');
+    const proposeCommand = path.join(testDir, '.claude', 'commands', 'outline-spec', 'propose.md');
     expect(await fileExists(exploreCommand)).toBe(true);
     expect(await fileExists(proposeCommand)).toBe(false);
 
-    const exploreSkill = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
-    const proposeSkill = path.join(testDir, '.claude', 'skills', 'openspec-propose', 'SKILL.md');
+    const exploreSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
+    const proposeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-propose', 'SKILL.md');
     expect(await fileExists(exploreSkill)).toBe(false);
     expect(await fileExists(proposeSkill)).toBe(false);
   });
@@ -2285,8 +2287,8 @@ describe('InitCommand - profile and detection features', () => {
     expect(showWelcomeScreenMock).toHaveBeenCalledWith(['explore', 'new'], { animate: true });
     expect(confirmMock).not.toHaveBeenCalled();
 
-    const exploreSkill = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
-    const newChangeSkill = path.join(testDir, '.claude', 'skills', 'openspec-new-change', 'SKILL.md');
+    const exploreSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
+    const newChangeSkill = path.join(testDir, '.claude', 'skills', 'outline-spec-new-change', 'SKILL.md');
     expect(await fileExists(exploreSkill)).toBe(true);
     expect(await fileExists(newChangeSkill)).toBe(true);
 
@@ -2305,64 +2307,64 @@ describe('InitCommand - profile and detection features', () => {
     await initCommand.execute(testDir);
 
     // Skills should exist
-    const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+    const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
     expect(await fileExists(skillFile)).toBe(true);
 
     // Commands should NOT exist
-    const cmdFile = path.join(testDir, '.claude', 'commands', 'opsx', 'explore.md');
+    const cmdFile = path.join(testDir, '.claude', 'commands', 'outline-spec', 'explore.md');
     expect(await fileExists(cmdFile)).toBe(false);
 
     // Skill content should reference skills, not commands that were never generated
     const skillContent = await fs.readFile(skillFile, 'utf-8');
-    expect(skillContent).not.toContain('/opsx:');
-    expect(skillContent).not.toContain('/opsx-');
-    expect(skillContent).toContain('/openspec-');
+    expect(skillContent).not.toContain('/outline-spec:');
+    expect(skillContent).not.toMatch(HYPHEN_COMMAND_REF);
+    expect(skillContent).toContain('/outline-spec-');
 
     // update-change references several other workflows; a command missing
-    // from the reference map would leave a raw /opsx: reference behind
+    // from the reference map would leave a raw /outline-spec: reference behind
     const updateSkillContent = await fs.readFile(
-      path.join(testDir, '.claude', 'skills', 'openspec-update-change', 'SKILL.md'),
+      path.join(testDir, '.claude', 'skills', 'outline-spec-update-change', 'SKILL.md'),
       'utf-8'
     );
-    expect(updateSkillContent).not.toContain('/opsx:');
-    expect(updateSkillContent).not.toContain('/opsx-');
-    expect(updateSkillContent).toContain('/openspec-');
+    expect(updateSkillContent).not.toContain('/outline-spec:');
+    expect(updateSkillContent).not.toMatch(HYPHEN_COMMAND_REF);
+    expect(updateSkillContent).toContain('/outline-spec-');
   });
 
   it('should use skill references for adapterless tools under default delivery (#1155)', async () => {
     // Kimi Code has no command adapter: commands are skipped even when
-    // delivery is 'both', so generated skills must not reference /opsx:*
+    // delivery is 'both', so generated skills must not reference /outline-spec:*
     const initCommand = new InitCommand({ tools: 'kimi' });
     await initCommand.execute(testDir);
 
-    const skillFile = path.join(testDir, '.kimi-code', 'skills', 'openspec-apply-change', 'SKILL.md');
+    const skillFile = path.join(testDir, '.kimi-code', 'skills', 'outline-spec-apply-change', 'SKILL.md');
     expect(await fileExists(skillFile)).toBe(true);
 
     const skillContent = await fs.readFile(skillFile, 'utf-8');
-    expect(skillContent).not.toContain('/opsx:');
-    expect(skillContent).not.toContain('/opsx-');
+    expect(skillContent).not.toContain('/outline-spec:');
+    expect(skillContent).not.toMatch(HYPHEN_COMMAND_REF);
     // Kimi Code documents /skill:<name> invocations (docs/supported-tools.md)
-    expect(skillContent).toContain('/skill:openspec-');
+    expect(skillContent).toContain('/skill:outline-spec-');
 
     // The getting-started hint must point at the skill, not a missing command
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
     const startHint = logCalls.find((entry) => entry.includes('Start your first change'));
-    expect(startHint).toContain('/skill:openspec-propose');
-    expect(startHint).not.toContain('/opsx:propose');
+    expect(startHint).toContain('/skill:outline-spec-propose');
+    expect(startHint).not.toContain('/outline-spec:propose');
   });
 
   it('should install Veai as a skills-only tool', async () => {
     const initCommand = new InitCommand({ tools: 'veai' });
     await initCommand.execute(testDir);
 
-    const skillFile = path.join(testDir, '.veai', 'skills', 'openspec-apply-change', 'SKILL.md');
+    const skillFile = path.join(testDir, '.veai', 'skills', 'outline-spec-apply-change', 'SKILL.md');
     expect(await fileExists(skillFile)).toBe(true);
     expect(await directoryExists(path.join(testDir, '.veai', 'commands'))).toBe(false);
 
     const skillContent = await fs.readFile(skillFile, 'utf-8');
-    expect(skillContent).toContain('/openspec-');
-    expect(skillContent).not.toContain('/opsx:');
-    expect(skillContent).not.toContain('/opsx-');
+    expect(skillContent).toContain('/outline-spec-');
+    expect(skillContent).not.toContain('/outline-spec:');
+    expect(skillContent).not.toMatch(HYPHEN_COMMAND_REF);
   });
 
   it('should name the workflows the core profile leaves out (#1076)', async () => {
@@ -2377,7 +2379,7 @@ describe('InitCommand - profile and detection features', () => {
     }
     // Workflows that were installed must not be advertised as missing
     expect(note).not.toContain('propose,');
-    expect(logCalls.some((entry) => entry.includes('openspec config profile'))).toBe(true);
+    expect(logCalls.some((entry) => entry.includes('outline-spec config profile'))).toBe(true);
   });
 
   it('should not advertise missing workflows when the profile installs all of them', async () => {
@@ -2397,7 +2399,7 @@ describe('InitCommand - profile and detection features', () => {
   });
 
   it('should not advertise missing workflows when no tool was selected', async () => {
-    // With no tools, `openspec config profile` + `openspec update` would write
+    // With no tools, `outline-spec config profile` + `outline-spec update` would write
     // nothing, so naming the workflows would point at the wrong problem.
     const initCommand = new InitCommand({ tools: 'none' });
     await initCommand.execute(testDir);
@@ -2440,11 +2442,11 @@ describe('InitCommand - profile and detection features', () => {
     expect(await directoryExists(path.join(testDir, skillsDir))).toBe(false);
 
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
-    // No invocation hint may be shown — neither /opsx:* nor a skill reference exists
+    // No invocation hint may be shown — neither /outline-spec:* nor a skill reference exists
     expect(logCalls.some((entry) => entry.includes('Start your first change'))).toBe(false);
     const correction = logCalls.find((entry) => entry.includes('No skills or commands were generated'));
     expect(correction).toBeTruthy();
-    expect(correction).toContain("openspec config set delivery both");
+    expect(correction).toContain("outline-spec config set delivery both");
     // Nothing was generated, so there is nothing an IDE restart would pick up
     expect(logCalls.some((entry) => entry.includes('Restart your IDE'))).toBe(false);
   });
@@ -2457,15 +2459,15 @@ describe('InitCommand - profile and detection features', () => {
 
     // Each tool's own skill files still use its documented syntax
     const kimiSkill = await fs.readFile(
-      path.join(testDir, '.kimi-code', 'skills', 'openspec-apply-change', 'SKILL.md'),
+      path.join(testDir, '.kimi-code', 'skills', 'outline-spec-apply-change', 'SKILL.md'),
       'utf-8'
     );
     const vibeSkill = await fs.readFile(
-      path.join(testDir, '.vibe', 'skills', 'openspec-apply-change', 'SKILL.md'),
+      path.join(testDir, '.vibe', 'skills', 'outline-spec-apply-change', 'SKILL.md'),
       'utf-8'
     );
-    expect(kimiSkill).toContain('/skill:openspec-');
-    expect(vibeSkill).toContain('/openspec-');
+    expect(kimiSkill).toContain('/skill:outline-spec-');
+    expect(vibeSkill).toContain('/outline-spec-');
     expect(vibeSkill).not.toContain('/skill:');
 
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
@@ -2473,11 +2475,11 @@ describe('InitCommand - profile and detection features', () => {
     expect(startHints).toHaveLength(2);
     const kimiHint = startHints.find((entry) => entry.includes('Kimi Code'));
     const vibeHint = startHints.find((entry) => entry.includes('Mistral Vibe'));
-    expect(kimiHint).toContain('/skill:openspec-propose');
-    expect(vibeHint).toContain('/openspec-propose');
+    expect(kimiHint).toContain('/skill:outline-spec-propose');
+    expect(vibeHint).toContain('/outline-spec-propose');
     expect(vibeHint).not.toContain('/skill:');
     for (const hint of startHints) {
-      expect(hint).not.toContain('/opsx:');
+      expect(hint).not.toContain('/outline-spec:');
     }
   });
 
@@ -2486,20 +2488,20 @@ describe('InitCommand - profile and detection features', () => {
     async (delivery) => {
       saveGlobalConfig({ featureFlags: {}, profile: 'core', delivery });
       // Codex has no slash-command surface: it invokes skills as $<name>, so the
-      // hint - and the generated skills - must use that form, never /opsx:*
+      // hint - and the generated skills - must use that form, never /outline-spec:*
       const initCommand = new InitCommand({ tools: 'codex' });
       await initCommand.execute(testDir);
 
-      const skillFile = path.join(testDir, '.agents', 'skills', 'openspec-apply-change', 'SKILL.md');
+      const skillFile = path.join(testDir, '.agents', 'skills', 'outline-spec-apply-change', 'SKILL.md');
       expect(await fileExists(skillFile)).toBe(true);
       const skillContent = await fs.readFile(skillFile, 'utf-8');
-      expect(skillContent).not.toContain('/opsx:');
-      expect(skillContent).toContain('$openspec-');
+      expect(skillContent).not.toContain('/outline-spec:');
+      expect(skillContent).toContain('$outline-spec-');
 
       const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
       const startHints = logCalls.filter((entry) => entry.includes('Start your first change'));
       expect(startHints).toEqual([
-        '  Start your first change: $openspec-propose "your idea" (Codex CLI or IDE); in the Codex desktop app, select openspec-propose from Skills in the sidebar',
+        '  Start your first change: $outline-spec-propose "your idea" (Codex CLI or IDE); in the Codex desktop app, select outline-spec-propose from Skills in the sidebar',
       ]);
 
       // Codex is a CLI tool: its skills load as soon as the files exist, with no
@@ -2510,28 +2512,28 @@ describe('InitCommand - profile and detection features', () => {
   );
 
   it('should print the @-prefixed prompt hint for amazon-q (prompt library, no slash surface)', async () => {
-    // Amazon Q loads .amazonq/prompts/opsx-<id>.md into its prompt library,
-    // invoked as @opsx-<id>. It registers no slash command under any spelling,
+    // Amazon Q loads .amazonq/prompts/outline-spec-<id>.md into its prompt library,
+    // invoked as @outline-spec-<id>. It registers no slash command under any spelling,
     // so neither the hint, the generated prompts, the skills, nor the restart
     // line may name one.
     const initCommand = new InitCommand({ tools: 'amazon-q' });
     await initCommand.execute(testDir);
 
-    const promptFile = path.join(testDir, '.amazonq', 'prompts', 'opsx-apply.md');
-    const skillFile = path.join(testDir, '.amazonq', 'skills', 'openspec-apply-change', 'SKILL.md');
+    const promptFile = path.join(testDir, '.amazonq', 'prompts', 'outline-spec-apply.md');
+    const skillFile = path.join(testDir, '.amazonq', 'skills', 'outline-spec-apply-change', 'SKILL.md');
     for (const file of [promptFile, skillFile]) {
       expect(await fileExists(file)).toBe(true);
       const content = await fs.readFile(file, 'utf-8');
-      expect(content).toContain('@opsx-apply');
-      expect(content).not.toContain('/opsx:');
-      expect(content).not.toContain('/opsx-');
+      expect(content).toContain('@outline-spec-apply');
+      expect(content).not.toContain('/outline-spec:');
+      expect(content).not.toMatch(HYPHEN_COMMAND_REF);
     }
 
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
     const startHint = logCalls.find((entry) => entry.includes('Start your first change'));
-    expect(startHint).toContain('@opsx-propose');
-    expect(startHint).not.toContain('/opsx-propose');
-    expect(startHint).not.toContain('/opsx:propose');
+    expect(startHint).toContain('@outline-spec-propose');
+    expect(startHint).not.toContain('/outline-spec-propose');
+    expect(startHint).not.toContain('/outline-spec:propose');
 
     // Commands were generated, but they are not slash commands.
     const restartHint = logCalls.find((entry) => entry.includes('Restart your IDE'));
@@ -2548,20 +2550,20 @@ describe('InitCommand - profile and detection features', () => {
     expect(startHints).toHaveLength(2);
     const codexHint = startHints.find((entry) => entry.includes('(Codex)'));
     const vibeHint = startHints.find((entry) => entry.includes('Mistral Vibe'));
-    expect(codexHint).toContain('$openspec-propose');
+    expect(codexHint).toContain('$outline-spec-propose');
     expect(codexHint).toContain('(Codex CLI or IDE)');
     expect(codexHint).toContain('Skills in the sidebar');
-    expect(codexHint).not.toContain('/openspec-propose');
-    expect(vibeHint).toContain('/openspec-propose');
+    expect(codexHint).not.toContain('/outline-spec-propose');
+    expect(vibeHint).toContain('/outline-spec-propose');
     expect(vibeHint).not.toContain('Skills in the sidebar');
     for (const hint of startHints) {
-      expect(hint).not.toContain('/opsx:');
+      expect(hint).not.toContain('/outline-spec:');
     }
   });
 
   it('should reference commands by the names each tool registers (cursor+claude)', async () => {
-    // Cursor registers commands by filename (.cursor/commands/opsx-apply.md ->
-    // /opsx-apply) while Claude namespaces them under opsx/ (-> /opsx:apply).
+    // Cursor registers commands by filename (.cursor/commands/outline-spec-apply.md ->
+    // /outline-spec-apply) while Claude namespaces them under outline-spec/ (-> /outline-spec:apply).
     // Command bodies, skills and the onboarding hint must each follow the tool
     // they are written for.
     const initCommand = new InitCommand({ tools: 'cursor,claude' });
@@ -2569,27 +2571,27 @@ describe('InitCommand - profile and detection features', () => {
 
     const read = (...segments: string[]) => fs.readFile(path.join(testDir, ...segments), 'utf-8');
 
-    const cursorCommand = await read('.cursor', 'commands', 'opsx-apply.md');
+    const cursorCommand = await read('.cursor', 'commands', 'outline-spec-apply.md');
     // A body cross-reference, not the frontmatter name, which already
     // carried the hyphen form before this behaviour existed.
-    expect(cursorCommand).toContain('/opsx-land');
-    expect(cursorCommand).not.toContain('/opsx:');
+    expect(cursorCommand).toContain('/outline-spec-land');
+    expect(cursorCommand).not.toContain('/outline-spec:');
 
-    const cursorSkill = await read('.cursor', 'skills', 'openspec-apply-change', 'SKILL.md');
-    expect(cursorSkill).not.toContain('/opsx:');
+    const cursorSkill = await read('.cursor', 'skills', 'outline-spec-apply-change', 'SKILL.md');
+    expect(cursorSkill).not.toContain('/outline-spec:');
 
     // Claude's namespaced commands are unchanged
-    const claudeCommand = await read('.claude', 'commands', 'opsx', 'apply.md');
-    expect(claudeCommand).toContain('/opsx:land');
-    expect(claudeCommand).not.toContain('/opsx-');
+    const claudeCommand = await read('.claude', 'commands', 'outline-spec', 'apply.md');
+    expect(claudeCommand).toContain('/outline-spec:land');
+    expect(claudeCommand).not.toMatch(HYPHEN_COMMAND_REF);
 
-    const claudeSkill = await read('.claude', 'skills', 'openspec-apply-change', 'SKILL.md');
-    expect(claudeSkill).not.toContain('/opsx-');
+    const claudeSkill = await read('.claude', 'skills', 'outline-spec-apply-change', 'SKILL.md');
+    expect(claudeSkill).not.toMatch(HYPHEN_COMMAND_REF);
 
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
     const startHints = logCalls.filter((entry) => entry.includes('Start your first change'));
-    expect(startHints.find((entry) => entry.includes('Cursor'))).toContain('/opsx-propose');
-    expect(startHints.find((entry) => entry.includes('Claude Code'))).toContain('/opsx:propose');
+    expect(startHints.find((entry) => entry.includes('Cursor'))).toContain('/outline-spec-propose');
+    expect(startHints.find((entry) => entry.includes('Claude Code'))).toContain('/outline-spec:propose');
   });
 
   it('should print the hyphen command hint for filename-invoked tools (claude+qwen)', async () => {
@@ -2598,14 +2600,14 @@ describe('InitCommand - profile and detection features', () => {
 
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
     const startHints = logCalls.filter((entry) => entry.includes('Start your first change'));
-    // Qwen invokes commands by filename (/opsx-propose), so it must not share
-    // Claude's /opsx:propose line
+    // Qwen invokes commands by filename (/outline-spec-propose), so it must not share
+    // Claude's /outline-spec:propose line
     expect(startHints).toHaveLength(2);
     const claudeHint = startHints.find((entry) => entry.includes('Claude Code'));
     const qwenHint = startHints.find((entry) => entry.includes('Qwen Code'));
-    expect(claudeHint).toContain('/opsx:propose');
-    expect(qwenHint).toContain('/opsx-propose');
-    expect(qwenHint).not.toContain('/opsx:propose');
+    expect(claudeHint).toContain('/outline-spec:propose');
+    expect(qwenHint).toContain('/outline-spec-propose');
+    expect(qwenHint).not.toContain('/outline-spec:propose');
   });
 
   it('should not advertise an instruction for a tool that got no skills (delivery=commands, codex+kimi)', async () => {
@@ -2620,7 +2622,7 @@ describe('InitCommand - profile and detection features', () => {
 
     // Codex is skills-invocable so its skills are generated even under
     // delivery=commands; kimi (capability none) gets nothing at all
-    expect(await fileExists(path.join(testDir, '.agents', 'skills', 'openspec-propose', 'SKILL.md'))).toBe(true);
+    expect(await fileExists(path.join(testDir, '.agents', 'skills', 'outline-spec-propose', 'SKILL.md'))).toBe(true);
     expect(await fileExists(path.join(testDir, '.kimi-code'))).toBe(false);
 
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
@@ -2628,14 +2630,14 @@ describe('InitCommand - profile and detection features', () => {
     // Only the codex instruction may be advertised — a Kimi line would point
     // at skills that were never generated
     expect(startHints).toHaveLength(1);
-    expect(startHints[0]).toContain('$openspec-propose');
+    expect(startHints[0]).toContain('$outline-spec-propose');
     expect(startHints[0]).not.toContain('Kimi');
-    expect(logCalls.some((entry) => entry.includes('/skill:openspec-'))).toBe(false);
+    expect(logCalls.some((entry) => entry.includes('/skill:outline-spec-'))).toBe(false);
     // Kimi got zero artifacts, so it still deserves the configuration correction
     const correction = logCalls.find((entry) => entry.includes('No skills or commands were generated for'));
     expect(correction).toContain('Kimi Code');
     expect(correction).not.toContain('Codex');
-    expect(correction).toContain("openspec config set delivery both");
+    expect(correction).toContain("outline-spec config set delivery both");
   });
 
   it('should print a per-tool correction when an adapter-backed tool masks an adapterless one (delivery=commands, claude+kimi)', async () => {
@@ -2649,54 +2651,54 @@ describe('InitCommand - profile and detection features', () => {
     await initCommand.execute(testDir);
 
     // Claude gets commands; kimi (no adapter, delivery excludes skills) gets nothing
-    expect(await fileExists(path.join(testDir, '.claude', 'commands', 'opsx', 'propose.md'))).toBe(true);
+    expect(await fileExists(path.join(testDir, '.claude', 'commands', 'outline-spec', 'propose.md'))).toBe(true);
     expect(await fileExists(path.join(testDir, '.kimi-code'))).toBe(false);
 
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
-    // The /opsx: hint is correct for Claude, but Kimi must not be left with
+    // The /outline-spec: hint is correct for Claude, but Kimi must not be left with
     // a dead instruction: the correction names it even though another tool
     // generated commands
     const startHints = logCalls.filter((entry) => entry.includes('Start your first change'));
     expect(startHints).toHaveLength(1);
-    expect(startHints[0]).toContain('/opsx:propose');
+    expect(startHints[0]).toContain('/outline-spec:propose');
     const correction = logCalls.find((entry) => entry.includes('No skills or commands were generated for'));
     expect(correction).toContain('Kimi Code');
     expect(correction).not.toContain('Claude');
-    expect(correction).toContain("openspec config set delivery both");
-    expect(logCalls.some((entry) => entry.includes('/skill:openspec-'))).toBe(false);
+    expect(correction).toContain("outline-spec config set delivery both");
+    expect(logCalls.some((entry) => entry.includes('/skill:outline-spec-'))).toBe(false);
   });
 
   it('should label per-tool hints when adapter-backed and adapterless tools are mixed (claude+kimi)', async () => {
-    // Claude gets /opsx:* commands; kimi only gets skills invoked as
-    // /skill:openspec-*. A single unlabeled /opsx: hint would be unusable
+    // Claude gets /outline-spec:* commands; kimi only gets skills invoked as
+    // /skill:outline-spec-*. A single unlabeled /outline-spec: hint would be unusable
     // for the Kimi user, so each tool gets its own labeled instruction.
     const initCommand = new InitCommand({ tools: 'claude,kimi' });
     await initCommand.execute(testDir);
 
-    expect(await fileExists(path.join(testDir, '.claude', 'commands', 'opsx', 'propose.md'))).toBe(true);
-    expect(await fileExists(path.join(testDir, '.kimi-code', 'skills', 'openspec-propose', 'SKILL.md'))).toBe(true);
+    expect(await fileExists(path.join(testDir, '.claude', 'commands', 'outline-spec', 'propose.md'))).toBe(true);
+    expect(await fileExists(path.join(testDir, '.kimi-code', 'skills', 'outline-spec-propose', 'SKILL.md'))).toBe(true);
 
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
     const startHints = logCalls.filter((entry) => entry.includes('Start your first change'));
     expect(startHints).toHaveLength(2);
     const claudeHint = startHints.find((entry) => entry.includes('Claude Code'));
     const kimiHint = startHints.find((entry) => entry.includes('Kimi Code'));
-    expect(claudeHint).toContain('/opsx:propose');
-    expect(kimiHint).toContain('/skill:openspec-propose');
-    expect(kimiHint).not.toContain('/opsx:');
+    expect(claudeHint).toContain('/outline-spec:propose');
+    expect(kimiHint).toContain('/skill:outline-spec-propose');
+    expect(kimiHint).not.toContain('/outline-spec:');
   });
 
-  it('should keep /opsx: command hints for adapter-backed tools under default delivery', async () => {
+  it('should keep /outline-spec: command hints for adapter-backed tools under default delivery', async () => {
     const initCommand = new InitCommand({ tools: 'claude' });
     await initCommand.execute(testDir);
 
-    const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-apply-change', 'SKILL.md');
+    const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-apply-change', 'SKILL.md');
     const skillContent = await fs.readFile(skillFile, 'utf-8');
-    expect(skillContent).toContain('/opsx:');
+    expect(skillContent).toContain('/outline-spec:');
 
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
     const startHint = logCalls.find((entry) => entry.includes('Start your first change'));
-    expect(startHint).toContain('/opsx:propose');
+    expect(startHint).toContain('/outline-spec:propose');
   });
 
   it('should use skill references for opencode in skills-only delivery', async () => {
@@ -2709,14 +2711,14 @@ describe('InitCommand - profile and detection features', () => {
     const initCommand = new InitCommand({ tools: 'opencode' });
     await initCommand.execute(testDir);
 
-    const skillFile = path.join(testDir, '.opencode', 'skills', 'openspec-explore', 'SKILL.md');
+    const skillFile = path.join(testDir, '.opencode', 'skills', 'outline-spec-explore', 'SKILL.md');
     expect(await fileExists(skillFile)).toBe(true);
 
-    // Skills-only must win over the hyphen transform: no /opsx: or /opsx- references
+    // Skills-only must win over the hyphen transform: no /outline-spec: or /outline-spec- references
     const skillContent = await fs.readFile(skillFile, 'utf-8');
-    expect(skillContent).not.toContain('/opsx:');
-    expect(skillContent).not.toContain('/opsx-');
-    expect(skillContent).toContain('/openspec-');
+    expect(skillContent).not.toContain('/outline-spec:');
+    expect(skillContent).not.toMatch(HYPHEN_COMMAND_REF);
+    expect(skillContent).toContain('/outline-spec-');
   });
 
   it('should respect delivery=commands setting (no skills)', async () => {
@@ -2730,11 +2732,11 @@ describe('InitCommand - profile and detection features', () => {
     await initCommand.execute(testDir);
 
     // Skills should NOT exist
-    const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+    const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
     expect(await fileExists(skillFile)).toBe(false);
 
     // Commands should exist
-    const cmdFile = path.join(testDir, '.claude', 'commands', 'opsx', 'explore.md');
+    const cmdFile = path.join(testDir, '.claude', 'commands', 'outline-spec', 'explore.md');
     expect(await fileExists(cmdFile)).toBe(true);
   });
 
@@ -2748,7 +2750,7 @@ describe('InitCommand - profile and detection features', () => {
     const initCommand1 = new InitCommand({ tools: 'claude' });
     await initCommand1.execute(testDir);
 
-    const cmdFile = path.join(testDir, '.claude', 'commands', 'opsx', 'explore.md');
+    const cmdFile = path.join(testDir, '.claude', 'commands', 'outline-spec', 'explore.md');
     expect(await fileExists(cmdFile)).toBe(true);
 
     saveGlobalConfig({
@@ -2762,7 +2764,7 @@ describe('InitCommand - profile and detection features', () => {
 
     expect(await fileExists(cmdFile)).toBe(false);
 
-    const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+    const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
     expect(await fileExists(skillFile)).toBe(true);
   });
 });

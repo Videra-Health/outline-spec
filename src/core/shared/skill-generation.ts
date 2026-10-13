@@ -15,18 +15,18 @@ import {
   getArchiveChangeSkillTemplate,
   getVerifyChangeSkillTemplate,
   getOnboardSkillTemplate,
-  getOpsxProposeSkillTemplate,
-  getOpsxExploreCommandTemplate,
-  getOpsxNewCommandTemplate,
-  getOpsxContinueCommandTemplate,
-  getOpsxApplyCommandTemplate,
-  getOpsxUpdateCommandTemplate,
-  getOpsxFfCommandTemplate,
-  getOpsxLandCommandTemplate,
-  getOpsxArchiveCommandTemplate,
-  getOpsxVerifyCommandTemplate,
-  getOpsxOnboardCommandTemplate,
-  getOpsxProposeCommandTemplate,
+  getOutlineSpecProposeSkillTemplate,
+  getOutlineSpecExploreCommandTemplate,
+  getOutlineSpecNewCommandTemplate,
+  getOutlineSpecContinueCommandTemplate,
+  getOutlineSpecApplyCommandTemplate,
+  getOutlineSpecUpdateCommandTemplate,
+  getOutlineSpecFfCommandTemplate,
+  getOutlineSpecLandCommandTemplate,
+  getOutlineSpecArchiveCommandTemplate,
+  getOutlineSpecVerifyCommandTemplate,
+  getOutlineSpecOnboardCommandTemplate,
+  getOutlineSpecProposeCommandTemplate,
   type SkillTemplate,
 } from '../templates/skill-templates.js';
 import type { CommandContent } from '../command-generation/index.js';
@@ -35,7 +35,7 @@ import {
   resolveOptionalWorkflows,
 } from '../templates/optional-workflow.js';
 import { ALL_WORKFLOWS } from '../profiles.js';
-import { OPENSPEC_CLI_ALLOWED_TOOLS } from './allowed-tools.js';
+import { OUTLINE_SPEC_CLI_ALLOWED_TOOLS } from './allowed-tools.js';
 
 /**
  * The workflow set a template body is rendered against.
@@ -68,7 +68,7 @@ export interface SkillTemplateEntry {
  * Command template with ID mapping.
  */
 export interface CommandTemplateEntry {
-  template: ReturnType<typeof getOpsxExploreCommandTemplate>;
+  template: ReturnType<typeof getOutlineSpecExploreCommandTemplate>;
   id: string;
 }
 
@@ -79,17 +79,17 @@ export interface CommandTemplateEntry {
  */
 export function getSkillTemplates(workflowFilter?: readonly string[]): SkillTemplateEntry[] {
   const all: SkillTemplateEntry[] = [
-    { template: getExploreSkillTemplate(), dirName: 'openspec-explore', workflowId: 'explore' },
-    { template: getNewChangeSkillTemplate(), dirName: 'openspec-new-change', workflowId: 'new' },
-    { template: getContinueChangeSkillTemplate(), dirName: 'openspec-continue-change', workflowId: 'continue' },
-    { template: getApplyChangeSkillTemplate(), dirName: 'openspec-apply-change', workflowId: 'apply' },
-    { template: getUpdateChangeSkillTemplate(), dirName: 'openspec-update-change', workflowId: 'update' },
-    { template: getFfChangeSkillTemplate(), dirName: 'openspec-ff-change', workflowId: 'ff' },
-    { template: getLandChangeSkillTemplate(), dirName: 'openspec-land-change', workflowId: 'land' },
-    { template: getArchiveChangeSkillTemplate(), dirName: 'openspec-archive-change', workflowId: 'archive' },
-    { template: getVerifyChangeSkillTemplate(), dirName: 'openspec-verify-change', workflowId: 'verify' },
-    { template: getOnboardSkillTemplate(), dirName: 'openspec-onboard', workflowId: 'onboard' },
-    { template: getOpsxProposeSkillTemplate(), dirName: 'openspec-propose', workflowId: 'propose' },
+    { template: getExploreSkillTemplate(), dirName: 'outline-spec-explore', workflowId: 'explore' },
+    { template: getNewChangeSkillTemplate(), dirName: 'outline-spec-new-change', workflowId: 'new' },
+    { template: getContinueChangeSkillTemplate(), dirName: 'outline-spec-continue-change', workflowId: 'continue' },
+    { template: getApplyChangeSkillTemplate(), dirName: 'outline-spec-apply-change', workflowId: 'apply' },
+    { template: getUpdateChangeSkillTemplate(), dirName: 'outline-spec-update-change', workflowId: 'update' },
+    { template: getFfChangeSkillTemplate(), dirName: 'outline-spec-ff-change', workflowId: 'ff' },
+    { template: getLandChangeSkillTemplate(), dirName: 'outline-spec-land-change', workflowId: 'land' },
+    { template: getArchiveChangeSkillTemplate(), dirName: 'outline-spec-archive-change', workflowId: 'archive' },
+    { template: getVerifyChangeSkillTemplate(), dirName: 'outline-spec-verify-change', workflowId: 'verify' },
+    { template: getOnboardSkillTemplate(), dirName: 'outline-spec-onboard', workflowId: 'onboard' },
+    { template: getOutlineSpecProposeSkillTemplate(), dirName: 'outline-spec-propose', workflowId: 'propose' },
   ];
 
   const installed = resolveInstalledWorkflows(workflowFilter);
@@ -111,17 +111,17 @@ export function getSkillTemplates(workflowFilter?: readonly string[]): SkillTemp
  */
 export function getCommandTemplates(workflowFilter?: readonly string[]): CommandTemplateEntry[] {
   const all: CommandTemplateEntry[] = [
-    { template: getOpsxExploreCommandTemplate(), id: 'explore' },
-    { template: getOpsxNewCommandTemplate(), id: 'new' },
-    { template: getOpsxContinueCommandTemplate(), id: 'continue' },
-    { template: getOpsxApplyCommandTemplate(), id: 'apply' },
-    { template: getOpsxUpdateCommandTemplate(), id: 'update' },
-    { template: getOpsxFfCommandTemplate(), id: 'ff' },
-    { template: getOpsxLandCommandTemplate(), id: 'land' },
-    { template: getOpsxArchiveCommandTemplate(), id: 'archive' },
-    { template: getOpsxVerifyCommandTemplate(), id: 'verify' },
-    { template: getOpsxOnboardCommandTemplate(), id: 'onboard' },
-    { template: getOpsxProposeCommandTemplate(), id: 'propose' },
+    { template: getOutlineSpecExploreCommandTemplate(), id: 'explore' },
+    { template: getOutlineSpecNewCommandTemplate(), id: 'new' },
+    { template: getOutlineSpecContinueCommandTemplate(), id: 'continue' },
+    { template: getOutlineSpecApplyCommandTemplate(), id: 'apply' },
+    { template: getOutlineSpecUpdateCommandTemplate(), id: 'update' },
+    { template: getOutlineSpecFfCommandTemplate(), id: 'ff' },
+    { template: getOutlineSpecLandCommandTemplate(), id: 'land' },
+    { template: getOutlineSpecArchiveCommandTemplate(), id: 'archive' },
+    { template: getOutlineSpecVerifyCommandTemplate(), id: 'verify' },
+    { template: getOutlineSpecOnboardCommandTemplate(), id: 'onboard' },
+    { template: getOutlineSpecProposeCommandTemplate(), id: 'propose' },
   ];
 
   const installed = resolveInstalledWorkflows(workflowFilter);
@@ -157,7 +157,7 @@ export function getCommandContents(workflowFilter?: readonly string[]): CommandC
  * Generates skill file content with YAML frontmatter.
  *
  * @param template - The skill template
- * @param generatedByVersion - The OpenSpec version to embed in the file
+ * @param generatedByVersion - The outline-spec version to embed in the file
  * @param transformInstructions - Optional callback to transform the instructions content
  */
 export function generateSkillContent(
@@ -177,11 +177,11 @@ export function generateSkillContent(
   return `---
 name: ${template.name}
 description: ${template.description}
-allowed-tools: ${OPENSPEC_CLI_ALLOWED_TOOLS}
+allowed-tools: ${OUTLINE_SPEC_CLI_ALLOWED_TOOLS}
 license: ${template.license || 'MIT'}
-compatibility: ${template.compatibility || 'Requires openspec CLI.'}
+compatibility: ${template.compatibility || 'Requires outline-spec CLI.'}
 metadata:
-  author: ${template.metadata?.author || 'openspec'}
+  author: ${template.metadata?.author || 'outline-spec'}
   version: "${template.metadata?.version || '1.0'}"
   generatedBy: "${generatedByVersion}"
 ---

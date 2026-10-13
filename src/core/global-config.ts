@@ -3,9 +3,9 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 
 // Constants
-export const GLOBAL_CONFIG_DIR_NAME = 'openspec';
+export const GLOBAL_CONFIG_DIR_NAME = 'outline-spec';
 export const GLOBAL_CONFIG_FILE_NAME = 'config.json';
-export const GLOBAL_DATA_DIR_NAME = 'openspec';
+export const GLOBAL_DATA_DIR_NAME = 'outline-spec';
 
 // TypeScript types
 export type Profile = 'core' | 'custom';
@@ -37,9 +37,9 @@ const DEFAULT_CONFIG: GlobalConfig = {
 /**
  * Gets the global configuration directory path following XDG Base Directory Specification.
  *
- * - All platforms: $XDG_CONFIG_HOME/openspec/ if XDG_CONFIG_HOME is set
- * - Unix/macOS fallback: ~/.config/openspec/
- * - Windows fallback: %APPDATA%/openspec/
+ * - All platforms: $XDG_CONFIG_HOME/outline-spec/ if XDG_CONFIG_HOME is set
+ * - Unix/macOS fallback: ~/.config/outline-spec/
+ * - Windows fallback: %APPDATA%/outline-spec/
  */
 export function getGlobalConfigDir(): string {
   // XDG_CONFIG_HOME takes precedence on all platforms when explicitly set
@@ -68,9 +68,9 @@ export function getGlobalConfigDir(): string {
  * Gets the global data directory path following XDG Base Directory Specification.
  * Used for user data like schema overrides.
  *
- * - All platforms: $XDG_DATA_HOME/openspec/ if XDG_DATA_HOME is set
- * - Unix/macOS fallback: ~/.local/share/openspec/
- * - Windows fallback: %LOCALAPPDATA%/openspec/
+ * - All platforms: $XDG_DATA_HOME/outline-spec/ if XDG_DATA_HOME is set
+ * - Unix/macOS fallback: ~/.local/share/outline-spec/
+ * - Windows fallback: %LOCALAPPDATA%/outline-spec/
  */
 export interface GlobalDataDirOptions {
   env?: NodeJS.ProcessEnv;
@@ -194,7 +194,7 @@ export function isConfigRootObject(parsed: unknown): boolean {
 export function unreadableGlobalConfigMessage(configPath: string): string {
   return (
     `Refusing to overwrite ${configPath}: it could not be parsed, so saving would replace every setting in it. ` +
-    'Fix it with "openspec config edit", or reset it with "openspec config reset --all".'
+    'Fix it with "outline-spec config edit", or reset it with "outline-spec config reset --all".'
   );
 }
 

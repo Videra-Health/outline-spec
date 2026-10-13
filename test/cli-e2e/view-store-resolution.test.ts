@@ -6,9 +6,9 @@ import { runCLI } from '../helpers/run-cli.js';
 import { cleanupTempPath } from '../helpers/temp-cleanup.js';
 
 /**
- * `openspec view` used to hard-code '.' as its target, so a project whose
- * openspec/config.yaml points at an external store rendered an empty dashboard
- * while `openspec list` read the store correctly. These cover the fix and the
+ * `outline-spec view` used to hard-code '.' as its target, so a project whose
+ * outline-spec/config.yaml points at an external store rendered an empty dashboard
+ * while `outline-spec list` read the store correctly. These cover the fix and the
  * cwd-fallback behavior view shares with list/status.
  */
 
@@ -57,7 +57,7 @@ Billing rules.
 `;
 
 beforeAll(async () => {
-  base = await fs.mkdtemp(path.join(tmpdir(), 'openspec-view-store-'));
+  base = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-view-store-'));
   storeRoot = path.join(base, 'store');
   pointerProject = path.join(base, 'project');
 
@@ -75,28 +75,28 @@ beforeAll(async () => {
   );
   expect(setup.exitCode, setup.stderr).toBe(0);
 
-  const specDir = path.join(storeRoot, 'openspec', 'specs', 'billing');
+  const specDir = path.join(storeRoot, 'outline-spec', 'specs', 'billing');
   await fs.mkdir(specDir, { recursive: true });
   await fs.writeFile(path.join(specDir, 'spec.md'), SPEC);
 
   // An archive folder left by an older project must not show up as a change.
-  const archiveDir = path.join(storeRoot, 'openspec', 'changes', 'archive', '2026-08-27-store-history');
+  const archiveDir = path.join(storeRoot, 'outline-spec', 'changes', 'archive', '2026-08-27-store-history');
   await fs.mkdir(archiveDir, { recursive: true });
   await fs.writeFile(path.join(archiveDir, 'tasks.md'), '- [x] Shipped\n');
 
-  const schemaDir = path.join(storeRoot, 'openspec', 'schemas', SCHEMA_NAME);
+  const schemaDir = path.join(storeRoot, 'outline-spec', 'schemas', SCHEMA_NAME);
   await fs.mkdir(path.join(schemaDir, 'templates'), { recursive: true });
   await fs.writeFile(path.join(schemaDir, 'schema.yaml'), STORE_SCHEMA);
   for (const template of ['proposal.md', 'spec.md', 'design.md', 'tasks.md']) {
     await fs.writeFile(path.join(schemaDir, 'templates', template), '# Billing\n');
   }
   await fs.writeFile(
-    path.join(storeRoot, 'openspec', 'config.yaml'),
+    path.join(storeRoot, 'outline-spec', 'config.yaml'),
     `schema: ${SCHEMA_NAME}\n`
   );
 
   for (const changeName of ['billing-update', 'billing-refactor']) {
-    const changeDir = path.join(storeRoot, 'openspec', 'changes', changeName);
+    const changeDir = path.join(storeRoot, 'outline-spec', 'changes', changeName);
     await fs.mkdir(path.join(changeDir, 'planning'), { recursive: true });
     await fs.mkdir(path.join(changeDir, 'execution'), { recursive: true });
     await fs.writeFile(path.join(changeDir, 'planning', 'proposal.md'), '# Update billing\n');
@@ -106,14 +106,14 @@ beforeAll(async () => {
       '- [x] Audit billing\n- [ ] Implement billing change\n'
     );
     if (changeName === 'billing-refactor') {
-      await fs.writeFile(path.join(changeDir, '.openspec.yaml'), `schema: ${SCHEMA_NAME}\n`);
+      await fs.writeFile(path.join(changeDir, '.outline-spec.yaml'), `schema: ${SCHEMA_NAME}\n`);
     }
     // billing-update deliberately inherits the store's schema from config.yaml.
   }
 
-  await fs.mkdir(path.join(pointerProject, 'openspec'), { recursive: true });
+  await fs.mkdir(path.join(pointerProject, 'outline-spec'), { recursive: true });
   await fs.writeFile(
-    path.join(pointerProject, 'openspec', 'config.yaml'),
+    path.join(pointerProject, 'outline-spec', 'config.yaml'),
     `store: ${STORE_ID}\nschema: outline\n`
   );
 }, TIMEOUT_MS);
@@ -122,7 +122,7 @@ afterAll(async () => {
   await cleanupTempPath(base);
 });
 
-describe('openspec view root resolution', () => {
+describe('outline-spec view root resolution', () => {
   it.each([
     { route: 'a declared store pointer', directory: 'project', storeArgs: [] },
     { route: 'explicit --store', directory: 'outside', storeArgs: ['--store', STORE_ID] },
@@ -215,15 +215,15 @@ describe('openspec view root resolution', () => {
   }, TIMEOUT_MS);
 
   it(
-    'still renders an openspec/ directory that predates config.yaml',
+    'still renders an outline-spec/ directory that predates config.yaml',
     async () => {
-      // Regression guard: a pre-config.yaml openspec/ resolves no root, so
+      // Regression guard: a pre-config.yaml outline-spec/ resolves no root, so
       // view has to fall back to the cwd rather than refusing outright.
       // Isolated home: no store is registered, which is the common case.
       const legacy = path.join(base, 'legacy');
-      await fs.mkdir(path.join(legacy, 'openspec'), { recursive: true });
+      await fs.mkdir(path.join(legacy, 'outline-spec'), { recursive: true });
       await fs.writeFile(
-        path.join(legacy, 'openspec', 'project.md'),
+        path.join(legacy, 'outline-spec', 'project.md'),
         '# Project\n'
       );
 
@@ -246,7 +246,7 @@ describe('openspec view root resolution', () => {
 
       expect(list.exitCode, list.stderr).toBe(0);
       expect(view.exitCode, view.stderr).toBe(0);
-      expect(view.stdout).toContain('OpenSpec Dashboard');
+      expect(view.stdout).toContain('outline-spec Dashboard');
     },
     TIMEOUT_MS
   );
@@ -257,9 +257,9 @@ describe('openspec view root resolution', () => {
       // view is no longer the odd command out: where a registered store makes
       // list demand --store, view now gives the same actionable error.
       const legacy = path.join(base, 'legacy-with-store');
-      await fs.mkdir(path.join(legacy, 'openspec'), { recursive: true });
+      await fs.mkdir(path.join(legacy, 'outline-spec'), { recursive: true });
       await fs.writeFile(
-        path.join(legacy, 'openspec', 'project.md'),
+        path.join(legacy, 'outline-spec', 'project.md'),
         '# Project\n'
       );
 
@@ -281,7 +281,7 @@ describe('openspec view root resolution', () => {
   );
 
   it(
-    'reports a missing openspec directory outside any project',
+    'reports a missing outline-spec directory outside any project',
     async () => {
       const bare = path.join(base, 'bare');
       await fs.mkdir(bare, { recursive: true });

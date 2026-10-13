@@ -19,13 +19,13 @@ export function registerStoreCommand(program: Command): void {
   // entry, which shell completion scripts also consume.
   const storeGroupDescription =
     COMMAND_REGISTRY.find((entry) => entry.name === 'store')?.description ??
-    'Create and manage stores - standalone OpenSpec repos you register on this machine';
+    'Create and manage stores - standalone outline-spec repos you register on this machine';
   const store = program.command('store').description(storeGroupDescription);
 
   store
     .command('setup [id]')
     .description('Create and register a local store')
-    .option('--path <path>', 'Folder where the store should live (for example ~/openspec/<id>)')
+    .option('--path <path>', 'Folder where the store should live (for example ~/outline-spec/<id>)')
     .option('--init-git', 'Initialize a Git repository with an initial commit (default)')
     .option('--no-init-git', 'Skip every Git action: no init, no initial commit')
     .option('--remote <url>', 'Canonical clone source recorded in store.yaml')
@@ -39,7 +39,7 @@ export function registerStoreCommand(program: Command): void {
     .command('register [path]')
     .description('Register an existing local store')
     .option('--id <id>', 'Store id; defaults to metadata or folder name')
-    .option('--yes', 'Confirm creating store identity metadata for a healthy OpenSpec root')
+    .option('--yes', 'Confirm creating store identity metadata for a healthy outline-spec root')
     .option('--json', 'Output as JSON')
     .action(async (inputPath: string | undefined, options: StoreRegisterOptions) => {
       const storeCommand = await loadStoreCommand();
@@ -119,8 +119,8 @@ export function registerStoreCommand(program: Command): void {
     if (operands.includes('--json')) {
       const message =
         attempted.length > 0
-          ? `Unknown command '${attempted[0]}' for 'openspec store'. Store subcommands: ${storeSubcommandsLine}.`
-          : `Missing subcommand for 'openspec store'. Store subcommands: ${storeSubcommandsLine}.`;
+          ? `Unknown command '${attempted[0]}' for 'outline-spec store'. Store subcommands: ${storeSubcommandsLine}.`
+          : `Missing subcommand for 'outline-spec store'. Store subcommands: ${storeSubcommandsLine}.`;
       printJson({
         status: [
           {
@@ -134,19 +134,19 @@ export function registerStoreCommand(program: Command): void {
       process.exitCode = 1;
       return;
     }
-    let example = 'openspec new change <change-id> --store <id>';
+    let example = 'outline-spec new change <change-id> --store <id>';
     if (!hasFlagLikeToken && attempted.length > 0 && lifecycleRedirects.has(attempted[0])) {
       if (attempted[0] === 'new') {
         const changeId = attempted[1] === 'change' && attempted[2] ? attempted[2] : '<change-id>';
-        example = `openspec new change ${changeId} --store <id>`;
+        example = `outline-spec new change ${changeId} --store <id>`;
       } else {
-        example = `openspec ${attempted.join(' ')} --store <id>`;
+        example = `outline-spec ${attempted.join(' ')} --store <id>`;
       }
     }
     console.error(
       attempted.length > 0
-        ? `Error: unknown command '${attempted[0]}' for 'openspec store'.`
-        : "Error: missing subcommand for 'openspec store'."
+        ? `Error: unknown command '${attempted[0]}' for 'outline-spec store'.`
+        : "Error: missing subcommand for 'outline-spec store'."
     );
     console.error(
       `Store subcommands manage store registration: ${storeSubcommandsLine}.`

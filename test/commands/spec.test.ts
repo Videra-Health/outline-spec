@@ -6,8 +6,8 @@ import { execFileSync } from 'child_process';
 describe('spec command', () => {
   const projectRoot = process.cwd();
   const testDir = path.join(projectRoot, 'test-spec-command-tmp');
-  const specsDir = path.join(testDir, 'openspec', 'specs');
-  const openspecBin = path.join(projectRoot, 'bin', 'openspec.js');
+  const specsDir = path.join(testDir, 'outline-spec', 'specs');
+  const outlineSpecBin = path.join(projectRoot, 'bin', 'outline-spec.js');
   
   
   beforeEach(async () => {
@@ -45,7 +45,7 @@ This specification defines the payment processing system.
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'show', 'auth'], {
+        const output = execFileSync('node', [outlineSpecBin, 'spec', 'show', 'auth'], {
           encoding: 'utf-8'
         });
         
@@ -61,7 +61,7 @@ This specification defines the payment processing system.
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        return execFileSync('node', [openspecBin, ...args], { encoding: 'utf-8' });
+        return execFileSync('node', [outlineSpecBin, ...args], { encoding: 'utf-8' });
       } finally {
         process.chdir(originalCwd);
       }
@@ -113,7 +113,7 @@ This specification defines the payment processing system.
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'list'], {
+        const output = execFileSync('node', [outlineSpecBin, 'spec', 'list'], {
           encoding: 'utf-8'
         });
         
@@ -130,7 +130,7 @@ This specification defines the payment processing system.
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'list', '--json'], {
+        const output = execFileSync('node', [outlineSpecBin, 'spec', 'list', '--json'], {
           encoding: 'utf-8'
         });
         
@@ -150,7 +150,7 @@ This specification defines the payment processing system.
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'validate', 'auth'], {
+        const output = execFileSync('node', [outlineSpecBin, 'spec', 'validate', 'auth'], {
           encoding: 'utf-8'
         });
         
@@ -164,7 +164,7 @@ This specification defines the payment processing system.
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'validate', 'auth', '--json'], {
+        const output = execFileSync('node', [outlineSpecBin, 'spec', 'validate', 'auth', '--json'], {
           encoding: 'utf-8'
         });
         
@@ -183,7 +183,7 @@ This specification defines the payment processing system.
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'validate', 'auth', '--strict', '--json'], {
+        const output = execFileSync('node', [outlineSpecBin, 'spec', 'validate', 'auth', '--strict', '--json'], {
           encoding: 'utf-8'
         });
         
@@ -212,7 +212,7 @@ This specification defines the payment processing system.
         // This should exit with non-zero code
         let exitCode = 0;
         try {
-          execFileSync('node', [openspecBin, 'spec', 'validate', 'invalid'], {
+          execFileSync('node', [outlineSpecBin, 'spec', 'validate', 'invalid'], {
             encoding: 'utf-8'
           });
         } catch (error: any) {
@@ -234,7 +234,7 @@ This specification defines the payment processing system.
         
         let error: any;
         try {
-          execFileSync('node', [openspecBin, 'spec', 'show', 'nonexistent'], {
+          execFileSync('node', [outlineSpecBin, 'spec', 'show', 'nonexistent'], {
             encoding: 'utf-8'
           });
         } catch (e) {
@@ -254,7 +254,7 @@ This specification defines the payment processing system.
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'list'], { encoding: 'utf-8' });
+        const output = execFileSync('node', [outlineSpecBin, 'spec', 'list'], { encoding: 'utf-8' });
         expect(output.trim()).toBe('No items found');
       } finally {
         process.chdir(originalCwd);
@@ -265,7 +265,7 @@ This specification defines the payment processing system.
       const originalCwd = process.cwd();
       try {
         process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, '--no-color', 'spec', 'list', '--long'], { encoding: 'utf-8' });
+        const output = execFileSync('node', [outlineSpecBin, '--no-color', 'spec', 'list', '--long'], { encoding: 'utf-8' });
         // Basic ANSI escape pattern
         const hasAnsi = /\u001b\[[0-9;]*m/.test(output);
         expect(hasAnsi).toBe(false);

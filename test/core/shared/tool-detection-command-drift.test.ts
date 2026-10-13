@@ -14,7 +14,7 @@ import {
 import { getProfileWorkflows } from '../../../src/core/profiles.js';
 
 /**
- * `openspec update` decided a tool was current from the `generatedBy` version
+ * `outline-spec update` decided a tool was current from the `generatedBy` version
  * marker in its skill files alone. That marker only proves the SKILL files came
  * from this CLI - it says nothing about the command files written beside them,
  * which a user may have hand-edited or a partial write may have truncated. So a
@@ -43,14 +43,14 @@ describe('getToolVersionStatus (command file drift)', () => {
   const TOOL_ID = 'claude';
 
   beforeEach(async () => {
-    projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-drift-'));
-    configHome = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-drift-cfg-'));
+    projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-drift-'));
+    configHome = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-drift-cfg-'));
 
     previousXdgConfigHome = process.env.XDG_CONFIG_HOME;
     process.env.XDG_CONFIG_HOME = configHome;
-    await fs.mkdir(path.join(configHome, 'openspec'), { recursive: true });
+    await fs.mkdir(path.join(configHome, 'outline-spec'), { recursive: true });
     await fs.writeFile(
-      path.join(configHome, 'openspec', 'config.json'),
+      path.join(configHome, 'outline-spec', 'config.json'),
       JSON.stringify({ profile: 'core', delivery: 'both' })
     );
   });
@@ -163,7 +163,7 @@ describe('getToolVersionStatus (command file drift)', () => {
     expect(status.needsUpdate).toBe(true);
   });
 
-  // `openspec update` already rewrote a DELETED command file before this change,
+  // `outline-spec update` already rewrote a DELETED command file before this change,
   // but not via this function: `getToolsNeedingProfileSync` catches a missing
   // file independently, and its result is unioned with `needsUpdate` in
   // update.ts. So deletion is not a behaviour change at the CLI level - it is

@@ -10,7 +10,7 @@ import { FileSystemUtils } from '../../src/utils/file-system.js';
  * `assertPathWithin` is what keeps every managed write inside the project, so
  * the contract worth pinning is the guard's own: what it accepts, what it
  * throws on, and that it reads a path as path segments rather than as a string
- * prefix. `openspec-evil` starts with `openspec` and must still be rejected.
+ * prefix. `outline-spec-evil` starts with `outline-spec` and must still be rejected.
  *
  * The cases run through real directories because the guard canonicalizes
  * before deciding, so a purely notional path would not exercise it.
@@ -19,7 +19,7 @@ describe('FileSystemUtils.assertPathWithin', () => {
   let root: string;
 
   beforeEach(() => {
-    root = mkdtempSync(path.join(tmpdir(), 'openspec-containment-'));
+    root = mkdtempSync(path.join(tmpdir(), 'outline-spec-containment-'));
   });
 
   afterEach(() => {
@@ -52,7 +52,7 @@ describe('FileSystemUtils.assertPathWithin', () => {
   it('rejects a directory link inside the root that resolves outside it', () => {
     // The guard canonicalizes before deciding, which is the half that a
     // lexical containment check cannot do: the link's own path looks inside.
-    const outside = mkdtempSync(path.join(tmpdir(), 'openspec-outside-'));
+    const outside = mkdtempSync(path.join(tmpdir(), 'outline-spec-outside-'));
     const link = path.join(root, 'linked');
     try {
       symlinkSync(outside, link, 'junction');
@@ -92,7 +92,7 @@ describe('FileSystemUtils.resolveProjectArtifactPath', () => {
   let project: string;
 
   beforeEach(() => {
-    project = mkdtempSync(path.join(tmpdir(), 'openspec-artifact-'));
+    project = mkdtempSync(path.join(tmpdir(), 'outline-spec-artifact-'));
   });
 
   afterEach(() => {
@@ -102,9 +102,9 @@ describe('FileSystemUtils.resolveProjectArtifactPath', () => {
   it('resolves a relative artifact path inside the project', () => {
     const resolved = FileSystemUtils.resolveProjectArtifactPath(
       project,
-      path.join('openspec', 'project.md')
+      path.join('outline-spec', 'project.md')
     );
-    expect(resolved).toBe(path.join(project, 'openspec', 'project.md'));
+    expect(resolved).toBe(path.join(project, 'outline-spec', 'project.md'));
   });
 
   it('accepts a separator-joined artifact path on this platform', () => {
@@ -112,7 +112,7 @@ describe('FileSystemUtils.resolveProjectArtifactPath', () => {
     // sees is the platform's own. Both halves must survive the round trip.
     const resolved = FileSystemUtils.resolveProjectArtifactPath(
       project,
-      path.join('openspec', 'changes', 'add-widgets', 'tasks.md')
+      path.join('outline-spec', 'changes', 'add-widgets', 'tasks.md')
     );
     expect(resolved.startsWith(project + path.sep)).toBe(true);
     expect(resolved.endsWith(path.join('add-widgets', 'tasks.md'))).toBe(true);
@@ -120,7 +120,7 @@ describe('FileSystemUtils.resolveProjectArtifactPath', () => {
 
   it('refuses an absolute artifact path', () => {
     expect(() =>
-      FileSystemUtils.resolveProjectArtifactPath(project, path.resolve(project, 'openspec'))
+      FileSystemUtils.resolveProjectArtifactPath(project, path.resolve(project, 'outline-spec'))
     ).toThrow(/Refusing to manage an artifact outside the project/);
   });
 

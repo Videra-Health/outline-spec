@@ -7,12 +7,12 @@ import { PROJECT_ROOT_GUARD } from './project-root.js';
 import { getLandSteps } from './land-change.js';
 import { optionalWorkflow } from '../optional-workflow.js';
 
-const POINTER = `Archive is now called land: it applies the change's outline.md to the live specs and deletes the change folder. There is no archive folder and no spec sync. Follow the land flow${optionalWorkflow('land', ' (\`/opsx:land\`)', '')}; its steps are repeated here so this works on its own.`;
+const POINTER = `Archive is now called land: it applies the change's outline.md to the live specs and deletes the change folder. There is no archive folder and no spec sync. Follow the land flow${optionalWorkflow('land', ' (\`/outline-spec:land\`)', '')}; its steps are repeated here so this works on its own.`;
 
 export function getArchiveChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-archive-change',
-    description: 'Old name for landing an OpenSpec change; routes to the land flow. Use when the user says "openspec archive" or "opsx archive".',
+    name: 'outline-spec-archive-change',
+    description: 'Old name for landing an outline-spec change; routes to the land flow. Use when the user says "outline-spec archive".',
     instructions: `${POINTER}
 
 ${STORE_SELECTION_GUIDANCE}
@@ -21,14 +21,14 @@ ${PROJECT_ROOT_GUARD}
 
 ${getLandSteps('archive')}`,
     license: 'MIT',
-    compatibility: 'Requires openspec CLI.',
-    metadata: { author: 'openspec', version: '1.0' },
+    compatibility: 'Requires outline-spec CLI.',
+    metadata: { author: 'outline-spec', version: '1.0' },
   };
 }
 
-export function getOpsxArchiveCommandTemplate(): CommandTemplate {
+export function getOutlineSpecArchiveCommandTemplate(): CommandTemplate {
   return {
-    name: 'OPSX: Archive',
+    name: 'outline-spec: Archive',
     description: 'Old name for land: apply a finished change to the specs and delete it',
     category: 'Workflow',
     tags: ['workflow', 'land'],

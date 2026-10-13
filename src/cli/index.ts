@@ -36,7 +36,7 @@ const STORE_OPTION_DESCRIPTION = COMMON_FLAGS.store.description;
 function hiddenStorePathOption(): Option {
   return new Option(
     '--store-path <path>',
-    'Not supported; register the path with "openspec store register <path>" and use --store <id>'
+    'Not supported; register the path with "outline-spec store register <path>" and use --store <id>'
   ).hideHelp();
 }
 
@@ -82,14 +82,14 @@ export function getCommandPath(command: Command): string {
 
   while (current) {
     const name = current.name();
-    // Skip the root 'openspec' command
-    if (name && name !== 'openspec') {
+    // Skip the root 'outline-spec' command
+    if (name && name !== 'outline-spec') {
       names.unshift(name);
     }
     current = current.parent;
   }
 
-  return names.join(':') || 'openspec';
+  return names.join(':') || 'outline-spec';
 }
 
 /**
@@ -97,11 +97,11 @@ export function getCommandPath(command: Command): string {
  * first-run completions tip so a JSON run carries no incidental output.
  *
  * `--json` reaches commands three ways, so a single parsed option is not enough:
- * - declared on the leaf (`openspec status --json`) → `opts().json`
- * - declared on a parent group and read via globals (`openspec workset --json list`)
+ * - declared on the leaf (`outline-spec status --json`) → `opts().json`
+ * - declared on a parent group and read via globals (`outline-spec workset --json list`)
  *   → `optsWithGlobals().json`
  * - a residual arg on a permissive group that never declares the option
- *   (`openspec store --json`, which detects it from `command.args`) → `args`
+ *   (`outline-spec store --json`, which detects it from `command.args`) → `args`
  */
 export function isJsonRun(command: Command): boolean {
   return (
@@ -112,7 +112,7 @@ export function isJsonRun(command: Command): boolean {
 
 /**
  * True for the commands that exist to serve shell completions: the user-facing
- * `openspec completion ...` group and the hidden `__complete` resolver that
+ * `outline-spec completion ...` group and the hidden `__complete` resolver that
  * generated completion scripts call on every Tab press. Tipping either about
  * completions is noise, and `__complete` would burn the one-shot tip invisibly.
  */
@@ -134,8 +134,8 @@ export function shouldDeferCompletionTip(command: Command, stderrIsTty: boolean)
 }
 
 program
-  .name('openspec')
-  .description('AI-native system for spec-driven development')
+  .name('outline-spec')
+  .description('Outline specs for AI-assisted development')
   .version(version);
 
 // Global options
@@ -143,14 +143,14 @@ program.option('--no-color', 'Disable color output');
 
 program
   .command('version')
-  .description('Report the installed OpenSpec version')
+  .description('Report the installed outline-spec version')
   .option('--json', 'Output as JSON')
   .action((options: { json?: boolean }) => {
     if (options.json) {
       console.log(JSON.stringify({ schemaVersion: 1, version }, null, 2));
       return;
     }
-    console.log(`OpenSpec ${version}`);
+    console.log(`outline-spec ${version}`);
   });
 
 program.hook('preAction', (thisCommand) => {
@@ -164,7 +164,7 @@ program.hook('postAction', async (_thisCommand, actionCommand) => {
   // clean). postAction, not preAction: the tip trails the command's own output
   // instead of pushing an error message or `init`'s setup summary down the
   // screen. Deferred — not consumed — whenever nobody would read it: JSON runs,
-  // `openspec completion ...`, and a stderr that is not a terminal (agents and
+  // `outline-spec completion ...`, and a stderr that is not a terminal (agents and
   // pipes would otherwise silently burn the user's one-shot tip).
   const { maybeShowCompletionTip } = await import('../core/completion-tip.js');
   await maybeShowCompletionTip({
@@ -182,9 +182,9 @@ const toolsOptionDescription = `Configure AI tools non-interactively. Use "all",
 
 program
   .command('init [path]')
-  .description('Initialize OpenSpec in your project')
+  .description('Initialize outline-spec in your project')
   .option('--tools <tools>', toolsOptionDescription)
-  .option('--language <language>', 'Write new OpenSpec artifacts in this language')
+  .option('--language <language>', 'Write new outline-spec artifacts in this language')
   .option('--profile <profile>', 'Override global config profile (core or custom)')
   .option('--no-animation', 'Show a static welcome screen instead of the animated one')
   .option('--copilot-cloud', 'Set up GitHub Copilot cloud coding-agent files without prompting')
@@ -233,7 +233,7 @@ program
   .option('--no-interactive', 'Disable interactive prompts')
   .action(async (options?: { tool?: string; noInteractive?: boolean }) => {
     try {
-      console.log('Note: "openspec experimental" is deprecated. Use "openspec init" instead.');
+      console.log('Note: "outline-spec experimental" is deprecated. Use "outline-spec init" instead.');
       const { InitCommand } = await import('../core/init.js');
       const initCommand = new InitCommand({
         tools: options?.tool,
@@ -248,7 +248,7 @@ program
 
 program
   .command('update [path]')
-  .description('Update OpenSpec instruction files')
+  .description('Update outline-spec instruction files')
   .option('--force', 'Force update even when tools are up to date')
   .action(async (targetPath = '.', options?: { force?: boolean }) => {
     try {
@@ -280,7 +280,7 @@ program
         failurePayload: options?.specs ? { specs: [], root: null } : { changes: [], root: null },
         // Preserve the cwd fallback for pre-config.yaml projects. The resolver
         // still lets a registered/default store take precedence over it.
-        allowImplicitRoot: existsSync(path.join(process.cwd(), 'openspec', 'project.md')),
+        allowImplicitRoot: existsSync(path.join(process.cwd(), 'outline-spec', 'project.md')),
       });
       if (!root) {
         return;
@@ -311,8 +311,8 @@ program
   .action(async (options?: { store?: string; storePath?: string }) => {
     try {
       // Implicit cwd fallback stays enabled so `view` keeps accepting the same
-      // directories as `list`/`status` — notably pre-config.yaml `openspec/`
-      // dirs. ViewCommand still reports a missing openspec/ directory itself.
+      // directories as `list`/`status` — notably pre-config.yaml `outline-spec/`
+      // dirs. ViewCommand still reports a missing outline-spec/ directory itself.
       const [{ resolveRootForCommand }, { ViewCommand }] = await Promise.all([
         import('../core/root-selection.js'),
         import('../core/view.js'),
@@ -332,11 +332,11 @@ program
 // Change command with subcommands
 const changeCmd = program
   .command('change')
-  .description('Manage OpenSpec change proposals');
+  .description('Manage outline-spec change proposals');
 
 // Deprecation notice for noun-based commands
 changeCmd.hook('preAction', () => {
-  console.error('Warning: The "openspec change ..." commands are deprecated. Prefer verb-first commands (e.g., "openspec list", "openspec validate --changes").');
+  console.error('Warning: The "outline-spec change ..." commands are deprecated. Prefer verb-first commands (e.g., "outline-spec list", "outline-spec validate --changes").');
 });
 
 changeCmd
@@ -358,12 +358,12 @@ changeCmd
 
 changeCmd
   .command('list')
-  .description('List all active changes (DEPRECATED: use "openspec list" instead)')
+  .description('List all active changes (DEPRECATED: use "outline-spec list" instead)')
   .option('--json', 'Output as JSON')
   .option('--long', 'Show id and title with counts')
   .action(async (options?: { json?: boolean; long?: boolean }) => {
     try {
-      console.error('Warning: "openspec change list" is deprecated. Use "openspec list".');
+      console.error('Warning: "outline-spec change list" is deprecated. Use "outline-spec list".');
       const { ChangeCommand } = await import('../commands/change.js');
       const changeCommand = new ChangeCommand();
       await changeCommand.list(options);
@@ -421,7 +421,7 @@ addLandOptions(
     .command('archive [change-name]')
     .description('Renamed to "land"; kept as an alias')
 ).action(async (changeName: string | undefined, options: LandOptions) => {
-  console.error('Note: "openspec archive" is now "openspec land".');
+  console.error('Note: "outline-spec archive" is now "outline-spec land".');
   await runLand(changeName, options);
 });
 
@@ -492,7 +492,7 @@ program
   .option('--type <type>', 'Specify item type when ambiguous: change|spec')
   .option('--strict', 'Enable strict validation mode')
   .option('--json', 'Output validation results as JSON')
-  .option('--concurrency <n>', 'Max concurrent validations (defaults to env OPENSPEC_CONCURRENCY or 6)')
+  .option('--concurrency <n>', 'Max concurrent validations (defaults to env OUTLINE_SPEC_CONCURRENCY or 6)')
   .option('--no-interactive', 'Disable interactive prompts')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   .addOption(hiddenStorePathOption())
@@ -536,7 +536,7 @@ program
 // Feedback command
 program
   .command('feedback <message>')
-  .description('Submit feedback about OpenSpec')
+  .description('Submit feedback about outline-spec')
   .option('--body <text>', 'Detailed description for the feedback')
   .action(async (message: string, options?: { body?: string }) => {
     try {
@@ -552,7 +552,7 @@ program
 // Completion command with subcommands
 const completionCmd = program
   .command('completion')
-  .description('Manage shell completions for OpenSpec CLI');
+  .description('Manage shell completions for outline-spec CLI');
 
 completionCmd
   .command('generate [shell]')

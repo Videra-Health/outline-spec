@@ -11,14 +11,14 @@ import { escapeTomlBasicString, escapeTomlMultilineBasicString } from '../toml.j
 
 /**
  * Gemini adapter for command generation.
- * File path: .gemini/commands/opsx/<id>.toml
+ * File path: .gemini/commands/outline-spec/<id>.toml
  * Format: TOML with description and prompt fields
  */
 export const geminiAdapter: ToolCommandAdapter = {
   toolId: 'gemini',
 
   getFilePath(commandId: string): string {
-    return path.join('.gemini', 'commands', 'opsx', `${commandId}.toml`);
+    return path.join('.gemini', 'commands', 'outline-spec', `${commandId}.toml`);
   },
 
   formatFile(content: CommandContent): string {

@@ -46,7 +46,7 @@ function setupCodexCoreSkills(projectDir: string): string {
     fs.mkdirSync(path.dirname(skillPath), { recursive: true });
     fs.writeFileSync(skillPath, `name: ${skillDirName}\n`);
   }
-  fs.writeFileSync(path.join(skillsDir, '.openspec-target'), 'codex\n');
+  fs.writeFileSync(path.join(skillsDir, '.outline-spec-target'), 'codex\n');
   return skillsDir;
 }
 
@@ -54,8 +54,8 @@ describe('profile sync drift detection', () => {
   let tempDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-profile-sync-drift-test-'));
-    fs.mkdirSync(path.join(tempDir, 'openspec'), { recursive: true });
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-profile-sync-drift-test-'));
+    fs.mkdirSync(path.join(tempDir, 'outline-spec'), { recursive: true });
     vi.stubEnv('HOME', path.join(tempDir, 'home'));
     vi.stubEnv('USERPROFILE', path.join(tempDir, 'home'));
   });
@@ -87,11 +87,11 @@ describe('profile sync drift detection', () => {
       'home',
       '.minimax',
       'skills',
-      'openspec-explore',
+      'outline-spec-explore',
       'SKILL.md'
     );
     fs.mkdirSync(path.dirname(skillPath), { recursive: true });
-    fs.writeFileSync(skillPath, 'name: openspec-explore\n');
+    fs.writeFileSync(skillPath, 'name: outline-spec-explore\n');
 
     expect(hasProjectConfigDrift(tempDir, CORE_WORKFLOWS, 'commands')).toBe(false);
   });
@@ -136,12 +136,12 @@ describe('profile sync drift detection', () => {
 
   it('reports an equal distinct legacy Codex copy that migration can remove', () => {
     const skillsDir = setupCodexCoreSkills(tempDir);
-    const currentSkill = path.join(skillsDir, 'openspec-explore', 'SKILL.md');
+    const currentSkill = path.join(skillsDir, 'outline-spec-explore', 'SKILL.md');
     const legacySkill = path.join(
       tempDir,
       '.codex',
       'skills',
-      'openspec-explore',
+      'outline-spec-explore',
       'SKILL.md'
     );
     fs.mkdirSync(path.dirname(legacySkill), { recursive: true });
@@ -154,22 +154,22 @@ describe('profile sync drift detection', () => {
 
   it('reports generated-only Codex differences that migration can remove', () => {
     const skillsDir = setupCodexCoreSkills(tempDir);
-    const currentSkill = path.join(skillsDir, 'openspec-explore', 'SKILL.md');
+    const currentSkill = path.join(skillsDir, 'outline-spec-explore', 'SKILL.md');
     const legacySkill = path.join(
       tempDir,
       '.codex',
       'skills',
-      'openspec-explore',
+      'outline-spec-explore',
       'SKILL.md'
     );
     fs.writeFileSync(
       currentSkill,
-      '---\nmetadata:\n  generatedBy: "1.7.0"\n---\nUse $openspec-apply-change (Codex) or /openspec-apply-change (other agents).\n'
+      '---\nmetadata:\n  generatedBy: "1.7.0"\n---\nUse $outline-spec-apply-change (Codex) or /outline-spec-apply-change (other agents).\n'
     );
     fs.mkdirSync(path.dirname(legacySkill), { recursive: true });
     fs.writeFileSync(
       legacySkill,
-      '\uFEFF---\r\nmetadata:\r\n  generatedBy: "0.1.0"\r\n---\r\nUse $openspec-apply-change.\r\n'
+      '\uFEFF---\r\nmetadata:\r\n  generatedBy: "0.1.0"\r\n---\r\nUse $outline-spec-apply-change.\r\n'
     );
 
     expect(
@@ -183,7 +183,7 @@ describe('profile sync drift detection', () => {
       tempDir,
       '.codex',
       'skills',
-      'openspec-explore',
+      'outline-spec-explore',
       'SKILL.md'
     );
     fs.mkdirSync(path.dirname(legacySkill), { recursive: true });

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  getOpsxVerifyCommandTemplate,
+  getOutlineSpecVerifyCommandTemplate,
   getVerifyChangeSkillTemplate,
 } from '../../../src/core/templates/skill-templates.js';
 
 const skill = getVerifyChangeSkillTemplate();
-const command = getOpsxVerifyCommandTemplate();
+const command = getOutlineSpecVerifyCommandTemplate();
 
 const bodies: Array<[string, string]> = [
   ['skill', skill.instructions],
@@ -136,11 +136,11 @@ describe('verify-change templates', () => {
   it('checks code against outline.md marks and the landed specs', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('`~~old~~ **new**`');
-      expect(body, label).toContain('openspec show "<spec>" --type spec');
-      expect(body, label).toContain('openspec validate "<name>"');
-      expect(body, label).toContain('openspec land "<name>" --dry-run');
+      expect(body, label).toContain('outline-spec show "<spec>" --type spec');
+      expect(body, label).toContain('outline-spec validate "<name>"');
+      expect(body, label).toContain('outline-spec land "<name>" --dry-run');
       expect(body, label).toContain('Never report a removed item as "Requirement not found"');
-      for (const stale of ['delta', 'Scenario', 'SHALL', '/opsx:sync', 'spec-driven', 'skip_specs', '/opsx:archive']) {
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven', 'skip_specs', '/outline-spec:archive']) {
         expect(body, label).not.toContain(stale);
       }
     }

@@ -6,7 +6,7 @@ import type { ContextOptions } from '../../commands/context.js';
 export function registerContextCommand(program: Command): void {
   const description =
     COMMAND_REGISTRY.find((entry) => entry.name === 'context')?.description ??
-    'Print the working context for the resolved OpenSpec root';
+    'Print the working context for the resolved outline-spec root';
 
   program
     .command('context')

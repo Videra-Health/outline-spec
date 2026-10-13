@@ -45,25 +45,25 @@ describe('skills.sh generator guards', () => {
   }
 
   it('cleanup removes stale skill directories but preserves top-level files', () => {
-    mkdirSync(join(outDir, 'openspec-renamed-away'));
-    writeFileSync(join(outDir, 'openspec-renamed-away', 'SKILL.md'), 'stale', 'utf8');
+    mkdirSync(join(outDir, 'outline-spec-renamed-away'));
+    writeFileSync(join(outDir, 'outline-spec-renamed-away', 'SKILL.md'), 'stale', 'utf8');
     writeFileSync(join(outDir, 'README.md'), 'keep me', 'utf8');
 
     cleanSkillSubdirectories(outDir);
 
-    expect(existsSync(join(outDir, 'openspec-renamed-away'))).toBe(false);
+    expect(existsSync(join(outDir, 'outline-spec-renamed-away'))).toBe(false);
     expect(readFileSync(join(outDir, 'README.md'), 'utf8')).toBe('keep me');
   });
 
   it('cleanup refuses to run when the tree contains a symlink, deleting nothing at all', () => {
     writeFileSync(join(outsideDir, 'precious.md'), 'do not touch', 'utf8');
     // Sorts before the symlink: proves the scan rejects before any deletion.
-    mkdirSync(join(outDir, 'openspec-aaa-real'));
-    if (!trySymlinkDir(outsideDir, join(outDir, 'openspec-linked'))) return;
+    mkdirSync(join(outDir, 'outline-spec-aaa-real'));
+    if (!trySymlinkDir(outsideDir, join(outDir, 'outline-spec-linked'))) return;
 
     expect(() => cleanSkillSubdirectories(outDir)).toThrow(/symlink/);
     expect(readFileSync(join(outsideDir, 'precious.md'), 'utf8')).toBe('do not touch');
-    expect(existsSync(join(outDir, 'openspec-aaa-real'))).toBe(true);
+    expect(existsSync(join(outDir, 'outline-spec-aaa-real'))).toBe(true);
   });
 
   it('prepareSkillDirectory rejects path-traversing or non-simple names', () => {
@@ -74,14 +74,14 @@ describe('skills.sh generator guards', () => {
   });
 
   it('prepareSkillDirectory refuses a pre-existing symlinked skill directory', () => {
-    if (!trySymlinkDir(outsideDir, join(outDir, 'openspec-linked'))) return;
+    if (!trySymlinkDir(outsideDir, join(outDir, 'outline-spec-linked'))) return;
 
-    expect(() => prepareSkillDirectory(outDir, 'openspec-linked')).toThrow(/not a real directory/);
+    expect(() => prepareSkillDirectory(outDir, 'outline-spec-linked')).toThrow(/not a real directory/);
   });
 
   it('prepareSkillDirectory returns a real contained directory for valid names', () => {
-    const dir = prepareSkillDirectory(outDir, 'openspec-new-skill');
-    expect(dir).toBe(join(outDir, 'openspec-new-skill'));
+    const dir = prepareSkillDirectory(outDir, 'outline-spec-new-skill');
+    expect(dir).toBe(join(outDir, 'outline-spec-new-skill'));
     expect(lstatSync(dir).isDirectory()).toBe(true);
     expect(lstatSync(dir).isSymbolicLink()).toBe(false);
   });

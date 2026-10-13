@@ -5,18 +5,18 @@ import {
   buildCodeWorkspaceJson,
   isAvailableMember,
 } from '../../src/core/working-set.js';
-import type { ResolvedOpenSpecRoot } from '../../src/core/root-selection.js';
+import type { ResolvedOutlineSpecRoot } from '../../src/core/root-selection.js';
 import type { StoreDiagnostic } from '../../src/core/store/errors.js';
 
 const root = {
   path: '/team/store',
   source: 'store',
   storeId: 'team-context',
-  changesDir: '/team/store/openspec/changes',
-  specsDir: '/team/store/openspec/specs',
-  archiveDir: '/team/store/openspec/changes/archive',
+  changesDir: '/team/store/outline-spec/changes',
+  specsDir: '/team/store/outline-spec/specs',
+  archiveDir: '/team/store/outline-spec/changes/archive',
   defaultSchema: 'outline',
-} as ResolvedOpenSpecRoot;
+} as ResolvedOutlineSpecRoot;
 
 const warn = (code: string): StoreDiagnostic => ({
   severity: 'warning',
@@ -41,12 +41,12 @@ describe('working-set assembly (4.1)', () => {
       path: '/team/store',
       source: 'store',
       store_id: 'team-context',
-      role: 'openspec_root',
+      role: 'outline_spec_root',
     });
     expect(workingSet.members.map((member) => member.id)).toEqual(['up', 'ghost']);
     // Fetch recipe only on available references.
     expect(workingSet.members[0].fetch).toBe(
-      'openspec show <spec-id> --type spec --store up'
+      'outline-spec show <spec-id> --type spec --store up'
     );
     expect('fetch' in workingSet.members[1]).toBe(false);
     // Availability rule: path AND empty status.

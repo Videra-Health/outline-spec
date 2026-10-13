@@ -20,16 +20,16 @@ const CORE_SECTION = PROFILES.split('## The core set')[1].split(
 )[0];
 
 describe('setup documentation', () => {
-  it('keeps the Claude Code paths and recovery commands aligned with OpenSpec', () => {
+  it('keeps the Claude Code paths and recovery commands aligned with outline-spec', () => {
     const claude = AI_TOOLS.find((tool) => tool.value === 'claude');
     const claudeCommandPath = claudeAdapter.getFilePath('<id>').split(path.sep).join('/');
 
     expect(claude?.skillsDir).toBeDefined();
-    expect(SETUP).toContain(`\`${claude?.skillsDir}/skills/openspec-*/SKILL.md\``);
+    expect(SETUP).toContain(`\`${claude?.skillsDir}/skills/outline-spec-*/SKILL.md\``);
     expect(SETUP).toContain(`\`${claudeCommandPath}\``);
-    expect(SETUP).toContain('openspec config set delivery both');
-    expect(SETUP).toContain('openspec update');
-    expect(SETUP).toContain('`/openspec-propose`');
+    expect(SETUP).toContain('outline-spec config set delivery both');
+    expect(SETUP).toContain('outline-spec update');
+    expect(SETUP).toContain('`/outline-spec-propose`');
   });
 
   it('lists every workflow in the core profile', () => {

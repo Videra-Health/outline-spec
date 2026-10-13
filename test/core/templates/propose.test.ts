@@ -4,10 +4,10 @@ import { fileURLToPath } from 'url';
 import { describe, expect, it } from 'vitest';
 
 import {
-  getOpsxProposeSkillTemplate,
-  getOpsxProposeCommandTemplate,
+  getOutlineSpecProposeSkillTemplate,
+  getOutlineSpecProposeCommandTemplate,
   getFfChangeSkillTemplate,
-  getOpsxFfCommandTemplate,
+  getOutlineSpecFfCommandTemplate,
 } from '../../../src/core/templates/skill-templates.js';
 import { generateSkillContent } from '../../../src/core/shared/skill-generation.js';
 import { loadSchema } from '../../../src/core/artifact-graph/schema.js';
@@ -34,15 +34,15 @@ const withoutApply = (body: string) =>
     new Set<string>(ALL_WORKFLOWS.filter((id) => id !== 'apply'))
   );
 
-const proposeSkillBody = withAll(getOpsxProposeSkillTemplate().instructions);
-const proposeCommandBody = withAll(getOpsxProposeCommandTemplate().content);
+const proposeSkillBody = withAll(getOutlineSpecProposeSkillTemplate().instructions);
+const proposeCommandBody = withAll(getOutlineSpecProposeCommandTemplate().content);
 const asDeployed = <T extends { instructions: string }>(template: T): T => ({
   ...template,
   instructions: withAll(template.instructions),
 });
 
 const proposeBodies: Array<[string, string]> = [
-  ['propose skill', generateSkillContent(asDeployed(getOpsxProposeSkillTemplate()), 'TEST')],
+  ['propose skill', generateSkillContent(asDeployed(getOutlineSpecProposeSkillTemplate()), 'TEST')],
   ['propose command', proposeCommandBody],
 ];
 
@@ -50,7 +50,7 @@ const proposeBodies: Array<[string, string]> = [
 const loopBodies: Array<[string, string]> = [
   ...proposeBodies,
   ['ff skill', withAll(getFfChangeSkillTemplate().instructions)],
-  ['ff command', withAll(getOpsxFfCommandTemplate().content)],
+  ['ff command', withAll(getOutlineSpecFfCommandTemplate().content)],
 ];
 
 const repoRoot = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '../../..');
@@ -85,13 +85,13 @@ describe('propose preamble', () => {
       expect(preamble, label).toContain('outline.md');
       expect(preamble, label).toContain('~~old~~ **new**');
       expect(preamble, label).toContain('Labels never shift');
-      expect(preamble, label).toContain('openspec land <change>');
+      expect(preamble, label).toContain('outline-spec land <change>');
     }
   });
 
   it('never teaches delta specs, scenarios, or sync', () => {
     for (const [label, body] of loopBodies) {
-      for (const stale of ['delta', 'Scenario', 'SHALL', '/opsx:sync', 'skip_specs', 'spec-driven', 'proposal.md']) {
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'skip_specs', 'spec-driven', 'proposal.md']) {
         expect(body, `${label} mentions ${stale}`).not.toContain(stale);
       }
     }
@@ -99,7 +99,7 @@ describe('propose preamble', () => {
 
   it('validates the outline after writing it', () => {
     for (const [label, body] of loopBodies) {
-      expect(body, label).toContain('openspec validate "<name>"');
+      expect(body, label).toContain('outline-spec validate "<name>"');
     }
   });
 });
@@ -111,8 +111,8 @@ describe('default outline guidance', () => {
     const instruction = outline().instruction!;
     expect(instruction).toContain('(patch)');
     expect(instruction).toContain('Never relabel');
-    expect(instruction).toContain('openspec land <change>');
-    expect(instruction).toContain('openspec list --specs');
+    expect(instruction).toContain('outline-spec land <change>');
+    expect(instruction).toContain('outline-spec list --specs');
   });
 
   it('ships the outline template', () => {
@@ -144,14 +144,14 @@ describe('default task guidance', () => {
   });
 
   it('ends with landing the change', () => {
-    expect(tasks().instruction).toContain('openspec land <change>');
+    expect(tasks().instruction).toContain('outline-spec land <change>');
     const template = fs.readFileSync(
       path.join(repoRoot, 'schemas', 'outline', 'templates', 'tasks.md'),
       'utf-8'
     );
     const tracked = parseTaskLines(template);
     expect(tracked.length).toBeGreaterThan(0);
-    expect(template.trim().split('\n').pop()).toContain('openspec land');
+    expect(template.trim().split('\n').pop()).toContain('outline-spec land');
   });
 });
 
@@ -175,10 +175,10 @@ describe('propose project context', () => {
   it('reads the resolved root and keeps explicit store selection', () => {
     for (const [label, body] of proposeBodies) {
       const section = contextSection(body);
-      expect(section, label).toContain('`openspec context --json`');
-      expect(section, label).toContain('`openspec context --json --store "<store-id>"`');
+      expect(section, label).toContain('`outline-spec context --json`');
+      expect(section, label).toContain('`outline-spec context --json --store "<store-id>"`');
       expect(section, label).toContain('returned `root.path`');
-      expect(section, label).toContain('`<root.path>/openspec/config.yaml`');
+      expect(section, label).toContain('`<root.path>/outline-spec/config.yaml`');
       expect(section, label).toContain('Only when context returns a resolved `root.path`');
     }
   });
@@ -200,11 +200,11 @@ describe('propose project context', () => {
   it('stops without writing and offers initialization when no root is resolved', () => {
     for (const [label, body] of proposeBodies) {
       const section = contextSection(body);
-      expect(section, label).toContain('context reports `no_openspec_root`');
+      expect(section, label).toContain('context reports `no_outline_spec_root`');
       expect(section, label).toContain('stop without creating or changing any files');
-      expect(section, label).toContain('Offer `openspec init`');
+      expect(section, label).toContain('Offer `outline-spec init`');
       expect(section, label).toContain('wait for the user to request initialization');
-      expect(section, label).toContain('Do not initialize automatically or run `openspec new change`');
+      expect(section, label).toContain('Do not initialize automatically or run `outline-spec new change`');
       expect(section, label).toContain('After initialization, rerun this context check before continuing');
       expect(body, label).not.toContain('resolve the implicit root');
     }
@@ -215,7 +215,7 @@ describe('propose project context', () => {
       const section = contextSection(body);
       expect(section, label).toContain('For any other context failure, stop');
       expect(section, label).toContain('do not fall back to the current directory');
-      expect(section, label).toContain('run later OpenSpec commands without the selected store');
+      expect(section, label).toContain('run later outline-spec commands without the selected store');
     }
   });
 
@@ -236,7 +236,7 @@ describe('propose project context', () => {
 describe('planning code inspection (#339)', () => {
   it('inspects the project after loading instructions and dependencies, before creating or delegating artifacts', () => {
     for (const [label, body] of loopBodies) {
-      const instructions = body.indexOf('openspec instructions <artifact-id>');
+      const instructions = body.indexOf('outline-spec instructions <artifact-id>');
       const dependencies = body.indexOf('Read any completed dependency files');
       const inspection = body.indexOf('**Inspect the relevant project before drafting**');
       const delegation = body.indexOf('If the `instruction` field delegates creation');
@@ -247,7 +247,7 @@ describe('planning code inspection (#339)', () => {
 
       const guidance = body.slice(inspection, delegation);
       expect(guidance, label).toContain('Read `context` and `rules` first');
-      expect(guidance, label).toContain('relevant implementation, nearby tests, configuration, and documentation outside `openspec/`');
+      expect(guidance, label).toContain('relevant implementation, nearby tests, configuration, and documentation outside `outline-spec/`');
       expect(guidance, label).toContain('Keep inspection read-only and proportional to the change');
       expect(guidance, label).toContain('reuse findings for later artifacts');
       expect(guidance, label).toContain('Do this discovery now');
@@ -334,12 +334,12 @@ describe('propose implementation boundary', () => {
   });
 
   it('hands command-only tools to apply instead of advertising direct coding (#258)', () => {
-    expect(proposeCommandBody).toContain('When you are ready, run `/opsx:apply`.');
+    expect(proposeCommandBody).toContain('When you are ready, run `/outline-spec:apply`.');
     expect(proposeCommandBody).not.toContain('ask me to implement');
     expect(proposeCommandBody).not.toContain('ask me to apply this change');
 
     expect(proposeSkillBody).toContain(
-      'run `/opsx:apply` or ask me to apply this change'
+      'run `/outline-spec:apply` or ask me to apply this change'
     );
     expect(proposeSkillBody).not.toContain('ask me to implement');
   });
@@ -347,22 +347,22 @@ describe('propose implementation boundary', () => {
   // The same boundary has to hold when `apply` is not installed: the command
   // surface may name the CLI, never a conversational handoff (#1734).
   it('keeps command-only tools off direct coding when apply is not installed', () => {
-    const command = withoutApply(getOpsxProposeCommandTemplate().content);
-    const skill = withoutApply(getOpsxProposeSkillTemplate().instructions);
-    const ffCommand = withoutApply(getOpsxFfCommandTemplate().content);
+    const command = withoutApply(getOutlineSpecProposeCommandTemplate().content);
+    const skill = withoutApply(getOutlineSpecProposeSkillTemplate().instructions);
+    const ffCommand = withoutApply(getOutlineSpecFfCommandTemplate().content);
 
     for (const body of [command, skill, ffCommand]) {
-      expect(body).not.toContain('/opsx:apply');
+      expect(body).not.toContain('/outline-spec:apply');
     }
 
     expect(command).toContain(
-      'run `openspec instructions apply --change "<name>" --json` to get the tasks'
+      'run `outline-spec instructions apply --change "<name>" --json` to get the tasks'
     );
     expect(command).not.toContain('ask me to implement');
     expect(command).not.toContain('ask me to apply this change');
 
     expect(ffCommand).toContain(
-      'Run `openspec instructions apply --change "<name>" --json` to get the task list'
+      'Run `outline-spec instructions apply --change "<name>" --json` to get the task list'
     );
     expect(ffCommand).not.toContain('ask me to implement');
 
@@ -400,8 +400,8 @@ describe('propose implementation boundary', () => {
       );
       expect(generated, adapter.toolId).not.toContain('ask me to implement');
       expect(generated, adapter.toolId).toContain('stop without creating or changing any files');
-      expect(generated, adapter.toolId).toContain('Offer `openspec init`');
-      expect(generated, adapter.toolId).toContain('Do not initialize automatically or run `openspec new change`');
+      expect(generated, adapter.toolId).toContain('Offer `outline-spec init`');
+      expect(generated, adapter.toolId).toContain('Do not initialize automatically or run `outline-spec new change`');
     }
   });
 });
@@ -420,12 +420,12 @@ describe('propose schema selection', () => {
       expect(statusStep, `${label} is missing status lookup`).toBeGreaterThan(createStep);
 
       const createSection = body.slice(createStep, statusStep);
-      expect(createSection, label).toMatch(/^\s*openspec new change "<name>"\s*$/m);
+      expect(createSection, label).toMatch(/^\s*outline-spec new change "<name>"\s*$/m);
       expect(createSection, label).toMatch(
-        /^\s*openspec new change "<name>" --schema "<schema-name>"\s*$/m
+        /^\s*outline-spec new change "<name>" --schema "<schema-name>"\s*$/m
       );
       expect(createSection, label).toContain(
-        'If a registered store is selected, append `--store "<store-id>"` to that command and each later OpenSpec command shown below that accepts `--store`'
+        'If a registered store is selected, append `--store "<store-id>"` to that command and each later outline-spec command shown below that accepts `--store`'
       );
       expect(createSection, label).not.toContain('every follow-up command');
     }
@@ -439,24 +439,24 @@ describe('propose schema selection', () => {
 
       expect(schemaSection, label).toContain('Use the configured default schema');
       expect(schemaSection, label).toContain('Explicitly requests a specific schema by name');
-      const contextCommand = schemaSection.indexOf('`openspec context --json`');
-      const schemasCommand = schemaSection.indexOf('`openspec schemas --json`');
+      const contextCommand = schemaSection.indexOf('`outline-spec context --json`');
+      const schemasCommand = schemaSection.indexOf('`outline-spec schemas --json`');
       expect(contextCommand, `${label} is missing root resolution`).toBeGreaterThanOrEqual(0);
       expect(schemasCommand, `${label} lists schemas before resolving the root`).toBeGreaterThan(
         contextCommand
       );
       expect(schemaSection, label).toContain('from the current working directory');
       expect(schemaSection, label).toContain(
-        '`openspec context --json --store "<store-id>"`'
+        '`outline-spec context --json --store "<store-id>"`'
       );
       expect(schemaSection, label).toContain(
-        'run `openspec schemas --json` with its working directory'
+        'run `outline-spec schemas --json` with its working directory'
       );
       expect(schemaSection, label).toContain('returned `root.path`');
       expect(schemaSection, label).toContain('local `store:` pointer');
       expect(schemaSection, label).toContain('global `defaultStore`');
       expect(schemaSection, label).toContain(
-        'append `--store "<store-id>"` to `openspec schemas --json` as well'
+        'append `--store "<store-id>"` to `outline-spec schemas --json` as well'
       );
       expect(schemaSection, label).not.toContain('`schemas` does not accept `--store`');
       expect(schemaSection, label).toContain('If context fails, stop as described in the context-loading step');
@@ -537,7 +537,7 @@ describe('artifact loop guards (propose and ff)', () => {
   it('makes the agent fetch and read the instruction field before skipping', () => {
     for (const [label, body] of loopBodies) {
       expect(body, label).toContain(
-        'run `openspec instructions <artifact-id> --change "<name>" --json` and skip only if its `instruction` field marks it optional'
+        'run `outline-spec instructions <artifact-id> --change "<name>" --json` and skip only if its `instruction` field marks it optional'
       );
       expect(body, label).toContain('`outline.md` never does');
     }

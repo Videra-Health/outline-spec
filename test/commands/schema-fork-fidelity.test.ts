@@ -100,7 +100,7 @@ async function runSchemaCommand(args: string[]): Promise<void> {
   const { registerSchemaCommand } = await import('../../src/cli/commands/schema.js');
   const program = new Command();
   registerSchemaCommand(program);
-  await program.parseAsync(['node', 'openspec', 'schema', ...args]);
+  await program.parseAsync(['node', 'outline-spec', 'schema', ...args]);
 }
 
 describe('schema fork fidelity (PR #1130)', () => {
@@ -134,8 +134,8 @@ describe('schema fork fidelity (PR #1130)', () => {
   ].join('\n');
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-fork-fidelity-'));
-    fs.mkdirSync(path.join(tempDir, 'openspec', 'schemas'), { recursive: true });
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-fork-fidelity-'));
+    fs.mkdirSync(path.join(tempDir, 'outline-spec', 'schemas'), { recursive: true });
 
     originalCwd = process.cwd();
     originalEnv = { ...process.env };
@@ -147,7 +147,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     process.env.XDG_CONFIG_HOME = path.join(tempDir, 'xdg-config');
 
     // Author the source schema as a project-local schema.
-    const srcDir = path.join(tempDir, 'openspec', 'schemas', 'src-schema');
+    const srcDir = path.join(tempDir, 'outline-spec', 'schemas', 'src-schema');
     fs.mkdirSync(srcDir, { recursive: true });
     fs.writeFileSync(path.join(srcDir, 'schema.yaml'), SOURCE_SCHEMA);
 
@@ -172,7 +172,7 @@ describe('schema fork fidelity (PR #1130)', () => {
 
     const destPath = path.join(
       tempDir,
-      'openspec',
+      'outline-spec',
       'schemas',
       'forked-schema',
       'schema.yaml'
@@ -216,7 +216,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // fork must fail rather than serialize a broken schema.
     const invalidDir = path.join(
       tempDir,
-      'openspec',
+      'outline-spec',
       'schemas',
       'invalid-schema'
     );
@@ -247,7 +247,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // spurious "already exists".
     const destDir = path.join(
       tempDir,
-      'openspec',
+      'outline-spec',
       'schemas',
       'forked-invalid'
     );
@@ -268,7 +268,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // directory this run created. Without --force an existing destination is
     // rejected BEFORE any copy, so a user's directory (and its files) must be
     // left completely untouched.
-    const destDir = path.join(tempDir, 'openspec', 'schemas', 'my-dest');
+    const destDir = path.join(tempDir, 'outline-spec', 'schemas', 'my-dest');
     fs.mkdirSync(destDir, { recursive: true });
     const sentinel = path.join(destDir, 'sentinel.txt');
     fs.writeFileSync(sentinel, 'do not delete me');
@@ -288,7 +288,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // existing destination, so an unusable source can never leave the user with
     // nothing. The source is validated up front (before the --force removal),
     // so the prior destination survives untouched.
-    const invalidDir = path.join(tempDir, 'openspec', 'schemas', 'invalid-schema');
+    const invalidDir = path.join(tempDir, 'outline-spec', 'schemas', 'invalid-schema');
     fs.mkdirSync(invalidDir, { recursive: true });
     fs.writeFileSync(
       path.join(invalidDir, 'schema.yaml'),
@@ -296,7 +296,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     );
 
     // A valid, pre-existing destination the user does not want to lose.
-    const destDir = path.join(tempDir, 'openspec', 'schemas', 'keep-me');
+    const destDir = path.join(tempDir, 'outline-spec', 'schemas', 'keep-me');
     fs.mkdirSync(destDir, { recursive: true });
     const existing = path.join(destDir, 'schema.yaml');
     const existingContent = [
@@ -339,7 +339,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // The source survives untouched, comments and block scalars included.
     const srcPath = path.join(
       tempDir,
-      'openspec',
+      'outline-spec',
       'schemas',
       'src-schema',
       'schema.yaml'
@@ -354,7 +354,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // WHILE copying must never remove the existing destination. Here the source
     // is valid (passes the up-front parseSchema), but the file copy itself is
     // forced to fail; the pre-existing destination must be left fully intact.
-    const destDir = path.join(tempDir, 'openspec', 'schemas', 'keep-me');
+    const destDir = path.join(tempDir, 'outline-spec', 'schemas', 'keep-me');
     fs.mkdirSync(destDir, { recursive: true });
     const existing = path.join(destDir, 'schema.yaml');
     const existingContent = [
@@ -389,7 +389,7 @@ describe('schema fork fidelity (PR #1130)', () => {
 
     // And no staging leftovers linger in the schemas directory.
     const leftovers = fs
-      .readdirSync(path.join(tempDir, 'openspec', 'schemas'))
+      .readdirSync(path.join(tempDir, 'outline-spec', 'schemas'))
       .filter((entry) => entry.startsWith('.fork-staging-'));
     expect(leftovers).toEqual([]);
   });
@@ -399,7 +399,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // destination to a sibling backup, installs the staged fork, and only then
     // discards the backup. If the install move fails (e.g. a Windows lock), the
     // backup must be moved back so the original destination is never lost.
-    const destDir = path.join(tempDir, 'openspec', 'schemas', 'keep-me');
+    const destDir = path.join(tempDir, 'outline-spec', 'schemas', 'keep-me');
     fs.mkdirSync(destDir, { recursive: true });
     const existing = path.join(destDir, 'schema.yaml');
     const existingContent = [
@@ -434,7 +434,7 @@ describe('schema fork fidelity (PR #1130)', () => {
 
     // No staging or backup leftovers linger in the schemas directory.
     const leftovers = fs
-      .readdirSync(path.join(tempDir, 'openspec', 'schemas'))
+      .readdirSync(path.join(tempDir, 'outline-spec', 'schemas'))
       .filter(
         (entry) =>
           entry.startsWith('.fork-staging-') ||
@@ -448,7 +448,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // The original destination is now stranded in the backup dir. The command
     // must NOT silently swallow this — it must throw an error naming the backup
     // path so the user can recover manually, with the install error attached.
-    const destDir = path.join(tempDir, 'openspec', 'schemas', 'keep-me');
+    const destDir = path.join(tempDir, 'outline-spec', 'schemas', 'keep-me');
     fs.mkdirSync(destDir, { recursive: true });
     const existing = path.join(destDir, 'schema.yaml');
     fs.writeFileSync(existing, 'name: keep-me\nversion: 3\n');
@@ -474,11 +474,11 @@ describe('schema fork fidelity (PR #1130)', () => {
     // The original content really is still on disk in the backup dir the error
     // points at (recovery is genuinely possible).
     const backupDir = fs
-      .readdirSync(path.join(tempDir, 'openspec', 'schemas'))
+      .readdirSync(path.join(tempDir, 'outline-spec', 'schemas'))
       .find((entry) => entry.includes('.fork-backup-'));
     expect(backupDir).toBeTruthy();
     const rescued = fs.readFileSync(
-      path.join(tempDir, 'openspec', 'schemas', backupDir!, 'schema.yaml'),
+      path.join(tempDir, 'outline-spec', 'schemas', backupDir!, 'schema.yaml'),
       'utf-8'
     );
     expect(rescued).toBe('name: keep-me\nversion: 3\n');
@@ -486,9 +486,9 @@ describe('schema fork fidelity (PR #1130)', () => {
 
   it('excludes fork staging/backup temp dirs from schema discovery', async () => {
     // The transient dirs `schema fork` creates live inside the schemas dir, so a
-    // concurrent `openspec schema list`/validate scan must never treat them as
+    // concurrent `outline-spec schema list`/validate scan must never treat them as
     // real schemas. Simulate both a staging and a backup dir mid-fork.
-    const schemasDir = path.join(tempDir, 'openspec', 'schemas');
+    const schemasDir = path.join(tempDir, 'outline-spec', 'schemas');
     for (const tempName of ['.fork-staging-abc123', 'keep-me.fork-backup-999-1700000000000']) {
       const dir = path.join(schemasDir, tempName);
       fs.mkdirSync(dir, { recursive: true });
@@ -515,7 +515,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // the destructive swap, another process edits the destination. The fork must
     // fingerprint the authorized destination, re-check it before moving it aside,
     // and ABORT if it changed — never clobbering the concurrent edit.
-    const destDir = path.join(tempDir, 'openspec', 'schemas', 'keep-me');
+    const destDir = path.join(tempDir, 'outline-spec', 'schemas', 'keep-me');
     fs.mkdirSync(destDir, { recursive: true });
     const existing = path.join(destDir, 'schema.yaml');
     const originalContent = [
@@ -557,7 +557,7 @@ describe('schema fork fidelity (PR #1130)', () => {
 
     // No staging or backup leftovers remain — the abort happened before any move.
     const leftovers = fs
-      .readdirSync(path.join(tempDir, 'openspec', 'schemas'))
+      .readdirSync(path.join(tempDir, 'outline-spec', 'schemas'))
       .filter(
         (entry) =>
           entry.startsWith('.fork-staging-') || entry.includes('.fork-backup-')
@@ -570,7 +570,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // concurrent write lands in the backup before it is discarded. The fork must
     // re-fingerprint the backup before deleting it and, on mismatch, keep it and
     // surface its location rather than silently deleting changed content.
-    const destDir = path.join(tempDir, 'openspec', 'schemas', 'keep-me');
+    const destDir = path.join(tempDir, 'outline-spec', 'schemas', 'keep-me');
     fs.mkdirSync(destDir, { recursive: true });
     const existing = path.join(destDir, 'schema.yaml');
     fs.writeFileSync(existing, 'name: keep-me\nversion: 3\n');
@@ -592,12 +592,12 @@ describe('schema fork fidelity (PR #1130)', () => {
     expect(errOutput).toMatch(/was NOT deleted/i);
     expect(errOutput).toMatch(/\.fork-backup-/);
     const backupDir = fs
-      .readdirSync(path.join(tempDir, 'openspec', 'schemas'))
+      .readdirSync(path.join(tempDir, 'outline-spec', 'schemas'))
       .find((entry) => entry.includes('.fork-backup-'));
     expect(backupDir).toBeTruthy();
     expect(
       fs.readFileSync(
-        path.join(tempDir, 'openspec', 'schemas', backupDir!, 'schema.yaml'),
+        path.join(tempDir, 'outline-spec', 'schemas', backupDir!, 'schema.yaml'),
         'utf-8'
       )
     ).toBe('name: keep-me\nversion: 4-touched-in-backup\n');
@@ -609,7 +609,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // result can be invalid even though the source was valid at the pre-check.
     // The completed staged schema must be validated before any destructive step;
     // an invalid staged fork must abort and leave a valid destination untouched.
-    const destDir = path.join(tempDir, 'openspec', 'schemas', 'keep-me');
+    const destDir = path.join(tempDir, 'outline-spec', 'schemas', 'keep-me');
     fs.mkdirSync(destDir, { recursive: true });
     const existing = path.join(destDir, 'schema.yaml');
     const existingContent = [
@@ -653,7 +653,7 @@ describe('schema fork fidelity (PR #1130)', () => {
 
     // No staging or backup leftovers remain — the abort happened before any move.
     const leftovers = fs
-      .readdirSync(path.join(tempDir, 'openspec', 'schemas'))
+      .readdirSync(path.join(tempDir, 'outline-spec', 'schemas'))
       .filter(
         (entry) =>
           entry.startsWith('.fork-staging-') || entry.includes('.fork-backup-')
@@ -674,7 +674,7 @@ describe('schema fork fidelity (PR #1130)', () => {
 
       const destPath = path.join(
         tempDir,
-        'openspec',
+        'outline-spec',
         'schemas',
         name,
         'schema.yaml'

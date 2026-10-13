@@ -5,7 +5,7 @@ import * as path from 'node:path';
 
 import { getGlobalDataDir, registerStore } from '../../src/core/index.js';
 import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
-import { createOpenSpecRoot } from '../helpers/openspec-fixtures.js';
+import { createOutlineSpecRoot } from '../helpers/outline-spec-fixtures.js';
 import { cleanupTempPath } from '../helpers/temp-cleanup.js';
 
 interface SchemaOutput {
@@ -23,7 +23,7 @@ interface FailureOutput {
 
 const SCHEMAS_MATRIX_TIMEOUT_MS = 30_000;
 
-describe('openspec schemas root selection', () => {
+describe('outline-spec schemas root selection', () => {
   let tempDir: string;
   let env: NodeJS.ProcessEnv;
   let globalDataDir: string;
@@ -33,18 +33,18 @@ describe('openspec schemas root selection', () => {
 
   beforeEach(async () => {
     tempDir = fs.realpathSync.native(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-schemas-root-'))
+      fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-schemas-root-'))
     );
     env = isolatedEnv('selected');
     globalDataDir = getGlobalDataDir({ env });
 
     localRoot = path.join(tempDir, 'local-project');
-    createOpenSpecRoot(localRoot);
+    createOutlineSpecRoot(localRoot);
     writeProjectSchema(localRoot, 'local-only', 'Local-only workflow');
 
     // A native path containing spaces catches shell-composition and separator assumptions.
     storeRoot = path.join(tempDir, 'team store root');
-    createOpenSpecRoot(storeRoot);
+    createOutlineSpecRoot(storeRoot);
     writeProjectSchema(storeRoot, 'store-only', 'Store-only workflow');
     await registerStore({ id: 'team-context', localPath: storeRoot, globalDataDir });
 
@@ -65,7 +65,7 @@ describe('openspec schemas root selection', () => {
   }
 
   function writeProjectSchema(root: string, name: string, description: string): void {
-    const schemaDir = path.join(root, 'openspec', 'schemas', name);
+    const schemaDir = path.join(root, 'outline-spec', 'schemas', name);
     fs.mkdirSync(schemaDir, { recursive: true });
     fs.writeFileSync(
       path.join(schemaDir, 'schema.yaml'),
@@ -101,7 +101,7 @@ describe('openspec schemas root selection', () => {
   }
 
   function setDefaultStore(id: string): void {
-    const configDir = path.join(env.XDG_CONFIG_HOME as string, 'openspec');
+    const configDir = path.join(env.XDG_CONFIG_HOME as string, 'outline-spec');
     fs.mkdirSync(configDir, { recursive: true });
     fs.writeFileSync(
       path.join(configDir, 'config.json'),
@@ -136,7 +136,7 @@ describe('openspec schemas root selection', () => {
     expect(human.stdout).toContain('Available schemas:');
     expect(human.stdout).toContain('store-only');
     expect(human.stdout).not.toContain('local-only');
-    expect(human.stderr).toContain('Using OpenSpec root: team-context');
+    expect(human.stderr).toContain('Using outline-spec root: team-context');
     expect(human.stderr).toContain(fs.realpathSync.native(storeRoot));
   }, SCHEMAS_MATRIX_TIMEOUT_MS);
 
@@ -152,9 +152,9 @@ describe('openspec schemas root selection', () => {
 
   it('honors declared pointers and global defaults while keeping nearest-root precedence', async () => {
     const pointerRoot = path.join(tempDir, 'pointer-project');
-    fs.mkdirSync(path.join(pointerRoot, 'openspec'), { recursive: true });
+    fs.mkdirSync(path.join(pointerRoot, 'outline-spec'), { recursive: true });
     fs.writeFileSync(
-      path.join(pointerRoot, 'openspec', 'config.yaml'),
+      path.join(pointerRoot, 'outline-spec', 'config.yaml'),
       'store: team-context\n'
     );
     writeProjectSchema(pointerRoot, 'pointer-only', 'Pointer-only workflow');
@@ -206,7 +206,7 @@ describe('openspec schemas root selection', () => {
     expect(parseFailure(unknown).status[0].code).toBe('unknown_store');
 
     const unavailableRoot = path.join(tempDir, 'unavailable-store');
-    createOpenSpecRoot(unavailableRoot);
+    createOutlineSpecRoot(unavailableRoot);
     await registerStore({
       id: 'unavailable-context',
       localPath: unavailableRoot,

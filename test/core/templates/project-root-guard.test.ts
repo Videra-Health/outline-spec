@@ -13,9 +13,9 @@ import {
  * Regression coverage for #1645.
  *
  * Skills and commands are installed once per machine and offered in every
- * repository, including ones that never ran `openspec init`. Nothing in the
- * CLI stops the workflow there - `openspec new change` falls back to an
- * implicit root and creates `openspec/` wherever the agent is standing - so
+ * repository, including ones that never ran `outline-spec init`. Nothing in the
+ * CLI stops the workflow there - `outline-spec new change` falls back to an
+ * implicit root and creates `outline-spec/` wherever the agent is standing - so
  * the guard has to live in the instructions themselves, in every workflow.
  */
 describe('project root guard', () => {
@@ -49,13 +49,13 @@ describe('project root guard', () => {
     }
   });
 
-  it('warns about an uninitialized project in every deployed opsx command', () => {
+  it('warns about an uninitialized project in every deployed outline-spec command', () => {
     for (const entry of getCommandContents()) {
       expect(entry.body, entry.id).toContain(PROJECT_ROOT_GUARD);
     }
   });
 
-  // Feedback files a GitHub issue through `openspec feedback`; it never reads
+  // Feedback files a GitHub issue through `outline-spec feedback`; it never reads
   // or writes a root, so it ships outside both registries and carries neither
   // the store teaching nor this guard.
   it('leaves the rootless feedback skill alone', () => {
@@ -66,13 +66,13 @@ describe('project root guard', () => {
   // of fabricating an implicit root - is pinned in
   // test/commands/store-root-selection.test.ts.
   it('names the machine-readable signal rather than a guess', () => {
-    expect(PROJECT_ROOT_GUARD).toContain('openspec list --json');
+    expect(PROJECT_ROOT_GUARD).toContain('outline-spec list --json');
     // A selected store is a root, so the check has to carry the flag or it
     // answers a question about the wrong directory.
     expect(PROJECT_ROOT_GUARD).toContain('with `--store <id>` when a store is selected');
     expect(PROJECT_ROOT_GUARD).toContain('`"root": null`');
     // An agent that reads the non-zero exit as a broken CLI is one step from
-    // hand-creating `openspec/` instead, which is the failure being guarded.
+    // hand-creating `outline-spec/` instead, which is the failure being guarded.
     expect(PROJECT_ROOT_GUARD).toContain('also exits non-zero, which is that answer rather than a broken CLI');
   });
 
@@ -81,8 +81,8 @@ describe('project root guard', () => {
   // `unknown_store` or `no_registered_stores`. A stale global `defaultStore`
   // reports the same codes in unrelated repositories, so only the message
   // prefix pinned in test/core/root-selection.test.ts tells them apart. Treating
-  // that project as uninitialized would silently drop OpenSpec, or offer
-  // `openspec init`, in a project that is already set up.
+  // that project as uninitialized would silently drop outline-spec, or offer
+  // `outline-spec init`, in a project that is already set up.
   it('does not mistake an unregistered declared store for an uninitialized project', () => {
     expect(PROJECT_ROOT_GUARD).toContain('starts with `Declared in`');
     expect(PROJECT_ROOT_GUARD).toContain('Do not treat it as uninitialized and skip the branches below');
@@ -94,46 +94,46 @@ describe('project root guard', () => {
 
   // #1645 asks for the workflow to get out of the way, not to interrogate the
   // user: "if not exist it can go through the normal general propose not the
-  // openspec". So the two ways of arriving here get opposite answers, and both
+  // outline-spec". So the two ways of arriving here get opposite answers, and both
   // have to be pinned or the guard drifts back to one of them.
   it('gets out of the way when it selected itself', () => {
     const autoSelected = branch('**Auto-selected**');
 
-    expect(autoSelected).toContain('without the user naming OpenSpec');
+    expect(autoSelected).toContain('without the user naming outline-spec');
     expect(autoSelected).toContain('answer the request normally');
     // The reported bug is being asked to choose a setup path for a project the
-    // user never said was an OpenSpec project.
+    // user never said was an outline-spec project.
     expect(autoSelected).toContain('Do not ask them to set anything up');
-    expect(autoSelected).not.toContain('openspec init');
+    expect(autoSelected).not.toContain('outline-spec init');
     expect(autoSelected).not.toContain('--store <id>');
   });
 
-  it('asks when the user named OpenSpec, this skill, or its command', () => {
-    const explicit = branch('**Explicit OpenSpec request**');
+  it('asks when the user named outline-spec, this skill, or its command', () => {
+    const explicit = branch('**Explicit outline-spec request**');
 
-    expect(explicit).toContain('named OpenSpec, named this skill, or ran its slash command');
+    expect(explicit).toContain('named outline-spec, named this skill, or ran its slash command');
     expect(explicit).toContain('Stop before writing and ask how to proceed');
-    expect(explicit).toContain('`openspec init`');
+    expect(explicit).toContain('`outline-spec init`');
     expect(explicit).toContain('`--store <id>`');
-    expect(explicit).toContain('continue without OpenSpec');
+    expect(explicit).toContain('continue without outline-spec');
     expect(explicit).toContain('Wait for their answer');
   });
 
   // A slash command is an explicit invocation, so the ask branch is the one
   // that applies there. The guard ships whole into command files, which is what
   // keeps that branch reachable from a command surface.
-  it('carries the explicit branch into every deployed opsx command', () => {
+  it('carries the explicit branch into every deployed outline-spec command', () => {
     for (const [label, body] of renderedBodies()) {
       if (!label.startsWith('command ')) continue;
-      expect(body, label).toContain('**Explicit OpenSpec request**');
+      expect(body, label).toContain('**Explicit outline-spec request**');
       expect(body, label).toContain('Stop before writing and ask how to proceed');
     }
   });
 
   it('never lets any branch create the root as a side effect', () => {
     expect(PROJECT_ROOT_GUARD).toContain('In both branches, never create the root as a side effect');
-    expect(PROJECT_ROOT_GUARD).toContain('do not run `openspec init` until the user asks for it');
-    expect(PROJECT_ROOT_GUARD).toContain('do not hand-create `openspec/` files');
+    expect(PROJECT_ROOT_GUARD).toContain('do not run `outline-spec init` until the user asks for it');
+    expect(PROJECT_ROOT_GUARD).toContain('do not hand-create `outline-spec/` files');
     expect(PROJECT_ROOT_GUARD).toContain('do not let a command create it');
   });
 
@@ -145,11 +145,11 @@ describe('project root guard', () => {
   it('precedes every command block and write instruction it guards', () => {
     const writeMarkers = [
       '```', // any command block, whatever the language tag
-      'openspec new change',
-      'openspec archive',
-      'openspec sync',
-      'openspec instructions',
-      'openspec validate',
+      'outline-spec new change',
+      'outline-spec archive',
+      'outline-spec sync',
+      'outline-spec instructions',
+      'outline-spec validate',
     ];
 
     for (const [label, body] of renderedBodies()) {
@@ -183,11 +183,11 @@ describe('project root guard', () => {
   });
 
   // The other half of #1645: a host picks skills by description, so a
-  // description that never says "OpenSpec" reads as a generic offer to
-  // explore or propose and wins in repositories that have no OpenSpec at all.
-  it('scopes every deployed skill description to OpenSpec', () => {
+  // description that never says "outline-spec" reads as a generic offer to
+  // explore or propose and wins in repositories that have no outline-spec at all.
+  it('scopes every deployed skill description to outline-spec', () => {
     for (const { template, dirName } of getSkillTemplates()) {
-      expect(template.description, dirName).toContain('OpenSpec');
+      expect(template.description, dirName).toContain('outline-spec');
     }
   });
 });

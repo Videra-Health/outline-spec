@@ -17,7 +17,7 @@ describe('tool-detection', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-test-'));
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-test-'));
     vi.stubEnv('XDG_CONFIG_HOME', path.join(testDir, 'config'));
     vi.stubEnv('HOME', path.join(testDir, 'home'));
     vi.stubEnv('USERPROFILE', path.join(testDir, 'home'));
@@ -31,17 +31,17 @@ describe('tool-detection', () => {
   describe('SKILL_NAMES', () => {
     it('should contain all skill names matching COMMAND_IDS', () => {
       expect(SKILL_NAMES).toHaveLength(11);
-      expect(SKILL_NAMES).toContain('openspec-explore');
-      expect(SKILL_NAMES).toContain('openspec-new-change');
-      expect(SKILL_NAMES).toContain('openspec-continue-change');
-      expect(SKILL_NAMES).toContain('openspec-apply-change');
-      expect(SKILL_NAMES).toContain('openspec-update-change');
-      expect(SKILL_NAMES).toContain('openspec-ff-change');
-      expect(SKILL_NAMES).toContain('openspec-land-change');
-      expect(SKILL_NAMES).toContain('openspec-archive-change');
-      expect(SKILL_NAMES).toContain('openspec-verify-change');
-      expect(SKILL_NAMES).toContain('openspec-onboard');
-      expect(SKILL_NAMES).toContain('openspec-propose');
+      expect(SKILL_NAMES).toContain('outline-spec-explore');
+      expect(SKILL_NAMES).toContain('outline-spec-new-change');
+      expect(SKILL_NAMES).toContain('outline-spec-continue-change');
+      expect(SKILL_NAMES).toContain('outline-spec-apply-change');
+      expect(SKILL_NAMES).toContain('outline-spec-update-change');
+      expect(SKILL_NAMES).toContain('outline-spec-ff-change');
+      expect(SKILL_NAMES).toContain('outline-spec-land-change');
+      expect(SKILL_NAMES).toContain('outline-spec-archive-change');
+      expect(SKILL_NAMES).toContain('outline-spec-verify-change');
+      expect(SKILL_NAMES).toContain('outline-spec-onboard');
+      expect(SKILL_NAMES).toContain('outline-spec-propose');
     });
   });
 
@@ -78,7 +78,7 @@ describe('tool-detection', () => {
     });
 
     it('should detect when one skill exists', async () => {
-      const skillDir = path.join(testDir, '.claude', 'skills', 'openspec-explore');
+      const skillDir = path.join(testDir, '.claude', 'skills', 'outline-spec-explore');
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), 'test content');
 
@@ -89,7 +89,7 @@ describe('tool-detection', () => {
     });
 
     it('should detect legacy Codex skills before they are migrated', async () => {
-      const skillDir = path.join(testDir, '.codex', 'skills', 'openspec-explore');
+      const skillDir = path.join(testDir, '.codex', 'skills', 'outline-spec-explore');
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), 'legacy content');
 
@@ -110,13 +110,13 @@ describe('tool-detection', () => {
       expect(status.skillCount).toBe(SKILL_NAMES.length);
     });
 
-    it('should detect MiniMax Code only from its global OpenSpec skill target', async () => {
+    it('should detect MiniMax Code only from its global outline-spec skill target', async () => {
       const globalSkill = path.join(
         testDir,
         'home',
         '.minimax',
         'skills',
-        'openspec-explore',
+        'outline-spec-explore',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(globalSkill), { recursive: true });
@@ -133,7 +133,7 @@ describe('tool-detection', () => {
         testDir,
         '.minimax',
         'skills',
-        'openspec-explore',
+        'outline-spec-explore',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(localSkill), { recursive: true });
@@ -143,7 +143,7 @@ describe('tool-detection', () => {
     });
 
     it('should detect DeepSeek Harness skills under project .dsh/skills', async () => {
-      const skillDir = path.join(testDir, '.dsh', 'skills', 'openspec-explore');
+      const skillDir = path.join(testDir, '.dsh', 'skills', 'outline-spec-explore');
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), 'test content');
 
@@ -167,7 +167,7 @@ describe('tool-detection', () => {
     });
 
     it('should detect configured tools', async () => {
-      const skillDir = path.join(testDir, '.claude', 'skills', 'openspec-explore');
+      const skillDir = path.join(testDir, '.claude', 'skills', 'outline-spec-explore');
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), 'test content');
 
@@ -178,10 +178,10 @@ describe('tool-detection', () => {
 
     it('should expose only the marked owner of a shared skill tree as configured', async () => {
       const skillsDir = path.join(testDir, '.agents', 'skills');
-      const skillDir = path.join(skillsDir, 'openspec-explore');
+      const skillDir = path.join(skillsDir, 'outline-spec-explore');
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), 'test content');
-      await fs.writeFile(path.join(skillsDir, '.openspec-target'), 'agents\n');
+      await fs.writeFile(path.join(skillsDir, '.outline-spec-target'), 'agents\n');
 
       const states = getToolStates(testDir);
       expect(states.get('agents')?.configured).toBe(true);
@@ -193,18 +193,18 @@ describe('tool-detection', () => {
 
     it('should preserve global tool state while reconciling a shared project root', async () => {
       const sharedSkills = path.join(testDir, '.agents', 'skills');
-      const sharedSkill = path.join(sharedSkills, 'openspec-explore', 'SKILL.md');
+      const sharedSkill = path.join(sharedSkills, 'outline-spec-explore', 'SKILL.md');
       const globalSkill = path.join(
         testDir,
         'home',
         '.minimax',
         'skills',
-        'openspec-explore',
+        'outline-spec-explore',
         'SKILL.md'
       );
       await fs.mkdir(path.dirname(sharedSkill), { recursive: true });
       await fs.writeFile(sharedSkill, 'content');
-      await fs.writeFile(path.join(sharedSkills, '.openspec-target'), 'agents\n');
+      await fs.writeFile(path.join(sharedSkills, '.outline-spec-target'), 'agents\n');
       await fs.mkdir(path.dirname(globalSkill), { recursive: true });
       await fs.writeFile(globalSkill, 'content');
 
@@ -218,7 +218,7 @@ describe('tool-detection', () => {
     it('should preserve marker-only ownership when delivery intentionally has no skills', async () => {
       const skillsDir = path.join(testDir, '.agents', 'skills');
       await fs.mkdir(skillsDir, { recursive: true });
-      await fs.writeFile(path.join(skillsDir, '.openspec-target'), 'agents\n');
+      await fs.writeFile(path.join(skillsDir, '.outline-spec-target'), 'agents\n');
 
       const states = getToolStates(testDir);
       expect(states.get('agents')).toEqual({
@@ -239,9 +239,9 @@ describe('tool-detection', () => {
     it('should return null when generatedBy is not present', async () => {
       const filePath = path.join(testDir, 'skill.md');
       await fs.writeFile(filePath, `---
-name: openspec-explore
+name: outline-spec-explore
 metadata:
-  author: openspec
+  author: outline-spec
   version: "1.0"
 ---
 
@@ -255,9 +255,9 @@ Content here
     it('should extract generatedBy version with double quotes', async () => {
       const filePath = path.join(testDir, 'skill.md');
       await fs.writeFile(filePath, `---
-name: openspec-explore
+name: outline-spec-explore
 metadata:
-  author: openspec
+  author: outline-spec
   version: "1.0"
   generatedBy: "0.23.0"
 ---
@@ -272,7 +272,7 @@ Content here
     it('should extract generatedBy version with single quotes', async () => {
       const filePath = path.join(testDir, 'skill.md');
       await fs.writeFile(filePath, `---
-name: openspec-explore
+name: outline-spec-explore
 metadata:
   generatedBy: '0.24.0'
 ---
@@ -287,7 +287,7 @@ Content here
     it('should extract generatedBy version without quotes', async () => {
       const filePath = path.join(testDir, 'skill.md');
       await fs.writeFile(filePath, `---
-name: openspec-explore
+name: outline-spec-explore
 metadata:
   generatedBy: 0.25.0
 ---
@@ -316,12 +316,12 @@ Content here
     });
 
     it('should detect needsUpdate when generatedBy is missing', async () => {
-      const skillDir = path.join(testDir, '.claude', 'skills', 'openspec-explore');
+      const skillDir = path.join(testDir, '.claude', 'skills', 'outline-spec-explore');
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), `---
-name: openspec-explore
+name: outline-spec-explore
 metadata:
-  author: openspec
+  author: outline-spec
   version: "1.0"
 ---
 
@@ -335,12 +335,12 @@ Content here
     });
 
     it('should detect needsUpdate when version differs', async () => {
-      const skillDir = path.join(testDir, '.claude', 'skills', 'openspec-explore');
+      const skillDir = path.join(testDir, '.claude', 'skills', 'outline-spec-explore');
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), `---
-name: openspec-explore
+name: outline-spec-explore
 metadata:
-  author: openspec
+  author: outline-spec
   version: "1.0"
   generatedBy: "0.22.0"
 ---
@@ -355,12 +355,12 @@ Content here
     });
 
     it('should not need update when version matches', async () => {
-      const skillDir = path.join(testDir, '.claude', 'skills', 'openspec-explore');
+      const skillDir = path.join(testDir, '.claude', 'skills', 'outline-spec-explore');
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), `---
-name: openspec-explore
+name: outline-spec-explore
 metadata:
-  author: openspec
+  author: outline-spec
   version: "1.0"
   generatedBy: "0.23.0"
 ---
@@ -393,13 +393,13 @@ Content here
     });
 
     // Command paths vary in shape across adapters: a nested directory with a
-    // per-tool extension (gemini writes TOML), a flat opsx-* file, and — for
+    // per-tool extension (gemini writes TOML), a flat outline-spec-* file, and — for
     // cline — a directory that is not the tool's skillsDir at all.
     it.each([
-      ['gemini', path.join('.gemini', 'commands', 'opsx', 'explore.toml')],
-      ['easycode', path.join('.easycode', 'commands', 'opsx', 'explore.toml')],
-      ['cursor', path.join('.cursor', 'commands', 'opsx-explore.md')],
-      ['cline', path.join('.clinerules', 'workflows', 'opsx-explore.md')],
+      ['gemini', path.join('.gemini', 'commands', 'outline-spec', 'explore.toml')],
+      ['easycode', path.join('.easycode', 'commands', 'outline-spec', 'explore.toml')],
+      ['cursor', path.join('.cursor', 'commands', 'outline-spec-explore.md')],
+      ['cline', path.join('.clinerules', 'workflows', 'outline-spec-explore.md')],
     ])('should fingerprint commands-only %s installs', async (toolId, explorePath) => {
       const { InitCommand } = await import('../../../src/core/init.js');
       const { saveGlobalConfig } = await import('../../../src/core/global-config.js');
@@ -468,7 +468,7 @@ Content here
 
       // A Windows clone with core.autocrlf re-materializes committed command
       // files with CRLF endings; that is a checkout artifact, not content drift.
-      const commandsDir = path.join(testDir, '.claude', 'commands', 'opsx');
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
       for (const entry of await fs.readdir(commandsDir)) {
         const file = path.join(commandsDir, entry);
         const content = await fs.readFile(file, 'utf-8');
@@ -493,7 +493,7 @@ Content here
       await initCommand.execute(testDir);
 
       // A workflow that is no longer selected still has a command file on disk
-      const strayFile = path.join(testDir, '.claude', 'commands', 'opsx', 'verify.md');
+      const strayFile = path.join(testDir, '.claude', 'commands', 'outline-spec', 'verify.md');
       await fs.writeFile(strayFile, 'stray command from a previous profile');
 
       const { version } = await import('../../../package.json');
@@ -516,7 +516,7 @@ Content here
 
       // Corrupt a skill file so its generatedBy version can no longer be read,
       // while every command file still matches the current generated content.
-      const skillFile = path.join(testDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(testDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
       await fs.writeFile(skillFile, 'truncated skill file');
 
       const { version } = await import('../../../package.json');
@@ -538,7 +538,7 @@ Content here
       await initCommand.execute(testDir);
 
       // Modify one command file
-      const cmdFile = path.join(testDir, '.claude', 'commands', 'opsx', 'explore.md');
+      const cmdFile = path.join(testDir, '.claude', 'commands', 'outline-spec', 'explore.md');
       await fs.writeFile(cmdFile, 'outdated content');
 
       const { version } = await import('../../../package.json');
@@ -552,7 +552,7 @@ Content here
     });
 
     it('should include tool name in status', async () => {
-      const skillDir = path.join(testDir, '.claude', 'skills', 'openspec-explore');
+      const skillDir = path.join(testDir, '.claude', 'skills', 'outline-spec-explore');
       await fs.mkdir(skillDir, { recursive: true });
       await fs.writeFile(path.join(skillDir, 'SKILL.md'), 'content');
 
@@ -570,12 +570,12 @@ Content here
 
     it('should return configured tools', async () => {
       // Setup Claude
-      const claudeSkillDir = path.join(testDir, '.claude', 'skills', 'openspec-explore');
+      const claudeSkillDir = path.join(testDir, '.claude', 'skills', 'outline-spec-explore');
       await fs.mkdir(claudeSkillDir, { recursive: true });
       await fs.writeFile(path.join(claudeSkillDir, 'SKILL.md'), 'content');
 
       // Setup Cursor
-      const cursorSkillDir = path.join(testDir, '.cursor', 'skills', 'openspec-explore');
+      const cursorSkillDir = path.join(testDir, '.cursor', 'skills', 'outline-spec-explore');
       await fs.mkdir(cursorSkillDir, { recursive: true });
       await fs.writeFile(path.join(cursorSkillDir, 'SKILL.md'), 'content');
 
@@ -594,7 +594,7 @@ Content here
 
     it('should return version status for all configured tools', async () => {
       // Setup Claude with old version
-      const claudeSkillDir = path.join(testDir, '.claude', 'skills', 'openspec-explore');
+      const claudeSkillDir = path.join(testDir, '.claude', 'skills', 'outline-spec-explore');
       await fs.mkdir(claudeSkillDir, { recursive: true });
       await fs.writeFile(path.join(claudeSkillDir, 'SKILL.md'), `---
 metadata:
@@ -603,7 +603,7 @@ metadata:
 `);
 
       // Setup Cursor with current version
-      const cursorSkillDir = path.join(testDir, '.cursor', 'skills', 'openspec-explore');
+      const cursorSkillDir = path.join(testDir, '.cursor', 'skills', 'outline-spec-explore');
       await fs.mkdir(cursorSkillDir, { recursive: true });
       await fs.writeFile(path.join(cursorSkillDir, 'SKILL.md'), `---
 metadata:
@@ -626,7 +626,7 @@ metadata:
     it('should treat a marker-only target as configured', async () => {
       const skillsDir = path.join(testDir, '.agents', 'skills');
       await fs.mkdir(skillsDir, { recursive: true });
-      await fs.writeFile(path.join(skillsDir, '.openspec-target'), 'agents\n');
+      await fs.writeFile(path.join(skillsDir, '.outline-spec-target'), 'agents\n');
 
       const statuses = getAllToolVersionStatus(testDir, '0.23.0');
       expect(statuses).toHaveLength(1);

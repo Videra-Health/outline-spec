@@ -1,8 +1,8 @@
 # Set up your project
 
-> Add OpenSpec to a project: run init, see what it wrote, and adjust it.
+> Add outline-spec to a project: run init, see what it wrote, and adjust it.
 
-## Pick where OpenSpec lives
+## Pick where outline-spec lives
 
 - **In your repo (the default)**: specs and changes sit next to the code they describe and are versioned with it. The rest of this page follows this path.
 - **In a store**: a separate planning repo shared by the repos that use it, for multi-repo setups or keeping planning out of the repo entirely. [Stores (beta)](../multi-repo/stores.md) covers when that's worth it and how to set one up.
@@ -13,17 +13,17 @@ With the CLI installed ([Installation](installation.md)), run init at the root o
 
 ```bash
 cd <your-project>
-openspec init
+outline-spec init
 ```
 
 Init asks which AI tools you use, writes the workflow files for the ones you pick, and reports what you got:
 
 ```
-OpenSpec Setup Complete
+outline-spec Setup Complete
 
 Created: Claude Code
 6 skills and 6 commands in .claude/
-Config: openspec/config.yaml (schema: spec-driven)
+Config: outline-spec/config.yaml (schema: spec-driven)
 ```
 
 Restart your IDE for the new commands to take effect.
@@ -36,12 +36,12 @@ Re-running init is safe:
 
 ### Migrate an existing `project.md`
 
-Init does not copy legacy `openspec/project.md` into `config.yaml`. It keeps the file and prints an AI-assisted migration request.
+Init does not copy legacy `outline-spec/project.md` into `config.yaml`. It keeps the file and prints an AI-assisted migration request.
 
 In your AI chat:
 
 ```
-Review openspec/project.md and migrate its useful content to openspec/config.yaml.
+Review outline-spec/project.md and migrate its useful content to outline-spec/config.yaml.
 Keep context concise: include only project-wide facts needed during artifact creation, apply, and archive.
 Move artifact-specific guidance into rules for the matching artifacts.
 Move guidance for apply or archive into the matching operations entry.
@@ -54,17 +54,17 @@ Review `config.yaml`, then delete `project.md` when ready.
 
 Running init creates two things in your project:
 
-- An `openspec/` folder at the repo root
+- An `outline-spec/` folder at the repo root
 - Workflow files (skills and commands) added to your AI tool's folder (`.agents/`, `.claude/`, etc.)
 
-Commit all of it like the rest of your source. Init changes nothing else in your repo (if it finds leftovers from an older OpenSpec version, it asks before cleaning them up).
+Commit all of it like the rest of your source. Init changes nothing else in your repo (if it finds leftovers from an older outline-spec version, it asks before cleaning them up).
 
-### The `openspec/` folder
+### The `outline-spec/` folder
 
-Every OpenSpec artifact lives here, at the root of your project. Here's what that looks like:
+Every outline-spec artifact lives here, at the root of your project. Here's what that looks like:
 
 ```
-openspec/
+outline-spec/
 ├── config.yaml     project settings and context for the AI
 ├── specs/          your specs (empty for now)
 └── changes/        in-motion changes (empty for now)
@@ -75,26 +75,26 @@ openspec/
 
 ### The workflow files (skills and commands)
 
-These are the OpenSpec workflows, the actions you'll use as you work. Here they are as installed skills, in the shared `.agents/` folder most tools use:
+These are the outline-spec workflows, the actions you'll use as you work. Here they are as installed skills, in the shared `.agents/` folder most tools use:
 
 ```
 .agents/skills/
-├── openspec-explore/              think through an idea first
-├── openspec-propose/              propose a change
-├── openspec-apply-change/         implement a change's tasks
-├── openspec-update-change/        revise a change's plan
-├── openspec-sync-specs/           sync a change's spec updates into specs/
-├── openspec-archive-change/       move a finished change to the archive
-├── openspec-verify-change/        check the implementation matches the plan (not included by default)
-└── openspec-bulk-archive-change/  archive several changes at once (not included by default)
+├── outline-spec-explore/              think through an idea first
+├── outline-spec-propose/              propose a change
+├── outline-spec-apply-change/         implement a change's tasks
+├── outline-spec-update-change/        revise a change's plan
+├── outline-spec-sync-specs/           sync a change's spec updates into specs/
+├── outline-spec-archive-change/       move a finished change to the archive
+├── outline-spec-verify-change/        check the implementation matches the plan (not included by default)
+└── outline-spec-bulk-archive-change/  archive several changes at once (not included by default)
 ```
 
 This is the default set plus two optional workflows. [Profiles](../customize/profiles.md) lists all twelve.
 
 By default each workflow installs in two forms:
 
-- **Skill** (`openspec-apply-change`): instructions your agent picks up on its own when you ask for the work.
-- **Command** (`/opsx:apply` in Claude Code): a typed entry point for the same workflow, under a shorter name.
+- **Skill** (`outline-spec-apply-change`): instructions your agent picks up on its own when you ask for the work.
+- **Command** (`/outline-spec:apply` in Claude Code): a typed entry point for the same workflow, under a shorter name.
 
 The two are functionally identical. A workflow's skill and its command carry the same instructions.
 
@@ -109,7 +109,7 @@ We prefer skills and expect to retire commands eventually.
 The interactive picker changes the delivery form and the workflow set ([Profiles](../customize/profiles.md)). In your terminal:
 
 ```bash
-openspec config profile
+outline-spec config profile
 ```
 
 Here's switching to skills only:
@@ -126,28 +126,28 @@ Config changes:
 ? Apply changes to this project now? (Y/n) y
 ```
 
-Answering yes applies it to the current project on the spot. Other projects pick it up on their next `openspec update`. The setting is global, per machine.
+Answering yes applies it to the current project on the spot. Other projects pick it up on their next `outline-spec update`. The setting is global, per machine.
 
 #### Claude Code doesn't show the workflows
 
-Claude Code loads OpenSpec workflows from one or both of these project paths, based on your delivery setting:
+Claude Code loads outline-spec workflows from one or both of these project paths, based on your delivery setting:
 
-- **Skills**: `.claude/skills/openspec-*/SKILL.md`
-- **Commands**: `.claude/commands/opsx/<id>.md`
+- **Skills**: `.claude/skills/outline-spec-*/SKILL.md`
+- **Commands**: `.claude/commands/outline-spec/<id>.md`
 
 If the files are missing, refresh the project. In your terminal:
 
 ```bash
-openspec update
+outline-spec update
 ```
 
-If the command files exist but `/opsx:` shows no OpenSpec commands, update Claude Code and restart it. If commands still don't load, enable skills too. In your terminal:
+If the command files exist but `/outline-spec:` shows no outline-spec commands, update Claude Code and restart it. If commands still don't load, enable skills too. In your terminal:
 
 ```bash
-openspec config set delivery both
-openspec update
+outline-spec config set delivery both
+outline-spec update
 ```
 
-Restart Claude Code, then run `/openspec-propose` in its chat. If only some workflows are missing, [change your profile](../customize/profiles.md#expanding-the-set-optional-workflows).
+Restart Claude Code, then run `/outline-spec-propose` in its chat. If only some workflows are missing, [change your profile](../customize/profiles.md#expanding-the-set-optional-workflows).
 
 Setup is done. The [Quickstart](quickstart.md) takes your first change from here.

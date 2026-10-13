@@ -29,9 +29,9 @@ const OperationConfigSchema = z.object({
  * 3. Runtime validation - uses safeParse() for resilient field-by-field validation
  *
  * Why Zod over manual validation:
- * - Helps understand OpenSpec's data interfaces at a glance
+ * - Helps understand outline-spec's data interfaces at a glance
  * - Single source of truth for type and validation
- * - Consistent with other OpenSpec schemas
+ * - Consistent with other outline-spec schemas
  */
 export const ProjectConfigSchema = z.object({
   // Required: which schema to use (e.g., "outline", or project-local schema name)
@@ -72,12 +72,12 @@ export const ProjectConfigSchema = z.object({
   // parses would only drift from the real behavior.
 
   // Optional: the declared default store. Only consulted by root
-  // resolution when this openspec/ directory is config-only (no specs/
+  // resolution when this outline-spec/ directory is config-only (no specs/
   // or changes/); a fallback, never an override.
   store: z
     .string()
     .optional()
-    .describe('Store id used as the OpenSpec root when no local planning shape exists'),
+    .describe('Store id used as the outline-spec root when no local planning shape exists'),
 
   // Optional: GitHub Copilot integration preferences. `cloudAgent` is the
   // opt-in for generating the Copilot cloud coding-agent files (a GitHub
@@ -301,7 +301,7 @@ function describeYamlType(value: unknown): string {
 }
 
 /**
- * Read and parse openspec/config.yaml from project root.
+ * Read and parse outline-spec/config.yaml from project root.
  * Uses resilient parsing - validates each field independently using Zod safeParse.
  * Returns null if file doesn't exist.
  * Returns partial config if some fields are invalid (with warnings).
@@ -316,7 +316,7 @@ function describeYamlType(value: unknown): string {
  * invalidation logic) for negligible benefit. Direct reads also ensure config
  * changes are reflected immediately without stale cache issues.
  *
- * @param projectRoot - The root directory of the project (where `openspec/` lives)
+ * @param projectRoot - The root directory of the project (where `outline-spec/` lives)
  * @returns Parsed config or null if file doesn't exist
  */
 export function readProjectConfig(projectRoot: string): ProjectConfig | null {
@@ -330,7 +330,7 @@ export function readProjectConfig(projectRoot: string): ProjectConfig | null {
     const raw = parseYaml(content);
 
     if (!raw || typeof raw !== 'object') {
-      console.warn(`openspec/config.yaml is not a valid YAML object`);
+      console.warn(`outline-spec/config.yaml is not a valid YAML object`);
       return null;
     }
 
@@ -458,7 +458,7 @@ export function readProjectConfig(projectRoot: string): ProjectConfig | null {
 }
 
 function configPathForWarnings(projectRoot: string): string {
-  return resolveConfigFilePath(projectRoot) ?? path.join(projectRoot, 'openspec', 'config.yaml');
+  return resolveConfigFilePath(projectRoot) ?? path.join(projectRoot, 'outline-spec', 'config.yaml');
 }
 
 /**
@@ -537,7 +537,7 @@ export function suggestSchemas(
   const builtIn = availableSchemas.filter((s) => s.isBuiltIn).map((s) => s.name);
   const projectLocal = availableSchemas.filter((s) => !s.isBuiltIn).map((s) => s.name);
 
-  let message = `Schema '${invalidSchemaName}' not found in openspec/config.yaml\n\n`;
+  let message = `Schema '${invalidSchemaName}' not found in outline-spec/config.yaml\n\n`;
 
   if (suggestions.length > 0) {
     message += `Did you mean one of these?\n`;
@@ -558,7 +558,7 @@ export function suggestSchemas(
     message += `  Project-local: (none found)\n`;
   }
 
-  message += `\nFix: Edit openspec/config.yaml and change 'schema: ${invalidSchemaName}' to a valid schema name`;
+  message += `\nFix: Edit outline-spec/config.yaml and change 'schema: ${invalidSchemaName}' to a valid schema name`;
   message += removedSchemaHint(invalidSchemaName);
 
   return message;
@@ -582,7 +582,7 @@ export interface StorePointerRead {
 /**
  * Warning-silent targeted read of the `store:` pointer. Used by root
  * resolution (which must not re-emit the resilient parser's field
- * warnings) and by `openspec init`'s pointer guard. Unlike
+ * warnings) and by `outline-spec init`'s pointer guard. Unlike
  * `readProjectConfig`, a malformed value is REPORTED, not dropped —
  * a dropped pointer would silently flip where work lands.
  */
@@ -615,11 +615,11 @@ export function readStorePointer(projectRoot: string): StorePointerRead {
 
 /** Shared .yaml/.yml probe used by readProjectConfig and readStorePointer. */
 export function resolveConfigFilePath(projectRoot: string): string | null {
-  const yamlPath = path.join(projectRoot, 'openspec', 'config.yaml');
+  const yamlPath = path.join(projectRoot, 'outline-spec', 'config.yaml');
   if (existsSync(yamlPath)) {
     return yamlPath;
   }
-  const ymlPath = path.join(projectRoot, 'openspec', 'config.yml');
+  const ymlPath = path.join(projectRoot, 'outline-spec', 'config.yml');
   return existsSync(ymlPath) ? ymlPath : null;
 }
 
@@ -630,9 +630,9 @@ export function storePointerProblem(reason: 'unparseable' | 'non_string'): strin
     : 'the store key must be a single store id string';
 }
 
-export interface OpenSpecDirClassification {
+export interface OutlineSpecDirClassification {
   /**
-   * True when openspec/specs or openspec/changes exists as a directory
+   * True when outline-spec/specs or outline-spec/changes exists as a directory
    * that is not itself a store root.
    */
   hasPlanningShape: boolean;
@@ -645,15 +645,15 @@ export interface OpenSpecDirClassification {
  * disagree (slice 3.2).
  *
  * A specs/ or changes/ directory carrying store metadata is a store at
- * the recommended `~/openspec/<id>` layout whose id is `specs` or
+ * the recommended `~/outline-spec/<id>` layout whose id is `specs` or
  * `changes`, not planning content of the directory above it. Counting it
  * would make $HOME the phantom root the qualifying walk exists to prevent.
  */
-export function classifyOpenSpecDir(projectRoot: string): OpenSpecDirClassification {
-  const openspecDir = path.join(projectRoot, 'openspec');
+export function classifyOutlineSpecDir(projectRoot: string): OutlineSpecDirClassification {
+  const outlineSpecDir = path.join(projectRoot, 'outline-spec');
   const hasPlanningShape =
-    isPlanningDirectorySync(path.join(openspecDir, 'specs')) ||
-    isPlanningDirectorySync(path.join(openspecDir, 'changes'));
+    isPlanningDirectorySync(path.join(outlineSpecDir, 'specs')) ||
+    isPlanningDirectorySync(path.join(outlineSpecDir, 'changes'));
   return { hasPlanningShape, pointer: readStorePointer(projectRoot) };
 }
 

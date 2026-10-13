@@ -6,7 +6,7 @@
 
 import path from 'path';
 import * as fs from 'fs';
-import { AI_TOOLS, OPENSPEC_SKILL_NAMES } from '../config.js';
+import { AI_TOOLS, OUTLINE_SPEC_SKILL_NAMES } from '../config.js';
 import { CommandAdapterRegistry, generateCommands } from '../command-generation/index.js';
 import { getCommandContents } from './skill-generation.js';
 import { getGlobalConfig } from '../global-config.js';
@@ -29,14 +29,14 @@ import {
 } from './skill-paths.js';
 
 /**
- * Names of skill directories created by openspec init.
+ * Names of skill directories created by outline-spec init.
  */
-export const SKILL_NAMES = OPENSPEC_SKILL_NAMES;
+export const SKILL_NAMES = OUTLINE_SPEC_SKILL_NAMES;
 
 export type SkillName = (typeof SKILL_NAMES)[number];
 
 /**
- * IDs of command templates created by openspec init.
+ * IDs of command templates created by outline-spec init.
  */
 export const COMMAND_IDS = [
   'explore',
@@ -129,7 +129,7 @@ export function getToolSkillStatus(projectRoot: string, toolId: string): ToolSki
 }
 
 /**
- * Checks whether a tool has at least one generated OpenSpec command file.
+ * Checks whether a tool has at least one generated outline-spec command file.
  */
 export function toolHasAnyConfiguredCommand(projectPath: string, toolId: string): boolean {
   const adapter = CommandAdapterRegistry.get(toolId);
@@ -276,7 +276,7 @@ export function extractGeneratedByVersion(skillFilePath: string): string | null 
     // ---
     // ...
     // metadata:
-    //   author: openspec
+    //   author: outline-spec
     //   version: "1.0"
     //   generatedBy: "0.23.0"
     // ---

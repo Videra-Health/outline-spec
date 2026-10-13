@@ -9,12 +9,12 @@ describe('validation report CLI contract', () => {
   let projectDir: string;
 
   beforeAll(async () => {
-    projectDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-findings-e2e-'));
-    await fs.mkdir(path.join(projectDir, 'openspec', 'specs'), { recursive: true });
-    await fs.writeFile(path.join(projectDir, 'openspec', 'config.yaml'), 'schema: outline\n');
+    projectDir = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-findings-e2e-'));
+    await fs.mkdir(path.join(projectDir, 'outline-spec', 'specs'), { recursive: true });
+    await fs.writeFile(path.join(projectDir, 'outline-spec', 'config.yaml'), 'schema: outline\n');
     // "unfinished" patches a requirement no spec has, so it fails to land.
     for (const [id, requirement] of [['done', 'Work: It works.'], ['unfinished', 'Missing (patch):']]) {
-      const dir = path.join(projectDir, 'openspec', 'changes', id);
+      const dir = path.join(projectDir, 'outline-spec', 'changes', id);
       await fs.mkdir(dir, { recursive: true });
       await fs.writeFile(
         path.join(dir, 'outline.md'),
@@ -99,10 +99,10 @@ describe('validation report CLI contract', () => {
   });
 
   it('retains fatal change-discovery diagnostics', async () => {
-    const malformedDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-findings-malformed-'));
+    const malformedDir = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-findings-malformed-'));
     try {
-      await fs.mkdir(path.join(malformedDir, 'openspec', 'specs'), { recursive: true });
-      await fs.writeFile(path.join(malformedDir, 'openspec', 'changes'), 'not a directory');
+      await fs.mkdir(path.join(malformedDir, 'outline-spec', 'specs'), { recursive: true });
+      await fs.writeFile(path.join(malformedDir, 'outline-spec', 'changes'), 'not a directory');
       const result = await runCLI(['validate', '--changes', '--report', 'findings', '--json'], { cwd: malformedDir });
       expect(result.exitCode).toBe(1);
       expect(result.stderr).toBe('');

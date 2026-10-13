@@ -11,8 +11,8 @@ import {
 
 /**
  * The natural-language phrase a user or agent says for each workflow, as a
- * suffix of `openspec `. Every workflow's skill description must name it so an
- * agent that hears "do an openspec propose" matches the skill instead of
+ * suffix of `outline-spec `. Every workflow's skill description must name it so an
+ * agent that hears "do an outline-spec propose" matches the skill instead of
  * hand-building the artifacts with the CLI (issue #1221).
  *
  * Keep in sync with getSkillTemplates(): the coverage test below fails when a
@@ -37,19 +37,19 @@ const NATURAL_VERB_BY_WORKFLOW: Record<string, string> = {
  * claims on purpose, with the reason. Every other collision is a defect: a
  * skill would send an LLM to re-do a deterministic command.
  *
- * `openspec update` is the case this rule exists for. It refreshes generated
+ * `outline-spec update` is the case this rule exists for. It refreshes generated
  * instruction files and has nothing to do with the update-change workflow, so
- * that skill claims `openspec update change` and redirects to the CLI command
+ * that skill claims `outline-spec update change` and redirects to the CLI command
  * in its description.
  */
 const DELIBERATE_CLI_PHRASE_CLAIMS: Record<string, string> = {
-  'openspec land':
+  'outline-spec land':
     'the land workflow runs this CLI command, but validates and shows a dry run first and fixes outline.md on a mismatch; an agent asked to land should take the checked path',
-  'openspec archive': 'same as land; archive is its old name and the CLI alias',
-  'openspec new change':
+  'outline-spec archive': 'same as land; archive is its old name and the CLI alias',
+  'outline-spec new change':
     'the new-change workflow runs this exact CLI command as its first step, then continues with the artifacts',
-  'openspec update change':
-    'distinct from `openspec update`, which the update-change description redirects to the CLI command',
+  'outline-spec update change':
+    'distinct from `outline-spec update`, which the update-change description redirects to the CLI command',
 };
 
 /**
@@ -82,14 +82,14 @@ function collectCommandNames(command: Command, into = new Set<string>()): Set<st
 }
 
 /**
- * Quoted `openspec …` / `opsx …` phrases a description claims. Only quoted
+ * Quoted `outline-spec …` phrases a description claims. Only quoted
  * text counts as a claim: descriptions also mention commands in prose (the
- * update-change redirect names the openspec update CLI command unquoted),
+ * update-change redirect names the outline-spec update CLI command unquoted),
  * and prose is not a routing trigger. Matching is case-insensitive so a
  * capitalized phrase cannot slip past the guards below.
  */
 function claimedPhrases(description: string): string[] {
-  return [...description.matchAll(/(["`])((?:openspec|opsx) [^"`]+)\1/gi)].map(m =>
+  return [...description.matchAll(/(["`])(outline-spec [^"`]+)\1/gi)].map(m =>
     m[2].toLowerCase()
   );
 }
@@ -113,11 +113,9 @@ describe('workflow verb triggers', () => {
   });
 
   it.each(Object.entries(NATURAL_VERB_BY_WORKFLOW))(
-    '%s names its natural "openspec" and "opsx" phrasings',
+    '%s names its natural "outline-spec" phrasing',
     (workflowId, verb) => {
-      const description = descriptionOf(workflowId);
-      expect(description).toContain(`"openspec ${verb}"`);
-      expect(description).toContain(`"opsx ${workflowId}"`);
+      expect(descriptionOf(workflowId)).toContain(`"outline-spec ${verb}"`);
     }
   );
 
@@ -145,7 +143,7 @@ describe('workflow verb triggers', () => {
   });
 
   it('ignores hidden workflow-verb hints but still guards every other command', () => {
-    const cli = new Command('openspec');
+    const cli = new Command('outline-spec');
     cli.command('explore', { hidden: true });
     cli.command('propose');
     cli.command('legacy-thing', { hidden: true });
@@ -159,24 +157,23 @@ describe('workflow verb triggers', () => {
     const cliCommands = collectCommandNames(program);
 
     for (const { dirName, phrase } of allClaims()) {
-      const [namespace, firstWord] = phrase.split(' ');
-      // `opsx` is not a binary, so those phrases collide with nothing.
-      if (namespace !== 'openspec' || !cliCommands.has(firstWord)) continue;
+      const firstWord = phrase.split(' ')[1];
+      if (!cliCommands.has(firstWord)) continue;
 
       expect(
         DELIBERATE_CLI_PHRASE_CLAIMS[phrase],
-        `${dirName} claims "${phrase}", but "openspec ${firstWord}" is a real CLI command. ` +
+        `${dirName} claims "${phrase}", but "outline-spec ${firstWord}" is a real CLI command. ` +
           `Either pick a phrase that does not shadow it, or add an entry to DELIBERATE_CLI_PHRASE_CLAIMS saying why this is right.`
       ).toBeTruthy();
     }
   });
 
-  it('never claims the bare `openspec update` CLI command', () => {
+  it('never claims the bare `outline-spec update` CLI command', () => {
     // A hard floor the allowlist cannot lift: refreshing generated files has
     // nothing to do with revising a change.
     for (const { dirName, phrase } of allClaims()) {
-      expect(phrase, `${dirName} would shadow the openspec update CLI command`).not.toBe(
-        'openspec update'
+      expect(phrase, `${dirName} would shadow the outline-spec update CLI command`).not.toBe(
+        'outline-spec update'
       );
     }
   });

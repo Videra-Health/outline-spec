@@ -6,7 +6,7 @@ import * as path from 'node:path';
 import { getGlobalDataDir, registerStore } from '../../src/core/index.js';
 import { getWorksetsDir } from '../../src/core/worksets.js';
 import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
-import { createOpenSpecRoot } from '../helpers/openspec-fixtures.js';
+import { createOutlineSpecRoot } from '../helpers/outline-spec-fixtures.js';
 import {
   createFakeTool,
   envWithFakeTools,
@@ -30,9 +30,9 @@ describe('workset journey (7.1 e2e)', () => {
   let scratchFolder: string;
 
   beforeEach(async () => {
-    process.env.OPENSPEC_ENABLE_CLI_AGENT_OPENERS = '1';
+    process.env.OUTLINE_SPEC_ENABLE_CLI_AGENT_OPENERS = '1';
     tempDir = fs.realpathSync.native(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-workset-e2e-'))
+      fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-workset-e2e-'))
     );
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
@@ -44,7 +44,7 @@ describe('workset journey (7.1 e2e)', () => {
 
     // A real relationship topology so independence is provable.
     storeRoot = path.join(tempDir, 'team-context');
-    createOpenSpecRoot(storeRoot);
+    createOutlineSpecRoot(storeRoot);
     await registerStore({
       id: 'team-context',
       localPath: storeRoot,
@@ -52,9 +52,9 @@ describe('workset journey (7.1 e2e)', () => {
     });
 
     appRepo = path.join(tempDir, 'web-app');
-    createOpenSpecRoot(appRepo);
+    createOutlineSpecRoot(appRepo);
     fs.writeFileSync(
-      path.join(appRepo, 'openspec', 'config.yaml'),
+      path.join(appRepo, 'outline-spec', 'config.yaml'),
       'schema: outline\nreferences:\n  - team-context\n'
     );
 
@@ -64,7 +64,7 @@ describe('workset journey (7.1 e2e)', () => {
   });
 
   afterEach(() => {
-    delete process.env.OPENSPEC_ENABLE_CLI_AGENT_OPENERS;
+    delete process.env.OUTLINE_SPEC_ENABLE_CLI_AGENT_OPENERS;
     // Windows can hold a brief handle on a just-exited spawned CLI/opener;
     // retry the recursive remove so EBUSY during teardown does not flake.
     fs.rmSync(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });

@@ -14,7 +14,7 @@ async function runConfigCommand(args: string[]): Promise<void> {
   const { registerConfigCommand } = await import('../../src/cli/commands/config.js');
   const program = new Command();
   registerConfigCommand(program);
-  await program.parseAsync(['node', 'openspec', 'config', ...args]);
+  await program.parseAsync(['node', 'outline-spec', 'config', ...args]);
 }
 
 async function getPromptMocks(): Promise<{
@@ -83,21 +83,21 @@ describe('config profile interactive flow', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   function setupDriftedProjectArtifacts(projectDir: string): void {
-    fs.mkdirSync(path.join(projectDir, 'openspec'), { recursive: true });
-    const exploreSkillPath = path.join(projectDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+    fs.mkdirSync(path.join(projectDir, 'outline-spec'), { recursive: true });
+    const exploreSkillPath = path.join(projectDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
     fs.mkdirSync(path.dirname(exploreSkillPath), { recursive: true });
-    fs.writeFileSync(exploreSkillPath, 'name: openspec-explore\n', 'utf-8');
+    fs.writeFileSync(exploreSkillPath, 'name: outline-spec-explore\n', 'utf-8');
   }
 
   function setupSyncedCoreBothArtifacts(projectDir: string): void {
-    fs.mkdirSync(path.join(projectDir, 'openspec'), { recursive: true });
+    fs.mkdirSync(path.join(projectDir, 'outline-spec'), { recursive: true });
     const coreSkillDirs = [
-      'openspec-propose',
-      'openspec-explore',
-      'openspec-apply-change',
-      'openspec-update-change',
-      'openspec-land-change',
-      'openspec-archive-change',
+      'outline-spec-propose',
+      'outline-spec-explore',
+      'outline-spec-apply-change',
+      'outline-spec-update-change',
+      'outline-spec-land-change',
+      'outline-spec-archive-change',
     ];
     for (const dirName of coreSkillDirs) {
       const skillPath = path.join(projectDir, '.claude', 'skills', dirName, 'SKILL.md');
@@ -107,18 +107,18 @@ describe('config profile interactive flow', () => {
 
     const coreCommands = ['propose', 'explore', 'apply', 'update', 'land', 'archive'];
     for (const commandId of coreCommands) {
-      const commandPath = path.join(projectDir, '.claude', 'commands', 'opsx', `${commandId}.md`);
+      const commandPath = path.join(projectDir, '.claude', 'commands', 'outline-spec', `${commandId}.md`);
       fs.mkdirSync(path.dirname(commandPath), { recursive: true });
       fs.writeFileSync(commandPath, `# ${commandId}\n`, 'utf-8');
     }
   }
 
   function addExtraVerifyWorkflowArtifacts(projectDir: string): void {
-    const verifySkillPath = path.join(projectDir, '.claude', 'skills', 'openspec-verify-change', 'SKILL.md');
+    const verifySkillPath = path.join(projectDir, '.claude', 'skills', 'outline-spec-verify-change', 'SKILL.md');
     fs.mkdirSync(path.dirname(verifySkillPath), { recursive: true });
-    fs.writeFileSync(verifySkillPath, 'name: openspec-verify-change\n', 'utf-8');
+    fs.writeFileSync(verifySkillPath, 'name: outline-spec-verify-change\n', 'utf-8');
 
-    const verifyCommandPath = path.join(projectDir, '.claude', 'commands', 'opsx', 'verify.md');
+    const verifyCommandPath = path.join(projectDir, '.claude', 'commands', 'outline-spec', 'verify.md');
     fs.mkdirSync(path.dirname(verifyCommandPath), { recursive: true });
     fs.writeFileSync(verifyCommandPath, '# verify\n', 'utf-8');
   }
@@ -126,7 +126,7 @@ describe('config profile interactive flow', () => {
   beforeEach(() => {
     vi.resetModules();
 
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-config-profile-test-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-config-profile-test-'));
 
     originalEnv = { ...process.env };
     originalCwd = process.cwd();
@@ -276,7 +276,7 @@ describe('config profile interactive flow', () => {
     const configPath = getGlobalConfigPath();
     const beforeContent = fs.readFileSync(configPath, 'utf-8');
 
-    fs.mkdirSync(path.join(tempDir, 'openspec'), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, 'outline-spec'), { recursive: true });
     select.mockResolvedValueOnce('delivery');
     select.mockResolvedValueOnce('both');
 
@@ -411,7 +411,7 @@ describe('config profile interactive flow', () => {
     const { select, confirm } = await getPromptMocks();
 
     saveGlobalConfig({ featureFlags: {}, profile: 'core', delivery: 'both', workflows: ['propose', 'explore', 'apply', 'update', 'land', 'archive'] });
-    fs.mkdirSync(path.join(tempDir, 'openspec'), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, 'outline-spec'), { recursive: true });
 
     select.mockResolvedValueOnce('delivery');
     select.mockResolvedValueOnce('skills');
@@ -426,12 +426,12 @@ describe('config profile interactive flow', () => {
     });
   });
 
-  it('confirmed project apply should update in process without resolving openspec from PATH', async () => {
+  it('confirmed project apply should update in process without resolving outline-spec from PATH', async () => {
     const { saveGlobalConfig, getGlobalConfig } = await import('../../src/core/global-config.js');
     const { select, confirm } = await getPromptMocks();
 
     saveGlobalConfig({ featureFlags: {}, profile: 'core', delivery: 'both', workflows: ['propose', 'explore', 'apply', 'update', 'land', 'archive'] });
-    fs.mkdirSync(path.join(tempDir, 'openspec'), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, 'outline-spec'), { recursive: true });
     const emptyBinDir = path.join(tempDir, 'empty-bin');
     fs.mkdirSync(emptyBinDir);
     vi.stubEnv('PATH', emptyBinDir);
@@ -446,7 +446,7 @@ describe('config profile interactive flow', () => {
     expect(process.exitCode).toBeUndefined();
     expect(consoleErrorSpy).not.toHaveBeenCalled();
     expect(consoleLogSpy).toHaveBeenCalledWith('No configured tools found.');
-    expect(consoleLogSpy).toHaveBeenCalledWith('Run `openspec update` in your other projects to apply.');
+    expect(consoleLogSpy).toHaveBeenCalledWith('Run `outline-spec update` in your other projects to apply.');
   });
 
   it('confirmed project apply should report the update failure reason', async () => {
@@ -455,7 +455,7 @@ describe('config profile interactive flow', () => {
     const { select, confirm } = await getPromptMocks();
 
     saveGlobalConfig({ featureFlags: {}, profile: 'core', delivery: 'both', workflows: ['propose', 'explore', 'apply', 'update', 'land', 'archive'] });
-    fs.mkdirSync(path.join(tempDir, 'openspec'), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, 'outline-spec'), { recursive: true });
     const executeSpy = vi.spyOn(UpdateCommand.prototype, 'execute')
       .mockRejectedValueOnce(new Error('permission denied'));
 
@@ -469,7 +469,7 @@ describe('config profile interactive flow', () => {
       executeSpy.mockRestore();
     }
 
-    expect(consoleErrorSpy).toHaveBeenCalledWith('`openspec update` failed: permission denied');
+    expect(consoleErrorSpy).toHaveBeenCalledWith('`outline-spec update` failed: permission denied');
     expect(consoleErrorSpy).toHaveBeenCalledWith('Please run it manually to apply the profile changes.');
     expect(process.exitCode).toBe(1);
   });

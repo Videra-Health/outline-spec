@@ -56,7 +56,7 @@ describe('validateSpecContent', () => {
   it('points old-format specs at migrate-specs', async () => {
     const r = await check('# radar Specification\n\n## Purpose\nP.\n\n## Requirements\n### Requirement: R\nThe system SHALL.\n');
     expect(r.valid).toBe(false);
-    expect(r.issues[0].message).toContain('run "openspec migrate-specs"');
+    expect(r.issues[0].message).toContain('run "outline-spec migrate-specs"');
   });
 
   it('reports lines that are not outline items', async () => {
@@ -67,16 +67,16 @@ describe('validateSpecContent', () => {
 
 describe('validateChange', () => {
   let root: string;
-  const changesDir = () => path.join(root, 'openspec', 'changes');
+  const changesDir = () => path.join(root, 'outline-spec', 'changes');
   const write = (rel: string, text: string) => {
-    const file = path.join(root, 'openspec', rel);
+    const file = path.join(root, 'outline-spec', rel);
     mkdirSync(path.dirname(file), { recursive: true });
     writeFileSync(file, text);
   };
   const validate = () => new Validator().validateChange(path.join(changesDir(), 'c1'));
 
   beforeEach(() => {
-    root = mkdtempSync(path.join(os.tmpdir(), 'openspec-validate-'));
+    root = mkdtempSync(path.join(os.tmpdir(), 'outline-spec-validate-'));
     write('specs/radar/spec.md', spec('1. Radar: A round radar.\n  a. A circle.\n'));
   });
   afterEach(() => rmSync(root, { recursive: true, force: true }));
@@ -106,15 +106,15 @@ describe('validateChange', () => {
 });
 
 describe('validateChange metadata keys', () => {
-  it('warns on keys .openspec.yaml no longer knows, like skip_specs', async () => {
-    const root = mkdtempSync(path.join(os.tmpdir(), 'openspec-validate-keys-'));
-    const dir = path.join(root, 'openspec', 'changes', 'c1');
+  it('warns on keys .outline-spec.yaml no longer knows, like skip_specs', async () => {
+    const root = mkdtempSync(path.join(os.tmpdir(), 'outline-spec-validate-keys-'));
+    const dir = path.join(root, 'outline-spec', 'changes', 'c1');
     mkdirSync(dir, { recursive: true });
     writeFileSync(path.join(dir, 'outline.md'), '## Proposal\nx\n');
-    writeFileSync(path.join(dir, '.openspec.yaml'), 'schema: outline\nskip_specs: true\n');
+    writeFileSync(path.join(dir, '.outline-spec.yaml'), 'schema: outline\nskip_specs: true\n');
     const r = await new Validator(true).validateChange(dir);
     rmSync(root, { recursive: true, force: true });
     expect(r.valid).toBe(false);
-    expect(r.issues).toContainEqual(expect.objectContaining({ level: 'WARNING', path: '.openspec.yaml', message: expect.stringContaining('skip_specs') }));
+    expect(r.issues).toContainEqual(expect.objectContaining({ level: 'WARNING', path: '.outline-spec.yaml', message: expect.stringContaining('skip_specs') }));
   });
 });

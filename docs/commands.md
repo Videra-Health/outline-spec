@@ -1,13 +1,13 @@
 # Commands
 
-This is the reference for OpenSpec's slash commands. These commands are invoked in your AI coding assistant's chat interface (e.g., Claude Code, Cursor, Devin Desktop).
+This is the reference for outline-spec's slash commands. These commands are invoked in your AI coding assistant's chat interface (e.g., Claude Code, Cursor, Devin Desktop).
 
 For workflow patterns and when to use each command, see [Workflows](workflows.md). For CLI commands, see [CLI](cli.md).
 
-These pages use `/opsx:<command>` as the canonical name. Some tools spell it
-differently — Cursor and GitHub Copilot register `/opsx-propose`, Codex uses
-`$openspec-propose` — so check [How To Invoke](supported-tools.md#how-to-invoke)
-for your tool. The files OpenSpec generates already use the right form.
+These pages use `/outline-spec:<command>` as the canonical name. Some tools spell it
+differently — Cursor and GitHub Copilot register `/outline-spec-propose`, Codex uses
+`$outline-spec-propose` — so check [How To Invoke](supported-tools.md#how-to-invoke)
+for your tool. The files outline-spec generates already use the right form.
 
 ## Quick Reference
 
@@ -15,37 +15,37 @@ for your tool. The files OpenSpec generates already use the right form.
 
 | Command | Purpose |
 |---------|---------|
-| `/opsx:propose` | Create a change and generate planning artifacts in one step |
-| `/opsx:explore` | Think through ideas before committing to a change |
-| `/opsx:apply` | Implement tasks from the change |
-| `/opsx:update` | Revise a change's planning artifacts and keep them coherent |
-| `/opsx:sync` | Merge delta specs into main specs |
-| `/opsx:archive` | Archive a completed change |
+| `/outline-spec:propose` | Create a change and generate planning artifacts in one step |
+| `/outline-spec:explore` | Think through ideas before committing to a change |
+| `/outline-spec:apply` | Implement tasks from the change |
+| `/outline-spec:update` | Revise a change's planning artifacts and keep them coherent |
+| `/outline-spec:sync` | Merge delta specs into main specs |
+| `/outline-spec:archive` | Archive a completed change |
 
 ### Expanded Workflow Commands (custom workflow selection)
 
 | Command | Purpose |
 |---------|---------|
-| `/opsx:new` | Start a new change scaffold |
-| `/opsx:continue` | Create the next artifact based on dependencies |
-| `/opsx:ff` | Fast-forward: create all planning artifacts at once |
-| `/opsx:verify` | Validate implementation matches artifacts |
-| `/opsx:bulk-archive` | Archive multiple changes at once |
-| `/opsx:onboard` | Guided tutorial through the complete workflow |
+| `/outline-spec:new` | Start a new change scaffold |
+| `/outline-spec:continue` | Create the next artifact based on dependencies |
+| `/outline-spec:ff` | Fast-forward: create all planning artifacts at once |
+| `/outline-spec:verify` | Validate implementation matches artifacts |
+| `/outline-spec:bulk-archive` | Archive multiple changes at once |
+| `/outline-spec:onboard` | Guided tutorial through the complete workflow |
 
-The default global profile is `core`. To enable expanded workflow commands, run `openspec config profile`, select workflows, then run `openspec update` in your project.
+The default global profile is `core`. To enable expanded workflow commands, run `outline-spec config profile`, select workflows, then run `outline-spec update` in your project.
 
 ---
 
 ## Command Reference
 
-### `/opsx:propose`
+### `/outline-spec:propose`
 
 Create a new change and generate planning artifacts in one step. This is the default start command in the `core` profile.
 
 **Syntax:**
 ```text
-/opsx:propose [change-name-or-description]
+/outline-spec:propose [change-name-or-description]
 ```
 
 **Arguments:**
@@ -54,29 +54,29 @@ Create a new change and generate planning artifacts in one step. This is the def
 | `change-name-or-description` | No | Kebab-case name or plain-language change description |
 
 **What it does:**
-- Creates `openspec/changes/<change-name>/`
+- Creates `outline-spec/changes/<change-name>/`
 - Generates artifacts needed before implementation (for `spec-driven`: proposal, specs, design, tasks)
-- Stops when the change is ready for `/opsx:apply`
+- Stops when the change is ready for `/outline-spec:apply`
 
 **Example:**
 ```text
-You: /opsx:propose add-dark-mode
+You: /outline-spec:propose add-dark-mode
 
-AI:  Created openspec/changes/add-dark-mode/
+AI:  Created outline-spec/changes/add-dark-mode/
      ✓ proposal.md
      ✓ specs/ui/spec.md
      ✓ design.md
      ✓ tasks.md
-     Ready for implementation. Run /opsx:apply.
+     Ready for implementation. Run /outline-spec:apply.
 ```
 
 **Tips:**
 - Use this for the fastest end-to-end path
-- If you want step-by-step artifact control, enable expanded workflows and use `/opsx:new` + `/opsx:continue`
+- If you want step-by-step artifact control, enable expanded workflows and use `/outline-spec:new` + `/outline-spec:continue`
 
 ---
 
-### `/opsx:explore`
+### `/outline-spec:explore`
 
 > **Start here when you're unsure.** Explore is a no-stakes thinking partner: it reads your codebase, compares options, and sharpens a fuzzy idea into a concrete plan before any code gets written. It ships in the default profile. For the full case and more examples, see the [Explore First](explore.md) guide.
 
@@ -84,7 +84,7 @@ Think through ideas, investigate problems, and clarify requirements before commi
 
 **Syntax:**
 ```
-/opsx:explore [topic]
+/outline-spec:explore [topic]
 ```
 
 **Arguments:**
@@ -97,12 +97,12 @@ Think through ideas, investigate problems, and clarify requirements before commi
 - Investigates the codebase to answer questions
 - Compares options and approaches
 - Creates visual diagrams to clarify thinking
-- Captures the exploration when you ask, or when you say yes to its offer: scaffolds a change with `openspec new change` and writes the planning artifacts you name, or updates an existing change's artifacts
-- Can transition to `/opsx:propose` (default) or `/opsx:new` (expanded workflow) when insights crystallize
+- Captures the exploration when you ask, or when you say yes to its offer: scaffolds a change with `outline-spec new change` and writes the planning artifacts you name, or updates an existing change's artifacts
+- Can transition to `/outline-spec:propose` (default) or `/outline-spec:new` (expanded workflow) when insights crystallize
 
 **Example:**
 ```text
-You: /opsx:explore
+You: /outline-spec:explore
 
 AI:  What would you like to explore?
 
@@ -127,7 +127,7 @@ AI:  That's a decision worth keeping. Want me to start a change called
 
 You: Yes.
 
-AI:  Started openspec/changes/add-jwt-auth/. Say the word and I'll
+AI:  Started outline-spec/changes/add-jwt-auth/. Say the word and I'll
      write the proposal, specs, and tasks from what we just worked out.
 ```
 
@@ -139,15 +139,15 @@ AI:  Started openspec/changes/add-jwt-auth/. Say the word and I'll
 
 ---
 
-### `/opsx:new`
+### `/outline-spec:new`
 
-Start a new change scaffold. Creates the change folder and waits for you to generate artifacts with `/opsx:continue` or `/opsx:ff`.
+Start a new change scaffold. Creates the change folder and waits for you to generate artifacts with `/outline-spec:continue` or `/outline-spec:ff`.
 
 This command is part of the expanded workflow set (not included in the default `core` profile).
 
 **Syntax:**
 ```
-/opsx:new [change-name] [--schema <schema-name>]
+/outline-spec:new [change-name] [--schema <schema-name>]
 ```
 
 **Arguments:**
@@ -157,42 +157,42 @@ This command is part of the expanded workflow set (not included in the default `
 | `--schema` | No | Workflow schema to use (default: from config or `spec-driven`) |
 
 **What it does:**
-- Creates `openspec/changes/<change-name>/` directory
-- Creates `.openspec.yaml` metadata file in the change folder
+- Creates `outline-spec/changes/<change-name>/` directory
+- Creates `.outline-spec.yaml` metadata file in the change folder
 - Shows the first artifact template ready for creation
 - Prompts for change name and schema if not provided
 
 **What it creates:**
 ```
-openspec/changes/<change-name>/
-└── .openspec.yaml    # Change metadata (schema, created date)
+outline-spec/changes/<change-name>/
+└── .outline-spec.yaml    # Change metadata (schema, created date)
 ```
 
 **Example:**
 ```
-You: /opsx:new add-dark-mode
+You: /outline-spec:new add-dark-mode
 
-AI:  Created openspec/changes/add-dark-mode/
+AI:  Created outline-spec/changes/add-dark-mode/
      Schema: spec-driven
 
      Ready to create: proposal
-     Use /opsx:continue to create it, or /opsx:ff to create all artifacts.
+     Use /outline-spec:continue to create it, or /outline-spec:ff to create all artifacts.
 ```
 
 **Tips:**
 - Use descriptive names: `add-feature`, `fix-bug`, `refactor-module`
 - Avoid generic names like `update`, `changes`, `wip`
-- Schema can also be set in project config (`openspec/config.yaml`)
+- Schema can also be set in project config (`outline-spec/config.yaml`)
 
 ---
 
-### `/opsx:continue`
+### `/outline-spec:continue`
 
 Create the next artifact in the dependency chain. Creates one artifact at a time for incremental progress.
 
 **Syntax:**
 ```
-/opsx:continue [change-name]
+/outline-spec:continue [change-name]
 ```
 
 **Arguments:**
@@ -209,7 +209,7 @@ Create the next artifact in the dependency chain. Creates one artifact at a time
 
 **Example:**
 ```
-You: /opsx:continue
+You: /outline-spec:continue
 
 AI:  Change: add-dark-mode
 
@@ -223,10 +223,10 @@ AI:  Change: add-dark-mode
 
      [Reads proposal.md, creates specs based on requirements]
 
-     ✓ Created openspec/changes/add-dark-mode/specs/ui/spec.md
+     ✓ Created outline-spec/changes/add-dark-mode/specs/ui/spec.md
 
      Now available: design
-     Run /opsx:continue to create the next artifact.
+     Run /outline-spec:continue to create the next artifact.
 ```
 
 **Tips:**
@@ -237,13 +237,13 @@ AI:  Change: add-dark-mode
 
 ---
 
-### `/opsx:ff`
+### `/outline-spec:ff`
 
 Fast-forward through artifact creation. Creates all planning artifacts at once.
 
 **Syntax:**
 ```
-/opsx:ff [change-name]
+/outline-spec:ff [change-name]
 ```
 
 **Arguments:**
@@ -259,7 +259,7 @@ Fast-forward through artifact creation. Creates all planning artifacts at once.
 
 **Example:**
 ```
-You: /opsx:ff add-dark-mode
+You: /outline-spec:ff add-dark-mode
 
 AI:  Fast-forwarding add-dark-mode...
 
@@ -269,24 +269,24 @@ AI:  Fast-forwarding add-dark-mode...
      ✓ Creating tasks.md
 
      All planning artifacts complete!
-     Ready for implementation. Run /opsx:apply to begin.
+     Ready for implementation. Run /outline-spec:apply to begin.
 ```
 
 **Tips:**
 - Use when you have a clear picture of what you're building
-- Faster than `/opsx:continue` for straightforward changes
+- Faster than `/outline-spec:continue` for straightforward changes
 - You can still edit artifacts afterward
 - Good for small to medium features
 
 ---
 
-### `/opsx:apply`
+### `/outline-spec:apply`
 
 Implement tasks from the change. Works through the task list, writing code and checking off items.
 
 **Syntax:**
 ```
-/opsx:apply [change-name]
+/outline-spec:apply [change-name]
 ```
 
 **Arguments:**
@@ -302,7 +302,7 @@ Implement tasks from the change. Works through the task list, writing code and c
 
 **Example:**
 ```
-You: /opsx:apply
+You: /outline-spec:apply
 
 AI:  Implementing add-dark-mode...
 
@@ -330,14 +330,14 @@ AI:  Implementing add-dark-mode...
 
 ---
 
-### `/opsx:update`
+### `/outline-spec:update`
 
 Revise a change's existing planning artifacts and keep them coherent with one another. Planning artifacts only - it never edits code.
 
 **Syntax:**
 
 ```text
-/opsx:update [change-name]
+/outline-spec:update [change-name]
 ```
 
 **Arguments:**
@@ -348,22 +348,22 @@ Revise a change's existing planning artifacts and keep them coherent with one an
 
 **What it does:**
 
-- Reads the change's artifacts via `openspec status --change <name> --json`
+- Reads the change's artifacts via `outline-spec status --change <name> --json`
 - Applies your requested revision, or reviews the artifacts for contradictions if you didn't name one
 - Reconciles the other existing artifacts in any direction (a design edit may ripple back to the proposal)
 - Confirms every edit with you before writing, one artifact at a time
-- Ends by recommending the next step: `/opsx:continue` (unstarted artifacts), `/opsx:apply` (carry a revised plan into code), or `/opsx:archive` (all done)
+- Ends by recommending the next step: `/outline-spec:continue` (unstarted artifacts), `/outline-spec:apply` (carry a revised plan into code), or `/outline-spec:archive` (all done)
 
 **Missing files:**
 
 - For a glob artifact such as `specs/**/*.md` with at least one existing file, update can propose a missing companion file. It uses the schema's instructions and asks you to confirm the concrete path before creating it.
-- Artifacts with no files yet remain with `/opsx:continue`. Intentionally skipped artifacts stay untouched.
+- Artifacts with no files yet remain with `/outline-spec:continue`. Intentionally skipped artifacts stay untouched.
 - New files must stay inside the change directory. If a file appears at the confirmed path before creation, update stops instead of overwriting it.
 
 **Example:**
 
 ```text
-You: /opsx:update add-dark-mode - we're storing the theme in a cookie now, not localStorage
+You: /outline-spec:update add-dark-mode - we're storing the theme in a cookie now, not localStorage
 
 AI:  Reading add-dark-mode artifacts...
 
@@ -379,19 +379,19 @@ AI:  Reading add-dark-mode artifacts...
 
 **Tips:**
 
-- It won't start an artifact with no existing files. Enable `/opsx:continue` for that, or use `openspec status` and `openspec instructions` if that optional workflow isn't installed.
-- If the change was already implemented, follow up with `/opsx:apply` so the code matches the revised plan
-- If your revision changes the *intent* of the change, start fresh with a new change instead (see [When to Update vs. Start Fresh](opsx.md#when-to-update-vs-start-fresh))
+- It won't start an artifact with no existing files. Enable `/outline-spec:continue` for that, or use `outline-spec status` and `outline-spec instructions` if that optional workflow isn't installed.
+- If the change was already implemented, follow up with `/outline-spec:apply` so the code matches the revised plan
+- If your revision changes the *intent* of the change, start fresh with a new change instead (see [When to Update vs. Start Fresh](outline-spec.md#when-to-update-vs-start-fresh))
 
 ---
 
-### `/opsx:verify`
+### `/outline-spec:verify`
 
 Validate that implementation matches your change artifacts. Checks completeness, correctness, and coherence.
 
 **Syntax:**
 ```
-/opsx:verify [change-name]
+/outline-spec:verify [change-name]
 ```
 
 **Arguments:**
@@ -415,7 +415,7 @@ Validate that implementation matches your change artifacts. Checks completeness,
 
 **Example:**
 ```
-You: /opsx:verify
+You: /outline-spec:verify
 
 AI:  Verifying add-dark-mode...
 
@@ -453,13 +453,13 @@ AI:  Verifying add-dark-mode...
 
 ---
 
-### `/opsx:sync`
+### `/outline-spec:sync`
 
 **Optional command.** Merge delta specs from a change into main specs. Archive will prompt to sync if needed, so you typically don't need to run this manually.
 
 **Syntax:**
 ```
-/opsx:sync [change-name]
+/outline-spec:sync [change-name]
 ```
 
 **Arguments:**
@@ -470,27 +470,27 @@ AI:  Verifying add-dark-mode...
 **What it does:**
 - Reads delta specs from change folder
 - Parses ADDED/MODIFIED/REMOVED/RENAMED sections
-- Merges changes into main `openspec/specs/` directory
+- Merges changes into main `outline-spec/specs/` directory
 - Preserves existing content not mentioned in delta
 - Does not archive the change (remains active)
 
 **Example:**
 ```text
-You: /opsx:sync
+You: /outline-spec:sync
 
 AI:  Syncing add-dark-mode delta specs...
 
-     Reading: openspec/changes/add-dark-mode/specs/ui/spec.md
-     Target:  openspec/specs/ui/spec.md
+     Reading: outline-spec/changes/add-dark-mode/specs/ui/spec.md
+     Target:  outline-spec/specs/ui/spec.md
 
      Changes to apply:
      ✓ ADDED: Theme Selection requirement (2 scenarios)
      ✓ ADDED: Accessibility requirement (1 scenario)
 
      Merging...
-     ✓ openspec/specs/ui/spec.md updated
+     ✓ outline-spec/specs/ui/spec.md updated
 
-     Change remains active. Run /opsx:archive when ready to complete.
+     Change remains active. Run /outline-spec:archive when ready to complete.
 ```
 
 **When to use manually:**
@@ -510,13 +510,13 @@ AI:  Syncing add-dark-mode delta specs...
 
 ---
 
-### `/opsx:archive`
+### `/outline-spec:archive`
 
 Archive a completed change. Finalizes the change and moves it to the archive folder.
 
 **Syntax:**
 ```
-/opsx:archive [change-name]
+/outline-spec:archive [change-name]
 ```
 
 **Arguments:**
@@ -528,12 +528,12 @@ Archive a completed change. Finalizes the change and moves it to the archive fol
 - Checks artifact completion status
 - Checks task completion (warns if incomplete)
 - Offers to sync delta specs if not already synced
-- Moves change folder to `openspec/changes/archive/YYYY-MM-DD-<name>/`
+- Moves change folder to `outline-spec/changes/archive/YYYY-MM-DD-<name>/`
 - Preserves all artifacts for audit trail
 
 **Example:**
 ```text
-You: /opsx:archive
+You: /outline-spec:archive
 
 AI:  Archiving add-dark-mode...
 
@@ -548,8 +548,8 @@ AI:  Archiving add-dark-mode...
 
 You: Yes
 
-AI:  ✓ Synced specs to openspec/specs/ui/spec.md
-     ✓ Moved to openspec/changes/archive/2025-01-24-add-dark-mode/
+AI:  ✓ Synced specs to outline-spec/specs/ui/spec.md
+     ✓ Moved to outline-spec/changes/archive/2025-01-24-add-dark-mode/
 
      Change archived successfully.
 ```
@@ -558,17 +558,17 @@ AI:  ✓ Synced specs to openspec/specs/ui/spec.md
 - Archive won't block on incomplete tasks, but will warn
 - Delta specs can be synced during archive or beforehand
 - Archived changes are preserved for history
-- Use `/opsx:verify` first to catch issues
+- Use `/outline-spec:verify` first to catch issues
 
 ---
 
-### `/opsx:bulk-archive`
+### `/outline-spec:bulk-archive`
 
 Archive multiple completed changes at once. Handles spec conflicts between changes.
 
 **Syntax:**
 ```
-/opsx:bulk-archive [change-names...]
+/outline-spec:bulk-archive [change-names...]
 ```
 
 **Arguments:**
@@ -585,7 +585,7 @@ Archive multiple completed changes at once. Handles spec conflicts between chang
 
 **Example:**
 ```
-You: /opsx:bulk-archive
+You: /outline-spec:bulk-archive
 
 AI:  Found 3 completed changes:
      - add-dark-mode (8/8 tasks complete)
@@ -618,13 +618,13 @@ AI:  ✓ Archived add-dark-mode
 
 ---
 
-### `/opsx:onboard`
+### `/outline-spec:onboard`
 
-Guided onboarding through the complete OpenSpec workflow. An interactive tutorial using your actual codebase.
+Guided onboarding through the complete outline-spec workflow. An interactive tutorial using your actual codebase.
 
 **Syntax:**
 ```
-/opsx:onboard
+/outline-spec:onboard
 ```
 
 **What it does:**
@@ -638,21 +638,21 @@ Guided onboarding through the complete OpenSpec workflow. An interactive tutoria
 **Phases:**
 1. Welcome and codebase analysis
 2. Finding an improvement opportunity
-3. Creating a change (`/opsx:new`)
+3. Creating a change (`/outline-spec:new`)
 4. Writing the proposal
 5. Creating specs
 6. Writing the design
 7. Creating tasks
-8. Implementing tasks (`/opsx:apply`)
+8. Implementing tasks (`/outline-spec:apply`)
 9. Verifying implementation
 10. Archiving the change
 11. Summary and next steps
 
 **Example:**
 ```
-You: /opsx:onboard
+You: /outline-spec:onboard
 
-AI:  Welcome to OpenSpec!
+AI:  Welcome to outline-spec!
 
      I'll walk you through the complete workflow using your actual codebase.
      We'll find something small to improve, create a proper change for it,
@@ -684,15 +684,15 @@ Different AI tools use slightly different command syntax. Use the format that ma
 
 | Your tool's command file | Syntax example | Example tools |
 |--------------------------|----------------|---------------|
-| `.../commands/opsx/<id>.*` | `/opsx:propose`, `/opsx:apply` | Claude Code, Gemini CLI, Crush |
-| `.../opsx-<id>.*` | `/opsx-propose`, `/opsx-apply` | Cursor, Devin Desktop, Copilot (IDE), Trae, Oh My Pi |
-| none — skills only | `/openspec-propose`, `/openspec-apply-change` | CodeArts, ForgeCode, Hermes, MiniMax Code, Mistral Vibe, Zed Agent, shared `.agents` |
-| none — Kimi Code | `/skill:openspec-propose` | Kimi Code |
-| none — Codex CLI | `$openspec-propose` | Codex |
+| `.../commands/outline-spec/<id>.*` | `/outline-spec:propose`, `/outline-spec:apply` | Claude Code, Gemini CLI, Crush |
+| `.../outline-spec-<id>.*` | `/outline-spec-propose`, `/outline-spec-apply` | Cursor, Devin Desktop, Copilot (IDE), Trae, Oh My Pi |
+| none — skills only | `/outline-spec-propose`, `/outline-spec-apply-change` | CodeArts, ForgeCode, Hermes, MiniMax Code, Mistral Vibe, Zed Agent, shared `.agents` |
+| none — Kimi Code | `/skill:outline-spec-propose` | Kimi Code |
+| none — Codex CLI | `$outline-spec-propose` | Codex |
 
-> **Devin Desktop vs Devin Local:** the `.devin/workflows/opsx-*.md` files give
-> Devin Desktop `/opsx-propose`. Devin Local has no workflows — use the skills
-> OpenSpec writes to `.devin/skills/`, e.g. `/openspec-propose`, which work on
+> **Devin Desktop vs Devin Local:** the `.devin/workflows/outline-spec-*.md` files give
+> Devin Desktop `/outline-spec-propose`. Devin Local has no workflows — use the skills
+> outline-spec writes to `.devin/skills/`, e.g. `/outline-spec-propose`, which work on
 > both agents.
 
 The intent is the same across tools, but how commands are surfaced can differ by integration. [How To Invoke](supported-tools.md#how-to-invoke) lists every supported tool; this table shows only examples of each shape.
@@ -703,21 +703,21 @@ The intent is the same across tools, but how commands are surfaced can differ by
 
 ## Legacy Commands
 
-These commands use the older "all-at-once" workflow. They still work but OPSX commands are recommended.
+These commands use the older "all-at-once" workflow. They still work but outline-spec commands are recommended.
 
 | Command | What it does |
 |---------|--------------|
-| `/openspec:proposal` | Create all artifacts at once (proposal, specs, design, tasks) |
-| `/openspec:apply` | Implement the change |
-| `/openspec:archive` | Archive the change |
+| `/outline-spec:proposal` | Create all artifacts at once (proposal, specs, design, tasks) |
+| `/outline-spec:apply` | Implement the change |
+| `/outline-spec:archive` | Archive the change |
 
 **When to use legacy commands:**
 - Existing projects using the old workflow
 - Simple changes where you don't need incremental artifact creation
 - Preference for the all-or-nothing approach
 
-**Migrating to OPSX:**
-Legacy changes can be continued with OPSX commands. The artifact structure is compatible.
+**Migrating to outline-spec:**
+Legacy changes can be continued with outline-spec commands. The artifact structure is compatible.
 
 ---
 
@@ -728,8 +728,8 @@ Legacy changes can be continued with OPSX commands. The artifact structure is co
 The command couldn't identify which change to work on.
 
 **Solutions:**
-- Specify the change name explicitly: `/opsx:apply add-dark-mode`
-- Check that the change folder exists: `openspec list`
+- Specify the change name explicitly: `/outline-spec:apply add-dark-mode`
+- Check that the change folder exists: `outline-spec list`
 - Verify you're in the right project directory
 
 ### "No artifacts ready"
@@ -737,7 +737,7 @@ The command couldn't identify which change to work on.
 All artifacts are either complete or blocked by missing dependencies.
 
 **Solutions:**
-- Run `openspec status --change <name>` to see what's blocking
+- Run `outline-spec status --change <name>` to see what's blocking
 - Check if required artifacts exist
 - Create missing dependency artifacts first
 
@@ -746,17 +746,17 @@ All artifacts are either complete or blocked by missing dependencies.
 The specified schema doesn't exist.
 
 **Solutions:**
-- List available schemas: `openspec schemas`
+- List available schemas: `outline-spec schemas`
 - Check spelling of schema name
-- Create the schema if it's custom: `openspec schema init <name>`
+- Create the schema if it's custom: `outline-spec schema init <name>`
 
 ### Commands not recognized
 
-The AI tool doesn't recognize OpenSpec commands.
+The AI tool doesn't recognize outline-spec commands.
 
 **Solutions:**
-- Ensure OpenSpec is initialized: `openspec init`
-- Regenerate skills: `openspec update`
+- Ensure outline-spec is initialized: `outline-spec init`
+- Regenerate skills: `outline-spec update`
 - Check that `.claude/skills/` directory exists (for Claude Code)
 - Restart your AI tool to pick up new skills
 
@@ -765,10 +765,10 @@ The AI tool doesn't recognize OpenSpec commands.
 The AI creates incomplete or incorrect artifacts.
 
 **Solutions:**
-- Add project context in `openspec/config.yaml`
+- Add project context in `outline-spec/config.yaml`
 - Add per-artifact rules for specific guidance
 - Provide more detail in your change description
-- Use `/opsx:continue` instead of `/opsx:ff` for more control
+- Use `/outline-spec:continue` instead of `/outline-spec:ff` for more control
 
 ---
 

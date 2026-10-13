@@ -17,7 +17,7 @@ import { isolatedGitEnv } from '../helpers/store-git.js';
  * and a new repository inside an existing one is almost always an accident.
  * `--no-init-git` creates no repository, so there is nothing to nest: the
  * guard must not refuse it. The motivating layout is a `$HOME` kept as a
- * dotfiles repository with the guide's recommended `~/openspec/<id>` store.
+ * dotfiles repository with the guide's recommended `~/outline-spec/<id>` store.
  */
 describe('store setup --no-init-git inside an existing Git repository', () => {
   let tempDir: string;
@@ -28,11 +28,11 @@ describe('store setup --no-init-git inside an existing Git repository', () => {
 
   beforeEach(() => {
     tempDir = fs.realpathSync.native(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-store-no-init-git-'))
+      fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-store-no-init-git-'))
     );
     home = path.join(tempDir, 'home');
     fs.mkdirSync(home, { recursive: true });
-    storeRoot = path.join(home, 'openspec', 'team-plans');
+    storeRoot = path.join(home, 'outline-spec', 'team-plans');
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
       XDG_CONFIG_HOME: path.join(tempDir, 'config'),
@@ -98,7 +98,7 @@ describe('store setup --no-init-git inside an existing Git repository', () => {
       committed: false,
     });
     expect(fs.existsSync(getStoreMetadataPath(storeRoot))).toBe(true);
-    expect(fs.existsSync(path.join(storeRoot, 'openspec', 'config.yaml'))).toBe(true);
+    expect(fs.existsSync(path.join(storeRoot, 'outline-spec', 'config.yaml'))).toBe(true);
   }, 30_000);
 
   it('creates no repository and commits nothing in the enclosing one', async () => {
@@ -144,7 +144,7 @@ describe('store setup --no-init-git inside an existing Git repository', () => {
     expect(parseJson(result).status[0]).toEqual(
       expect.objectContaining({ code: 'store_setup_inside_git_repo' })
     );
-    expect(fs.existsSync(path.join(storeRoot, 'openspec'))).toBe(false);
+    expect(fs.existsSync(path.join(storeRoot, 'outline-spec'))).toBe(false);
     expect(fs.existsSync(getStoreMetadataPath(storeRoot))).toBe(false);
   }, 30_000);
 
@@ -157,6 +157,6 @@ describe('store setup --no-init-git inside an existing Git repository', () => {
     expect(parseJson(result).status[0]).toEqual(
       expect.objectContaining({ code: 'store_setup_inside_git_repo' })
     );
-    expect(fs.existsSync(path.join(storeRoot, 'openspec'))).toBe(false);
+    expect(fs.existsSync(path.join(storeRoot, 'outline-spec'))).toBe(false);
   }, 30_000);
 });

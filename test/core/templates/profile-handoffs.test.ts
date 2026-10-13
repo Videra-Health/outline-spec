@@ -27,20 +27,21 @@ const skillWorkflows = new Map(getSkillTemplates().map(({ dirName, workflowId })
 // Check both invocation spellings and bare skill names (archive's sync handoff).
 // Unknown references also fail: a typo must not make the guard silently pass.
 function expectInstalledReferences(content: string, workflows: readonly string[], label: string): void {
-  for (const match of content.matchAll(/[/@]opsx[:-]([\w-]+)|\b(openspec-[\w-]+)/g)) {
-    const workflow = match[1] ?? skillWorkflows.get(match[2]);
+  for (const match of content.matchAll(/[/@]outline-spec:([\w-]+)|\b(outline-spec-[\w-]+)/g)) {
+    // Hyphen command refs and skill names share a prefix; a skill name wins.
+    const workflow = match[1] ?? skillWorkflows.get(match[2]) ?? match[2].slice('outline-spec-'.length);
     expect(workflows, `${label}: unavailable workflow reference ${match[0]}`).toContain(workflow);
   }
 }
 
 describe('workflow reference guard', () => {
-  it.each(['/opsx:continue', '@opsx-continue', '$openspec-continue-change', 'the openspec-sync-specs skill'])(
+  it.each(['/outline-spec:continue', '@outline-spec-continue', '$outline-spec-continue-change', 'the outline-spec-sync-specs skill'])(
     'rejects an unavailable workflow in %s', (reference) => {
       expect(() => expectInstalledReferences(reference, ['apply'], 'guard')).toThrow('unavailable workflow reference');
     },
   );
 
-  it.each(['/opsx:aply', '/opsx:apply2', '/opsx:apply_new', '/skill:openspec-aply-change'])(
+  it.each(['/outline-spec:aply', '/outline-spec:apply2', '/outline-spec:apply_new', '/skill:outline-spec-aply-change'])(
     'does not accept a misspelled workflow in %s', (reference) => {
       expect(() => expectInstalledReferences(reference, ['apply'], 'guard')).toThrow('unavailable workflow reference');
     },

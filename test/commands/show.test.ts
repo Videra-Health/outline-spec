@@ -6,9 +6,9 @@ import { execFileSync, spawnSync } from 'child_process';
 describe('top-level show command', () => {
   const projectRoot = process.cwd();
   const testDir = path.join(projectRoot, 'test-show-command-tmp');
-  const changesDir = path.join(testDir, 'openspec', 'changes');
-  const specsDir = path.join(testDir, 'openspec', 'specs');
-  const openspecBin = path.join(projectRoot, 'bin', 'openspec.js');
+  const changesDir = path.join(testDir, 'outline-spec', 'changes');
+  const specsDir = path.join(testDir, 'outline-spec', 'specs');
+  const outlineSpecBin = path.join(projectRoot, 'bin', 'outline-spec.js');
 
 
   beforeEach(async () => {
@@ -36,15 +36,15 @@ describe('top-level show command', () => {
       process.env.OPEN_SPEC_INTERACTIVE = '0';
       let err: any;
       try {
-        execFileSync('node', [openspecBin, 'show'], { encoding: 'utf-8' });
+        execFileSync('node', [outlineSpecBin, 'show'], { encoding: 'utf-8' });
       } catch (e) { err = e; }
       expect(err).toBeDefined();
       expect(err.status).not.toBe(0);
       const stderr = err.stderr.toString();
       expect(stderr).toContain('Nothing to show.');
-      expect(stderr).toContain('openspec show <item>');
-      expect(stderr).toContain('openspec change show');
-      expect(stderr).toContain('openspec spec show');
+      expect(stderr).toContain('outline-spec show <item>');
+      expect(stderr).toContain('outline-spec change show');
+      expect(stderr).toContain('outline-spec spec show');
     } finally {
       process.chdir(originalCwd);
       process.env = originalEnv;
@@ -55,7 +55,7 @@ describe('top-level show command', () => {
     const originalCwd = process.cwd();
     try {
       process.chdir(testDir);
-      const output = execFileSync('node', [openspecBin, 'show', 'demo', '--json'], { encoding: 'utf-8' });
+      const output = execFileSync('node', [outlineSpecBin, 'show', 'demo', '--json'], { encoding: 'utf-8' });
       const json = JSON.parse(output);
       expect(json.id).toBe('demo');
       expect(json.outline).toContain('## Requirements');
@@ -67,7 +67,7 @@ describe('top-level show command', () => {
 
   it('does not warn about spec-only flags that were never passed', () => {
     // A plain `show <change>` must not warn about a flag the user never typed.
-    const res = spawnSync('node', [openspecBin, 'show', 'demo', '--json'], {
+    const res = spawnSync('node', [outlineSpecBin, 'show', 'demo', '--json'], {
       encoding: 'utf-8',
       cwd: testDir,
     });
@@ -78,7 +78,7 @@ describe('top-level show command', () => {
   it('still warns when --item is explicitly passed for a change', () => {
     const res = spawnSync(
       'node',
-      [openspecBin, 'show', 'demo', '--json', '--item', '1'],
+      [outlineSpecBin, 'show', 'demo', '--json', '--item', '1'],
       { encoding: 'utf-8', cwd: testDir }
     );
     expect(res.status).toBe(0);
@@ -86,7 +86,7 @@ describe('top-level show command', () => {
   });
 
   it('warns when --diff is passed for a spec', () => {
-    const res = spawnSync('node', [openspecBin, 'show', 'auth', '--diff'], { encoding: 'utf-8', cwd: testDir });
+    const res = spawnSync('node', [outlineSpecBin, 'show', 'auth', '--diff'], { encoding: 'utf-8', cwd: testDir });
     expect(res.status).toBe(0);
     expect(res.stderr).toContain('Ignoring flags not applicable to spec: diff');
   });
@@ -95,7 +95,7 @@ describe('top-level show command', () => {
     const originalCwd = process.cwd();
     try {
       process.chdir(testDir);
-      const output = execFileSync('node', [openspecBin, 'show', 'auth', '--json', '--item', 'User Authentication'], { encoding: 'utf-8' });
+      const output = execFileSync('node', [outlineSpecBin, 'show', 'auth', '--json', '--item', 'User Authentication'], { encoding: 'utf-8' });
       const json = JSON.parse(output);
       expect(json.name).toBe('auth');
       expect(json.node).toMatchObject({ label: '1', text: 'User Authentication: Users sign in.' });
@@ -108,13 +108,13 @@ describe('top-level show command', () => {
     ['1.a', '  a. Valid credentials sign the user in.\n    i. The session lasts one day.'],
     ['User Authentication.a.i', '    i. The session lasts one day.'],
   ])('shows the spec item at --item %s', (item, expected) => {
-    const res = spawnSync('node', [openspecBin, 'show', 'auth', '--item', item], { encoding: 'utf-8', cwd: testDir });
+    const res = spawnSync('node', [outlineSpecBin, 'show', 'auth', '--item', item], { encoding: 'utf-8', cwd: testDir });
     expect(res.status, res.stderr).toBe(0);
     expect(res.stdout.trimEnd()).toBe(expected);
   });
 
   it('reports an unknown --item and exits non-zero', () => {
-    const res = spawnSync('node', [openspecBin, 'show', 'auth', '--item', '1.z'], { encoding: 'utf-8', cwd: testDir });
+    const res = spawnSync('node', [outlineSpecBin, 'show', 'auth', '--item', '1.z'], { encoding: 'utf-8', cwd: testDir });
     expect(res.status).not.toBe(0);
     expect(res.stderr).toContain('No item "z" under 1. in auth');
   });
@@ -131,7 +131,7 @@ describe('top-level show command', () => {
       process.chdir(testDir);
       let err: any;
       try {
-        execFileSync('node', [openspecBin, 'show', 'foo'], { encoding: 'utf-8' });
+        execFileSync('node', [outlineSpecBin, 'show', 'foo'], { encoding: 'utf-8' });
       } catch (e) { err = e; }
       expect(err).toBeDefined();
       expect(err.status).not.toBe(0);
@@ -144,31 +144,31 @@ describe('top-level show command', () => {
   });
 
   it('resolves a scaffolded change that has no outline.md yet', async () => {
-    // `openspec new change <name>` writes only .openspec.yaml, so `show` must
+    // `outline-spec new change <name>` writes only .outline-spec.yaml, so `show` must
     // resolve the change the same way `list` and `status` already do.
     await fs.mkdir(path.join(changesDir, 'scaffolded'), { recursive: true });
-    await fs.writeFile(path.join(changesDir, 'scaffolded', '.openspec.yaml'), 'schema: outline\n', 'utf-8');
+    await fs.writeFile(path.join(changesDir, 'scaffolded', '.outline-spec.yaml'), 'schema: outline\n', 'utf-8');
 
     const originalCwd = process.cwd();
     try {
       process.chdir(testDir);
       let err: any;
       try {
-        execFileSync('node', [openspecBin, 'show', 'scaffolded'], { encoding: 'utf-8' });
+        execFileSync('node', [outlineSpecBin, 'show', 'scaffolded'], { encoding: 'utf-8' });
       } catch (e) { err = e; }
       expect(err).toBeDefined();
       const stderr = err.stderr.toString();
       // Resolved as a change, not rejected as an unknown item.
       expect(stderr).not.toContain('Unknown item');
       expect(stderr).toContain('has no outline.md yet');
-      expect(stderr).toContain('openspec status --change scaffolded');
+      expect(stderr).toContain('outline-spec status --change scaffolded');
     } finally {
       process.chdir(originalCwd);
     }
   });
 
   it('reports a namespace folder as such instead of an outline-less change (#1846)', async () => {
-    // `changes/mobile/refresh-token/` is not a layout OpenSpec supports: the
+    // `changes/mobile/refresh-token/` is not a layout outline-spec supports: the
     // nested change is invisible and the folder around it reads as an empty
     // change. Saying "no outline.md yet" would send the user to a second dead
     // end (`status --change mobile`).
@@ -184,13 +184,13 @@ describe('top-level show command', () => {
       process.chdir(testDir);
       let err: any;
       try {
-        execFileSync('node', [openspecBin, 'show', 'mobile'], { encoding: 'utf-8' });
+        execFileSync('node', [outlineSpecBin, 'show', 'mobile'], { encoding: 'utf-8' });
       } catch (e) { err = e; }
       expect(err).toBeDefined();
       expect(err.status).not.toBe(0);
       const stderr = err.stderr.toString();
       expect(stderr).toContain('"mobile" is not a change');
-      expect(stderr).toContain('openspec/changes/mobile/refresh-token/');
+      expect(stderr).toContain('outline-spec/changes/mobile/refresh-token/');
       expect(stderr).toContain('mobile-refresh-token');
       expect(stderr).not.toContain('has no outline.md yet');
     } finally {
@@ -209,7 +209,7 @@ describe('top-level show command', () => {
     const originalCwd = process.cwd();
     try {
       process.chdir(testDir);
-      const result = spawnSync('node', [openspecBin, 'status', '--change', 'mobile'], {
+      const result = spawnSync('node', [outlineSpecBin, 'status', '--change', 'mobile'], {
         encoding: 'utf-8',
       });
       expect(result.status).not.toBe(0);
@@ -221,7 +221,7 @@ describe('top-level show command', () => {
 
   it('offers a scaffolded change when "change show" is called without a name', async () => {
     await fs.mkdir(path.join(changesDir, 'scaffolded'), { recursive: true });
-    await fs.writeFile(path.join(changesDir, 'scaffolded', '.openspec.yaml'), 'schema: outline\n', 'utf-8');
+    await fs.writeFile(path.join(changesDir, 'scaffolded', '.outline-spec.yaml'), 'schema: outline\n', 'utf-8');
 
     const originalCwd = process.cwd();
     const originalEnv = { ...process.env };
@@ -230,7 +230,7 @@ describe('top-level show command', () => {
       process.env.OPEN_SPEC_INTERACTIVE = '0';
       let err: any;
       try {
-        execFileSync('node', [openspecBin, 'change', 'show'], { encoding: 'utf-8' });
+        execFileSync('node', [outlineSpecBin, 'change', 'show'], { encoding: 'utf-8' });
       } catch (e) { err = e; }
       expect(err).toBeDefined();
       const stderr = err.stderr.toString();
@@ -248,7 +248,7 @@ describe('top-level show command', () => {
       process.chdir(testDir);
       let err: any;
       try {
-        execFileSync('node', [openspecBin, 'show', 'unknown-item'], { encoding: 'utf-8' });
+        execFileSync('node', [outlineSpecBin, 'show', 'unknown-item'], { encoding: 'utf-8' });
       } catch (e) { err = e; }
       expect(err).toBeDefined();
       expect(err.status).not.toBe(0);

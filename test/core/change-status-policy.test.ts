@@ -30,9 +30,9 @@ describe('change status policy - next step', () => {
   describe('an artifact is ready', () => {
     it('names that artifact instructions command', () => {
       expect(resolveNextStep(input())).toEqual({
-        command: 'openspec instructions specs --change "add-dark-mode" --json',
+        command: 'outline-spec instructions specs --change "add-dark-mode" --json',
         sentence:
-          'Run openspec instructions specs --change "add-dark-mode" --json before writing that artifact.',
+          'Run outline-spec instructions specs --change "add-dark-mode" --json before writing that artifact.',
       });
     });
 
@@ -49,7 +49,7 @@ describe('change status policy - next step', () => {
         })
       );
 
-      expect(step?.command).toContain('openspec instructions specs ');
+      expect(step?.command).toContain('outline-spec instructions specs ');
       expect(step?.command).not.toContain('design');
     });
 
@@ -66,14 +66,14 @@ describe('change status policy - next step', () => {
         })
       );
 
-      expect(step?.command).toContain('openspec instructions design ');
+      expect(step?.command).toContain('outline-spec instructions design ');
       expect(step?.command).not.toContain('specs');
     });
 
     it('wins over allArtifactsComplete when both could apply', () => {
       const step = resolveNextStep(input({ allArtifactsComplete: true }));
 
-      expect(step?.command).toContain('openspec instructions specs ');
+      expect(step?.command).toContain('outline-spec instructions specs ');
     });
   });
 
@@ -87,9 +87,9 @@ describe('change status policy - next step', () => {
       );
 
       expect(step).toEqual({
-        command: 'openspec instructions apply --change "add-dark-mode" --json',
+        command: 'outline-spec instructions apply --change "add-dark-mode" --json',
         sentence:
-          'All planning artifacts are complete. Run openspec instructions apply --change "add-dark-mode" --json to inspect implementation progress.',
+          'All planning artifacts are complete. Run outline-spec instructions apply --change "add-dark-mode" --json to inspect implementation progress.',
       });
     });
   });

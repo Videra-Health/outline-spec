@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 // false since explore shipped (#467): the capture branch of
 // `src/core/templates/workflows/explore.ts` writes the planning artifacts the
 // user asked for, and can edit an existing change's artifacts. #1503 later
-// made it scaffold with `openspec new change` first. What stays true is narrower: explore never writes code,
+// made it scaffold with `outline-spec new change` first. What stays true is narrower: explore never writes code,
 // and it writes nothing you did not ask for or agree to.
 //
 // This sweep keeps the absolute wording retired, the same way
@@ -68,8 +68,8 @@ const FORBIDDEN: readonly RegExp[] = [
 const ALLOW = [
   // docs/commands.md and docs/troubleshooting.md quote this CLI message.
   /"No artifacts ready"/,
-  // docs/commands.md describes which artifacts `/opsx:update` leaves to
-  // `/opsx:continue`. "no files yet" is about an update target, not explore.
+  // docs/commands.md describes which artifacts `/outline-spec:update` leaves to
+  // `/outline-spec:continue`. "no files yet" is about an update target, not explore.
   /Artifacts with no files yet remain with/,
 ];
 
@@ -98,7 +98,7 @@ describe('explore documentation', () => {
     expect(
       offenders,
       'These pages assert that explore writes nothing. It captures on ' +
-        'request: `openspec new change` plus the planning artifacts you ' +
+        'request: `outline-spec new change` plus the planning artifacts you ' +
         'name. Keep "never writes code" and "nothing unless you ask, or say ' +
         'yes when it offers"; drop the absolute denial. If a line below is ' +
         `not a claim about explore, add it to ALLOW in ${TEST_FILE}.` +
@@ -110,7 +110,7 @@ describe('explore documentation', () => {
   // "this page never mentioned capture", and a bare /captur/ match passes on
   // "explore automatically captures every artifact". So pin the contract, not
   // the word, on the two pages that describe capture in full: some capture
-  // line names the user's trigger, the `openspec new change` path, and the
+  // line names the user's trigger, the `outline-spec new change` path, and the
   // named-artifacts scope; no capture line claims explore does it unprompted
   // or wholesale; and the page keeps the never-writes-code guarantee.
   // Wording stays review's call: the user trigger covers both "when you ask"
@@ -123,7 +123,7 @@ describe('explore documentation', () => {
   // An unprompted claim about explore writing, checked clause by clause so
   // "does not automatically capture" passes and "automatically captures every
   // artifact, but never writes code" still fails. Only lines naming explore or
-  // capture count: /opsx:ff legitimately "creates all planning artifacts".
+  // capture count: /outline-spec:ff legitimately "creates all planning artifacts".
   function claimsUnpromptedWrite(line: string): boolean {
     if (!/\b(explore|captur)/i.test(line)) return false;
     return line.split(/[.,;:!?]|\bbut\b/i).some((clause) => {
@@ -145,10 +145,10 @@ describe('explore documentation', () => {
       expect(
         captureLines.some(
           (line) =>
-            USER_TRIGGER.test(line) && /openspec new change/.test(line) && NAMED_SCOPE.test(line)
+            USER_TRIGGER.test(line) && /outline-spec new change/.test(line) && NAMED_SCOPE.test(line)
         ),
         `${page} should describe capture as something explore does when you ask ` +
-          'or say yes to its offer: `openspec new change` plus the artifacts you ' +
+          'or say yes to its offer: `outline-spec new change` plus the artifacts you ' +
           'name. See #1833.'
       ).toBe(true);
 

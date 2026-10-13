@@ -6,15 +6,15 @@
 
 export type { SkillTemplate, CommandTemplate } from './types.js';
 
-export { getExploreSkillTemplate, getOpsxExploreCommandTemplate } from './workflows/explore.js';
-export { getNewChangeSkillTemplate, getOpsxNewCommandTemplate } from './workflows/new-change.js';
-export { getContinueChangeSkillTemplate, getOpsxContinueCommandTemplate } from './workflows/continue-change.js';
-export { getApplyInstructions, getApplyChangeSkillTemplate, getOpsxApplyCommandTemplate } from './workflows/apply-change.js';
-export { getUpdateChangeSkillTemplate, getOpsxUpdateCommandTemplate } from './workflows/update-change.js';
-export { getFfChangeSkillTemplate, getOpsxFfCommandTemplate } from './workflows/ff-change.js';
-export { getLandChangeSkillTemplate, getOpsxLandCommandTemplate } from './workflows/land-change.js';
-export { getArchiveChangeSkillTemplate, getOpsxArchiveCommandTemplate } from './workflows/archive-change.js';
-export { getVerifyChangeSkillTemplate, getOpsxVerifyCommandTemplate } from './workflows/verify-change.js';
-export { getOnboardSkillTemplate, getOpsxOnboardCommandTemplate } from './workflows/onboard.js';
-export { getOpsxProposeSkillTemplate, getOpsxProposeCommandTemplate } from './workflows/propose.js';
+export { getExploreSkillTemplate, getOutlineSpecExploreCommandTemplate } from './workflows/explore.js';
+export { getNewChangeSkillTemplate, getOutlineSpecNewCommandTemplate } from './workflows/new-change.js';
+export { getContinueChangeSkillTemplate, getOutlineSpecContinueCommandTemplate } from './workflows/continue-change.js';
+export { getApplyInstructions, getApplyChangeSkillTemplate, getOutlineSpecApplyCommandTemplate } from './workflows/apply-change.js';
+export { getUpdateChangeSkillTemplate, getOutlineSpecUpdateCommandTemplate } from './workflows/update-change.js';
+export { getFfChangeSkillTemplate, getOutlineSpecFfCommandTemplate } from './workflows/ff-change.js';
+export { getLandChangeSkillTemplate, getOutlineSpecLandCommandTemplate } from './workflows/land-change.js';
+export { getArchiveChangeSkillTemplate, getOutlineSpecArchiveCommandTemplate } from './workflows/archive-change.js';
+export { getVerifyChangeSkillTemplate, getOutlineSpecVerifyCommandTemplate } from './workflows/verify-change.js';
+export { getOnboardSkillTemplate, getOutlineSpecOnboardCommandTemplate } from './workflows/onboard.js';
+export { getOutlineSpecProposeSkillTemplate, getOutlineSpecProposeCommandTemplate } from './workflows/propose.js';
 export { getFeedbackSkillTemplate } from './workflows/feedback.js';

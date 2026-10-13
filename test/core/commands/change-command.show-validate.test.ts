@@ -13,8 +13,8 @@ describe('ChangeCommand.show/validate', () => {
   beforeAll(async () => {
     cmd = new ChangeCommand();
     originalCwd = process.cwd();
-    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-change-command-'));
-    const changesDir = path.join(tempRoot, 'openspec', 'changes', 'sample-change');
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-change-command-'));
+    const changesDir = path.join(tempRoot, 'outline-spec', 'changes', 'sample-change');
     await fs.mkdir(changesDir, { recursive: true });
     const outline = '## Proposal\nConsistency in tests.\n\n## Requirements\n1. auth: Sign-in.\n  a. Login: Users sign in.\n';
     await fs.writeFile(path.join(changesDir, 'outline.md'), outline, 'utf-8');
@@ -67,15 +67,15 @@ describe('ChangeCommand.show/validate', () => {
 
   describe('resolving a change that has no outline.md', () => {
     it('names the missing outline and points at status', async () => {
-      await fs.mkdir(path.join(tempRoot, 'openspec', 'changes', 'scaffolded'), { recursive: true });
+      await fs.mkdir(path.join(tempRoot, 'outline-spec', 'changes', 'scaffolded'), { recursive: true });
 
       await expect(cmd.show('scaffolded', { json: false })).rejects.toThrow(
-        /Change "scaffolded" has no outline\.md yet\..*openspec status --change scaffolded/s
+        /Change "scaffolded" has no outline\.md yet\..*outline-spec status --change scaffolded/s
       );
     });
 
     it('does not treat a stray file under changes/ as a change', async () => {
-      await fs.writeFile(path.join(tempRoot, 'openspec', 'changes', 'notes.md'), 'not a change', 'utf-8');
+      await fs.writeFile(path.join(tempRoot, 'outline-spec', 'changes', 'notes.md'), 'not a change', 'utf-8');
 
       // Must stay the plain not-found error: `status --change notes.md` cannot work.
       await expect(cmd.show('notes.md', { json: false })).rejects.toThrow(/not found at/);
@@ -83,7 +83,7 @@ describe('ChangeCommand.show/validate', () => {
     });
 
     it('does not read an outline outside changes/ via a traversing name', async () => {
-      // Reachable target: openspec/changes/../../outline.md is tempRoot/outline.md.
+      // Reachable target: outline-spec/changes/../../outline.md is tempRoot/outline.md.
       // Without containment this resolves and the file is printed verbatim.
       await fs.writeFile(path.join(tempRoot, 'outline.md'), '## Proposal\nOutside the changes directory', 'utf-8');
       const traversal = path.join('..', '..');
@@ -98,7 +98,7 @@ describe('ChangeCommand.show/validate', () => {
         const outsideOutline = path.join(tempRoot, 'outside-outline.md');
         const linkedOutline = path.join(
           tempRoot,
-          'openspec',
+          'outline-spec',
           'changes',
           'linked-outline',
           'outline.md'
@@ -125,7 +125,7 @@ describe('ChangeCommand.show/validate', () => {
         );
         await fs.symlink(
           sharedChange,
-          path.join(tempRoot, 'openspec', 'changes', 'shared-change')
+          path.join(tempRoot, 'outline-spec', 'changes', 'shared-change')
         );
 
         await expect(cmd.show('shared-change', { json: false })).resolves.toBeUndefined();
@@ -134,7 +134,7 @@ describe('ChangeCommand.show/validate', () => {
 
     it('does not treat a nested name as a change', async () => {
       const nested = path.join('sample-change', 'specs');
-      await fs.mkdir(path.join(tempRoot, 'openspec', 'changes', 'sample-change', 'specs'), { recursive: true });
+      await fs.mkdir(path.join(tempRoot, 'outline-spec', 'changes', 'sample-change', 'specs'), { recursive: true });
 
       await expect(cmd.show(nested, { json: false })).rejects.toThrow(/not found at/);
       await expect(cmd.show(nested, { json: false })).rejects.not.toThrow(/has no outline\.md yet/);

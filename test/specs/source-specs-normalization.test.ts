@@ -8,7 +8,7 @@ import { Validator } from '../../src/core/validation/validator.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..', '..');
-const specsRoot = path.join(projectRoot, 'openspec', 'specs');
+const specsRoot = path.join(projectRoot, 'outline-spec', 'specs');
 
 async function getSpecFiles(): Promise<string[]> {
   const entries = await fs.readdir(specsRoot, { withFileTypes: true });

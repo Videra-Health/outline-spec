@@ -9,11 +9,11 @@ import { hasAnyFileUnder } from './spec-discovery.js';
  * Files that only ever sit at the root of a change directory. Their presence
  * inside a directory that is *not* directly under `changes/` is one of the two
  * signals that someone laid a change out in a namespace folder
- * (`changes/<area>/<name>/`), which OpenSpec does not support: a change is a
+ * (`changes/<area>/<name>/`), which outline-spec does not support: a change is a
  * directory directly under `changes/` and nothing else (#1846).
  *
- * The list is deliberately short. Every entry is written by OpenSpec itself for
- * the default schema - `.openspec.yaml` by `openspec new change` for *every*
+ * The list is deliberately short. Every entry is written by outline-spec itself for
+ * the default schema - `.outline-spec.yaml` by `outline-spec new change` for *every*
  * schema. A custom schema whose root artifacts are named differently can still
  * be missed when the directory was created by hand rather than by the CLI; that
  * misses the diagnostic and behaves exactly as it did before, which is the safe
@@ -65,12 +65,12 @@ async function hasChangeRootMarker(dir: string): Promise<boolean> {
  * covers the CLI-created change and the hand-made one that starts from a
  * proposal. A populated `specs/` covers the change that starts from its delta
  * specs - the case that arrives here most often, since a nested change is
- * always hand-made (`openspec new change` rejects a name with a separator) and
+ * always hand-made (`outline-spec new change` rejects a name with a separator) and
  * "mkdir the tree, write the deltas" is how someone gets there.
  *
  * The `specs/` signal is what keeps a custom schema safe. A schema may generate
  * every root artifact into a subdirectory (`generates: rfc/proposal.md`), and
- * such a change, created by hand so it has no `.openspec.yaml`, would otherwise
+ * such a change, created by hand so it has no `.outline-spec.yaml`, would otherwise
  * look exactly like a namespace folder wrapping a change called `rfc`. Its
  * delta specs still live under `specs/`, so it is recognised as the change it
  * is. `specs/**\/*.md` is fixed by the delta format itself, not by the schema.
@@ -83,7 +83,7 @@ async function looksLikeChange(dir: string, projectRoot: string): Promise<boolea
 
 /**
  * Whether `dir` already holds a file exactly where the schema it resolves to
- * would generate one - the signal `openspec status` itself uses to call an
+ * would generate one - the signal `outline-spec status` itself uses to call an
  * artifact done. It covers the subdirectory-rooted custom schema before any
  * delta spec exists, when neither other signal can. A schema that cannot be
  * resolved gives no signal, which leaves the other two in charge.
@@ -165,7 +165,7 @@ export async function findNestedChangesIn(
   // `validate` already exclude it; `change show` does not.
   if (name === 'archive' || name.startsWith('.')) return undefined;
   const dir = path.join(changesDir, name);
-  // changes/ is always <root>/openspec/changes, for project and store roots.
+  // changes/ is always <root>/outline-spec/changes, for project and store roots.
   const projectRoot = path.resolve(changesDir, '..', '..');
   if (await looksLikeChange(dir, projectRoot)) return undefined;
   if (await hasOwnFile(dir)) return undefined;
@@ -196,7 +196,7 @@ export async function findNestedChanges(
  */
 export const NESTED_CHANGE_ISSUE_MARKER = 'is not a change: it is a folder wrapping';
 
-/** Flattens a namespace path into the change name OpenSpec would accept. */
+/** Flattens a namespace path into the change name outline-spec would accept. */
 function flatten(nestedId: string): string {
   return nestedId.split('/').join('-');
 }
@@ -206,13 +206,13 @@ function flatten(nestedId: string): string {
  * read identically wherever a user meets them.
  */
 export function describeNestedChange(finding: NestedChangeFinding): string {
-  const list = finding.nested.map((id) => `openspec/changes/${id}/`).join(', ');
+  const list = finding.nested.map((id) => `outline-spec/changes/${id}/`).join(', ');
   const example = flatten(finding.nested[0]);
   return (
     `"${finding.name}" ${NESTED_CHANGE_ISSUE_MARKER} ${list}. ` +
-    'A change must be a directory directly under openspec/changes/, so those ' +
-    'nested directories are invisible to OpenSpec while the folder around them ' +
-    'is reported as a change. Nested paths are supported under openspec/specs/ ' +
+    'A change must be a directory directly under outline-spec/changes/, so those ' +
+    'nested directories are invisible to outline-spec while the folder around them ' +
+    'is reported as a change. Nested paths are supported under outline-spec/specs/ ' +
     `only. Rename each nested change to a flat name (for example "${example}").`
   );
 }

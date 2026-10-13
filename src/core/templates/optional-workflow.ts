@@ -3,7 +3,7 @@
  *
  * Not every workflow is installed. The `core` profile ships six of the twelve
  * (`propose`, `explore`, `apply`, `update`, `sync`, `archive`), and a `custom`
- * profile can ship any subset. A template that names `/opsx:continue` is
+ * profile can ship any subset. A template that names `/outline-spec:continue` is
  * therefore writing a dead reference for anyone whose profile omits it — the
  * agent is told to hand off to a workflow that was never generated (#1734,
  * umbrella #919).
@@ -15,10 +15,10 @@
  * states one path instead of asking the model to check availability at runtime.
  */
 
-const OPEN = '[[opsx:if-workflow ';
+const OPEN = '[[outline-spec:if-workflow ';
 const OPEN_END = ']]';
-const ELSE = '[[opsx:else]]';
-const END = '[[opsx:end]]';
+const ELSE = '[[outline-spec:else]]';
+const END = '[[outline-spec:end]]';
 
 /**
  * A conditional that occupies a whole line on its own. Matched first so a
@@ -27,19 +27,19 @@ const END = '[[opsx:end]]';
  * as the end of the table or list.
  */
 const WHOLE_LINE_PATTERN =
-  /^([ \t]*)\[\[opsx:if-workflow ([a-z-]+)\]\]([^\n]*?)\[\[opsx:else\]\]([^\n]*?)\[\[opsx:end\]\][ \t]*\r?\n/gm;
+  /^([ \t]*)\[\[outline-spec:if-workflow ([a-z-]+)\]\]([^\n]*?)\[\[outline-spec:else\]\]([^\n]*?)\[\[outline-spec:end\]\][ \t]*\r?\n/gm;
 
 const CONDITIONAL_PATTERN =
-  /\[\[opsx:if-workflow ([a-z-]+)\]\]([\s\S]*?)\[\[opsx:else\]\]([\s\S]*?)\[\[opsx:end\]\]/g;
+  /\[\[outline-spec:if-workflow ([a-z-]+)\]\]([\s\S]*?)\[\[outline-spec:else\]\]([\s\S]*?)\[\[outline-spec:end\]\]/g;
 
 /** Any leftover marker, used to fail loudly on malformed authoring. */
-const RESIDUAL_MARKER_PATTERN = /\[\[opsx:(if-workflow|else|end)/;
+const RESIDUAL_MARKER_PATTERN = /\[\[outline-spec:(if-workflow|else|end)/;
 
 /** A single well-formed marker, in any position. */
-const MARKER_PATTERN = /\[\[opsx:(?:if-workflow [a-z-]+|else|end)\]\]/g;
+const MARKER_PATTERN = /\[\[outline-spec:(?:if-workflow [a-z-]+|else|end)\]\]/g;
 
 /** Anything that opens like a marker, well-formed or not. */
-const MARKER_LIKE_PATTERN = /\[\[opsx:/;
+const MARKER_LIKE_PATTERN = /\[\[outline-spec:/;
 
 /**
  * Rejects a malformed conditional before any branch is chosen.
@@ -65,7 +65,7 @@ function assertConditionalsWellFormed(text: string): void {
     throw new Error(
       `Malformed optional-workflow conditional: unrecognized marker at '${withoutMarkers
         .slice(unrecognized.index, unrecognized.index + 40)
-        .split('\n')[0]}'. Markers are [[opsx:if-workflow <id>]], [[opsx:else]] and [[opsx:end]].`
+        .split('\n')[0]}'. Markers are [[outline-spec:if-workflow <id>]], [[outline-spec:else]] and [[outline-spec:end]].`
     );
   }
 
@@ -73,8 +73,8 @@ function assertConditionalsWellFormed(text: string): void {
     if (kinds[i] !== 'if' || kinds[i + 1] !== 'else' || kinds[i + 2] !== 'end') {
       throw new Error(
         'Malformed optional-workflow conditional: markers are out of order or a ' +
-          'block is incomplete. Each block needs the full [[opsx:if-workflow <id>]] ' +
-          '... [[opsx:else]] ... [[opsx:end]] form, and blocks cannot nest.'
+          'block is incomplete. Each block needs the full [[outline-spec:if-workflow <id>]] ' +
+          '... [[outline-spec:else]] ... [[outline-spec:end]] form, and blocks cannot nest.'
       );
     }
   }
@@ -91,7 +91,7 @@ function assertConditionalsWellFormed(text: string): void {
  * @param whenMissing - Text to emit otherwise, typically a CLI fallback
  *
  * @example
- * optionalWorkflow('continue', 'suggest `/opsx:continue`', 'run `openspec status`')
+ * optionalWorkflow('continue', 'suggest `/outline-spec:continue`', 'run `outline-spec status`')
  */
 export function optionalWorkflow(
   workflowId: string,
@@ -172,7 +172,7 @@ export function resolveOptionalWorkflows(
  *
  * @param text - Text about to be written, or just resolved
  * @param reason - What went wrong, used as the message prefix
- * @throws If any `[[opsx:...]]` marker remains
+ * @throws If any `[[outline-spec:...]]` marker remains
  */
 export function assertWorkflowConditionalsResolved(text: string, reason: string): void {
   const residual = RESIDUAL_MARKER_PATTERN.exec(text);
@@ -180,8 +180,8 @@ export function assertWorkflowConditionalsResolved(text: string, reason: string)
     throw new Error(
       `${reason}: '${residual[0]}' is unresolved. Optional-workflow blocks are ` +
         'resolved by getSkillTemplates()/getCommandTemplates() against the installed ' +
-        'workflow set, and each needs the full [[opsx:if-workflow <id>]] ... ' +
-        '[[opsx:else]] ... [[opsx:end]] form.'
+        'workflow set, and each needs the full [[outline-spec:if-workflow <id>]] ... ' +
+        '[[outline-spec:else]] ... [[outline-spec:end]] form.'
     );
   }
 }

@@ -1,16 +1,16 @@
 /**
- * `openspec doctor` (slice 3.6): the root-scoped relationship-health
+ * `outline-spec doctor` (slice 3.6): the root-scoped relationship-health
  * report. Read-only — it answers "are the roots this work relates to
  * available on this machine?" and never clones, syncs, or repairs.
  */
 import {
   resolveRootForCommand,
-  type ResolvedOpenSpecRoot,
+  type ResolvedOutlineSpecRoot,
 } from '../core/root-selection.js';
 import { readOptionalStoreMetadataState } from '../core/store/foundation.js';
 import { gitOriginUrl, gitTrackingDrift, isGitRepositoryAtRoot } from '../core/store/git.js';
 import {
-  classifyOpenSpecDir,
+  classifyOutlineSpecDir,
   readProjectConfig,
   resolveConfigFilePath,
 } from '../core/project-config.js';
@@ -27,7 +27,7 @@ import * as path from 'node:path';
 const FAILURE_PAYLOAD = { root: null, store: null, references: [] };
 
 async function gatherHealth(
-  root: ResolvedOpenSpecRoot
+  root: ResolvedOutlineSpecRoot
 ): Promise<{ health: RelationshipHealth; declaredReferenceCount: number }> {
   const data = await gatherRelationshipData(root);
   const {
@@ -74,7 +74,7 @@ async function gatherHealth(
   // pointer value, which the resolver is silent about on planning-shaped
   // roots.
   if (root.source === 'nearest') {
-    const { hasPlanningShape, pointer } = classifyOpenSpecDir(root.path);
+    const { hasPlanningShape, pointer } = classifyOutlineSpecDir(root.path);
     if (hasPlanningShape && pointer.filePath) {
       if (pointer.value !== undefined) {
         input.bothShapesPointer = { value: pointer.value, filePath: pointer.filePath };
@@ -95,7 +95,7 @@ async function gatherHealth(
       if (fields.length > 0) {
         const filePath =
           resolveConfigFilePath(pointerRoot) ??
-          path.join(pointerRoot, 'openspec', 'config.yaml');
+          path.join(pointerRoot, 'outline-spec', 'config.yaml');
         input.inertPointerDeclarations = { filePath, fields };
       }
     }
@@ -148,7 +148,7 @@ function printHumanHealth(health: RelationshipHealth, declaredReferenceCount: nu
   console.log('');
   console.log('Root');
   console.log(`  Location: ${health.root.path}`);
-  console.log(`  OpenSpec root: ${health.root.healthy ? 'ok' : 'unhealthy'}`);
+  console.log(`  outline-spec root: ${health.root.healthy ? 'ok' : 'unhealthy'}`);
   if (health.store) {
     const metadataNote = health.store.metadata.valid ? 'metadata ok' : 'metadata invalid';
     console.log(`  Store: ${health.store.id} (${metadataNote})`);

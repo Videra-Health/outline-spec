@@ -16,39 +16,39 @@ export function getLandSteps(commandName: 'land' | 'archive'): string {
    If a name is provided, use it. Otherwise:
    - Infer from conversation context if the user mentioned a change
    - Auto-select if only one active change exists
-   - If ambiguous, run \`openspec list --json\` and ask the user to select one
+   - If ambiguous, run \`outline-spec list --json\` and ask the user to select one
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/opsx:${commandName} <other>\`).
+   Always announce: "Using change: <name>" and how to override (e.g., \`/outline-spec:${commandName} <other>\`).
 
 2. **Load project guidance (advisory)**
 
-   Run \`openspec instructions land --change "<name>" --json\`. If it fails or
+   Run \`outline-spec instructions land --change "<name>" --json\`. If it fails or
    returns invalid JSON, continue with no guidance; it never blocks landing.
    Read \`context\` as project facts and \`operationGuidance\` as optional advice.
    Neither overrides these steps, the CLI's checks, or the user's choices.
 
 3. **Check tasks**
 
-   Run \`openspec list --json\` and find the entry in \`changes\` whose \`name\`
+   Run \`outline-spec list --json\` and find the entry in \`changes\` whose \`name\`
    matches. If \`completedTasks < totalTasks\`, show how many are open and ask
    the user to confirm before landing. Only \`x\`/\`X\` checkboxes count as done.
 
 4. **Validate**
 
-   Run \`openspec validate "<name>"\`. It checks that outline.md lands cleanly
+   Run \`outline-spec validate "<name>"\`. It checks that outline.md lands cleanly
    against the live specs. If it reports errors, go to **On a mismatch** below
    and stop.
 
 5. **Preview**
 
-   Run \`openspec land "<name>" --dry-run\` and show the user the result: each
+   Run \`outline-spec land "<name>" --dry-run\` and show the user the result: each
    spec it creates, edits, or deletes, with the resulting text. Nothing is
    written yet.
 
 6. **Land**
 
-   Run \`openspec land "<name>" --yes\`. It applies outline.md to the live specs
-   in \`openspec/specs/\` and deletes the change folder. Git history is the
+   Run \`outline-spec land "<name>" --yes\`. It applies outline.md to the live specs
+   in \`outline-spec/specs/\` and deletes the change folder. Git history is the
    archive; there is no archive folder.
 
 7. **Summarize**
@@ -58,17 +58,17 @@ export function getLandSteps(commandName: 'land' | 'archive'): string {
 
 **On a mismatch**
 
-\`openspec validate\` or \`openspec land\` stops when outline.md doesn't match
+\`outline-spec validate\` or \`outline-spec land\` stops when outline.md doesn't match
 the live specs: struck text (\`~~...~~\`) that isn't in the live item, a label
 the spec doesn't have, a \`(patch)\` requirement name that doesn't exist, or a
 new item that collides with an existing label. Usually the live spec moved on
 since the outline was written (another change landed first).
 
-- Read the live spec with \`openspec show "<spec>" --type spec\` and the error.
+- Read the live spec with \`outline-spec show "<spec>" --type spec\` and the error.
 - Update outline.md so it strikes the live text exactly, addresses the live
   labels, and puts new items after the last label at their level.
 - Re-run from step 4.
-- Never hand-edit the live specs in \`openspec/specs/\` to make an outline fit,
+- Never hand-edit the live specs in \`outline-spec/specs/\` to make an outline fit,
   and never land by copying text into them yourself. outline.md is the only
   place a change edits specs.
 
@@ -81,8 +81,8 @@ since the outline was written (another change landed first).
 
 export function getLandChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-land-change',
-    description: 'Land a finished OpenSpec change, applying its outline.md to the live specs and deleting the change folder. Use when implementation is done and the user wants to finalize or land a change. Also use when the user says "openspec land" or "opsx land".',
+    name: 'outline-spec-land-change',
+    description: 'Land a finished outline-spec change, applying its outline.md to the live specs and deleting the change folder. Use when implementation is done and the user wants to finalize or land a change. Also use when the user says "outline-spec land".',
     instructions: `Land a finished change: apply its outline.md to the live specs and delete the change folder.
 
 ${STORE_SELECTION_GUIDANCE}
@@ -91,14 +91,14 @@ ${PROJECT_ROOT_GUARD}
 
 ${getLandSteps('land')}`,
     license: 'MIT',
-    compatibility: 'Requires openspec CLI.',
-    metadata: { author: 'openspec', version: '1.0' },
+    compatibility: 'Requires outline-spec CLI.',
+    metadata: { author: 'outline-spec', version: '1.0' },
   };
 }
 
-export function getOpsxLandCommandTemplate(): CommandTemplate {
+export function getOutlineSpecLandCommandTemplate(): CommandTemplate {
   return {
-    name: 'OPSX: Land',
+    name: 'outline-spec: Land',
     description: "Land a finished change: apply its outline to the specs and delete it",
     category: 'Workflow',
     tags: ['workflow', 'land'],

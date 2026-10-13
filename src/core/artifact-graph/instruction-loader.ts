@@ -243,7 +243,7 @@ export function loadTemplate(
  *
  * Schema resolution order:
  * 1. Explicit schemaName parameter (if provided)
- * 2. Schema from .openspec.yaml metadata (if exists in change directory)
+ * 2. Schema from .outline-spec.yaml metadata (if exists in change directory)
  * 3. Default 'outline'
  *
  * @param projectRoot - Project root directory
@@ -258,7 +258,7 @@ export function loadChangeContext(
   options: LoadChangeContextOptions = {}
 ): ChangeContext {
   const changeDir = FileSystemUtils.canonicalizeExistingPath(
-    options.changeDir ?? path.join(projectRoot, 'openspec', 'changes', changeName)
+    options.changeDir ?? path.join(projectRoot, 'outline-spec', 'changes', changeName)
   );
 
   const metadata = readChangeMetadata(changeDir, projectRoot) ?? undefined;

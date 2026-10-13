@@ -89,7 +89,7 @@ function validateRequiresReferences(artifacts: Artifact[]): void {
  * match any `generates` value (a hand-written `TODO.md`, or `tasks/main.md`
  * under a glob `generates: tasks/*.md` that really does produce it) works
  * today, and failing the load would break every command on it.
- * `openspec schema validate` reports that case as a warning instead
+ * `outline-spec schema validate` reports that case as a warning instead
  * (see `findApplyTracksWarning`).
  */
 function validateApplyReferences(schema: SchemaYaml): void {
@@ -114,8 +114,8 @@ function validateApplyReferences(schema: SchemaYaml): void {
  * `tracks`, so this is a progress-discovery problem, not a claim that nothing
  * produces the file: a glob `generates: tasks/*.md` really does generate
  * `tracks: tasks/main.md`, yet the strings differ, so the lookup still misses.
- * Either way apply keeps working (it reads the path directly), but `openspec
- * list` and `openspec status` fall back to counting the top-level `tasks.md`,
+ * Either way apply keeps working (it reads the path directly), but `outline-spec
+ * list` and `outline-spec status` fall back to counting the top-level `tasks.md`,
  * and apply's remedy cannot name an artifact to build. A typo such as
  * `task.md` is the other usual cause.
  */
@@ -125,7 +125,7 @@ export function findApplyTracksWarning(schema: SchemaYaml): string | undefined {
   return (
     `apply.tracks '${tracks}' does not exactly match any artifact's generates value ` +
     `(generates: ${schema.artifacts.map(a => a.generates).join(', ')}), ` +
-    `so OpenSpec cannot tell which artifact's progress it tracks. ` +
+    `so outline-spec cannot tell which artifact's progress it tracks. ` +
     `Apply still reads that file as written, but list and status count tasks.md instead. ` +
     `Make apply.tracks exactly equal one of those generates values, ` +
     `or confirm that file is maintained outside the artifact graph.`

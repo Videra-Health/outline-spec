@@ -25,13 +25,14 @@ function getWelcomeText(workflows: readonly string[]): string[] {
   const quickStart: string[] = [];
 
   if (onboardingCommands.length > 0) {
-    const commandWidth = Math.max(...onboardingCommands.map((c) => c.command.length));
     quickStart.push(chalk.white('Quick start after setup:'));
+    // Two lines per command: the outline-spec namespace leaves no room for a description beside it.
     for (const { command, description } of onboardingCommands) {
-      quickStart.push(`  ${chalk.yellow(command.padEnd(commandWidth + 1))} ${chalk.dim(description)}`);
+      quickStart.push(`  ${chalk.yellow(command)}`);
+      quickStart.push(`    ${chalk.dim(description)}`);
     }
     // These are the canonical names. How each tool spells them differs
-    // (/opsx-propose, @opsx-propose, $openspec-propose ...) and cannot be known
+    // (/outline-spec-propose, @outline-spec-propose, $outline-spec-propose ...) and cannot be known
     // until tools are picked, one prompt later — so flag it rather than let the
     // canonical form read as the literal thing to type. "Getting started"
     // prints the real spelling once the selection is known.
@@ -40,12 +41,12 @@ function getWelcomeText(workflows: readonly string[]): string[] {
   }
 
   return [
-    chalk.white.bold('Welcome to OpenSpec'),
-    chalk.dim('A lightweight spec-driven framework'),
+    chalk.white.bold('Welcome to outline-spec'),
+    chalk.dim('Outline specs for AI coding agents'),
     '',
     chalk.white('This setup will configure:'),
     chalk.dim('  • Agent Skills for AI tools'),
-    // Not "opsx slash commands": this screen runs before tool selection, and
+    // Not "outline-spec slash commands": this screen runs before tool selection, and
     // skills-only tools (Codex, Kimi Code, ...) correctly get no command files
     // at all. The exact spelling per tool is printed in "Getting started".
     chalk.dim('  • Workflow commands, if supported'),
@@ -132,7 +133,7 @@ function canAnimate(): boolean {
 
   // Manual override for users who need reduced motion (#722). Presence is
   // what counts: even an empty value disables the animation.
-  if (process.env.OPENSPEC_NO_ANIMATION !== undefined) return false;
+  if (process.env.OUTLINE_SPEC_NO_ANIMATION !== undefined) return false;
 
   // Check terminal width
   const columns = process.stdout.columns || 80;

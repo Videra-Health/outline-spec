@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getUpdateChangeSkillTemplate,
-  getOpsxUpdateCommandTemplate,
+  getOutlineSpecUpdateCommandTemplate,
 } from '../../../src/core/templates/skill-templates.js';
 import { STORE_SELECTION_GUIDANCE } from '../../../src/core/templates/workflows/store-selection.js';
 import { PROJECT_ROOT_GUARD } from '../../../src/core/templates/workflows/project-root.js';
@@ -10,7 +10,7 @@ import { resolveOptionalWorkflows } from '../../../src/core/templates/optional-w
 import { ALL_WORKFLOWS, CORE_WORKFLOWS } from '../../../src/core/profiles.js';
 
 const skill = getUpdateChangeSkillTemplate();
-const command = getOpsxUpdateCommandTemplate();
+const command = getOutlineSpecUpdateCommandTemplate();
 
 const render = (workflows: readonly string[]): Array<[string, string]> => {
   const installed = new Set<string>(workflows);
@@ -41,7 +41,7 @@ const STEP_FIVE = `5. **Confirm and apply, one artifact at a time**
    - If the user rejects a revision, do not write it - leave that artifact unchanged.
    - When a substantial rewrite is needed, get that artifact's rules and template first:
      \`\`\`bash
-     openspec instructions "<artifact-id>" --change "<name>" --json
+     outline-spec instructions "<artifact-id>" --change "<name>" --json
      \`\`\`
 
 `;
@@ -57,7 +57,7 @@ const SANCTIONED_OUTSIDE_STEP_FIVE = [
   'Do NOT write to `resolvedOutputPath`',
   '- Edit only the concrete files in `existingOutputPaths`; never write to a glob `resolvedOutputPath`.',
   'Confirm every edit with the user before writing.',
-  '`/opsx:apply`',
+  '`/outline-spec:apply`',
   '(tasks checked off / already applied)',
 ];
 
@@ -140,7 +140,7 @@ function writeAuthorizationsOutsideStepFive(body: string, label: string): string
 // Regression for #1836: step 4 said "Apply the requested edit" while step 5 and
 // the guardrails said to write only after the user confirms. "Apply" is a write
 // verb in this very document - step 5 is titled "Confirm and apply" - so the
-// same `/opsx:update "the design now uses X"` either wrote immediately or
+// same `/outline-spec:update "the design now uses X"` either wrote immediately or
 // stopped and showed the revision first, depending on which passage the agent
 // weighed. Step 5 is the workflow's only gated write path, so its confirmation
 // guarantee was unenforceable whenever step 4 governed.
@@ -204,22 +204,22 @@ describe('update-change write gate (#1836)', () => {
 
 describe('update-change templates', () => {
   it('generates the expected skill and command shape (3.1)', () => {
-    expect(skill.name).toBe('openspec-update-change');
+    expect(skill.name).toBe('outline-spec-update-change');
     expect(skill.description).toContain('Never edits code');
     expect(skill.license).toBe('MIT');
-    expect(skill.compatibility).toBe('Requires openspec CLI.');
-    expect(skill.metadata).toEqual({ author: 'openspec', version: '1.0' });
+    expect(skill.compatibility).toBe('Requires outline-spec CLI.');
+    expect(skill.metadata).toEqual({ author: 'outline-spec', version: '1.0' });
 
-    expect(command.name).toBe('OPSX: Update');
+    expect(command.name).toBe('outline-spec: Update');
     expect(command.category).toBe('Workflow');
     expect(command.tags).toEqual(['workflow', 'artifacts', 'experimental']);
-    expect(command.content).toContain('/opsx:update add-auth');
+    expect(command.content).toContain('/outline-spec:update add-auth');
 
     for (const [label, body] of bodies) {
       expect(body, label).toContain(STORE_SELECTION_GUIDANCE);
-      expect(body, label).toContain('openspec list --json');
-      expect(body, label).toContain('openspec status --change "<name>" --json');
-      expect(body, label).toContain('openspec instructions "<artifact-id>" --change "<name>" --json');
+      expect(body, label).toContain('outline-spec list --json');
+      expect(body, label).toContain('outline-spec status --change "<name>" --json');
+      expect(body, label).toContain('outline-spec instructions "<artifact-id>" --change "<name>" --json');
     }
   });
 
@@ -235,17 +235,17 @@ describe('update-change templates', () => {
     }
   });
 
-  it('edits planning artifacts only, hands code off to /opsx:apply, never advances the frontier (3.3)', () => {
+  it('edits planning artifacts only, hands code off to /outline-spec:apply, never advances the frontier (3.3)', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('Never edit code');
       expect(body, label).toContain('NEVER edit implementation code');
-      expect(body, label).toContain('stop and point to `/opsx:apply`');
+      expect(body, label).toContain('stop and point to `/outline-spec:apply`');
       expect(body, label).toContain('Do not advance the build frontier');
       expect(body, label).toContain(
-        'no existing output files and status `ready` or `blocked`, note it and point the user to `/opsx:continue`'
+        'no existing output files and status `ready` or `blocked`, note it and point the user to `/outline-spec:continue`'
       );
       expect(body, label).toContain(
-        'empty `existingOutputPaths` and status `ready` or `blocked`, that is `/opsx:continue`\'s job'
+        'empty `existingOutputPaths` and status `ready` or `blocked`, that is `/outline-spec:continue`\'s job'
       );
       expect(body, label).toContain('Leave `skipped` artifacts untouched');
       expect(body, label).toContain('do not treat them as missing or defer them to the continue workflow');
@@ -305,22 +305,22 @@ describe('update-change templates', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('guidance only - NEVER act on it');
       expect(body, label).toContain(
-        'Artifacts with empty `existingOutputPaths` and status `ready` or `blocked` -> suggest `/opsx:continue`'
+        'Artifacts with empty `existingOutputPaths` and status `ready` or `blocked` -> suggest `/outline-spec:continue`'
       );
-      expect(body, label).toContain('suggest `/opsx:continue`');
-      expect(body, label).toContain('suggest `/opsx:apply`');
-      expect(body, label).toContain('suggest `/opsx:land`');
+      expect(body, label).toContain('suggest `/outline-spec:continue`');
+      expect(body, label).toContain('suggest `/outline-spec:apply`');
+      expect(body, label).toContain('suggest `/outline-spec:land`');
       expect(body, label).toContain('the code may no longer match the revised plan');
     }
   });
 
-  it('hands off to /opsx:continue when that workflow is installed', () => {
+  it('hands off to /outline-spec:continue when that workflow is installed', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        '`/opsx:continue` is what creates the ones that do not'
+        '`/outline-spec:continue` is what creates the ones that do not'
       );
-      expect(body, label).toContain('suggest `/opsx:continue` to create them');
-      expect(body, label).toContain("that is `/opsx:continue`'s job");
+      expect(body, label).toContain('suggest `/outline-spec:continue` to create them');
+      expect(body, label).toContain("that is `/outline-spec:continue`'s job");
       // The handoff is stated outright, not deferred to a runtime availability
       // check the model has to perform (#1734).
       expect(body, label).not.toContain('may not be installed');
@@ -328,15 +328,15 @@ describe('update-change templates', () => {
     }
   });
 
-  it('never names /opsx:continue on a profile that does not install it', () => {
+  it('never names /outline-spec:continue on a profile that does not install it', () => {
     for (const [label, body] of coreBodies) {
-      expect(body, label).not.toContain('/opsx:continue');
+      expect(body, label).not.toContain('/outline-spec:continue');
       expect(body, label).toContain('it never creates missing ones');
       expect(body, label).toContain(
-        'run `openspec status --change "<name>" --json` for the next artifact'
+        'run `outline-spec status --change "<name>" --json` for the next artifact'
       );
       expect(body, label).toContain(
-        '`openspec instructions "<artifact-id>" --change "<name>" --json` for how to create them'
+        '`outline-spec instructions "<artifact-id>" --change "<name>" --json` for how to create them'
       );
       expect(body, label).toContain(
         'Anything deferred because it does not exist yet'
@@ -345,25 +345,25 @@ describe('update-change templates', () => {
     }
   });
 
-  it('confirms every edit and redirects intent changes to /opsx:new when installed', () => {
+  it('confirms every edit and redirects intent changes to /outline-spec:new when installed', () => {
     for (const [label, body] of bodies) {
       const reconciliation = body.slice(body.indexOf('4. **Read and reconcile**'), body.indexOf('5. **Confirm and apply'));
       expect(reconciliation, label).toContain('Draft the requested edit in the conversation, not in files');
       expect(reconciliation, label).not.toContain('Apply the requested edit');
       expect(body, label).toContain('Write only after the user confirms');
       expect(body, label).toContain('If the user rejects a revision, do not write it');
-      expect(body, label).toContain('recommend starting fresh with `/opsx:new`');
+      expect(body, label).toContain('recommend starting fresh with `/outline-spec:new`');
       expect(body, label).toContain('Update vs. Start Fresh');
       expect(body, label).not.toContain('first verify whether the optional');
     }
   });
 
-  it('routes intent changes to the CLI when /opsx:new is not installed', () => {
+  it('routes intent changes to the CLI when /outline-spec:new is not installed', () => {
     for (const [label, body] of coreBodies) {
-      expect(body, label).not.toContain('/opsx:new');
+      expect(body, label).not.toContain('/outline-spec:new');
       expect(body, label).toContain('ask for a distinct unused change name');
-      expect(body, label).toContain('openspec new change "<new-change-name>"');
-      expect(body, label).not.toContain('openspec new change "<name>"');
+      expect(body, label).toContain('outline-spec new change "<new-change-name>"');
+      expect(body, label).not.toContain('outline-spec new change "<name>"');
       expect(body, label).toContain('Update vs. Start Fresh');
     }
   });
@@ -372,8 +372,8 @@ describe('update-change templates', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('`~~old~~ **new**`');
       expect(body, label).toContain('labels never shift');
-      expect(body, label).toContain('Never edit the live specs under `openspec/specs/`');
-      for (const stale of ['delta', 'Scenario', 'SHALL', '/opsx:sync', 'spec-driven', '/opsx:archive']) {
+      expect(body, label).toContain('Never edit the live specs under `outline-spec/specs/`');
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven', '/outline-spec:archive']) {
         expect(body, label).not.toContain(stale);
       }
     }

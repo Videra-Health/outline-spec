@@ -13,25 +13,25 @@ import {
   type ProjectConfig,
 } from '../core/project-config.js';
 import { assembleReferenceIndex, type ReferenceIndexEntry } from '../core/references.js';
-import { inspectOpenSpecRoot, type OpenSpecRootInspection } from '../core/openspec-root.js';
-import type { ResolvedOpenSpecRoot } from '../core/root-selection.js';
+import { inspectOutlineSpecRoot, type OutlineSpecRootInspection } from '../core/outline-spec-root.js';
+import type { ResolvedOutlineSpecRoot } from '../core/root-selection.js';
 
 export interface RelationshipData {
   registrySnapshot: RegistrySnapshot;
   projectConfig: ProjectConfig | null;
   storeConfigPath: string;
   referenceEntries: ReferenceIndexEntry[];
-  rootInspection: OpenSpecRootInspection;
+  rootInspection: OutlineSpecRootInspection;
 }
 
 export async function gatherRelationshipData(
-  root: ResolvedOpenSpecRoot
+  root: ResolvedOutlineSpecRoot
 ): Promise<RelationshipData> {
   const registrySnapshot = await readRegistrySnapshot();
 
   const projectConfig = readProjectConfig(root.path);
   const storeConfigPath =
-    resolveConfigFilePath(root.path) ?? path.join(root.path, 'openspec', 'config.yaml');
+    resolveConfigFilePath(root.path) ?? path.join(root.path, 'outline-spec', 'config.yaml');
 
   const referenceEntries = await assembleReferenceIndex({
     references: projectConfig?.references ?? [],
@@ -40,7 +40,7 @@ export async function gatherRelationshipData(
     registryEntries: registrySnapshot.entries,
   });
 
-  const rootInspection = await inspectOpenSpecRoot(root.path);
+  const rootInspection = await inspectOutlineSpecRoot(root.path);
 
   return {
     registrySnapshot,

@@ -11,7 +11,7 @@ import { cliProjectRoot, ensureCliBuilt } from '../helpers/run-cli.js';
 // only the command definitions (names, options, help text) and its own
 // implementation; everything else loads on demand.
 
-const binPath = path.join(cliProjectRoot, 'bin', 'openspec.js');
+const binPath = path.join(cliProjectRoot, 'bin', 'outline-spec.js');
 const hookUrl = pathToFileURL(
   path.join(cliProjectRoot, 'test', 'helpers', 'record-loaded-modules.mjs')
 ).href;
@@ -58,7 +58,7 @@ function loadedModules(args: string[]): {
   packages: Set<string>;
   status: number | null;
 } {
-  const workDir = mkdtempSync(path.join(os.tmpdir(), 'openspec-startup-'));
+  const workDir = mkdtempSync(path.join(os.tmpdir(), 'outline-spec-startup-'));
   workDirs.push(workDir);
   const logFile = path.join(workDir, 'modules.log');
   const result = spawnSync(process.execPath, ['--import', hookUrl, binPath, ...args], {
@@ -68,7 +68,7 @@ function loadedModules(args: string[]): {
       OPEN_SPEC_INTERACTIVE: '0',
       XDG_CONFIG_HOME: path.join(workDir, 'config'),
       XDG_DATA_HOME: path.join(workDir, 'data'),
-      OPENSPEC_TEST_MODULE_LOG: logFile,
+      OUTLINE_SPEC_TEST_MODULE_LOG: logFile,
     },
     encoding: 'utf-8',
     timeout: 30_000,
@@ -109,7 +109,7 @@ function implementationsLoaded(own: string[]): string[] {
 
 describe('CLI startup loads only what the command needs', () => {
   it.each(['--version', '--help', 'validate --help'])(
-    '`openspec %s` loads the command definitions and nothing else',
+    '`outline-spec %s` loads the command definitions and nothing else',
     async (invocation) => {
       await ensureCliBuilt();
       const { own, packages, status } = loadedModules(invocation.split(' '));
@@ -129,7 +129,7 @@ describe('CLI startup loads only what the command needs', () => {
     ['list --json', 'list'],
     ['pending --json', 'pending'],
     ['migrate-specs --dry-run --json', 'migrate-specs'],
-  ])('`openspec %s` loads only the %s implementation', async (invocation, command) => {
+  ])('`outline-spec %s` loads only the %s implementation', async (invocation, command) => {
     await ensureCliBuilt();
     const { own } = loadedModules(invocation.split(' '));
 

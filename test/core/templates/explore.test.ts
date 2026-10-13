@@ -80,7 +80,7 @@ describe('explore templates', () => {
   it('investigates repository facts before asking while acknowledging missing evidence (#1017)', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('Before asking a factual question, follow the context discovery below');
-      expect(body, label).toContain('relevant OpenSpec artifacts, source, tests, docs, and configuration');
+      expect(body, label).toContain('relevant outline-spec artifacts, source, tests, docs, and configuration');
       expect(body, label).toContain('Do not ask the user to repeat facts you can verify');
       expect(body, label).toContain('If evidence is missing, conflicting, or inaccessible');
       expect(body, label).toContain('ask only for the clarification needed to proceed');
@@ -131,9 +131,9 @@ describe('explore templates', () => {
   // Regression for #696: explore never loaded the project's declared
   // context, so it reasoned without the tech stack, conventions, and
   // rules every artifact-creating workflow already receives.
-  it('loads project context from the OpenSpec config at startup (#696)', () => {
+  it('loads project context from the outline-spec config at startup (#696)', () => {
     for (const [label, body] of bodies) {
-      expect(body, label).toContain('openspec/config.yaml');
+      expect(body, label).toContain('outline-spec/config.yaml');
       expect(body, label).toContain('`context`: project background');
       expect(body, label).toContain('`rules`: keyed by artifact id');
     }
@@ -141,14 +141,14 @@ describe('explore templates', () => {
 
   it('resolves the config through the reported root rather than assuming a repo-local path (#696)', () => {
     for (const [label, body] of bodies) {
-      expect(body, label).toContain('openspec list --json');
-      expect(body, label).toContain('<root.path>/openspec/config.yaml');
+      expect(body, label).toContain('outline-spec list --json');
+      expect(body, label).toContain('<root.path>/outline-spec/config.yaml');
       expect(body, label).toContain('root.path');
     }
   });
 
   // resolveConfigFilePath() probes config.yaml then config.yml, and
-  // `openspec init` leaves a .yml project on .yml forever - naming only
+  // `outline-spec init` leaves a .yml project on .yml forever - naming only
   // .yaml would silently skip context for those projects.
   it('accepts config.yml as well as config.yaml (#696)', () => {
     for (const [label, body] of bodies) {
@@ -199,19 +199,19 @@ describe('explore templates', () => {
   it('treats workflow configuration and write-capable commands as changes (#1715)', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        'creating or editing schemas, templates, or `openspec/config.yaml` is a change'
+        'creating or editing schemas, templates, or `outline-spec/config.yaml` is a change'
       );
       expect(body, label).toContain(
-        'including `openspec new change` or another command that writes files'
+        'including `outline-spec new change` or another command that writes files'
       );
       expect(body, label).toContain(
-        'Creating or updating OpenSpec change artifacts within the confirmed scope is fine, writing anything else is not'
+        'Creating or updating outline-spec change artifacts within the confirmed scope is fine, writing anything else is not'
       );
     }
   });
 
   // Regression for #1828: the #1715 write-confirmation rule named
-  // `openspec new change` as something that needs a separate yes/no, while
+  // `outline-spec new change` as something that needs a separate yes/no, while
   // the capture branch told the agent to transition "seamlessly" into
   // running it. Both readings were defensible, so the same request either
   // wrote files immediately or stopped and asked. The rule now resolves the
@@ -233,7 +233,7 @@ describe('explore templates', () => {
   it('keeps the strict rule for a capture the agent proposed itself (#1828)', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        'That rule governs `openspec new change` whenever you are the one proposing the capture'
+        'That rule governs `outline-spec new change` whenever you are the one proposing the capture'
       );
       // The guardrail points at the capture transition rather than restating
       // the contract a third time, so the three sites cannot drift apart.
@@ -249,7 +249,7 @@ describe('explore templates', () => {
       const carveOut = transition.indexOf(
         'that request is the confirmation required above'
       );
-      const scaffold = transition.indexOf('1. Run `openspec new change "<name>"`');
+      const scaffold = transition.indexOf('1. Run `outline-spec new change "<name>"`');
 
       expect(carveOut, label).toBeGreaterThanOrEqual(0);
       expect(scaffold, label).toBeGreaterThan(carveOut);
@@ -307,7 +307,7 @@ describe('explore templates', () => {
         'Accepting an answer or a batch of recommendations is not permission to write'
       );
       expect(body, label).toContain(
-        'creating or editing schemas, templates, or `openspec/config.yaml` is a change'
+        'creating or editing schemas, templates, or `outline-spec/config.yaml` is a change'
       );
     }
   });
@@ -326,11 +326,11 @@ describe('explore templates', () => {
   // here and stays a review responsibility.
   const CONSENT_WORDS =
     /\b(confirm(?:ation|s|ed)?|yes\/no|approv(?:al|es|ed)|permission|consent)\b/i;
-  const CAPTURE_WORDS = /(openspec new change|scaffold|captur|write-capable|first write)/i;
+  const CAPTURE_WORDS = /(outline-spec new change|scaffold|captur|write-capable|first write)/i;
 
   const SANCTIONED_CONSENT = [
     // The stance paragraph: the rule, then the carve-out.
-    /You MAY create or update OpenSpec change artifacts .* within a confirmed scope/,
+    /You MAY create or update outline-spec change artifacts .* within a confirmed scope/,
     /Before the first write-capable action, name the artifacts or files you would change/,
     /An explicit request from the user to capture the exploration as a new change is itself that confirmation/,
     // The capture branch: the carve-out and both of its fences.
@@ -340,8 +340,8 @@ describe('explore templates', () => {
     /Don't re-ask for what they already asked for/,
     /Do not create an unrequested prerequisite unless the user approves/,
     // The guardrail: the rule, and a pointer back to the branch.
-    /Before the first write-capable action—including `openspec new change`/,
-    /That rule governs `openspec new change` whenever you are the one proposing the capture/,
+    /Before the first write-capable action—including `outline-spec new change`/,
+    /That rule governs `outline-spec new change` whenever you are the one proposing the capture/,
   ];
 
   // The `--store` reminder repeats on five steps and says "confirmed" only to
@@ -390,13 +390,13 @@ describe('explore templates', () => {
     for (const [label, body] of bodies) {
       const transition = newChangeTransition(body, label);
 
-      expect(transition, label).toContain('openspec new change "<name>"');
+      expect(transition, label).toContain('outline-spec new change "<name>"');
       expect(transition, label).toContain(
-        'Never create a new change directory under `openspec/changes/` by hand'
+        'Never create a new change directory under `outline-spec/changes/` by hand'
       );
-      expect(transition, label).toContain('`.openspec.yaml`');
+      expect(transition, label).toContain('`.outline-spec.yaml`');
       expect(transition, label).not.toContain(
-        'Never create files or directories directly under `openspec/changes/`'
+        'Never create files or directories directly under `outline-spec/changes/`'
       );
     }
   });
@@ -404,12 +404,12 @@ describe('explore templates', () => {
   it('retains the selected store throughout the capture transition (#668, #720)', () => {
     for (const [label, body] of bodies) {
       const transition = newChangeTransition(body, label);
-      const scaffold = transition.indexOf('1. Run `openspec new change "<name>"`');
+      const scaffold = transition.indexOf('1. Run `outline-spec new change "<name>"`');
       const retainStore = transition.indexOf(
         'Keep the selected `--store <id>` on every applicable follow-up `status` and `instructions` command'
       );
       const initialStatus = transition.indexOf(
-        '2. Run `openspec status --change "<name>" --json`'
+        '2. Run `outline-spec status --change "<name>" --json`'
       );
 
       expect(retainStore, label).toBeGreaterThan(scaffold);
@@ -428,9 +428,9 @@ describe('explore templates', () => {
     for (const [label, body] of bodies) {
       const transition = newChangeTransition(body, label);
 
-      expect(transition, label).toContain('openspec status --change "<name>" --json');
+      expect(transition, label).toContain('outline-spec status --change "<name>" --json');
       expect(transition, label).toContain(
-        'openspec instructions "<artifact-id>" --change "<name>" --json'
+        'outline-spec instructions "<artifact-id>" --change "<name>" --json'
       );
       expect(transition, label).toContain('Capture the artifact(s) the user requested');
       expect(transition, label).toContain(
@@ -440,7 +440,7 @@ describe('explore templates', () => {
         'process the requested artifacts in dependency order'
       );
       expect(transition, label).toContain(
-        'After creating each artifact, re-run `openspec status --change "<name>" --json`'
+        'After creating each artifact, re-run `outline-spec status --change "<name>" --json`'
       );
       expect(transition, label).toContain(
         'If the instruction delegates creation to a specific skill or command'
@@ -454,18 +454,18 @@ describe('explore templates', () => {
   it('keeps the seamless capture steps ordered (#668, #720)', () => {
     for (const [label, body] of bodies) {
       const transition = newChangeTransition(body, label);
-      const scaffold = transition.indexOf('1. Run `openspec new change "<name>"`');
+      const scaffold = transition.indexOf('1. Run `outline-spec new change "<name>"`');
       const initialStatus = transition.indexOf(
-        '2. Run `openspec status --change "<name>" --json`'
+        '2. Run `outline-spec status --change "<name>" --json`'
       );
       const readyInstructions = transition.indexOf(
-        'For each requested artifact that is `ready`, run `openspec instructions'
+        'For each requested artifact that is `ready`, run `outline-spec instructions'
       );
       const verifyOutput = transition.indexOf(
         'Verify that the selected concrete output exists'
       );
       const refreshStatus = transition.indexOf(
-        'After creating each artifact, re-run `openspec status'
+        'After creating each artifact, re-run `outline-spec status'
       );
 
       expect(scaffold, label).toBeGreaterThanOrEqual(0);
@@ -473,17 +473,17 @@ describe('explore templates', () => {
       expect(readyInstructions, label).toBeGreaterThan(initialStatus);
       expect(verifyOutput, label).toBeGreaterThan(readyInstructions);
       expect(refreshStatus, label).toBeGreaterThan(verifyOutput);
-      expect(occurrenceCount(transition, 'openspec new change "<name>"'), label).toBe(1);
+      expect(occurrenceCount(transition, 'outline-spec new change "<name>"'), label).toBe(1);
       expect(
-        occurrenceCount(transition, 'openspec status --change "<name>" --json'),
+        occurrenceCount(transition, 'outline-spec status --change "<name>" --json'),
         label
       ).toBe(2);
       expect(
-        occurrenceCount(transition, 'openspec instructions "<artifact-id>"'),
+        occurrenceCount(transition, 'outline-spec instructions "<artifact-id>"'),
         label
       ).toBe(2);
       expect(
-        occurrenceCount(transition, 'openspec instructions "<prerequisite-id>"'),
+        occurrenceCount(transition, 'outline-spec instructions "<prerequisite-id>"'),
         label
       ).toBe(1);
       expect(
@@ -491,7 +491,7 @@ describe('explore templates', () => {
         label
       ).toBe(1);
       expect(
-        occurrenceCount(transition, 'After creating each artifact, re-run `openspec status'),
+        occurrenceCount(transition, 'After creating each artifact, re-run `outline-spec status'),
         label
       ).toBe(1);
     }
@@ -544,13 +544,13 @@ describe('explore templates', () => {
     for (const [label, body] of bodies) {
       const transition = newChangeTransition(body, label);
       const requestedInstructions = transition.indexOf(
-        'For each requested artifact that is `ready`, run `openspec instructions'
+        'For each requested artifact that is `ready`, run `outline-spec instructions'
       );
       const evaluateRequestedCondition = transition.indexOf(
         'Before creating a requested artifact, evaluate any condition in its own `instruction`'
       );
       const inspectPrerequisite = transition.indexOf(
-        'run `openspec instructions "<prerequisite-id>"'
+        'run `outline-spec instructions "<prerequisite-id>"'
       );
       const evaluateCondition = transition.indexOf(
         'evaluate that condition against the explored change'
@@ -566,7 +566,7 @@ describe('explore templates', () => {
       );
 
       expect(transition, label).toContain(
-        'run `openspec instructions "<prerequisite-id>" --change "<name>" --json` (append the confirmed `--store "<id>"` only for a registered standalone store) for that prerequisite whether it is `ready` or `blocked`'
+        'run `outline-spec instructions "<prerequisite-id>" --change "<name>" --json` (append the confirmed `--store "<id>"` only for a registered standalone store) for that prerequisite whether it is `ready` or `blocked`'
       );
       expect(transition, label).toContain(
         'record a deliberate skip instead when the condition does not apply'
@@ -584,7 +584,7 @@ describe('explore templates', () => {
       expect(transition, label).toContain('remember it, and do not reconsider it');
       expect(transition, label).toContain('Dependencies are enablers, not gates');
       expect(transition, label).toContain(
-        'run `openspec instructions "<artifact-id>" --change "<name>" --json` (append the confirmed `--store "<id>"` only for a registered standalone store) despite the blocked status'
+        'run `outline-spec instructions "<artifact-id>" --change "<name>" --json` (append the confirmed `--store "<id>"` only for a registered standalone store) despite the blocked status'
       );
       expect(transition, label).toContain(
         'only when those recorded conditional skips are its sole missing dependencies'
@@ -607,14 +607,14 @@ describe('explore templates describe the outline model', () => {
       expect(body, label).toContain("outline.md holds the change's spec edits");
       expect(body, label).toContain('`~~old~~ **new**`');
       expect(body, label).toContain('Labels never shift');
-      expect(body, label).toContain('`openspec land <change>`');
-      expect(body, label).toContain('never edit `openspec/specs/` directly');
+      expect(body, label).toContain('`outline-spec land <change>`');
+      expect(body, label).toContain('never edit `outline-spec/specs/` directly');
     }
   });
 
   it('carries no delta-spec vocabulary', () => {
     for (const [label, body] of bodies) {
-      for (const word of ['delta', 'Scenario', 'scenario', 'SHALL', '/opsx:sync', 'proposal.md', 'specs/<capability-path>', '--no-scenarios']) {
+      for (const word of ['delta', 'Scenario', 'scenario', 'SHALL', '/outline-spec:sync', 'proposal.md', 'specs/<capability-path>', '--no-scenarios']) {
         expect(body, `${label}: ${word}`).not.toContain(word);
       }
     }
@@ -629,7 +629,7 @@ describe('explore handoff to the propose workflow (#869)', () => {
   it('names the propose workflow when the user asks for implementation', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        'point them at `/opsx:propose`, which turns the discussion into a change'
+        'point them at `/outline-spec:propose`, which turns the discussion into a change'
       );
       expect(body, label).toContain('The work happens from that change, never from explore mode');
       expect(body, label).not.toContain(
@@ -641,7 +641,7 @@ describe('explore handoff to the propose workflow (#869)', () => {
   it('names the propose workflow where discovery ends', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        '**Flow into a change**: "Ready to start? Run `/opsx:propose` and this becomes a change."'
+        '**Flow into a change**: "Ready to start? Run `/outline-spec:propose` and this becomes a change."'
       );
       expect(body, label).not.toContain('I can create a change proposal');
     }
@@ -650,24 +650,24 @@ describe('explore handoff to the propose workflow (#869)', () => {
   it('pairs the do-not-implement guardrail with the handoff', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        'When the user is ready to build, name the handoff rather than starting: `/opsx:propose` turns the discussion into a change, and the work happens there'
+        'When the user is ready to build, name the handoff rather than starting: `/outline-spec:propose` turns the discussion into a change, and the work happens there'
       );
     }
   });
 
   it('offers the handoff as a next step in the closing summary', () => {
-    expect(skill.instructions).toContain('- Turn this into a change: `/opsx:propose`');
+    expect(skill.instructions).toContain('- Turn this into a change: `/outline-spec:propose`');
     expect(skill.instructions).not.toContain('- Create a change proposal');
   });
 
-  // The reference has to be the canonical `/opsx:<id>` form of a known
+  // The reference has to be the canonical `/outline-spec:<id>` form of a known
   // command id, or the per-tool transformers leave it as written and the
   // skill advertises an invocation no tool registers (#727, #1307).
   it('writes the reference so per-tool rendering rewrites it', () => {
     for (const [label, body] of bodies) {
       const rendered = transformToSkillReferences(body);
-      expect(rendered, label).toContain('/openspec-propose');
-      expect(rendered, label).not.toContain('/opsx:propose');
+      expect(rendered, label).toContain('/outline-spec-propose');
+      expect(rendered, label).not.toContain('/outline-spec:propose');
     }
   });
 });
@@ -683,7 +683,7 @@ describe('explore handoff renders for every delivery surface (#869)', () => {
   const HANDOFF_IDS = ['propose', 'apply'] as const;
 
   function canonicalCount(body: string, commandId: string): number {
-    return occurrenceCount(body, `/opsx:${commandId}`);
+    return occurrenceCount(body, `/outline-spec:${commandId}`);
   }
 
   it('names both handoff workflows in both bodies before any rendering', () => {
@@ -726,12 +726,12 @@ describe('explore handoff renders for every delivery surface (#869)', () => {
       for (const [label, body] of bodies) {
         const rendered = transform(body);
 
-        expect(rendered, `${tool.value} ${label}`).not.toContain('/opsx:');
-        expect(occurrenceCount(rendered, 'openspec-propose'), `${tool.value} ${label}`).toBe(
+        expect(rendered, `${tool.value} ${label}`).not.toContain('/outline-spec:');
+        expect(occurrenceCount(rendered, 'outline-spec-propose'), `${tool.value} ${label}`).toBe(
           canonicalCount(body, 'propose')
         );
         expect(
-          occurrenceCount(rendered, 'openspec-apply-change'),
+          occurrenceCount(rendered, 'outline-spec-apply-change'),
           `${tool.value} ${label}`
         ).toBe(canonicalCount(body, 'apply'));
       }
@@ -742,15 +742,15 @@ describe('explore handoff renders for every delivery surface (#869)', () => {
     for (const [label, body] of bodies) {
       const rendered = transformToCodexCompatibleSkillReferences(body);
 
-      expect(rendered, label).not.toContain('/opsx:');
+      expect(rendered, label).not.toContain('/outline-spec:');
       expect(
-        occurrenceCount(rendered, '$openspec-propose (Codex) or /openspec-propose (other agents)'),
+        occurrenceCount(rendered, '$outline-spec-propose (Codex) or /outline-spec-propose (other agents)'),
         label
       ).toBe(canonicalCount(body, 'propose'));
       expect(
         occurrenceCount(
           rendered,
-          '$openspec-apply-change (Codex) or /openspec-apply-change (other agents)'
+          '$outline-spec-apply-change (Codex) or /outline-spec-apply-change (other agents)'
         ),
         label
       ).toBe(canonicalCount(body, 'apply'));
@@ -770,8 +770,8 @@ describe('explore capture path names where the work continues (#869)', () => {
       expect(transition, label).toContain(
         'When the requested capture is done, stop there and name where the work continues'
       );
-      expect(transition, label).toContain('`/opsx:propose` writes the remaining planning artifacts');
-      expect(transition, label).toContain('`/opsx:apply` implements the change once tasks exist');
+      expect(transition, label).toContain('`/outline-spec:propose` writes the remaining planning artifacts');
+      expect(transition, label).toContain('`/outline-spec:apply` implements the change once tasks exist');
     }
   });
 
@@ -816,17 +816,17 @@ describe('explore handoffs follow the installed workflow set (#869)', () => {
         getSkillReferenceTransformer(tool.value)
       );
       for (const id of missing) {
-        const skillName = id === 'propose' ? 'openspec-propose' : 'openspec-apply-change';
+        const skillName = id === 'propose' ? 'outline-spec-propose' : 'outline-spec-apply-change';
         expect(content, `${tool.value} ${id}`).not.toContain(skillName);
       }
     }
     for (const id of missing) {
-      expect(body).not.toContain(`/opsx:${id}`);
+      expect(body).not.toContain(`/outline-spec:${id}`);
       expect(transformToCodexCompatibleSkillReferences(body)).not.toMatch(
-        new RegExp(`openspec-${id}`)
+        new RegExp(`outline-spec-${id}`)
       );
     }
-    expect(body).not.toContain('[[opsx:');
+    expect(body).not.toContain('[[outline-spec:');
   });
 
   it.each(PROFILES)('%s: generated commands never name a missing workflow', (_name, workflows, missing) => {
@@ -841,11 +841,11 @@ describe('explore handoffs follow the installed workflow set (#869)', () => {
         expect(explore!.fileContent, `${adapter.toolId} ${id}`).not.toContain(
           formatCommandInvocation(invocation, id)
         );
-        expect(explore!.fileContent, `${adapter.toolId} ${id}`).not.toContain(`/opsx:${id}`);
+        expect(explore!.fileContent, `${adapter.toolId} ${id}`).not.toContain(`/outline-spec:${id}`);
       }
-      expect(explore!.fileContent, adapter.toolId).not.toContain('[[opsx:');
+      expect(explore!.fileContent, adapter.toolId).not.toContain('[[outline-spec:');
     }
-    expect(exploreCommandBody(workflows)).not.toContain('[[opsx:');
+    expect(exploreCommandBody(workflows)).not.toContain('[[outline-spec:');
   });
 
   it.each(PROFILES)('%s: explore still names a way forward', (_name, workflows) => {
@@ -858,8 +858,8 @@ describe('explore handoffs follow the installed workflow set (#869)', () => {
   it('keeps both named handoffs when propose and apply are installed (core profile)', () => {
     const core = getProfileWorkflows('core');
     for (const body of [exploreSkillBody([...core]), exploreCommandBody([...core])]) {
-      expect(body).toContain('point them at `/opsx:propose`');
-      expect(body).toContain('`/opsx:apply` implements the change once tasks exist');
+      expect(body).toContain('point them at `/outline-spec:propose`');
+      expect(body).toContain('`/outline-spec:apply` implements the change once tasks exist');
     }
   });
 });

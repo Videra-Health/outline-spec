@@ -217,7 +217,7 @@ describe('command completion registry', () => {
     ]);
 
     const storeFlag = newChange?.flags.find((flag) => flag.name === 'store');
-    expect(storeFlag?.description).toContain('OpenSpec root');
+    expect(storeFlag?.description).toContain('outline-spec root');
     expect(newChange?.flags.map((flag) => flag.name)).not.toContain('initiative');
     expect(newChange?.flags.map((flag) => flag.name)).not.toContain('areas');
     expect(newChange?.flags.map((flag) => flag.name)).not.toContain('store-path');
@@ -237,7 +237,7 @@ describe('command completion registry', () => {
       const entry = command(name);
       const store = entry?.flags.find((flag) => flag.name === 'store');
       expect(store, `${name} --store flag`).toBeDefined();
-      expect(store?.description).toContain('OpenSpec root');
+      expect(store?.description).toContain('outline-spec root');
       expect(entry?.flags.map((flag) => flag.name)).not.toContain('store-path');
     }
   });

@@ -20,7 +20,7 @@ Ships have a hull.
 `;
 
 let root: string;
-const file = (...p: string[]) => path.join(root, 'openspec', ...p);
+const file = (...p: string[]) => path.join(root, 'outline-spec', ...p);
 const write = (rel: string, text: string) => {
   mkdirSync(path.dirname(file(rel)), { recursive: true });
   writeFileSync(file(rel), text);
@@ -33,14 +33,14 @@ const change = (name: string, reqs: string, tasks = '- [x] 1.1 Done\n') => {
 const cli = (...args: string[]) => runCLI(args, { cwd: root });
 
 beforeEach(() => {
-  root = mkdtempSync(path.join(os.tmpdir(), 'openspec-outline-'));
+  root = mkdtempSync(path.join(os.tmpdir(), 'outline-spec-outline-'));
   write('config.yaml', 'schema: outline\n');
   write('specs/outfitting/spec.md', OUTFITTING);
   write('specs/hull/spec.md', HULL);
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-describe('openspec land', () => {
+describe('outline-spec land', () => {
   it('applies edits, creates and deletes specs, and removes the change', async () => {
     change(
       'c1',
@@ -83,7 +83,7 @@ describe('openspec land', () => {
     change('c1', '1. outfitting:\n  a. Catalog (patch): The catalog is ~~these~~ **all of the** items.\n');
     const r = await cli('land', 'c1', '--dry-run');
     expect(r.exitCode).toBe(0);
-    expect(r.stdout).toContain('--- openspec/specs/outfitting/spec.md (updated)');
+    expect(r.stdout).toContain('--- outline-spec/specs/outfitting/spec.md (updated)');
     expect(r.stdout).toContain('2. Catalog: The catalog is all of the items.');
     expect(read('specs/outfitting/spec.md')).toBe(OUTFITTING);
     expect(existsSync(file('changes/c1'))).toBe(true);
@@ -137,18 +137,18 @@ describe('openspec land', () => {
   });
 });
 
-describe('openspec archive', () => {
+describe('outline-spec archive', () => {
   it('lands the change and notes the rename on stderr only', async () => {
     change('c1', '1. docking: Ships dock.\n  a. Clamps: 2 s.\n');
     const r = await cli('archive', 'c1', '--json');
     expect(r.exitCode).toBe(0);
-    expect(r.stderr).toContain('"openspec archive" is now "openspec land"');
+    expect(r.stderr).toContain('"outline-spec archive" is now "outline-spec land"');
     expect(JSON.parse(r.stdout)).toMatchObject({ landed: 'c1' });
     expect(existsSync(file('specs/docking/spec.md'))).toBe(true);
   });
 });
 
-describe('openspec instructions land', () => {
+describe('outline-spec instructions land', () => {
   it('serves land inputs under both names', async () => {
     change('c1', '');
     write('config.yaml', 'schema: outline\noperations:\n  archive:\n    guidance:\n      - Say what landed\n');
@@ -159,7 +159,7 @@ describe('openspec instructions land', () => {
   });
 });
 
-describe('openspec pending', () => {
+describe('outline-spec pending', () => {
   it('lists what each change touches and where they overlap', async () => {
     change('a', '1. outfitting:\n  a. Catalog (patch):\n    c. ~~Bracing Kit: 3 / 0 / 0.~~\n');
     change('b', '1. outfitting:\n  a. Catalog (patch):\n    c. Bracing Kit: ~~3~~ **4** / 0 / 0.\n  b. Hull rating: Frame items add Hk.\n');
@@ -184,7 +184,7 @@ describe('openspec pending', () => {
   });
 });
 
-describe('openspec relabel', () => {
+describe('outline-spec relabel', () => {
   it('closes label gaps', async () => {
     const r = await cli('relabel', 'outfitting');
     expect(r.exitCode).toBe(0);
@@ -200,7 +200,7 @@ describe('openspec relabel', () => {
   });
 });
 
-describe('openspec migrate-specs', () => {
+describe('outline-spec migrate-specs', () => {
   const OLD = '# legacy Specification\n\n## Purpose\nOld purpose.\n\n## Requirements\n### Requirement: R\nThe system SHALL work.\n\n#### Scenario: S\n- **WHEN** x\n- **THEN** y\n';
 
   it('converts old-format specs and skips outlines', async () => {

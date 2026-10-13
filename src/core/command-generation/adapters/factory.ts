@@ -10,14 +10,14 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * Factory adapter for command generation.
- * File path: .factory/commands/opsx-<id>.md
+ * File path: .factory/commands/outline-spec-<id>.md
  * Frontmatter: description, argument-hint
  */
 export const factoryAdapter: ToolCommandAdapter = {
   toolId: 'factory',
 
   getFilePath(commandId: string): string {
-    return path.join('.factory', 'commands', `opsx-${commandId}.md`);
+    return path.join('.factory', 'commands', `outline-spec-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

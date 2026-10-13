@@ -96,7 +96,7 @@ function editScope(input: ActionContextInput): Pick<ActionContext, 'allowedEditR
   return {
     allowedEditRoots: [input.projectRoot],
     constraints: [
-      `${planning} OpenSpec could not determine which repository implements this change; ask the user which repository to edit, and make implementation edits there.`,
+      `${planning} outline-spec could not determine which repository implements this change; ask the user which repository to edit, and make implementation edits there.`,
     ],
   };
 }
@@ -120,12 +120,12 @@ export function resolveNextStep(input: ChangeNextStepsInput): ChangeNextStep | u
   const storeFlag = input.storeId ? ` --store ${input.storeId}` : '';
 
   if (readyArtifact) {
-    const command = `openspec instructions ${readyArtifact.id} --change "${input.changeName}"${storeFlag} --json`;
+    const command = `outline-spec instructions ${readyArtifact.id} --change "${input.changeName}"${storeFlag} --json`;
     return { command, sentence: `Run ${command} before writing that artifact.` };
   }
 
   if (input.allArtifactsComplete) {
-    const command = `openspec instructions apply --change "${input.changeName}"${storeFlag} --json`;
+    const command = `outline-spec instructions apply --change "${input.changeName}"${storeFlag} --json`;
     return {
       command,
       sentence: `All planning artifacts are complete. Run ${command} to inspect implementation progress.`,

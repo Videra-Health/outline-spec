@@ -19,7 +19,7 @@ describe('BashInstaller .bashrc round trip', () => {
   let installer: BashInstaller;
 
   beforeEach(async () => {
-    homeDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-bashrc-round-trip-'));
+    homeDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-bashrc-round-trip-'));
     bashrcPath = path.join(homeDir, '.bashrc');
     completionsDir = path.join(homeDir, '.local', 'share', 'bash-completion', 'completions');
     installer = new BashInstaller(homeDir);
@@ -29,11 +29,11 @@ describe('BashInstaller .bashrc round trip', () => {
     await fs.rm(homeDir, { recursive: true, force: true });
   });
 
-  /** Writes `original`, adds the OpenSpec block, removes it, and returns the file. */
+  /** Writes `original`, adds the outline-spec block, removes it, and returns the file. */
   async function roundTrip(original: string): Promise<string> {
     await fs.writeFile(bashrcPath, original);
     expect(await installer.configureBashrc(completionsDir)).toBe(true);
-    expect(await fs.readFile(bashrcPath, 'utf-8')).toContain('# OPENSPEC:START');
+    expect(await fs.readFile(bashrcPath, 'utf-8')).toContain('# OUTLINE_SPEC:START');
     expect(await installer.removeBashrcConfig()).toBe(true);
     return fs.readFile(bashrcPath, 'utf-8');
   }
@@ -65,7 +65,7 @@ describe('BashInstaller .bashrc round trip', () => {
     expect(await installer.configureBashrc(completionsDir)).toBe(true);
 
     const installed = await fs.readFile(bashrcPath, 'utf-8');
-    expect(installed.split('# OPENSPEC:START')).toHaveLength(2);
+    expect(installed.split('# OUTLINE_SPEC:START')).toHaveLength(2);
 
     expect(await installer.removeBashrcConfig()).toBe(true);
     expect(await fs.readFile(bashrcPath, 'utf-8')).toBe(original);
@@ -77,8 +77,8 @@ describe('BashInstaller .bashrc round trip', () => {
     expect(await fs.readFile(bashrcPath, 'utf-8')).toBe('');
   });
 
-  it('leaves an empty file when .bashrc holds only the OpenSpec block', async () => {
-    await fs.writeFile(bashrcPath, '# OPENSPEC:START\n# OpenSpec shell completions configuration\n# OPENSPEC:END\n');
+  it('leaves an empty file when .bashrc holds only the outline-spec block', async () => {
+    await fs.writeFile(bashrcPath, '# OUTLINE_SPEC:START\n# outline-spec shell completions configuration\n# OUTLINE_SPEC:END\n');
     expect(await installer.removeBashrcConfig()).toBe(true);
     expect(await fs.readFile(bashrcPath, 'utf-8')).toBe('');
   });
@@ -88,9 +88,9 @@ describe('BashInstaller .bashrc round trip', () => {
       bashrcPath,
       [
         'export PATH="$HOME/bin:$PATH"',
-        '# OPENSPEC:START',
-        '# OpenSpec shell completions configuration',
-        '# OPENSPEC:END',
+        '# OUTLINE_SPEC:START',
+        '# outline-spec shell completions configuration',
+        '# OUTLINE_SPEC:END',
         'alias ll="ls -la"',
         '',
       ].join('\n')
@@ -104,7 +104,7 @@ describe('BashInstaller .bashrc round trip', () => {
     // The user deleted the separator line, so nothing blank follows the block.
     await fs.writeFile(
       bashrcPath,
-      '# OPENSPEC:START\n# OpenSpec shell completions configuration\n# OPENSPEC:END\nalias ll="ls -la"\n\nexport EDITOR=vim\n'
+      '# OUTLINE_SPEC:START\n# outline-spec shell completions configuration\n# OUTLINE_SPEC:END\nalias ll="ls -la"\n\nexport EDITOR=vim\n'
     );
 
     expect(await installer.removeBashrcConfig()).toBe(true);
@@ -120,18 +120,18 @@ describe('BashInstaller .bashrc round trip', () => {
     const original = 'export PATH="$HOME/bin:$PATH"\nalias ll="ls -la"\n';
     await fs.writeFile(bashrcPath, original);
 
-    expect((await installer.install('# openspec completion script\n')).success).toBe(true);
+    expect((await installer.install('# outline-spec completion script\n')).success).toBe(true);
     expect((await installer.uninstall()).success).toBe(true);
 
     expect(await fs.readFile(bashrcPath, 'utf-8')).toBe(original);
   });
 });
 
-describe('openspec completion install/uninstall bash (end to end)', () => {
+describe('outline-spec completion install/uninstall bash (end to end)', () => {
   let base: string;
 
   beforeEach(async () => {
-    base = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-bashrc-cli-'));
+    base = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-bashrc-cli-'));
   });
 
   afterEach(async () => {
@@ -146,7 +146,7 @@ describe('openspec completion install/uninstall bash (end to end)', () => {
       USERPROFILE: home,
       XDG_CONFIG_HOME: path.join(home, '.config'),
       XDG_DATA_HOME: path.join(home, '.local', 'share'),
-      OPENSPEC_NO_ANIMATION: '1',
+      OUTLINE_SPEC_NO_ANIMATION: '1',
     };
     const rc = path.join(home, '.bashrc');
     const original = 'export PATH="$HOME/bin:$PATH"\nalias ll="ls -la"\n';
@@ -154,7 +154,7 @@ describe('openspec completion install/uninstall bash (end to end)', () => {
 
     const installed = await runCLI(['completion', 'install', 'bash'], { cwd: home, env, timeoutMs: 60_000 });
     expect(installed.exitCode).toBe(0);
-    expect(await fs.readFile(rc, 'utf-8')).toContain('# OPENSPEC:START');
+    expect(await fs.readFile(rc, 'utf-8')).toContain('# OUTLINE_SPEC:START');
 
     const removed = await runCLI(['completion', 'uninstall', 'bash', '--yes'], { cwd: home, env, timeoutMs: 60_000 });
     expect(removed.exitCode).toBe(0);

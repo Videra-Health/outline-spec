@@ -5,7 +5,7 @@ import * as path from 'node:path';
 
 import { getGlobalDataDir, registerStore } from '../../src/core/index.js';
 import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
-import { createOpenSpecRoot } from '../helpers/openspec-fixtures.js';
+import { createOutlineSpecRoot } from '../helpers/outline-spec-fixtures.js';
 
 describe('global defaultStore fallback (#1359)', () => {
   let tempDir: string;
@@ -16,7 +16,7 @@ describe('global defaultStore fallback (#1359)', () => {
 
   beforeEach(async () => {
     tempDir = fs.realpathSync.native(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-global-default-'))
+      fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-global-default-'))
     );
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
@@ -26,7 +26,7 @@ describe('global defaultStore fallback (#1359)', () => {
     globalDataDir = getGlobalDataDir({ env });
 
     storeRoot = path.join(tempDir, 'team-context');
-    createOpenSpecRoot(storeRoot);
+    createOutlineSpecRoot(storeRoot);
     await registerStore({ id: 'team-context', localPath: storeRoot, globalDataDir });
 
     scratch = path.join(tempDir, 'no-root-here');
@@ -42,9 +42,9 @@ describe('global defaultStore fallback (#1359)', () => {
   }
 
   function setDefaultStore(id: string): void {
-    fs.mkdirSync(path.join(tempDir, 'config', 'openspec'), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, 'config', 'outline-spec'), { recursive: true });
     fs.writeFileSync(
-      path.join(tempDir, 'config', 'openspec', 'config.json'),
+      path.join(tempDir, 'config', 'outline-spec', 'config.json'),
       JSON.stringify({ defaultStore: id }) + '\n'
     );
   }
@@ -62,7 +62,7 @@ describe('global defaultStore fallback (#1359)', () => {
 
     const human = await runCLI(['status'], { cwd: scratch, env });
     expect(human.exitCode).toBe(0);
-    expect(human.stderr).toContain('Using OpenSpec root: team-context');
+    expect(human.stderr).toContain('Using outline-spec root: team-context');
   }, 30_000);
 
   it('reports a stale default in the JSON failure payload with the clearing fix', async () => {
@@ -73,6 +73,6 @@ describe('global defaultStore fallback (#1359)', () => {
     const [diagnostic] = parseJson(status).status;
     expect(diagnostic.code).toBe('unknown_store');
     expect(diagnostic.message).toContain("Global defaultStore 'ghost-plans'");
-    expect(diagnostic.fix).toContain('openspec config unset defaultStore');
+    expect(diagnostic.fix).toContain('outline-spec config unset defaultStore');
   }, 30_000);
 });

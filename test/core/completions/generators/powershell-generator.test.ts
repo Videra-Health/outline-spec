@@ -25,38 +25,38 @@ describe('PowerShellGenerator', () => {
 			const commands: CommandDefinition[] = [
 				{
 					name: 'init',
-					description: 'Initialize OpenSpec',
+					description: 'Initialize outline-spec',
 					flags: [],
 				},
 			];
 
 			const script = generator.generate(commands);
 
-			expect(script).toContain('# PowerShell completion script for OpenSpec CLI');
-			expect(script).toContain('$openspecCompleter = {');
+			expect(script).toContain('# PowerShell completion script for outline-spec CLI');
+			expect(script).toContain('$outlineSpecCompleter = {');
 			expect(script).toContain('Register-ArgumentCompleter');
 		});
 
-		it('should register argument completer for openspec command', () => {
+		it('should register argument completer for outline-spec command', () => {
 			const commands: CommandDefinition[] = [
 				{
 					name: 'init',
-					description: 'Initialize OpenSpec',
+					description: 'Initialize outline-spec',
 					flags: [],
 				},
 			];
 
 			const script = generator.generate(commands);
 
-			expect(script).toContain('Register-ArgumentCompleter -CommandName openspec');
-			expect(script).toContain('-ScriptBlock $openspecCompleter');
+			expect(script).toContain('Register-ArgumentCompleter -CommandName outline-spec');
+			expect(script).toContain('-ScriptBlock $outlineSpecCompleter');
 		});
 
 		it('should include all commands with descriptions', () => {
 			const commands: CommandDefinition[] = [
 				{
 					name: 'init',
-					description: 'Initialize OpenSpec',
+					description: 'Initialize outline-spec',
 					flags: [],
 				},
 				{
@@ -74,7 +74,7 @@ describe('PowerShellGenerator', () => {
 			const script = generator.generate(commands);
 
 			expect(script).toContain('"init"');
-			expect(script).toContain('Initialize OpenSpec');
+			expect(script).toContain('Initialize outline-spec');
 			expect(script).toContain('"validate"');
 			expect(script).toContain('Validate specs');
 			expect(script).toContain('"show"');
@@ -85,7 +85,7 @@ describe('PowerShellGenerator', () => {
 			const commands: CommandDefinition[] = [
 				{
 					name: 'init',
-					description: 'Initialize OpenSpec',
+					description: 'Initialize outline-spec',
 					flags: [],
 				},
 			];
@@ -282,7 +282,7 @@ describe('PowerShellGenerator', () => {
 
 			const script = generator.generate(commands);
 
-			expect(script).toContain('Get-OpenSpecChanges');
+			expect(script).toContain('Get-OutlineSpecChanges');
 		});
 
 		it('should handle positional arguments for spec-id', () => {
@@ -298,7 +298,7 @@ describe('PowerShellGenerator', () => {
 
 			const script = generator.generate(commands);
 
-			expect(script).toContain('Get-OpenSpecSpecs');
+			expect(script).toContain('Get-OutlineSpecSpecs');
 		});
 
 		it('should handle positional arguments for change-or-spec-id', () => {
@@ -314,8 +314,8 @@ describe('PowerShellGenerator', () => {
 
 			const script = generator.generate(commands);
 
-			expect(script).toContain('Get-OpenSpecChanges');
-			expect(script).toContain('Get-OpenSpecSpecs');
+			expect(script).toContain('Get-OutlineSpecChanges');
+			expect(script).toContain('Get-OutlineSpecSpecs');
 		});
 
 		it('should handle positional arguments for shell with inline values', () => {
@@ -341,7 +341,7 @@ describe('PowerShellGenerator', () => {
 			const commands: CommandDefinition[] = [
 				{
 					name: 'init',
-					description: 'Initialize OpenSpec',
+					description: 'Initialize outline-spec',
 					acceptsPositional: true,
 					positionalType: 'path',
 					flags: [],
@@ -367,8 +367,8 @@ describe('PowerShellGenerator', () => {
 
 			const script = generator.generate(commands);
 
-			expect(script).toContain('Get-OpenSpecSchemas');
-			expect(script).toContain('openspec __complete schemas 2>$null');
+			expect(script).toContain('Get-OutlineSpecSchemas');
+			expect(script).toContain('outline-spec __complete schemas 2>$null');
 		});
 
 		it('should generate dynamic completion helper for changes', () => {
@@ -384,8 +384,8 @@ describe('PowerShellGenerator', () => {
 
 			const script = generator.generate(commands);
 
-			expect(script).toContain('function Get-OpenSpecChanges');
-			expect(script).toContain('openspec __complete changes 2>$null');
+			expect(script).toContain('function Get-OutlineSpecChanges');
+			expect(script).toContain('outline-spec __complete changes 2>$null');
 			expect(script).toContain('-split');
 		});
 
@@ -402,8 +402,8 @@ describe('PowerShellGenerator', () => {
 
 			const script = generator.generate(commands);
 
-			expect(script).toContain('function Get-OpenSpecSpecs');
-			expect(script).toContain('openspec __complete specs 2>$null');
+			expect(script).toContain('function Get-OutlineSpecSpecs');
+			expect(script).toContain('outline-spec __complete specs 2>$null');
 		});
 
 		it('should escape double quotes in descriptions', () => {
@@ -459,14 +459,14 @@ describe('PowerShellGenerator', () => {
 			expect(script).toContain('"validate"');
 			expect(script).toContain('--strict');
 			expect(script).toContain('--json');
-			expect(script).toContain('Get-OpenSpecSpecs');
+			expect(script).toContain('Get-OutlineSpecSpecs');
 		});
 
 		it('should not emit an empty switch when no positional produces completions', () => {
 			const commands: CommandDefinition[] = [
 				{
 					name: 'init',
-					description: 'Initialize OpenSpec',
+					description: 'Initialize outline-spec',
 					flags: [
 						{
 							name: 'tools',
@@ -526,7 +526,7 @@ describe('PowerShellGenerator', () => {
 			const script = generator.generate(commands);
 
 			expect(script).toContain('# PowerShell completion script');
-			expect(script).toContain('$openspecCompleter = {');
+			expect(script).toContain('$outlineSpecCompleter = {');
 			expect(script).toContain('Register-ArgumentCompleter');
 		});
 
@@ -558,7 +558,7 @@ describe('PowerShellGenerator', () => {
 
 			const script = generator.generate(commands);
 
-			expect(script).toContain('function Get-OpenSpecChanges');
+			expect(script).toContain('function Get-OutlineSpecChanges');
 			// PowerShell uses -split with \\t for tab character
 			expect(script).toContain('-split');
 			expect(script).toContain('[0]');

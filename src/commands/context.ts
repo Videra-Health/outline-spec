@@ -1,5 +1,5 @@
 /**
- * `openspec context` (slice 4.1): the working set a root's declarations
+ * `outline-spec context` (slice 4.1): the working set a root's declarations
  * describe, as an agent brief (JSON), a human listing, or an editor
  * view (`--code-workspace`). Assembly is presentation over the Phase 3
  * relationship data; doctor is the health surface. The only write this
@@ -10,7 +10,7 @@ import * as path from 'node:path';
 
 import {
   resolveRootForCommand,
-  type ResolvedOpenSpecRoot,
+  type ResolvedOutlineSpecRoot,
 } from '../core/root-selection.js';
 import { inspectRelationships } from '../core/relationship-health.js';
 import {
@@ -27,7 +27,7 @@ import { gatherRelationshipData } from './shared-gather.js';
 const FAILURE_PAYLOAD = { root: null, members: [] };
 
 async function gatherWorkingSet(
-  root: ResolvedOpenSpecRoot
+  root: ResolvedOutlineSpecRoot
 ): Promise<{ workingSet: WorkingSet; declaredReferenceCount: number }> {
   const data = await gatherRelationshipData(root);
 
@@ -60,7 +60,7 @@ function printHumanWorkingSet(workingSet: WorkingSet, declaredReferenceCount: nu
   const rootLabel = workingSet.root.store_id ?? path.basename(workingSet.root.path);
   console.log(`Working context for ${rootLabel} (${workingSet.root.path})`);
   console.log('');
-  console.log('OpenSpec root');
+  console.log('outline-spec root');
   console.log(`  ${rootLabel}  ${workingSet.root.path}`);
 
   const availableStores = workingSet.members.filter(

@@ -6,7 +6,7 @@ import * as path from 'node:path';
 import { getGlobalDataDir, registerStore } from '../../src/core/index.js';
 import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
 import { snapshotDirectory as snapshot } from '../helpers/fs-snapshot.js';
-import { createOpenSpecRoot, writeSpec } from '../helpers/openspec-fixtures.js';
+import { createOutlineSpecRoot, writeSpec } from '../helpers/outline-spec-fixtures.js';
 
 describe('declared store fallback (3.2)', () => {
   let tempDir: string;
@@ -17,7 +17,7 @@ describe('declared store fallback (3.2)', () => {
 
   beforeEach(async () => {
     tempDir = fs.realpathSync.native(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-declared-'))
+      fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-declared-'))
     );
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
@@ -27,13 +27,13 @@ describe('declared store fallback (3.2)', () => {
     globalDataDir = getGlobalDataDir({ env });
 
     storeRoot = path.join(tempDir, 'team-context');
-    createOpenSpecRoot(storeRoot);
+    createOutlineSpecRoot(storeRoot);
     await registerStore({ id: 'team-context', localPath: storeRoot, globalDataDir });
 
     pointerRepo = path.join(tempDir, 'app-repo');
-    fs.mkdirSync(path.join(pointerRepo, 'openspec'), { recursive: true });
+    fs.mkdirSync(path.join(pointerRepo, 'outline-spec'), { recursive: true });
     fs.writeFileSync(
-      path.join(pointerRepo, 'openspec', 'config.yaml'),
+      path.join(pointerRepo, 'outline-spec', 'config.yaml'),
       'store: team-context\n'
     );
   });
@@ -68,13 +68,13 @@ describe('declared store fallback (3.2)', () => {
       env,
     });
     expect(statusHuman.exitCode).toBe(0);
-    expect(statusHuman.stderr).toContain('Using OpenSpec root: team-context');
+    expect(statusHuman.stderr).toContain('Using outline-spec root: team-context');
 
     // Hint continuity: follow-ups carry --store on BOTH surfaces. A text
     // `Next:` line that dropped the flag would resolve against the pointer
     // repo instead of the store.
     expect(statusHuman.stdout).toContain(
-      'Next: openspec instructions outline --change "billing-rework" --store team-context --json'
+      'Next: outline-spec instructions outline --change "billing-rework" --store team-context --json'
     );
 
     const statusJson = await runCLI(['status', '--change', 'billing-rework', '--json'], {
@@ -89,7 +89,7 @@ describe('declared store fallback (3.2)', () => {
     );
     expect(instructions.exitCode).toBe(0);
 
-    const changeDir = path.join(storeRoot, 'openspec', 'changes', 'billing-rework');
+    const changeDir = path.join(storeRoot, 'outline-spec', 'changes', 'billing-rework');
     fs.writeFileSync(
       path.join(changeDir, 'outline.md'),
       '## Proposal\nBilling rework.\n\n## Requirements\n1. billing: Bills customers.\n  a. Billing: The system bills.\n'
@@ -116,7 +116,7 @@ describe('declared store fallback (3.2)', () => {
     });
     expect(land.exitCode).toBe(0);
     expect(fs.existsSync(changeDir)).toBe(false);
-    expect(fs.existsSync(path.join(storeRoot, 'openspec', 'specs', 'billing', 'spec.md'))).toBe(true);
+    expect(fs.existsSync(path.join(storeRoot, 'outline-spec', 'specs', 'billing', 'spec.md'))).toBe(true);
 
     // The pointer repo is byte-identical: no specs/, no changes/, nothing.
     expect(snapshot(pointerRepo)).toEqual(pointerBefore);
@@ -126,11 +126,11 @@ describe('declared store fallback (3.2)', () => {
 
   it('composes with 3.1: the declared root surfaces the store own references', async () => {
     const upstreamRoot = path.join(tempDir, 'upstream-context');
-    createOpenSpecRoot(upstreamRoot);
+    createOutlineSpecRoot(upstreamRoot);
     writeSpec(upstreamRoot, 'platform-rules', '# platform-rules\nPlatform rules.\n\n1. Rule: The platform has rules.\n');
     await registerStore({ id: 'upstream-context', localPath: upstreamRoot, globalDataDir });
     fs.writeFileSync(
-      path.join(storeRoot, 'openspec', 'config.yaml'),
+      path.join(storeRoot, 'outline-spec', 'config.yaml'),
       'schema: outline\nreferences:\n  - upstream-context\n'
     );
 
@@ -149,7 +149,7 @@ describe('declared store fallback (3.2)', () => {
   });
 
   it('installs integrations in a pointer repo without creating a local planning root', async () => {
-    const legacyAgentsPath = path.join(pointerRepo, 'openspec', 'AGENTS.md');
+    const legacyAgentsPath = path.join(pointerRepo, 'outline-spec', 'AGENTS.md');
     fs.writeFileSync(legacyAgentsPath, 'Keep this pointer-repo file.\n');
     const before = snapshot(pointerRepo);
     const initialized = await runCLI(['init', '.', '--tools', 'claude'], {
@@ -158,15 +158,15 @@ describe('declared store fallback (3.2)', () => {
     });
 
     expect(initialized.exitCode).toBe(0);
-    expect(fs.existsSync(path.join(pointerRepo, '.claude', 'skills', 'openspec-propose', 'SKILL.md'))).toBe(true);
-    expect(fs.readFileSync(path.join(pointerRepo, 'openspec', 'config.yaml'), 'utf8')).toBe(
+    expect(fs.existsSync(path.join(pointerRepo, '.claude', 'skills', 'outline-spec-propose', 'SKILL.md'))).toBe(true);
+    expect(fs.readFileSync(path.join(pointerRepo, 'outline-spec', 'config.yaml'), 'utf8')).toBe(
       'store: team-context\n'
     );
-    expect(fs.existsSync(path.join(pointerRepo, 'openspec', 'specs'))).toBe(false);
-    expect(fs.existsSync(path.join(pointerRepo, 'openspec', 'changes'))).toBe(false);
+    expect(fs.existsSync(path.join(pointerRepo, 'outline-spec', 'specs'))).toBe(false);
+    expect(fs.existsSync(path.join(pointerRepo, 'outline-spec', 'changes'))).toBe(false);
     expect(fs.readFileSync(legacyAgentsPath, 'utf8')).toBe('Keep this pointer-repo file.\n');
 
-    expect(before.get('openspec/config.yaml')).toBe('store: team-context\n');
+    expect(before.get('outline-spec/config.yaml')).toBe('store: team-context\n');
   });
 
   it.skipIf(process.platform === 'win32')('installs integrations through a symlinked pointer-repo root', async () => {
@@ -178,21 +178,21 @@ describe('declared store fallback (3.2)', () => {
     });
 
     expect(initialized.exitCode).toBe(0);
-    expect(fs.existsSync(path.join(pointerRepo, '.claude', 'skills', 'openspec-propose', 'SKILL.md'))).toBe(true);
-    expect(fs.readFileSync(path.join(pointerRepo, 'openspec', 'config.yaml'), 'utf8')).toBe(
+    expect(fs.existsSync(path.join(pointerRepo, '.claude', 'skills', 'outline-spec-propose', 'SKILL.md'))).toBe(true);
+    expect(fs.readFileSync(path.join(pointerRepo, 'outline-spec', 'config.yaml'), 'utf8')).toBe(
       'store: team-context\n'
     );
   });
 
   it('applies explicit Copilot cloud choices without changing the pointer config', async () => {
-    const configPath = path.join(pointerRepo, 'openspec', 'config.yaml');
+    const configPath = path.join(pointerRepo, 'outline-spec', 'config.yaml');
     const setupStepsPath = path.join(
       pointerRepo,
       '.github',
       'workflows',
       'copilot-setup-steps.yml'
     );
-    const agentPath = path.join(pointerRepo, '.github', 'agents', 'openspec.agent.md');
+    const agentPath = path.join(pointerRepo, '.github', 'agents', 'outline-spec.agent.md');
     const before = fs.readFileSync(configPath, 'utf8');
 
     const enabled = await runCLI(
@@ -214,7 +214,7 @@ describe('declared store fallback (3.2)', () => {
     expect(fs.existsSync(setupStepsPath)).toBe(false);
     expect(fs.existsSync(agentPath)).toBe(false);
     expect(fs.readFileSync(configPath, 'utf8')).toBe(before);
-    expect(fs.existsSync(path.join(pointerRepo, 'openspec', 'specs'))).toBe(false);
+    expect(fs.existsSync(path.join(pointerRepo, 'outline-spec', 'specs'))).toBe(false);
   });
 
   it('rejects --language in a pointer repo without changing either root', async () => {
@@ -234,18 +234,18 @@ describe('declared store fallback (3.2)', () => {
   it('refuses init for malformed pointers and from pointer-repo subdirectories', async () => {
     // A broken declaration must not be buried under a scaffold.
     fs.writeFileSync(
-      path.join(pointerRepo, 'openspec', 'config.yaml'),
+      path.join(pointerRepo, 'outline-spec', 'config.yaml'),
       'store: [team-context]\n'
     );
     const malformed = await runCLI(['init', '.'], { cwd: pointerRepo, env });
     expect(malformed.exitCode).toBe(1);
     expect(malformed.stderr).toContain('Fix or remove the store: line');
-    expect(fs.existsSync(path.join(pointerRepo, 'openspec', 'specs'))).toBe(false);
+    expect(fs.existsSync(path.join(pointerRepo, 'outline-spec', 'specs'))).toBe(false);
 
     // And a subdirectory of a pointer repo must not grow a nested root
     // that silently diverts work away from the declared store.
     fs.writeFileSync(
-      path.join(pointerRepo, 'openspec', 'config.yaml'),
+      path.join(pointerRepo, 'outline-spec', 'config.yaml'),
       'store: team-context\n'
     );
     const subdir = path.join(pointerRepo, 'packages', 'api');
@@ -253,19 +253,19 @@ describe('declared store fallback (3.2)', () => {
     const nested = await runCLI(['init', '.'], { cwd: subdir, env });
     expect(nested.exitCode).toBe(1);
     expect(nested.stderr).toContain("externalized to store 'team-context'");
-    expect(fs.existsSync(path.join(subdir, 'openspec'))).toBe(false);
+    expect(fs.existsSync(path.join(subdir, 'outline-spec'))).toBe(false);
   });
 
   it('keeps real-root stdout byte-identical when a pointer is present, with one warning', async () => {
     const realRepo = path.join(tempDir, 'real-repo');
-    createOpenSpecRoot(realRepo);
+    createOutlineSpecRoot(realRepo);
     const runs: Record<string, { stdout: string; warnings: number }> = {};
 
     for (const [label, config] of [
       ['without', 'schema: outline\n'],
       ['with', 'schema: outline\nstore: team-context\n'],
     ] as const) {
-      fs.writeFileSync(path.join(realRepo, 'openspec', 'config.yaml'), config);
+      fs.writeFileSync(path.join(realRepo, 'outline-spec', 'config.yaml'), config);
       const result = await runCLI(['list', '--json'], { cwd: realRepo, env });
       expect(result.exitCode).toBe(0);
       runs[label] = {

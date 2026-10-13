@@ -11,7 +11,7 @@ import {
 const OUTLINE = `## Proposal
 Pure internal refactor with no spec-level behavior change.`;
 
-describe('unrecognized keys in .openspec.yaml', () => {
+describe('unrecognized keys in .outline-spec.yaml', () => {
   it('knows exactly the keys ChangeMetadataSchema defines', () => {
     // A key added to the schema but not to this list would warn on, and fail
     // --strict for, every change that uses it.
@@ -27,7 +27,7 @@ describe('status/instructions report unrecognized change metadata keys', () => {
 
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(process.cwd(), 'test-status-unknown-metadata-'));
-    changeDir = path.join(tempDir, 'openspec', 'changes', 'probe');
+    changeDir = path.join(tempDir, 'outline-spec', 'changes', 'probe');
     await fs.mkdir(changeDir, { recursive: true });
     await fs.writeFile(path.join(changeDir, 'outline.md'), OUTLINE, 'utf-8');
     await fs.writeFile(
@@ -41,7 +41,7 @@ describe('status/instructions report unrecognized change metadata keys', () => {
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  it('returns a warning when loading a change whose .openspec.yaml has unknown keys', () => {
+  it('returns a warning when loading a change whose .outline-spec.yaml has unknown keys', () => {
     const context = loadChangeContext(tempDir, 'probe');
 
     // skip_specs went away with delta specs, so it is now just another unknown key.

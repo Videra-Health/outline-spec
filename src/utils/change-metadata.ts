@@ -10,12 +10,12 @@ import { listSchemas, removedSchemaHint } from '../core/artifact-graph/resolver.
 import { readProjectConfig, type ProjectConfig } from '../core/project-config.js';
 import { sanitizeInline } from '../core/references.js';
 
-export const METADATA_FILENAME = '.openspec.yaml';
+export const METADATA_FILENAME = '.outline-spec.yaml';
 
 export { CHANGE_METADATA_KNOWN_KEYS };
 
 /**
- * Unknown top-level keys on a parsed .openspec.yaml object. Extra keys are
+ * Unknown top-level keys on a parsed .outline-spec.yaml object. Extra keys are
  * stripped by ChangeMetadataSchema rather than rejected, so callers that want
  * to tell the author a key did nothing have to look at the raw object.
  */
@@ -104,7 +104,7 @@ export function validateSchemaName(
 }
 
 /**
- * Writes change metadata to .openspec.yaml in the change directory.
+ * Writes change metadata to .outline-spec.yaml in the change directory.
  *
  * @param changeDir - The path to the change directory
  * @param metadata - The metadata to write
@@ -145,7 +145,7 @@ export function writeChangeMetadata(
 }
 
 /**
- * Reads change metadata from .openspec.yaml in the change directory.
+ * Reads change metadata from .outline-spec.yaml in the change directory.
  *
  * @param changeDir - The path to the change directory
  * @param projectRoot - Optional project root for project-local schema resolution
@@ -219,8 +219,8 @@ export interface ResolveSchemaForChangeOptions {
  *
  * Resolution order:
  * 1. Explicit schema (if provided)
- * 2. Schema from .openspec.yaml metadata (if exists)
- * 3. Schema from openspec/config.yaml (if exists)
+ * 2. Schema from .outline-spec.yaml metadata (if exists)
+ * 3. Schema from outline-spec/config.yaml (if exists)
  * 4. Default 'outline'
  *
  * @param changeDir - The path to the change directory
@@ -233,7 +233,7 @@ export function resolveSchemaForChange(
   projectRootOverride?: string,
   options: ResolveSchemaForChangeOptions = {}
 ): string {
-  // Derive project root from changeDir (changeDir is typically projectRoot/openspec/changes/change-name)
+  // Derive project root from changeDir (changeDir is typically projectRoot/outline-spec/changes/change-name)
   const projectRoot = projectRootOverride ?? path.resolve(changeDir, '../../..');
 
   // 1. Explicit override wins

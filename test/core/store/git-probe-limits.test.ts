@@ -21,7 +21,7 @@ describe('store git probe output limits', () => {
   let repoRoot: string;
 
   beforeAll(async () => {
-    repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-git-probe-'));
+    repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-git-probe-'));
     execFileSync('git', ['init', '-q'], { cwd: repoRoot });
 
     // Untracked directories collapse to one porcelain line, so the files have

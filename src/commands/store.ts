@@ -92,12 +92,12 @@ interface StoreListOutput {
   status: StoreDiagnostic[];
 }
 
-type OpenSpecRootOutput = Omit<StoreInspection['openspecRoot'], 'diagnostics'> & {
+type OutlineSpecRootOutput = Omit<StoreInspection['outlineSpecRoot'], 'diagnostics'> & {
   status: StoreDiagnostic[];
 };
 
 interface StoreDoctorStoreOutput extends StoreOutput {
-  openspec_root: OpenSpecRootOutput;
+  outline_spec_root: OutlineSpecRootOutput;
   metadata: StoreInspection['metadata'];
   git: {
     is_repository: boolean | null;
@@ -167,7 +167,7 @@ function toListOutput(result: StoreListResult): StoreListOutput {
   };
 }
 
-function toOpenSpecRootOutput(root: StoreInspection['openspecRoot']): OpenSpecRootOutput {
+function toOutlineSpecRootOutput(root: StoreInspection['outlineSpecRoot']): OutlineSpecRootOutput {
   return {
     present: root.present,
     config: root.config,
@@ -181,7 +181,7 @@ function toOpenSpecRootOutput(root: StoreInspection['openspecRoot']): OpenSpecRo
 function toDoctorStoreOutput(store: StoreInspection): StoreDoctorStoreOutput {
   return {
     ...toStoreOutput(store),
-    openspec_root: toOpenSpecRootOutput(store.openspecRoot),
+    outline_spec_root: toOutlineSpecRootOutput(store.outlineSpecRoot),
     metadata: store.metadata,
     git: {
       is_repository: store.git.isRepository,
@@ -238,7 +238,7 @@ async function promptStoreId(): Promise<string> {
 async function promptStorePath(id: string): Promise<string> {
   const { input } = await import('@inquirer/prompts');
   // Suggest a visible, user-owned location — never the managed XDG data dir.
-  const defaultPath = ['~', 'openspec', id].join('/');
+  const defaultPath = ['~', 'outline-spec', id].join('/');
 
   return input({
     message: 'Where should this store live?',
@@ -260,7 +260,7 @@ async function resolveSetupInput(
       'store_setup_id_required',
       {
         target: 'store.id',
-        fix: 'openspec store setup <id> --path ~/openspec/<id> --json',
+        fix: 'outline-spec store setup <id> --path ~/outline-spec/<id> --json',
       }
     );
   }
@@ -271,7 +271,7 @@ async function resolveSetupInput(
       'store_setup_path_required',
       {
         target: 'store.root',
-        fix: `openspec store setup ${id ?? '<id>'} --path ~/openspec/${id ?? '<id>'}`,
+        fix: `outline-spec store setup ${id ?? '<id>'} --path ~/outline-spec/${id ?? '<id>'}`,
       }
     );
   }
@@ -305,7 +305,7 @@ async function confirmSetup(
   const { confirm } = await import('@inquirer/prompts');
 
   console.log('');
-  console.log('OpenSpec will create:');
+  console.log('outline-spec will create:');
   console.log('');
   console.log(`  Store: ${prepared.id}`);
   console.log(`  Location: ${formatPathForHuman(prepared.root)}`);
@@ -338,7 +338,7 @@ async function confirmRemove(id: string, root: string, options: StoreRemoveOptio
       'store_remove_confirmation_required',
       {
         target: 'store.root',
-        fix: `openspec store remove ${id} --yes`,
+        fix: `outline-spec store remove ${id} --yes`,
       }
     );
   }
@@ -355,7 +355,7 @@ async function confirmRemove(id: string, root: string, options: StoreRemoveOptio
       'store_remove_cancelled',
       {
         target: 'store.root',
-        fix: 'Run "openspec store unregister <id>" if you only want to forget the local registration.',
+        fix: 'Run "outline-spec store unregister <id>" if you only want to forget the local registration.',
       }
     );
   }
@@ -398,19 +398,19 @@ function printMutationHuman(
 
   console.log(`${title}: ${payload.store.id}`);
   console.log(`Location: ${formatPathForHuman(payload.store.root)}`);
-  console.log('OpenSpec root: ready');
+  console.log('outline-spec root: ready');
   console.log(`Registry: ${payload.registry.already_registered ? 'already registered' : 'registered'}`);
   for (const status of payload.status) {
     console.log(`${status.severity === 'error' ? 'Issue' : 'Note'}: ${status.message}`);
   }
   console.log('');
-  console.log('Next: run normal OpenSpec commands against this store, for example:');
-  console.log(`  openspec new change <change-id> --store ${payload.store.id}`);
+  console.log('Next: run normal outline-spec commands against this store, for example:');
+  console.log(`  outline-spec new change <change-id> --store ${payload.store.id}`);
   if (payload.git.is_repository) {
     const shareRemote = remotes?.canonical ?? remotes?.observed;
     console.log(
       shareRemote
-        ? `Share it: teammates clone ${shareRemote} and run openspec store register <path>.`
+        ? `Share it: teammates clone ${shareRemote} and run outline-spec store register <path>.`
         : 'Share this store by committing and pushing it like any Git repo.'
     );
   }
@@ -441,12 +441,12 @@ function printListHuman(payload: StoreListOutput): void {
     console.log('No stores registered.');
     console.log('');
     console.log('Next:');
-    console.log('  openspec store setup team-context --path ~/openspec/team-context');
-    console.log('  openspec store register /path/to/store');
+    console.log('  outline-spec store setup team-context --path ~/outline-spec/team-context');
+    console.log('  outline-spec store register /path/to/store');
     return;
   }
 
-  console.log(`OpenSpec stores (${payload.stores.length})`);
+  console.log(`outline-spec stores (${payload.stores.length})`);
   console.log('');
   console.log(`${'ID'.padEnd(16)}Location`);
   for (const store of payload.stores) {
@@ -471,10 +471,10 @@ function formatDoctorGitHuman(store: StoreDoctorOutput['stores'][number]): strin
   return `repository detected (commits: ${fact(store.git.has_commits, 'yes', 'none')}, uncommitted changes: ${fact(store.git.has_uncommitted_changes, 'yes', 'no')}, remote: ${fact(store.git.has_remote, 'yes', 'none')})`;
 }
 
-function formatOpenSpecRootHuman(store: StoreDoctorOutput['stores'][number]): string {
-  if (store.openspec_root.healthy) return 'ok';
-  if (store.openspec_root.present === false) return 'missing';
-  if (store.openspec_root.present === null) return 'unknown';
+function formatOutlineSpecRootHuman(store: StoreDoctorOutput['stores'][number]): string {
+  if (store.outline_spec_root.healthy) return 'ok';
+  if (store.outline_spec_root.present === false) return 'missing';
+  if (store.outline_spec_root.present === null) return 'unknown';
   return 'incomplete';
 }
 
@@ -489,7 +489,7 @@ function printDoctorHuman(payload: StoreDoctorOutput): void {
     console.log('');
     console.log(store.id);
     console.log(`  Location: ${store.root}`);
-    console.log(`  OpenSpec root: ${formatOpenSpecRootHuman(store)}`);
+    console.log(`  outline-spec root: ${formatOutlineSpecRootHuman(store)}`);
     console.log(`  Metadata: ${formatMetadataHuman(store)}`);
     const remoteLine = store.metadata.remote ?? store.git.origin_url;
     if (remoteLine) {

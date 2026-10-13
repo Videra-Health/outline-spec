@@ -1,17 +1,17 @@
-# OpenSpec skills for skills.sh
+# outline-spec skills for skills.sh
 
-Install the OpenSpec workflow skills into any [skills.sh](https://skills.sh)-compatible agent:
+Install the outline-spec workflow skills into any [skills.sh](https://skills.sh)-compatible agent:
 
 ```bash
-npx skills add Fission-AI/OpenSpec
+npx skills add heneryville/outline-spec
 ```
 
-Each `openspec-*/SKILL.md` here is the same skill `openspec init` writes into a
-project. The skills drive the `openspec` CLI, so for the full setup (CLI +
-`openspec/` project scaffolding + slash commands) run:
+Each `outline-spec-*/SKILL.md` here is the same skill `outline-spec init` writes into a
+project. The skills drive the `outline-spec` CLI, so for the full setup (CLI +
+`outline-spec/` project scaffolding + slash commands) run:
 
 ```bash
-npx openspec@latest init
+npx outline-spec@latest init
 ```
 
 > These files are generated from the skill templates — do not edit by hand. Run

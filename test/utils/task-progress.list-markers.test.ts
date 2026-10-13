@@ -10,7 +10,7 @@ import { runCLI } from '../helpers/run-cli.js';
  * A GFM task is a list item, and CommonMark has five list markers: `-`, `*`,
  * `+`, and the ordered `1.` and `1)`. Only `-` and `*` used to count, so an
  * unchecked `1. [ ]` or `+ [ ]` task was invisible to every progress surface,
- * and `openspec archive` reported "✓ Complete" over unfinished work.
+ * and `outline-spec archive` reported "✓ Complete" over unfinished work.
  */
 describe('task checkboxes under every CommonMark list marker', () => {
   it.each([
@@ -109,7 +109,7 @@ describe('ordered and plus tasks through the CLI', () => {
 
   /** A real project holding one valid change whose tasks.md is `tasks`. */
   async function projectWithTasks(tasks: string) {
-    const base = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-task-markers-'));
+    const base = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-task-markers-'));
     temps.push(base);
     const home = path.join(base, 'home');
     const project = path.join(base, 'project');
@@ -120,13 +120,13 @@ describe('ordered and plus tasks through the CLI', () => {
       USERPROFILE: home,
       XDG_CONFIG_HOME: path.join(home, '.config'),
       XDG_DATA_HOME: path.join(home, '.local', 'share'),
-      OPENSPEC_NO_ANIMATION: '1',
+      OUTLINE_SPEC_NO_ANIMATION: '1',
     };
     const cli = (args: string[]) => runCLI(args, { cwd: project, env, timeoutMs: 60_000 });
 
     expect((await cli(['init', '--tools', 'claude'])).exitCode).toBe(0);
     expect((await cli(['new', 'change', 'add-thing'])).exitCode).toBe(0);
-    const changeDir = path.join(project, 'openspec', 'changes', 'add-thing');
+    const changeDir = path.join(project, 'outline-spec', 'changes', 'add-thing');
     await fs.writeFile(
       path.join(changeDir, 'outline.md'),
       '## Proposal\nWe need billing documented so operators and customers share one contract for invoices.\n\n## Requirements\n1. billing: Invoices for completed billing periods.\n  a. Invoice generation: The system generates an invoice for every completed billing period.\n'

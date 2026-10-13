@@ -6,7 +6,7 @@ import * as os from 'node:os';
 import { runCLI } from '../helpers/run-cli.js';
 
 /**
- * `openspec config edit` runs $EDITOR (or $VISUAL). Those variables hold a
+ * `outline-spec config edit` runs $EDITOR (or $VISUAL). Those variables hold a
  * command line such as `code --wait` or `"/path with spaces/subl" -w`, not a
  * bare program name. Passing the whole value to spawn as the executable made
  * every such setting fail with an uncaught ENOENT and a Node stack trace.
@@ -17,15 +17,15 @@ import { runCLI } from '../helpers/run-cli.js';
 const FAKE_EDITOR = [
   "const fs = require('fs');",
   'const args = process.argv.slice(2);',
-  'fs.writeFileSync(process.env.OPENSPEC_TEST_EDITOR_LOG, JSON.stringify(args));',
-  'if (process.env.OPENSPEC_TEST_EDITOR_WRITE !== undefined) {',
-  '  fs.writeFileSync(args[args.length - 1], process.env.OPENSPEC_TEST_EDITOR_WRITE);',
+  'fs.writeFileSync(process.env.OUTLINE_SPEC_TEST_EDITOR_LOG, JSON.stringify(args));',
+  'if (process.env.OUTLINE_SPEC_TEST_EDITOR_WRITE !== undefined) {',
+  '  fs.writeFileSync(args[args.length - 1], process.env.OUTLINE_SPEC_TEST_EDITOR_WRITE);',
   '}',
-  "process.exit(Number(process.env.OPENSPEC_TEST_EDITOR_EXIT || '0'));",
+  "process.exit(Number(process.env.OUTLINE_SPEC_TEST_EDITOR_EXIT || '0'));",
   '',
 ].join('\n');
 
-const MISSING_EDITOR = 'openspec-test-missing-editor --wait';
+const MISSING_EDITOR = 'outline-spec-test-missing-editor --wait';
 
 // Each test starts a real editor process; allow for slow CI runners.
 const T = 30_000;
@@ -36,12 +36,12 @@ async function runConfigCommand(args: string[]): Promise<void> {
   const { registerConfigCommand } = await import('../../src/cli/commands/config.js');
   const program = new Command();
   registerConfigCommand(program);
-  await program.parseAsync(['node', 'openspec', 'config', ...args]);
+  await program.parseAsync(['node', 'outline-spec', 'config', ...args]);
 }
 
 /** A temp dir whose name contains spaces, holding the fake editor. */
 function makeFixture() {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec config edit '));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec config edit '));
   const editorDir = path.join(tempDir, 'fake editor');
   fs.mkdirSync(editorDir);
   const editorScript = path.join(editorDir, 'editor.cjs');
@@ -51,7 +51,7 @@ function makeFixture() {
     tempDir,
     editorDir,
     configHome,
-    configPath: path.join(configHome, 'openspec', 'config.json'),
+    configPath: path.join(configHome, 'outline-spec', 'config.json'),
     logPath: path.join(tempDir, 'editor-args.json'),
     /** An EDITOR value running the fake editor, with its paths quoted. */
     nodeEditor: (...args: string[]) => [quote(process.execPath), quote(editorScript), ...args].join(' '),
@@ -79,11 +79,11 @@ describe('config edit', () => {
     process.exitCode = undefined;
 
     process.env.XDG_CONFIG_HOME = fixture.configHome;
-    process.env.OPENSPEC_TEST_EDITOR_LOG = fixture.logPath;
+    process.env.OUTLINE_SPEC_TEST_EDITOR_LOG = fixture.logPath;
     delete process.env.EDITOR;
     delete process.env.VISUAL;
-    delete process.env.OPENSPEC_TEST_EDITOR_EXIT;
-    delete process.env.OPENSPEC_TEST_EDITOR_WRITE;
+    delete process.env.OUTLINE_SPEC_TEST_EDITOR_EXIT;
+    delete process.env.OUTLINE_SPEC_TEST_EDITOR_WRITE;
 
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -149,7 +149,7 @@ describe('config edit', () => {
 
   it('reports an editor that exits non-zero instead of throwing', async () => {
     process.env.EDITOR = fixture.nodeEditor('--wait');
-    process.env.OPENSPEC_TEST_EDITOR_EXIT = '3';
+    process.env.OUTLINE_SPEC_TEST_EDITOR_EXIT = '3';
 
     await expect(runConfigCommand(['edit'])).resolves.toBeUndefined();
 
@@ -159,7 +159,7 @@ describe('config edit', () => {
 
   it('still validates the file once the editor closes', async () => {
     process.env.EDITOR = fixture.nodeEditor('--wait');
-    process.env.OPENSPEC_TEST_EDITOR_WRITE = '{ not json';
+    process.env.OUTLINE_SPEC_TEST_EDITOR_WRITE = '{ not json';
 
     await runConfigCommand(['edit']);
 
@@ -176,7 +176,7 @@ describe('config edit', () => {
 
   it.skipIf(process.platform === 'win32')('still runs an unquoted absolute editor path with spaces', async () => {
     const editor = path.join(fixture.editorDir, 'ed');
-    fs.writeFileSync(editor, '#!/bin/sh\nprintf \'%s\\n\' "$@" > "$OPENSPEC_TEST_EDITOR_LOG"\n', { mode: 0o755 });
+    fs.writeFileSync(editor, '#!/bin/sh\nprintf \'%s\\n\' "$@" > "$OUTLINE_SPEC_TEST_EDITOR_LOG"\n', { mode: 0o755 });
     process.env.EDITOR = editor;
 
     await runConfigCommand(['edit']);
@@ -293,7 +293,7 @@ describe('splitEditorCommand', () => {
   });
 });
 
-describe('openspec config edit (end to end)', () => {
+describe('outline-spec config edit (end to end)', () => {
   let fixture: ReturnType<typeof makeFixture>;
 
   beforeEach(() => {
@@ -306,7 +306,7 @@ describe('openspec config edit (end to end)', () => {
 
   const env = (editor: string) => ({
     XDG_CONFIG_HOME: fixture.configHome,
-    OPENSPEC_TEST_EDITOR_LOG: fixture.logPath,
+    OUTLINE_SPEC_TEST_EDITOR_LOG: fixture.logPath,
     EDITOR: editor,
     VISUAL: '',
   });

@@ -31,7 +31,7 @@ describe('an unparseable global config', () => {
   let fetchSpy: ReturnType<typeof vi.spyOn<typeof globalThis, 'fetch'>>;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-unparseable-config-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-unparseable-config-'));
     originalEnv = { ...process.env };
     originalExitCode = process.exitCode;
 
@@ -41,7 +41,7 @@ describe('an unparseable global config', () => {
     process.env.APPDATA = path.join(tempDir, 'appdata');
     delete process.env.CI;
 
-    configPath = path.join(tempDir, 'openspec', 'config.json');
+    configPath = path.join(tempDir, 'outline-spec', 'config.json');
     fs.mkdirSync(path.dirname(configPath), { recursive: true });
 
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -116,7 +116,7 @@ describe('an unparseable global config', () => {
       }
 
       expect(message).toContain(configPath);
-      expect(message).toContain('openspec config edit');
+      expect(message).toContain('outline-spec config edit');
       expect(read()).toBe(TYPO);
     });
 
@@ -139,7 +139,7 @@ describe('an unparseable global config', () => {
     });
   });
 
-  describe('openspec config', () => {
+  describe('outline-spec config', () => {
     let registerConfigCommand: typeof import('../../src/cli/commands/config.js').registerConfigCommand;
 
     // Imported once: the command module pulls in most of the CLI.
@@ -150,7 +150,7 @@ describe('an unparseable global config', () => {
     async function runConfig(args: string[]): Promise<void> {
       const program = new Command();
       registerConfigCommand(program);
-      await program.parseAsync(['node', 'openspec', 'config', ...args]);
+      await program.parseAsync(['node', 'outline-spec', 'config', ...args]);
     }
 
     const errorOutput = () => consoleErrorSpy.mock.calls.map((call) => call.join(' ')).join('\n');
@@ -167,7 +167,7 @@ describe('an unparseable global config', () => {
       expect(read()).toBe(TYPO);
       expect(process.exitCode).toBe(1);
       expect(errorOutput()).toContain(configPath);
-      expect(errorOutput()).toContain('openspec config edit');
+      expect(errorOutput()).toContain('outline-spec config edit');
     });
 
     // `config list` reads the raw file to mark values explicit vs default. A
@@ -207,9 +207,9 @@ describe('an unparseable global config', () => {
 
   it('is left byte-identical by a read-only CLI command', async () => {
     const project = path.join(tempDir, 'project');
-    fs.mkdirSync(path.join(project, 'openspec', 'specs'), { recursive: true });
-    fs.mkdirSync(path.join(project, 'openspec', 'changes'), { recursive: true });
-    fs.writeFileSync(path.join(project, 'openspec', 'config.yaml'), 'schema: outline\n');
+    fs.mkdirSync(path.join(project, 'outline-spec', 'specs'), { recursive: true });
+    fs.mkdirSync(path.join(project, 'outline-spec', 'changes'), { recursive: true });
+    fs.writeFileSync(path.join(project, 'outline-spec', 'config.yaml'), 'schema: outline\n');
     fs.writeFileSync(configPath, TYPO);
 
     const result = await runCLI(['list'], {

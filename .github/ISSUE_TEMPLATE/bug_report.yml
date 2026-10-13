@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in OpenSpec does not work the way it should.
+description: Something in outline-spec does not work the way it should.
 labels: ['bug', 'needs-triage']
 body:
   - type: markdown
@@ -7,7 +7,7 @@ body:
       value: |
         Thanks for reporting this.
 
-        You can also run `openspec feedback "your report"` to submit an issue
+        You can also run `outline-spec feedback "your report"` to submit an issue
         immediately with your version and platform, or get a submission link
         if GitHub CLI is unavailable or unauthenticated.
 
@@ -17,7 +17,7 @@ body:
       label: What happened
       description: The actual behavior. Paste the command you ran and its output if you have it.
       placeholder: |
-        I ran `openspec archive add-login` and it exited 0 without writing the main spec.
+        I ran `outline-spec archive add-login` and it exited 0 without writing the main spec.
     validations:
       required: true
 
@@ -25,7 +25,7 @@ body:
     id: expected
     attributes:
       label: What you expected instead
-      placeholder: The main spec at openspec/specs/auth/spec.md should have been updated.
+      placeholder: The main spec at outline-spec/specs/auth/spec.md should have been updated.
     validations:
       required: true
 
@@ -35,7 +35,7 @@ body:
       label: Minimal steps to reproduce
       description: The shortest path from a fresh project to the problem. This is the single most useful thing you can give us.
       placeholder: |
-        1. `openspec init` in an empty directory
+        1. `outline-spec init` in an empty directory
         2. ...
         3. ...
     validations:
@@ -44,8 +44,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: OpenSpec version
-      description: Output of `openspec --version`, or "unknown" if installation failed or the command cannot run.
+      label: outline-spec version
+      description: Output of `outline-spec --version`, or "unknown" if installation failed or the command cannot run.
       placeholder: '1.11.0'
     validations:
       required: true
@@ -54,7 +54,7 @@ body:
     id: agent
     attributes:
       label: Coding agent and model
-      description: Which agent and model were driving OpenSpec, if any. Behavior often differs between them.
+      description: Which agent and model were driving outline-spec, if any. Behavior often differs between them.
       placeholder: Claude Code, Opus 4.6
     validations:
       required: false

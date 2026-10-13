@@ -10,8 +10,8 @@ function readPage(relativePath: string): string {
 }
 
 const CLI_INIT = readPage('docs-lab/reference/cli.md')
-  .split('## openspec init')[1]
-  .split('## openspec update')[0];
+  .split('## outline-spec init')[1]
+  .split('## outline-spec update')[0];
 const STORE_INTEGRATIONS = readPage('docs-lab/multi-repo/stores.md')
   .split('### Install integrations in a store-only repo')[1]
   .split('### `defaultStore` on your machine')[0];
@@ -23,7 +23,7 @@ describe('store-only init documentation', () => {
   ])('keeps the complete pointer-repository contract in the %s', (_name, section) => {
     expect(section).toContain('repository root');
     expect(section).toContain('preserved byte-for-byte');
-    expect(section).toContain('`openspec/specs/` and `openspec/changes/`');
+    expect(section).toContain('`outline-spec/specs/` and `outline-spec/changes/`');
     expect(section).toContain('not created');
     expect(section).toContain('`--language`');
     expect(section).toContain("external store's config");

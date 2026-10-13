@@ -11,12 +11,12 @@ describe('generateApplyInstructions warnings', () => {
   const outline = (reqs: string) => fs.writeFileSync(path.join(changeDir, 'outline.md'), `## Requirements\n${reqs}`);
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-apply-warnings-'));
-    changeDir = path.join(tempDir, 'openspec', 'changes', 'my-change');
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-apply-warnings-'));
+    changeDir = path.join(tempDir, 'outline-spec', 'changes', 'my-change');
     fs.mkdirSync(changeDir, { recursive: true });
-    fs.mkdirSync(path.join(tempDir, 'openspec', 'specs', 'demo'), { recursive: true });
-    fs.writeFileSync(path.join(tempDir, 'openspec', 'specs', 'demo', 'spec.md'), '# demo\nA demo.\n\n1. Demo: It demos.\n');
-    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: outline\n');
+    fs.mkdirSync(path.join(tempDir, 'outline-spec', 'specs', 'demo'), { recursive: true });
+    fs.writeFileSync(path.join(tempDir, 'outline-spec', 'specs', 'demo', 'spec.md'), '# demo\nA demo.\n\n1. Demo: It demos.\n');
+    fs.writeFileSync(path.join(changeDir, '.outline-spec.yaml'), 'schema: outline\n');
     fs.writeFileSync(path.join(changeDir, 'tasks.md'), '## 1. Implementation\n- [ ] 1.1 Write the code\n');
   });
 

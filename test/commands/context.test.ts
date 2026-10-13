@@ -6,13 +6,13 @@ import * as path from 'node:path';
 import { getGlobalDataDir, registerStore } from '../../src/core/index.js';
 import { readProjectConfig } from '../../src/core/project-config.js';
 import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
-import { createOpenSpecRoot } from '../helpers/openspec-fixtures.js';
+import { createOutlineSpecRoot } from '../helpers/outline-spec-fixtures.js';
 import { snapshotDirectory as snapshot } from '../helpers/fs-snapshot.js';
 import { cleanupTempPath } from '../helpers/temp-cleanup.js';
 
 const CONTEXT_MATRIX_TIMEOUT_MS = 30_000;
 
-describe('openspec context (4.1)', () => {
+describe('outline-spec context (4.1)', () => {
   let tempDir: string;
   let globalDataDir: string;
   let env: NodeJS.ProcessEnv;
@@ -20,7 +20,7 @@ describe('openspec context (4.1)', () => {
   let upstream: string;
 
   beforeEach(async () => {
-    tempDir = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-context-')));
+    tempDir = fs.realpathSync.native(fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-context-')));
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
       XDG_CONFIG_HOME: path.join(tempDir, 'config'),
@@ -29,15 +29,15 @@ describe('openspec context (4.1)', () => {
     globalDataDir = getGlobalDataDir({ env });
 
     storeRoot = path.join(tempDir, 'team-context');
-    createOpenSpecRoot(storeRoot);
+    createOutlineSpecRoot(storeRoot);
     await registerStore({ id: 'team-context', localPath: storeRoot, globalDataDir });
 
     upstream = path.join(tempDir, 'upstream-context');
-    createOpenSpecRoot(upstream);
+    createOutlineSpecRoot(upstream);
     await registerStore({ id: 'upstream-context', localPath: upstream, globalDataDir });
 
     fs.writeFileSync(
-      path.join(storeRoot, 'openspec', 'config.yaml'),
+      path.join(storeRoot, 'outline-spec', 'config.yaml'),
       'schema: outline\n' +
         'references:\n  - upstream-context\n  - { id: design-system, remote: https://192.0.2.1/ds.git }\n'
     );
@@ -62,14 +62,14 @@ describe('openspec context (4.1)', () => {
       path: storeRoot,
       source: 'store',
       store_id: 'team-context',
-      role: 'openspec_root',
+      role: 'outline_spec_root',
     });
     expect(workingSet.members).toEqual([
       {
         role: 'referenced_store',
         id: 'upstream-context',
         path: upstream,
-        fetch: 'openspec show <spec-id> --type spec --store upstream-context',
+        fetch: 'outline-spec show <spec-id> --type spec --store upstream-context',
         status: [],
       },
       {
@@ -89,7 +89,7 @@ describe('openspec context (4.1)', () => {
     expect(human.exitCode).toBe(0);
     expect(human.stdout).toContain(`Working context for team-context (${storeRoot})`);
     expect(human.stdout).toContain(`  upstream-context  ${upstream}`);
-    expect(human.stdout).toContain('Fetch: openspec show <spec-id> --type spec --store upstream-context');
+    expect(human.stdout).toContain('Fetch: outline-spec show <spec-id> --type spec --store upstream-context');
     expect(human.stdout).toContain('Not available on this machine');
     expect(human.stdout).toContain('Fix: git clone --');
 
@@ -99,8 +99,8 @@ describe('openspec context (4.1)', () => {
 
     // Declared-pointer session.
     const pointerRepo = path.join(tempDir, 'app-repo');
-    fs.mkdirSync(path.join(pointerRepo, 'openspec'), { recursive: true });
-    fs.writeFileSync(path.join(pointerRepo, 'openspec', 'config.yaml'), 'store: team-context\n');
+    fs.mkdirSync(path.join(pointerRepo, 'outline-spec'), { recursive: true });
+    fs.writeFileSync(path.join(pointerRepo, 'outline-spec', 'config.yaml'), 'store: team-context\n');
     const declared = await runCLI(['context', '--json'], { cwd: pointerRepo, env });
     expect(parseJson(declared).root.source).toBe('declared');
     expect(parseJson(declared).root.path).toBe(storeRoot);
@@ -108,9 +108,9 @@ describe('openspec context (4.1)', () => {
 
     // Global-default session: no root, no pointer — provenance must name
     // the machine-level default, not masquerade as a repo pointer.
-    fs.mkdirSync(path.join(tempDir, 'config', 'openspec'), { recursive: true });
+    fs.mkdirSync(path.join(tempDir, 'config', 'outline-spec'), { recursive: true });
     fs.writeFileSync(
-      path.join(tempDir, 'config', 'openspec', 'config.json'),
+      path.join(tempDir, 'config', 'outline-spec', 'config.json'),
       JSON.stringify({ defaultStore: 'team-context' }) + '\n'
     );
     const scratch = path.join(tempDir, 'no-root-here');
@@ -124,7 +124,7 @@ describe('openspec context (4.1)', () => {
 
   it('distinguishes self-reference omission from nothing declared', async () => {
     fs.writeFileSync(
-      path.join(storeRoot, 'openspec', 'config.yaml'),
+      path.join(storeRoot, 'outline-spec', 'config.yaml'),
       'schema: outline\nreferences:\n  - team-context\n'
     );
     const human = await runCLI(['context', '--store', 'team-context'], { cwd: tempDir, env });
@@ -133,7 +133,7 @@ describe('openspec context (4.1)', () => {
   });
 
   it('says so plainly when nothing is declared', async () => {
-    fs.writeFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), 'schema: outline\n');
+    fs.writeFileSync(path.join(storeRoot, 'outline-spec', 'config.yaml'), 'schema: outline\n');
     const human = await runCLI(['context', '--store', 'team-context'], { cwd: tempDir, env });
     expect(human.stdout).toContain('the working set is this root alone');
     const json = await runCLI(['context', '--json', '--store', 'team-context'], {
@@ -242,8 +242,8 @@ describe('openspec context (4.1)', () => {
     const payload = parseJson(context);
     expect(payload.root).toBeNull();
     expect(payload.status).toEqual([expect.objectContaining({
-      code: 'no_openspec_root',
-      fix: expect.stringContaining('openspec init'),
+      code: 'no_outline_spec_root',
+      fix: expect.stringContaining('outline-spec init'),
     })]);
     expect(snapshot(tempDir)).toEqual(before);
   });
@@ -260,7 +260,7 @@ describe('openspec context (4.1)', () => {
       const storeArgs = selection === 'explicit store' ? ['--store', 'team-context'] : [];
 
       fs.writeFileSync(
-        path.join(storeRoot, 'openspec', 'config.yaml'),
+        path.join(storeRoot, 'outline-spec', 'config.yaml'),
         'schema: outline\ncontext: Selected store context\n'
       );
 
@@ -268,35 +268,35 @@ describe('openspec context (4.1)', () => {
         selectedRoot = project;
         source = 'nearest';
         if (selection === 'legacy local') {
-          fs.mkdirSync(path.join(project, 'openspec', 'specs'), { recursive: true });
-          fs.mkdirSync(path.join(project, 'openspec', 'changes'), { recursive: true });
-          fs.writeFileSync(path.join(project, 'openspec', 'project.md'), '# Legacy project\n');
+          fs.mkdirSync(path.join(project, 'outline-spec', 'specs'), { recursive: true });
+          fs.mkdirSync(path.join(project, 'outline-spec', 'changes'), { recursive: true });
+          fs.writeFileSync(path.join(project, 'outline-spec', 'project.md'), '# Legacy project\n');
           expectedContext = undefined;
         } else {
-          createOpenSpecRoot(project);
+          createOutlineSpecRoot(project);
           expectedContext = 'Selected local context';
           fs.writeFileSync(
-            path.join(project, 'openspec', 'config.yaml'),
+            path.join(project, 'outline-spec', 'config.yaml'),
             'schema: outline\ncontext: Selected local context\n'
           );
         }
       } else if (selection === 'pointer') {
         source = 'declared';
-        fs.mkdirSync(path.join(project, 'openspec'));
+        fs.mkdirSync(path.join(project, 'outline-spec'));
         fs.writeFileSync(
-          path.join(project, 'openspec', 'config.yaml'),
+          path.join(project, 'outline-spec', 'config.yaml'),
           'store: team-context\ncontext: Do not use pointer-local context\n'
         );
       } else if (selection === 'global default') {
         source = 'global_default';
-        fs.mkdirSync(path.join(tempDir, 'config', 'openspec'), { recursive: true });
+        fs.mkdirSync(path.join(tempDir, 'config', 'outline-spec'), { recursive: true });
         fs.writeFileSync(
-          path.join(tempDir, 'config', 'openspec', 'config.json'),
+          path.join(tempDir, 'config', 'outline-spec', 'config.json'),
           JSON.stringify({ defaultStore: 'team-context' }) + '\n'
         );
       } else {
         // An explicit store must beat even an initialized local root.
-        createOpenSpecRoot(project);
+        createOutlineSpecRoot(project);
       }
 
       const before = snapshot(tempDir);
@@ -320,10 +320,10 @@ describe('openspec context (4.1)', () => {
         expect(root.store_id).toBe(selectedRoot === storeRoot ? 'team-context' : undefined);
       }
       expect(parseJson(instructions).context).toBe(expectedContext);
-      expect(fs.existsSync(path.join(selectedRoot, 'openspec', 'changes', 'add-auth', '.openspec.yaml'))).toBe(true);
-      expect(fs.existsSync(path.join(cwd, 'openspec'))).toBe(false);
+      expect(fs.existsSync(path.join(selectedRoot, 'outline-spec', 'changes', 'add-auth', '.outline-spec.yaml'))).toBe(true);
+      expect(fs.existsSync(path.join(cwd, 'outline-spec'))).toBe(false);
       if (selectedRoot !== project) {
-        expect(fs.existsSync(path.join(project, 'openspec', 'changes', 'add-auth'))).toBe(false);
+        expect(fs.existsSync(path.join(project, 'outline-spec', 'changes', 'add-auth'))).toBe(false);
       }
     },
     CONTEXT_MATRIX_TIMEOUT_MS
@@ -331,7 +331,7 @@ describe('openspec context (4.1)', () => {
 
   it('rejects an invalid selected store without falling back to an initialized local root', async () => {
     const project = path.join(tempDir, 'local-project');
-    createOpenSpecRoot(project);
+    createOutlineSpecRoot(project);
     const before = snapshot(tempDir);
 
     const context = await runCLI(['context', '--json', '--store', 'missing-store'], { cwd: project, env });

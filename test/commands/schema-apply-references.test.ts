@@ -26,7 +26,7 @@ async function projectWithApply(
   apply: Record<string, unknown>,
   generates: Record<string, string> = {}
 ) {
-  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-apply-refs-'));
+  const base = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-apply-refs-'));
   temps.push(base);
   const home = path.join(base, 'home');
   const project = path.join(base, 'project');
@@ -36,12 +36,12 @@ async function projectWithApply(
     HOME: home,
     XDG_CONFIG_HOME: path.join(home, '.config'),
     XDG_DATA_HOME: path.join(home, '.local', 'share'),
-    OPENSPEC_NO_ANIMATION: '1',
+    OUTLINE_SPEC_NO_ANIMATION: '1',
   };
   const cli = (args: string[]) => runCLI(args, { cwd: project, env, timeoutMs: 60_000 });
   expect((await cli(['init', '--tools', 'claude'])).exitCode).toBe(0);
 
-  const schemaDir = path.join(project, 'openspec', 'schemas', 'myflow');
+  const schemaDir = path.join(project, 'outline-spec', 'schemas', 'myflow');
   await fs.cp(path.join(cliProjectRoot, 'schemas', 'outline'), schemaDir, { recursive: true });
   const schemaFile = path.join(schemaDir, 'schema.yaml');
   const schema = parse(await fs.readFile(schemaFile, 'utf-8'));
@@ -53,13 +53,13 @@ async function projectWithApply(
     artifact.generates = value;
   }
   await fs.writeFile(schemaFile, stringify(schema));
-  await fs.writeFile(path.join(project, 'openspec', 'config.yaml'), 'schema: myflow\n');
+  await fs.writeFile(path.join(project, 'outline-spec', 'config.yaml'), 'schema: myflow\n');
 
-  // Written by hand: `openspec new change` loads the schema, so it cannot
+  // Written by hand: `outline-spec new change` loads the schema, so it cannot
   // create a change on a schema that no longer parses.
-  const changeDir = path.join(project, 'openspec', 'changes', 'c');
+  const changeDir = path.join(project, 'outline-spec', 'changes', 'c');
   await fs.mkdir(changeDir, { recursive: true });
-  await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: myflow\n');
+  await fs.writeFile(path.join(changeDir, '.outline-spec.yaml'), 'schema: myflow\n');
   await fs.writeFile(
     path.join(changeDir, 'outline.md'),
     '## Proposal\nWe need this for a real reason.\n\n## Requirements\n1. billing: Bills customers.\n  a. Invoices: Each order gets an invoice.\n'

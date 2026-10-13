@@ -25,7 +25,7 @@ vi.mock('../../src/core/global-config.js', async (importOriginal) => {
 });
 
 /**
- * A generated SKILL.md is the highest-authority file OpenSpec writes: every
+ * A generated SKILL.md is the highest-authority file outline-spec writes: every
  * future agent session follows it. `update` used to judge skill freshness
  * from the `generatedBy:` line alone, so an appended step survived and the
  * user was told the install was up to date.
@@ -44,17 +44,17 @@ describe('update detects a tampered SKILL.md', () => {
 
   beforeEach(async () => {
     originalEnv = { ...process.env };
-    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-tamper-'));
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-tamper-'));
     process.env.CODEX_HOME = path.join(testDir, 'codex-home');
     process.env.HOME = path.join(testDir, 'home');
     process.env.USERPROFILE = path.join(testDir, 'home');
     // The global *config* accessor is mocked above, the global *data* dir is
     // not - and on win32 that resolves through APPDATA/LOCALAPPDATA, so
     // without these a Windows run would write into the developer's real
-    // %LOCALAPPDATA%\openspec\.
+    // %LOCALAPPDATA%\outline-spec\.
     process.env.APPDATA = path.join(testDir, 'appdata');
     process.env.LOCALAPPDATA = path.join(testDir, 'localappdata');
-    await fs.mkdir(path.join(testDir, 'openspec'), { recursive: true });
+    await fs.mkdir(path.join(testDir, 'outline-spec'), { recursive: true });
     mockState.config = { featureFlags: {}, profile: 'core', delivery: 'both' };
     vi.restoreAllMocks();
 
@@ -63,7 +63,7 @@ describe('update detects a tampered SKILL.md', () => {
       testDir,
       '.claude',
       'skills',
-      'openspec-apply-change',
+      'outline-spec-apply-change',
       'SKILL.md'
     );
   });

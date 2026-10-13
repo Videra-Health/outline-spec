@@ -10,14 +10,14 @@ import { escapeYamlValue, formatTagsArray } from '../yaml.js';
 
 /**
  * Qoder adapter for command generation.
- * File path: .qoder/commands/opsx/<id>.md
+ * File path: .qoder/commands/outline-spec/<id>.md
  * Frontmatter: name, description, category, tags
  */
 export const qoderAdapter: ToolCommandAdapter = {
   toolId: 'qoder',
 
   getFilePath(commandId: string): string {
-    return path.join('.qoder', 'commands', 'opsx', `${commandId}.md`);
+    return path.join('.qoder', 'commands', 'outline-spec', `${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

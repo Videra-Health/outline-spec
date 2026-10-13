@@ -7,38 +7,38 @@ import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 import { PROJECT_ROOT_GUARD } from './project-root.js';
 
 /**
- * Passages that hand off to `/opsx:continue` or `/opsx:new`. Neither workflow
+ * Passages that hand off to `/outline-spec:continue` or `/outline-spec:new`. Neither workflow
  * is in the `core` profile, so each is authored with a CLI fallback and
  * resolved at generation time (see optional-workflow.ts). Shared by both
  * surfaces below so the skill and the command cannot drift apart.
  */
 const CONTINUE_SCOPE_NOTE = optionalWorkflow(
   'continue',
-  'This workflow revises artifacts that already exist; `/opsx:continue` is what creates the ones that do not.',
-  'This workflow revises artifacts that already exist; it never creates missing ones. When an artifact is missing, `openspec status --change "<name>" --json` names the next one and `openspec instructions "<artifact-id>" --change "<name>" --json` explains how to write it.'
+  'This workflow revises artifacts that already exist; `/outline-spec:continue` is what creates the ones that do not.',
+  'This workflow revises artifacts that already exist; it never creates missing ones. When an artifact is missing, `outline-spec status --change "<name>" --json` names the next one and `outline-spec instructions "<artifact-id>" --change "<name>" --json` explains how to write it.'
 );
 
 const CONTINUE_CREATE_THEM = optionalWorkflow(
   'continue',
-  'point the user to `/opsx:continue` to create them',
-  'point the user to `openspec instructions "<artifact-id>" --change "<name>" --json` for how to create them'
+  'point the user to `/outline-spec:continue` to create them',
+  'point the user to `outline-spec instructions "<artifact-id>" --change "<name>" --json` for how to create them'
 );
 
 const CONTINUE_NEXT_STEP = optionalWorkflow(
   'continue',
-  'suggest `/opsx:continue` to create them',
-  'run `openspec status --change "<name>" --json` for the next artifact and point the user to `openspec instructions "<artifact-id>" --change "<name>" --json` for how to create it'
+  'suggest `/outline-spec:continue` to create them',
+  'run `outline-spec status --change "<name>" --json` for the next artifact and point the user to `outline-spec instructions "<artifact-id>" --change "<name>" --json` for how to create it'
 );
 
 const CONTINUE_DEFERRED = optionalWorkflow(
   'continue',
-  'Anything deferred to `/opsx:continue` (artifacts with no files yet and status `ready` or `blocked`, never `skipped` artifacts)',
+  'Anything deferred to `/outline-spec:continue` (artifacts with no files yet and status `ready` or `blocked`, never `skipped` artifacts)',
   'Anything deferred because it does not exist yet (artifacts with no files and status `ready` or `blocked`, never `skipped` artifacts)'
 );
 
 const CONTINUE_FRONTIER = optionalWorkflow(
   'continue',
-  "that is `/opsx:continue`'s job",
+  "that is `/outline-spec:continue`'s job",
   'creating them is a separate step, outside this workflow'
 );
 
@@ -48,26 +48,26 @@ const CONTINUE_FRONTIER = optionalWorkflow(
  */
 const APPLY_REVISION_HANDOFF = optionalWorkflow(
   'apply',
-  'suggest `/opsx:apply` to carry the revision into code',
+  'suggest `/outline-spec:apply` to carry the revision into code',
   'say that the code may need updating and offer to carry the revision into it'
 );
 
 const APPLY_GUARDRAIL = optionalWorkflow(
   'apply',
-  'stop and point to `/opsx:apply`',
+  'stop and point to `/outline-spec:apply`',
   'stop and say that the revised plan now implies code changes; implementing them is a separate step'
 );
 
 const LAND_HANDOFF = optionalWorkflow(
   'land',
-  'suggest `/opsx:land`',
-  'suggest landing with `openspec land "<name>"`'
+  'suggest `/outline-spec:land`',
+  'suggest landing with `outline-spec land "<name>"`'
 );
 
 const INTENT_CHANGE_GUARDRAIL = optionalWorkflow(
   'new',
-  'recommend starting fresh with `/opsx:new` (the "Update vs. Start Fresh" heuristic)',
-  'ask for a distinct unused change name and recommend `openspec new change "<new-change-name>"` instead (the "Update vs. Start Fresh" heuristic)'
+  'recommend starting fresh with `/outline-spec:new` (the "Update vs. Start Fresh" heuristic)',
+  'ask for a distinct unused change name and recommend `outline-spec new change "<new-change-name>"` instead (the "Update vs. Start Fresh" heuristic)'
 );
 
 // Skill and command share one body; only the input line differs.
@@ -89,7 +89,7 @@ ${CONTINUE_SCOPE_NOTE}
    If a name is provided, use it. Otherwise:
    - Infer from conversation context if the user mentioned a change
    - Auto-select if only one active change exists
-   - If ambiguous, run \`openspec list --json\` to get available changes sorted by most recently modified, and ask the user to select one
+   - If ambiguous, run \`outline-spec list --json\` to get available changes sorted by most recently modified, and ask the user to select one
 
    When prompting, present the top 3-4 most recently modified changes as options, showing:
    - Change name
@@ -98,11 +98,11 @@ ${CONTINUE_SCOPE_NOTE}
 
    Mark the most recently modified change as "(Recommended)" since it's likely what the user wants to update.
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/opsx:update <other>\`).
+   Always announce: "Using change: <name>" and how to override (e.g., \`/outline-spec:update <other>\`).
 
 2. **Get the change's artifacts**
    \`\`\`bash
-   openspec status --change "<name>" --json
+   outline-spec status --change "<name>" --json
    \`\`\`
    Parse the JSON to understand current state. The response includes:
    - \`schemaName\`: The workflow schema being used (e.g., "outline")
@@ -124,12 +124,12 @@ ${CONTINUE_SCOPE_NOTE}
    - Note everything that is now inconsistent, missing, or contradictory.
    - Propose revisions to files that already exist (\`existingOutputPaths\`). If an artifact has no existing output files and status \`ready\` or \`blocked\`, note it and ${CONTINUE_CREATE_THEM}. Leave \`skipped\` artifacts untouched; do not treat them as missing or defer them to the continue workflow.
    - A glob artifact (e.g. \`docs/**/*.md\`) is marked \`done\` after at least one file matches, and the continue workflow only handles \`ready\` artifacts. When reconciliation identifies a missing file for a glob artifact whose \`existingOutputPaths\` is non-empty:
-     1. Run \`openspec instructions "<artifact-id>" --change "<name>" --json\` and use its \`instruction\` and \`template\`. Treat \`context\` and \`rules\` as constraints; do not copy them into the file. If instructions report \`skipped: true\`, do not create the file. Read current dependency files from disk; if a required non-skipped dependency is missing, stop and ask the user to restore it first.
+     1. Run \`outline-spec instructions "<artifact-id>" --change "<name>" --json\` and use its \`instruction\` and \`template\`. Treat \`context\` and \`rules\` as constraints; do not copy them into the file. If instructions report \`skipped: true\`, do not create the file. Read current dependency files from disk; if a required non-skipped dependency is missing, stop and ask the user to restore it first.
      2. Choose a concrete path inside \`changeRoot\` that matches \`artifactPaths.<id>.outputPath\` and does not already exist. Verify it remains inside \`changeRoot\` after resolving any symlinked parent directories. The glob \`resolvedOutputPath\` is not a valid target.
      3. Include the new file in step 5's proposed revisions and create it only after the user confirms.
      4. After confirmation, immediately before creation, refresh status and instructions. Verify the artifact is still in scope, not skipped, and partially populated; repeat the concrete-path checks above.
      5. Use a create operation that fails if the target already exists. If \`instruction\` delegates creation to another skill or command, invoke it only if it can honor the confirmed path and these guardrails; otherwise stop. If any check fails or the confirmed draft is no longer valid, stop and reconcile with the user rather than replacing existing content or choosing a different path.
-   - An artifact that holds the change's spec edits (an outline under \`## Requirements\`) follows the outline rules in any revision: new items unmarked and labeled after the last label at their level; changes to existing items marked \`~~old~~ **new**\`; removed items wholly struck with their live text; labels never shift. Check struck text against the live spec (\`openspec show "<spec>" --type spec\`) and that the outline still lands with \`openspec validate "<name>"\`.
+   - An artifact that holds the change's spec edits (an outline under \`## Requirements\`) follows the outline rules in any revision: new items unmarked and labeled after the last label at their level; changes to existing items marked \`~~old~~ **new**\`; removed items wholly struck with their live text; labels never shift. Check struck text against the live spec (\`outline-spec show "<spec>" --type spec\`) and that the outline still lands with \`outline-spec validate "<name>"\`.
    - If the change is already coherent, say so and propose no revisions.
 
 5. **Confirm and apply, one artifact at a time**
@@ -138,7 +138,7 @@ ${CONTINUE_SCOPE_NOTE}
    - If the user rejects a revision, do not write it - leave that artifact unchanged.
    - When a substantial rewrite is needed, get that artifact's rules and template first:
      \`\`\`bash
-     openspec instructions "<artifact-id>" --change "<name>" --json
+     outline-spec instructions "<artifact-id>" --change "<name>" --json
      \`\`\`
 
 6. **Point to the next step (guidance only - NEVER act on it)**
@@ -156,35 +156,35 @@ After each invocation, show:
 
 **Guardrails**
 - Planning artifacts only - NEVER edit implementation code. If the revised plan implies code changes, ${APPLY_GUARDRAIL}.
-- Use the artifact ids and paths reported by \`openspec status\`; never branch on hardcoded artifact names.
+- Use the artifact ids and paths reported by \`outline-spec status\`; never branch on hardcoded artifact names.
 - Edit only the concrete files in \`existingOutputPaths\`; never write to a glob \`resolvedOutputPath\`.
 - Do not advance the build frontier: if an artifact has empty \`existingOutputPaths\` and status \`ready\` or \`blocked\`, ${CONTINUE_FRONTIER}. Leave \`skipped\` artifacts untouched. The only new-file scope is a confirmed concrete path under a glob artifact whose \`existingOutputPaths\` is non-empty.
-- Never edit the live specs under \`openspec/specs/\`; the outline reaches them only when the change lands.
+- Never edit the live specs under \`outline-spec/specs/\`; the outline reaches them only when the change lands.
 - Confirm every edit with the user before writing.
 - If the request changes the change's *intent* rather than refining it, ${INTENT_CHANGE_GUARDRAIL}.`;
 }
 
 export function getUpdateChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-update-change',
-    description: "Update an OpenSpec change by revising its existing planning artifacts and keeping them coherent with one another. Use when the user wants to revise a change's plan, fold new decisions into it, or reconcile its artifacts after an edit. Also use when the user says \"openspec update change\" or \"opsx update\". If the user means the openspec update CLI command, which refreshes generated files, run that command instead. Never edits code.",
+    name: 'outline-spec-update-change',
+    description: "Update an outline-spec change by revising its existing planning artifacts and keeping them coherent with one another. Use when the user wants to revise a change's plan, fold new decisions into it, or reconcile its artifacts after an edit. Also use when the user says \"outline-spec update change\". If the user means the outline-spec update CLI command, which refreshes generated files, run that command instead. Never edits code.",
     instructions: getUpdateInstructions(
       '**Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
     ),
     license: 'MIT',
-    compatibility: 'Requires openspec CLI.',
-    metadata: { author: 'openspec', version: '1.0' },
+    compatibility: 'Requires outline-spec CLI.',
+    metadata: { author: 'outline-spec', version: '1.0' },
   };
 }
 
-export function getOpsxUpdateCommandTemplate(): CommandTemplate {
+export function getOutlineSpecUpdateCommandTemplate(): CommandTemplate {
   return {
-    name: 'OPSX: Update',
+    name: 'outline-spec: Update',
     description: "Update a change - revise existing planning artifacts and keep them coherent (Experimental)",
     category: 'Workflow',
     tags: ['workflow', 'artifacts', 'experimental'],
     content: getUpdateInstructions(
-      '**Input**: Optionally specify a change name after `/opsx:update` (e.g., `/opsx:update add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
+      '**Input**: Optionally specify a change name after `/outline-spec:update` (e.g., `/outline-spec:update add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
     ),
   };
 }

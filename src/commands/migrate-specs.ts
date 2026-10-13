@@ -52,7 +52,7 @@ export async function migrateSpecsCommand(options: MigrateSpecsOptions): Promise
     return;
   }
   for (const r of reports) {
-    const rel = path.join('openspec', 'specs', r.name, 'spec.md');
+    const rel = path.join('outline-spec', 'specs', r.name, 'spec.md');
     if (r.status === 'already-outline') {
       console.log(`- ${r.name}: already an outline`);
       continue;

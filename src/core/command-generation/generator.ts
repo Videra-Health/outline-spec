@@ -12,9 +12,9 @@ import { assertWorkflowConditionalsResolved } from '../templates/optional-workfl
 /**
  * Generate a single command file using the provided adapter.
  *
- * Command bodies are authored with `/opsx:<id>` references. Tools whose command
- * files are invoked by filename register `/opsx-<id>` instead, and Amazon Q
- * surfaces them in its prompt library as `@opsx-<id>`, so the body is rewritten
+ * Command bodies are authored with `/outline-spec:<id>` references. Tools whose command
+ * files are invoked by filename register `/outline-spec-<id>` instead, and Amazon Q
+ * surfaces them in its prompt library as `@outline-spec-<id>`, so the body is rewritten
  * to the form that tool answers to before the adapter formats it. Doing it here
  * rather than per adapter keeps every tool in step (#727, #1307); adapters stay
  * pure formatters.

@@ -25,7 +25,7 @@ import {
   withStoreFlag,
   toPlanningHome,
   toRootOutput,
-  type ResolvedOpenSpecRoot,
+  type ResolvedOutlineSpecRoot,
 } from '../../core/root-selection.js';
 import {
   assembleReferenceIndex,
@@ -83,7 +83,7 @@ export type LandInstructionsOptions = ApplyInstructionsOptions;
  * index when references are declared, and resolves the config path for
  * fix text. Shared by both instruction surfaces.
  */
-async function loadRootConfigContext(root: ResolvedOpenSpecRoot): Promise<{
+async function loadRootConfigContext(root: ResolvedOutlineSpecRoot): Promise<{
   projectConfig: ProjectConfig | null;
   references: ReferenceIndexEntry[] | undefined;
 }> {
@@ -128,7 +128,7 @@ export async function instructionsCommand(
       options.change,
       projectRoot,
       root.changesDir,
-      { newChangeHint: withStoreFlag(root, 'openspec new change <name>') }
+      { newChangeHint: withStoreFlag(root, 'outline-spec new change <name>') }
     );
 
     // Validate schema if explicitly provided
@@ -352,7 +352,7 @@ function parseLocatedTasks(content: string, sourcePath: string): LocatedTask[] {
  * agent to act on and tick off, and a bare `- [ ]` gives it nothing to match.
  * It still counts toward progress, which is taken from every parsed line, so
  * this list can be shorter than the totals beside it but never disagrees with
- * `openspec list` or archive about how much work is left. An empty list is also
+ * `outline-spec list` or archive about how much work is left. An empty list is also
  * what puts apply in its "nothing to work on" state, so a file of nothing but
  * text-less checkboxes asks to be rewritten instead of being called done.
  */
@@ -376,7 +376,7 @@ function toTaskItems(parsed: LocatedTask[]): TaskItem[] {
 /**
  * The command that builds one artifact.
  *
- * Every earlier remedy here named the `openspec-continue-change` skill, which
+ * Every earlier remedy here named the `outline-spec-continue-change` skill, which
  * the `core` profile never installs - the advice was a dead end for the default
  * install. The CLI verb exists on every profile and is what the skill runs.
  */
@@ -388,8 +388,8 @@ function describeArtifactRemedy(
   const target = artifactId ?? '<artifact>';
   const verb = options.many ? 'Create each with' : 'Create it with';
   return (
-    `${verb} \`openspec instructions ${target} --change ${changeName}\`` +
-    ` (\`openspec status --change ${changeName}\` shows what is left).`
+    `${verb} \`outline-spec instructions ${target} --change ${changeName}\`` +
+    ` (\`outline-spec status --change ${changeName}\` shows what is left).`
   );
 }
 
@@ -412,7 +412,7 @@ function findArtifactIdFor(
  * takes that literally writes the tracking file straight from the proposal and
  * skips the artifacts in between - the failure reported in #834 and #869.
  * Walking `requires` names the whole chain, the same set and order
- * `openspec status` already prints, without changing what apply blocks on.
+ * `outline-spec status` already prints, without changing what apply blocks on.
  */
 function collectMissingPrerequisites(input: {
   requiredArtifactIds: string[];
@@ -458,7 +458,7 @@ function collectApplyWarnings(input: {
     planChange(path.join(path.dirname(changesDir), 'specs'), changesDir, changeName);
     return [];
   } catch (error) {
-    return [`outline.md would not land on the live specs (\`openspec validate ${changeName}\`):\n${(error as Error).message}`];
+    return [`outline.md would not land on the live specs (\`outline-spec validate ${changeName}\`):\n${(error as Error).message}`];
   }
 }
 
@@ -553,7 +553,7 @@ export async function generateApplyInstructions(
   const tasks = toTaskItems(parsedTasks);
 
   // Calculate progress over every checkbox in the file, listed or not, so these
-  // numbers match `openspec list` and archive's incomplete-task check.
+  // numbers match `outline-spec list` and archive's incomplete-task check.
   const total = parsedTasks.length;
   const complete = parsedTasks.filter((task) => task.done).length;
   const remaining = total - complete;
@@ -660,7 +660,7 @@ export async function applyInstructionsCommand(options: ApplyInstructionsOptions
       options.change,
       projectRoot,
       root.changesDir,
-      { newChangeHint: withStoreFlag(root, 'openspec new change <name>') }
+      { newChangeHint: withStoreFlag(root, 'outline-spec new change <name>') }
     );
 
     // Validate schema if explicitly provided
@@ -794,7 +794,7 @@ export async function landInstructionsCommand(
       options.change,
       root.path,
       root.changesDir,
-      { newChangeHint: withStoreFlag(root, 'openspec new change <name>') }
+      { newChangeHint: withStoreFlag(root, 'outline-spec new change <name>') }
     );
     const projectConfig = readProjectConfig(root.path);
     const instructions = generateLandInstructions(changeName, projectConfig);

@@ -9,7 +9,7 @@ import { getSpecIds } from '../utils/item-discovery.js';
 import { discoverSpecFiles } from '../utils/spec-discovery.js';
 import { FileSystemUtils } from '../utils/file-system.js';
 
-const SPECS_DIR = 'openspec/specs';
+const SPECS_DIR = 'outline-spec/specs';
 
 function assertSpecPath(specsDir: string, specPath: string): void {
   const relativePath = path.relative(path.resolve(specsDir), path.resolve(specPath));
@@ -62,7 +62,7 @@ export class SpecCommand {
   // deprecated noun-form commands stay cwd-based.
   constructor(rootPath?: string) {
     this.rootPath = rootPath;
-    this.specsDir = rootPath ? join(rootPath, 'openspec', 'specs') : SPECS_DIR;
+    this.specsDir = rootPath ? join(rootPath, 'outline-spec', 'specs') : SPECS_DIR;
   }
 
   async show(specId?: string, options: ShowOptions = {}): Promise<void> {
@@ -85,7 +85,7 @@ export class SpecCommand {
     if (!existsSync(specPath)) {
       // Root-aware callers get the absolute path; the cwd-based noun form
       // keeps its historical forward-slash relative message on all platforms.
-      const displayPath = this.rootPath ? specPath : `openspec/specs/${specId}/spec.md`;
+      const displayPath = this.rootPath ? specPath : `outline-spec/specs/${specId}/spec.md`;
       throw new Error(`Spec '${specId}' not found at ${displayPath}`);
     }
 
@@ -196,7 +196,7 @@ export async function specValidateCommand(
     assertSpecPath(SPECS_DIR, specPath);
     
     if (!existsSync(specPath)) {
-      throw new Error(`Spec '${specId}' not found at openspec/specs/${specId}/spec.md`);
+      throw new Error(`Spec '${specId}' not found at outline-spec/specs/${specId}/spec.md`);
     }
 
     const validator = new Validator(options.strict);

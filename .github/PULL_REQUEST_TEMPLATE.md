@@ -2,8 +2,8 @@ Closes #
 
 <!--
 No issue yet? Every change starts with one (CONTRIBUTING step 1).
-Run `openspec feedback "your report"` to submit immediately, or open one here:
-https://github.com/Fission-AI/OpenSpec/issues/new/choose
+Run `outline-spec feedback "your report"` to submit immediately, or open one here:
+https://github.com/heneryville/outline-spec/issues/new/choose
 
 Already discussed instead of filed? Replace the line above with a link to the discussion.
 -->

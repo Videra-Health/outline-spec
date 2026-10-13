@@ -1,11 +1,11 @@
 // Preloaded with `node --import` by test/cli-e2e/startup-modules.test.ts.
 // Records the URL of every module the process loads (built-ins excluded) and
-// writes them, one per line, to the file named by OPENSPEC_TEST_MODULE_LOG
+// writes them, one per line, to the file named by OUTLINE_SPEC_TEST_MODULE_LOG
 // when the process exits.
 import * as nodeModule from 'node:module';
 import { appendFileSync, writeFileSync } from 'node:fs';
 
-const logFile = process.env.OPENSPEC_TEST_MODULE_LOG;
+const logFile = process.env.OUTLINE_SPEC_TEST_MODULE_LOG;
 
 if (logFile) {
   writeFileSync(logFile, '');

@@ -4,11 +4,11 @@ import type { ShowOptions } from '../../commands/spec.js';
 export function registerSpecCommand(rootProgram: Command) {
   const specCommand = rootProgram
     .command('spec')
-    .description('Manage and view OpenSpec specifications');
+    .description('Manage and view outline-spec specifications');
 
   // Deprecation notice for noun-based commands
   specCommand.hook('preAction', () => {
-    console.error('Warning: The "openspec spec ..." commands are deprecated. Prefer verb-first commands (e.g., "openspec show", "openspec validate --specs").');
+    console.error('Warning: The "outline-spec spec ..." commands are deprecated. Prefer verb-first commands (e.g., "outline-spec show", "outline-spec validate --specs").');
   });
 
   specCommand

@@ -2,14 +2,14 @@
 
 > Plan changes that span repositories: one store, many repos.
 
-OpenSpec normally lives inside one repo: an `openspec/` folder next to the code it plans. A store moves that folder into a repository of its own, and several code repos can share it.
+outline-spec normally lives inside one repo: an `outline-spec/` folder next to the code it plans. A store moves that folder into a repository of its own, and several code repos can share it.
 
 After a one-time setup on each machine, commands like `status`, `new change`, and `archive` can work in the store from any directory.
 
 ```
-         team-plans  (a store: OpenSpec in its own repo)
-         ├── .openspec-store/store.yaml   the store's name
-         └── openspec/
+         team-plans  (a store: outline-spec in its own repo)
+         ├── .outline-spec-store/store.yaml   the store's name
+         └── outline-spec/
              ├── specs/
              └── changes/
                    ▲
@@ -31,7 +31,7 @@ Two common reasons to use a store:
 
   ```
         shop-plans  (store)
-        └── openspec/changes/add-discounts/    one plan for the feature
+        └── outline-spec/changes/add-discounts/    one plan for the feature
                   ▲
         ┌─────────┴─────────┐
         │                   │
@@ -43,7 +43,7 @@ Two common reasons to use a store:
 
   ```
           product-specs  (store)
-          └── openspec/specs/checkout/spec.md    the expected behavior
+          └── outline-spec/specs/checkout/spec.md    the expected behavior
                     ▲
       ┌─────────────┼─────────────┐
       │             │             │
@@ -57,29 +57,29 @@ You can have more than one store, though we recommend keeping the count low.
 
 One person creates the store, then everyone else joins it.
 
-1. **Create the store** (one person, once per team). Run `openspec store setup` and answer the prompts:
+1. **Create the store** (one person, once per team). Run `outline-spec store setup` and answer the prompts:
 
    ```bash
    # run from anywhere; it asks what to create and where
-   openspec store setup
+   outline-spec store setup
    ```
    
    It asks three questions:
    
    - **Store name**: `team-plans`
-   - **Where should this store live?**: pre-filled with `~/openspec/<name>`, press Enter to accept it or type another path
+   - **Where should this store live?**: pre-filled with `~/outline-spec/<name>`, press Enter to accept it or type another path
    - **Create this store?**: shows what it's about to make, answer `Yes`
    
    Then it reports what it created:
    
    ```yaml
    Store ready: team-plans
-   Location: ~/openspec/team-plans
-   OpenSpec root: ready
+   Location: ~/outline-spec/team-plans
+   outline-spec root: ready
    Registry: registered
    
-   Next: run normal OpenSpec commands against this store, for example:
-     openspec new change <change-id> --store team-plans
+   Next: run normal outline-spec commands against this store, for example:
+     outline-spec new change <change-id> --store team-plans
    Share this store by committing and pushing it like any Git repo.
    ```
 
@@ -87,7 +87,7 @@ One person creates the store, then everyone else joins it.
 
    ```bash
    # connect the store to the empty repo on your git host
-   cd ~/openspec/team-plans
+   cd ~/outline-spec/team-plans
    git remote add origin git@github.com:acme/team-plans.git
 
    # publish it
@@ -98,53 +98,53 @@ One person creates the store, then everyone else joins it.
    
    ```bash
    # get the store onto your machine
-   git clone git@github.com:acme/team-plans.git ~/openspec/team-plans
+   git clone git@github.com:acme/team-plans.git ~/outline-spec/team-plans
    
-   # tell OpenSpec where it lives
-   openspec store register ~/openspec/team-plans
+   # tell outline-spec where it lives
+   outline-spec store register ~/outline-spec/team-plans
    ```
 
    ```yaml
    Store registered: team-plans
-   Location: /Users/you/openspec/team-plans
-   OpenSpec root: ready
+   Location: /Users/you/outline-spec/team-plans
+   outline-spec root: ready
    Registry: registered
    ```
    
-   Registering tells your machine where this store lives. The store's name is already committed inside it, in `.openspec-store/store.yaml`. Setup registered the creator's copy, so only cloned copies need this step.
+   Registering tells your machine where this store lives. The store's name is already committed inside it, in `.outline-spec-store/store.yaml`. Setup registered the creator's copy, so only cloned copies need this step.
    
 4. **Confirm it worked**, from any directory:
    
    ```bash
-   # any OpenSpec command reaches the store by name
-   openspec status --store team-plans
+   # any outline-spec command reaches the store by name
+   outline-spec status --store team-plans
    ```
 
    ```yaml
-   Using OpenSpec root: team-plans (/Users/you/openspec/team-plans)
-   No active changes. Create one with: openspec new change <name> --store team-plans
+   Using outline-spec root: team-plans (/Users/you/outline-spec/team-plans)
+   No active changes. Create one with: outline-spec new change <name> --store team-plans
    ```
    
 ## Types of setups
 
-OpenSpec has three setups. The rest of this page uses these names:
+outline-spec has three setups. The rest of this page uses these names:
 
-- **repo-local**: OpenSpec inside your repo, no store. The default.
+- **repo-local**: outline-spec inside your repo, no store. The default.
 - **store-only**: your repo keeps no specs or changes of its own. Everything lives in the store.
-- **store-optional**: your project has its own `openspec/` folder and also reaches a store when you ask.
+- **store-optional**: your project has its own `outline-spec/` folder and also reaches a store when you ask.
 
-### The default: OpenSpec inside your repo (`repo-local`)
+### The default: outline-spec inside your repo (`repo-local`)
 
-`openspec init` puts an `openspec/` folder next to your code, and that repo's specs and changes live there. No store is involved. This is the setup [Set up your project](../start/setup.md) teaches, and most projects never need another.
+`outline-spec init` puts an `outline-spec/` folder next to your code, and that repo's specs and changes live there. No store is involved. This is the setup [Set up your project](../start/setup.md) teaches, and most projects never need another.
 
 ```
 web-app  (code repo)
-└── openspec/
+└── outline-spec/
     ├── specs/
     └── changes/
 ```
 
-### OpenSpec outside your repo, in a store (`store-only`)
+### outline-spec outside your repo, in a store (`store-only`)
 
 The repo keeps no specs or changes of its own. Everything it plans lives in the store, and one line in the repo's config connects the two.
 
@@ -152,29 +152,29 @@ Common when one team builds all the repos and plans in one place. The [examples 
 
 ```
 team-plans  (store)
-└── openspec/
+└── outline-spec/
     ├── specs/       the repo's specs live here
     └── changes/     its changes too
           ▲
           │ store: team-plans   (the connecting line)
 web-app  (code repo)
-└── openspec/
+└── outline-spec/
     └── config.yaml    nothing else
 ```
 
-### OpenSpec in your repo and in a store (`store-optional`)
+### outline-spec in your repo and in a store (`store-optional`)
 
-The repo stays repo-local for its own work, while the store holds the shared specs and changes. Inside the repo, OpenSpec uses your project's `openspec/` folder, and reaches the store only when you pass `--store`.
+The repo stays repo-local for its own work, while the store holds the shared specs and changes. Inside the repo, outline-spec uses your project's `outline-spec/` folder, and reaches the store only when you pass `--store`.
 
-Common when a repo used OpenSpec before the store existed, or when a mostly independent repo only occasionally touches shared work.
+Common when a repo used outline-spec before the store existed, or when a mostly independent repo only occasionally touches shared work.
 
 ```
 team-plans  (store)
-└── openspec/          the shared specs and changes
+└── outline-spec/          the shared specs and changes
           ▲
           │ only when you pass --store team-plans
 web-app  (code repo)
-└── openspec/          this repo's own
+└── outline-spec/          this repo's own
     ├── config.yaml
     ├── specs/
     └── changes/
@@ -184,26 +184,26 @@ A repo can start repo-local and move its specs and changes into the store later.
 
 ## Where artifacts get created when using stores
 
-When you use a store, OpenSpec also has to decide where the artifacts get created. It depends on your setup:
+When you use a store, outline-spec also has to decide where the artifacts get created. It depends on your setup:
 
 - **store-only** (your project only writes to the store): every artifact is created in the store. The `store:` line below records that.
-- **store-optional** (your project has its own `openspec/` folder and also uses a store): artifacts are created in your project, unless you name the store in your request or pass `--store` for that change. Your agent then carries the flag through the rest of the workflow.
+- **store-optional** (your project has its own `outline-spec/` folder and also uses a store): artifacts are created in your project, unless you name the store in your request or pass `--store` for that change. Your agent then carries the flag through the rest of the workflow.
 
-OpenSpec writes artifacts to one of two places: your project's `openspec/` folder, or the store's. It picks in this order, and the first option that applies wins:
+outline-spec writes artifacts to one of two places: your project's `outline-spec/` folder, or the store's. It picks in this order, and the first option that applies wins:
 
 1. **`--store <id>` on a command.** Always wins, from any directory.
-2. **Your project's `openspec/` folder.** If your project has its own `specs/` or `changes/` folders, OpenSpec uses them.
+2. **Your project's `outline-spec/` folder.** If your project has its own `specs/` or `changes/` folders, outline-spec uses them.
 3. **The `store:` line in your project.** How a store-only project records its store.
 4. **`defaultStore` on your machine.** The fallback when none of the above applies.
 
-When OpenSpec selects a store, it prints `Using OpenSpec root: ...` before the command output.
+When outline-spec selects a store, it prints `Using outline-spec root: ...` before the command output.
 
 ### The `store:` line (store-only projects)
 
-Add one line to your project's `openspec/config.yaml`:
+Add one line to your project's `outline-spec/config.yaml`:
 
 ```yaml
-# web-app/openspec/config.yaml
+# web-app/outline-spec/config.yaml
 store: team-plans
 ```
 
@@ -211,17 +211,17 @@ Everything you or your agent run inside your project now uses the store, with no
 
 ```bash
 # inside web-app, connected
-openspec status
+outline-spec status
 ```
 
 ```yaml
-Using OpenSpec root: team-plans (/Users/you/openspec/team-plans)
-No active changes. Create one with: openspec new change <name> --store team-plans
+Using outline-spec root: team-plans (/Users/you/outline-spec/team-plans)
+No active changes. Create one with: outline-spec new change <name> --store team-plans
 ```
 
-- **Without the line**: run a plain command in a store-only project and OpenSpec stops with an error listing your registered stores.
-- **Commit it**: teammates who clone your project get the line too. They still need the store registered on their machine ([step 3 of Set up a store](#set-up-a-store)), or OpenSpec errors and tells them to register it.
-- **Next to real folders**: if your project also has `specs/` or `changes/` folders, OpenSpec uses those and ignores the line, with a warning.
+- **Without the line**: run a plain command in a store-only project and outline-spec stops with an error listing your registered stores.
+- **Commit it**: teammates who clone your project get the line too. They still need the store registered on their machine ([step 3 of Set up a store](#set-up-a-store)), or outline-spec errors and tells them to register it.
+- **Next to real folders**: if your project also has `specs/` or `changes/` folders, outline-spec uses those and ignores the line, with a warning.
 
 ### Install integrations in a store-only repo
 
@@ -229,40 +229,40 @@ Run init from the code repo's root to install AI tool integration files without 
 
 ```bash
 # inside web-app, at the repository root
-openspec init --tools claude
+outline-spec init --tools claude
 ```
 
 - **Integration files**: written in the code repo.
-- **`openspec/config.yaml`**: preserved byte-for-byte, including the `store:` line.
-- **`openspec/specs/` and `openspec/changes/`**: not created in the code repo.
+- **`outline-spec/config.yaml`**: preserved byte-for-byte, including the `store:` line.
+- **`outline-spec/specs/` and `outline-spec/changes/`**: not created in the code repo.
 
-OpenSpec refuses this command from a subdirectory of the code repo. Run it from the repository root.
+outline-spec refuses this command from a subdirectory of the code repo. Run it from the repository root.
 
-OpenSpec also refuses `--language` here because the language belongs in the external store's config. Run init in the store root or edit that config directly.
+outline-spec also refuses `--language` here because the language belongs in the external store's config. Run init in the store root or edit that config directly.
 
 ### `defaultStore` on your machine
 
-Set it once if every project you work in uses the same store. OpenSpec falls back to it when it finds no flag, no local `openspec/` folder, and no `store:` line:
+Set it once if every project you work in uses the same store. outline-spec falls back to it when it finds no flag, no local `outline-spec/` folder, and no `store:` line:
 
 ```bash
 # use team-plans whenever nothing else names a store
-openspec config set defaultStore team-plans
+outline-spec config set defaultStore team-plans
 
 # undo it
-openspec config unset defaultStore
+outline-spec config unset defaultStore
 ```
 
-**Commands that stay local.** `init`, `update`, `templates`, `schemas`, and the `openspec schema` subcommands act on the current directory only and take no `--store`.
+**Commands that stay local.** `init`, `update`, `templates`, `schemas`, and the `outline-spec schema` subcommands act on the current directory only and take no `--store`.
 
 ## Move a repo's specs and changes into the store
 
 To take a repo from repo-local to store-only:
 
-1. Move everything in the repo's `openspec/specs/` and `openspec/changes/` into the same folders in the store.
-2. Delete the now-empty folders, so the repo's `openspec/` folder holds only `config.yaml`.
+1. Move everything in the repo's `outline-spec/specs/` and `outline-spec/changes/` into the same folders in the store.
+2. Delete the now-empty folders, so the repo's `outline-spec/` folder holds only `config.yaml`.
 3. Add the `store:` line to that `config.yaml`.
 
-`openspec status` inside the repo now starts with `Using OpenSpec root: team-plans`.
+`outline-spec status` inside the repo now starts with `Using outline-spec root: team-plans`.
 
 ## Work in the store
 
@@ -272,49 +272,49 @@ Create a change from inside a store-only repo and it lands in the store:
 
 ```bash
 # inside web-app; the store: line routes this to team-plans
-openspec new change add-login
+outline-spec new change add-login
 ```
 
 ```yaml
-Using OpenSpec root: team-plans (/Users/you/openspec/team-plans)
-Created change 'add-login' at /Users/you/openspec/team-plans/openspec/changes/add-login/
+Using outline-spec root: team-plans (/Users/you/outline-spec/team-plans)
+Created change 'add-login' at /Users/you/outline-spec/team-plans/outline-spec/changes/add-login/
 Schema: spec-driven
-Next: openspec status --change add-login --store team-plans
+Next: outline-spec status --change add-login --store team-plans
 ```
 
 - **Where it went**: into the store repo, not next to your code.
 - **Sharing it**: the change exists only in your checkout until you commit and push the store repo. Teammates see it when they pull. The same goes for every artifact the workflows write.
-- **Paths in the docs**: wherever the docs show an `openspec/` path, in a store setup that folder is the store's.
+- **Paths in the docs**: wherever the docs show an `outline-spec/` path, in a store setup that folder is the store's.
 
-When artifacts get created somewhere you didn't expect, `openspec doctor` checks your setup without changing anything and prints a fix for each finding:
+When artifacts get created somewhere you didn't expect, `outline-spec doctor` checks your setup without changing anything and prints a fix for each finding:
 
 ```bash
 # check the current root and its stores
-openspec doctor
+outline-spec doctor
 ```
 
 ```yaml
 Doctor
 
 Root
-  Location: /Users/you/openspec/team-plans
-  OpenSpec root: ok
+  Location: /Users/you/outline-spec/team-plans
+  outline-spec root: ok
   Store: team-plans (metadata ok)
 
 References
   (none declared)
 ```
 
-`openspec context` lists the root and stores your current directory works with, when you want the same picture without the checks.
+`outline-spec context` lists the root and stores your current directory works with, when you want the same picture without the checks.
 
 To open the store and a repo in one editor window, so your agent can read both, see [Worksets (beta)](worksets.md).
 
 ## Read specs from another store
 
-Your repo can keep its own `openspec/` folder and still let your agent read another store's specs. Declare that store under `references:` in the repo's `openspec/config.yaml`:
+Your repo can keep its own `outline-spec/` folder and still let your agent read another store's specs. Declare that store under `references:` in the repo's `outline-spec/config.yaml`:
 
 ```yaml
-# api-server/openspec/config.yaml
+# api-server/outline-spec/config.yaml
 references:
   - team-plans
 ```
@@ -326,9 +326,9 @@ When a workflow creates an artifact, its instructions gain an index of the refer
 ```xml
 <referenced_stores>
 <!-- Read-only upstream context. Fetch what you need; cite what you use. -->
-Store team-plans (/Users/you/openspec/team-plans):
+Store team-plans (/Users/you/outline-spec/team-plans):
   - payments: Rules for charging and refunding customers.
-  Fetch: openspec show <spec-id> --type spec --store team-plans
+  Fetch: outline-spec show <spec-id> --type spec --store team-plans
 </referenced_stores>
 ```
 
@@ -340,19 +340,19 @@ references:
   - { id: design-system, remote: "git@github.com:acme/design-system.git" }
 ```
 
-With the URL declared, `openspec doctor` turns a missing store into a pasteable fix:
+With the URL declared, `outline-spec doctor` turns a missing store into a pasteable fix:
 
 ```yaml
 # output wrapped to fit
 References
-  - team-plans: ok (/Users/you/openspec/team-plans)
+  - team-plans: ok (/Users/you/outline-spec/team-plans)
   - design-system: Referenced store 'design-system' is not registered on this machine.
-    Fix: git clone -- git@github.com:acme/design-system.git '/Users/you/openspec/design-system' &&
-         openspec store register '/Users/you/openspec/design-system' --id design-system
+    Fix: git clone -- git@github.com:acme/design-system.git '/Users/you/outline-spec/design-system' &&
+         outline-spec store register '/Users/you/outline-spec/design-system' --id design-system
 ```
 
 ## Beta limits
 
 - **The shape may change**: command names, flags, and file formats can change between releases. Re-read this page after upgrading.
-- **No sync, by design**: OpenSpec never clones, pulls, or pushes. A stale checkout shows stale specs until you pull, and references are read from whatever is on disk.
-- **One checkout per store name**: registering a second folder under a name that's already registered fails, with a hint to run `openspec store unregister` first.
+- **No sync, by design**: outline-spec never clones, pulls, or pushes. A stale checkout shows stale specs until you pull, and references are read from whatever is on disk.
+- **One checkout per store name**: registering a second folder under a name that's already registered fails, with a hint to run `outline-spec store unregister` first.

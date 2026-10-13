@@ -99,7 +99,7 @@ export class Validator {
 
   private oldFormatHint(src: string, message: string): string {
     return /^### Requirement:/m.test(src)
-      ? `${message}. This spec is in the old "### Requirement:" format; run "openspec migrate-specs" to convert it`
+      ? `${message}. This spec is in the old "### Requirement:" format; run "outline-spec migrate-specs" to convert it`
       : message;
   }
 

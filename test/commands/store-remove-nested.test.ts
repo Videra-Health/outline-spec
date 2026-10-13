@@ -12,7 +12,7 @@ import {
   writeStoreRegistryState,
 } from '../../src/core/index.js';
 import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
-import { createHealthyOpenSpecRoot, isolatedGitEnv } from '../helpers/store-git.js';
+import { createHealthyOutlineSpecRoot, isolatedGitEnv } from '../helpers/store-git.js';
 
 /**
  * `store remove` deletes the store folder recursively. Another registered
@@ -28,7 +28,7 @@ describe('store remove with another registered store inside the target', () => {
 
   beforeEach(() => {
     tempDir = fs.realpathSync.native(
-      fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-store-remove-nested-'))
+      fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-store-remove-nested-'))
     );
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
@@ -44,7 +44,7 @@ describe('store remove with another registered store inside the target', () => {
 
   async function makeStore(relativePath: string, id: string): Promise<string> {
     const root = path.join(tempDir, relativePath);
-    createHealthyOpenSpecRoot(root);
+    createHealthyOutlineSpecRoot(root);
     await writeStoreMetadataState(root, { version: 1, id });
     return fs.realpathSync.native(root);
   }
@@ -66,7 +66,7 @@ describe('store remove with another registered store inside the target', () => {
 
   /** Planning work that exists only on disk, never committed anywhere. */
   function writeDraft(storeRoot: string): string {
-    const draft = path.join(storeRoot, 'openspec', 'changes', 'draft-idea', 'proposal.md');
+    const draft = path.join(storeRoot, 'outline-spec', 'changes', 'draft-idea', 'proposal.md');
     fs.mkdirSync(path.dirname(draft), { recursive: true });
     fs.writeFileSync(draft, '# Draft (uncommitted work)\n');
     return draft;
@@ -74,8 +74,8 @@ describe('store remove with another registered store inside the target', () => {
 
   /** `team-plans` with `plat` registered inside it, as a vendored store would be. */
   async function nestedLayout(): Promise<{ teamPlans: string; plat: string; draft: string }> {
-    const teamPlans = await makeStore(path.join('openspec', 'team-plans'), 'team-plans');
-    const plat = await makeStore(path.join('openspec', 'team-plans', 'vendor', 'plat'), 'plat');
+    const teamPlans = await makeStore(path.join('outline-spec', 'team-plans'), 'team-plans');
+    const plat = await makeStore(path.join('outline-spec', 'team-plans', 'vendor', 'plat'), 'plat');
     await register({ plat, 'team-plans': teamPlans });
     return { teamPlans, plat, draft: writeDraft(plat) };
   }
@@ -103,7 +103,7 @@ describe('store remove with another registered store inside the target', () => {
   }
 
   it('control: removes the store when the other registered store is a sibling', async () => {
-    const teamPlans = await makeStore(path.join('openspec', 'team-plans'), 'team-plans');
+    const teamPlans = await makeStore(path.join('outline-spec', 'team-plans'), 'team-plans');
     const plat = await makeStore(path.join('work', 'plat'), 'plat');
     await register({ plat, 'team-plans': teamPlans });
     const draft = writeDraft(plat);
@@ -148,7 +148,7 @@ describe('store remove with another registered store inside the target', () => {
     );
     expect(diagnostic.message).toContain("'plat'");
     expect(diagnostic.message).toContain(plat);
-    expect(diagnostic.fix).toContain('openspec store unregister plat');
+    expect(diagnostic.fix).toContain('outline-spec store unregister plat');
   }, 30_000);
 
   it('prints the refusal in human mode and deletes nothing', async () => {
@@ -158,14 +158,14 @@ describe('store remove with another registered store inside the target', () => {
 
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain("'plat'");
-    expect(result.stderr).toContain('openspec store unregister plat');
+    expect(result.stderr).toContain('outline-spec store unregister plat');
     expect(fs.existsSync(draft)).toBe(true);
   }, 30_000);
 
   it('lists every nested store in the refusal', async () => {
-    const teamPlans = await makeStore(path.join('openspec', 'team-plans'), 'team-plans');
-    const plat = await makeStore(path.join('openspec', 'team-plans', 'vendor', 'plat'), 'plat');
-    const docs = await makeStore(path.join('openspec', 'team-plans', 'vendor', 'docs'), 'docs');
+    const teamPlans = await makeStore(path.join('outline-spec', 'team-plans'), 'team-plans');
+    const plat = await makeStore(path.join('outline-spec', 'team-plans', 'vendor', 'plat'), 'plat');
+    const docs = await makeStore(path.join('outline-spec', 'team-plans', 'vendor', 'docs'), 'docs');
     await register({ docs, plat, 'team-plans': teamPlans });
 
     const [diagnostic] = parseJson(await remove('team-plans')).status;
@@ -189,7 +189,7 @@ describe('store remove with another registered store inside the target', () => {
   }, 30_000);
 
   it('refuses while a stale registration still points inside the folder', async () => {
-    const teamPlans = await makeStore(path.join('openspec', 'team-plans'), 'team-plans');
+    const teamPlans = await makeStore(path.join('outline-spec', 'team-plans'), 'team-plans');
     await register({
       plat: path.join(teamPlans, 'vendor', 'plat'),
       'team-plans': teamPlans,
@@ -220,8 +220,8 @@ describe('store remove with another registered store inside the target', () => {
   it.skipIf(process.platform === 'win32')(
     'finds a nested store registered through a symlinked path',
     async () => {
-      const teamPlans = await makeStore(path.join('openspec', 'team-plans'), 'team-plans');
-      await makeStore(path.join('openspec', 'team-plans', 'vendor', 'plat'), 'plat');
+      const teamPlans = await makeStore(path.join('outline-spec', 'team-plans'), 'team-plans');
+      await makeStore(path.join('outline-spec', 'team-plans', 'vendor', 'plat'), 'plat');
       const link = path.join(tempDir, 'team-plans-link');
       fs.symlinkSync(teamPlans, link, 'dir');
       await register({
@@ -248,7 +248,7 @@ describe('store remove with another registered store inside the target', () => {
     git(upstream, ['add', '-A']);
     git(upstream, ['commit', '-qm', 'plat store']);
 
-    const teamPlans = await makeStore(path.join('openspec', 'team-plans'), 'team-plans');
+    const teamPlans = await makeStore(path.join('outline-spec', 'team-plans'), 'team-plans');
     git(teamPlans, ['init', '-q']);
     git(teamPlans, ['add', '-A']);
     git(teamPlans, ['commit', '-qm', 'team-plans store']);

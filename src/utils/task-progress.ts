@@ -23,12 +23,12 @@ import { resolveSchemaForChange } from './change-metadata.js';
  * marking items `[~]` *shrank* the denominator instead of leaving them counted
  * as not-done (#1761). An empty `[]` and a padded `[ x]` were lost the same
  * silent way. Only `x`/`X` means done, so every unrecognised marker reads as
- * not-done - the conservative default, and no new concept: OpenSpec does not
+ * not-done - the conservative default, and no new concept: outline-spec does not
  * adopt `[~]` or any other marker's meaning, it just stops dropping the line.
  *
  * Permissive on purpose, and safe to keep that way: any character class
  * tightened here drops lines that used to count, and a task this parser drops
- * is a task `openspec archive` stops warning about. The cost of the wide class
+ * is a task `outline-spec archive` stops warning about. The cost of the wide class
  * is over-counting - `- [1] ...` in a tasks file now reads as one unfinished
  * task - which is a loud, correctable false positive, unlike the silent loss.
  *
@@ -161,7 +161,7 @@ export interface TaskProgressDetail extends TaskProgress {
    * Task files that exist but could not be read (any error other than ENOENT).
    * `getTaskProgressForChange` discards this list to preserve its behavior;
    * callers that must fail loudly on an unreadable tasks file — e.g.
-   * `openspec validate --archived` — read it so an unreadable file is never
+   * `outline-spec validate --archived` — read it so an unreadable file is never
    * silently counted as "no tasks" (#205).
    */
   unreadable: string[];
@@ -187,7 +187,7 @@ async function countTaskFile(file: string, unreadable: string[]): Promise<TaskPr
 /**
  * Computes a change's task progress by resolving its tracked-tasks artifact and
  * counting checkboxes across every file matched by that artifact's `generates`
- * glob — the same file-resolution `openspec status` uses to detect the tasks
+ * glob — the same file-resolution `outline-spec status` uses to detect the tasks
  * artifact (`resolveArtifactOutputs`) — so progress is no longer blind to nested
  * `tasks.md` files (#1202). Falls back to a single top-level `tasks.md` (exactly
  * as before) when the schema is unresolvable, no tracked-tasks artifact is found,

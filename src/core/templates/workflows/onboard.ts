@@ -17,7 +17,7 @@ import { PROJECT_ROOT_GUARD } from './project-root.js';
  */
 const EXPLORE_MODE_NOTE = optionalWorkflow(
   'explore',
-  'Explore mode (`/opsx:explore`) is for this kind of thinking—investigating before implementing. You can use it anytime you need to think through a problem.',
+  'Explore mode (`/outline-spec:explore`) is for this kind of thinking—investigating before implementing. You can use it anytime you need to think through a problem.',
   'Investigating before implementing is worth doing whenever a problem needs thinking through.'
 );
 
@@ -27,25 +27,25 @@ const EXPLORE_MODE_NOTE = optionalWorkflow(
  * commands the reader can run — and stays a valid table either way.
  */
 const COMMAND_REFERENCE_ROWS = [
-  onlyWithWorkflow('propose', ' | `/opsx:propose` | Create a change and generate all artifacts |'),
-  onlyWithWorkflow('explore', ' | `/opsx:explore` | Think through problems before/during work  |'),
-  onlyWithWorkflow('apply', ' | `/opsx:apply`   | Implement tasks from a change              |'),
-  onlyWithWorkflow('land', ' | `/opsx:land`    | Apply a finished change to the specs       |'),
-  onlyWithWorkflow('new', ' | `/opsx:new`     | Start a new change, one artifact at a time |'),
-  onlyWithWorkflow('continue', ' | `/opsx:continue` | Continue working on an existing change    |'),
-  onlyWithWorkflow('ff', ' | `/opsx:ff`      | Fast-forward: create all artifacts at once |'),
-  onlyWithWorkflow('verify', ' | `/opsx:verify`  | Verify implementation matches artifacts    |'),
+  onlyWithWorkflow('propose', ' | `/outline-spec:propose` | Create a change and generate all artifacts |'),
+  onlyWithWorkflow('explore', ' | `/outline-spec:explore` | Think through problems before/during work  |'),
+  onlyWithWorkflow('apply', ' | `/outline-spec:apply`   | Implement tasks from a change              |'),
+  onlyWithWorkflow('land', ' | `/outline-spec:land`    | Apply a finished change to the specs       |'),
+  onlyWithWorkflow('new', ' | `/outline-spec:new`     | Start a new change, one artifact at a time |'),
+  onlyWithWorkflow('continue', ' | `/outline-spec:continue` | Continue working on an existing change    |'),
+  onlyWithWorkflow('ff', ' | `/outline-spec:ff`      | Fast-forward: create all artifacts at once |'),
+  onlyWithWorkflow('verify', ' | `/outline-spec:verify`  | Verify implementation matches artifacts    |'),
 ].join('\n');
 
 const QUICK_REFERENCE_ROWS = [
-  onlyWithWorkflow('propose', ' | `/opsx:propose <name>`  | Create a change and generate all artifacts |'),
-  onlyWithWorkflow('explore', ' | `/opsx:explore`         | Think through problems (no code changes)   |'),
-  onlyWithWorkflow('apply', ' | `/opsx:apply <name>`    | Implement tasks                            |'),
-  onlyWithWorkflow('land', ' | `/opsx:land <name>`     | Land when done                             |'),
-  onlyWithWorkflow('new', ' | `/opsx:new <name>`      | Start a new change, step by step           |'),
-  onlyWithWorkflow('continue', ' | `/opsx:continue <name>` | Continue an existing change                |'),
-  onlyWithWorkflow('ff', ' | `/opsx:ff <name>`       | Fast-forward: all artifacts at once        |'),
-  onlyWithWorkflow('verify', ' | `/opsx:verify <name>`   | Verify implementation                      |'),
+  onlyWithWorkflow('propose', ' | `/outline-spec:propose <name>`  | Create a change and generate all artifacts |'),
+  onlyWithWorkflow('explore', ' | `/outline-spec:explore`         | Think through problems (no code changes)   |'),
+  onlyWithWorkflow('apply', ' | `/outline-spec:apply <name>`    | Implement tasks                            |'),
+  onlyWithWorkflow('land', ' | `/outline-spec:land <name>`     | Land when done                             |'),
+  onlyWithWorkflow('new', ' | `/outline-spec:new <name>`      | Start a new change, step by step           |'),
+  onlyWithWorkflow('continue', ' | `/outline-spec:continue <name>` | Continue an existing change                |'),
+  onlyWithWorkflow('ff', ' | `/outline-spec:ff <name>`       | Fast-forward: all artifacts at once        |'),
+  onlyWithWorkflow('verify', ' | `/outline-spec:verify <name>`   | Verify implementation                      |'),
 ].join('\n');
 
 /**
@@ -53,36 +53,36 @@ const QUICK_REFERENCE_ROWS = [
  * sentence that introduces them stands on its own without either.
  */
 const RESUME_HINTS = [
-  onlyWithWorkflow('continue', '- `/opsx:continue <name>` - Resume artifact creation'),
-  onlyWithWorkflow('apply', '- `/opsx:apply <name>` - Jump to implementation (if tasks exist)'),
+  onlyWithWorkflow('continue', '- `/outline-spec:continue <name>` - Resume artifact creation'),
+  onlyWithWorkflow('apply', '- `/outline-spec:apply <name>` - Jump to implementation (if tasks exist)'),
 ].join('\n');
 
 /** Where the tutorial points once it is over. */
 const NEXT_STEP_INVITE = optionalWorkflow(
   'propose',
-  'Try `/opsx:propose` on something you actually want to build. You\'ve got the rhythm now!',
+  'Try `/outline-spec:propose` on something you actually want to build. You\'ve got the rhythm now!',
   'Try this on something you actually want to build. You\'ve got the rhythm now!'
 );
 
 const QUICK_REFERENCE_INVITE = optionalWorkflow(
   'propose',
-  'Try `/opsx:propose` to start your first change.',
+  'Try `/outline-spec:propose` to start your first change.',
   'Ask me to start your first change whenever you are ready.'
 );
 
 export function getOnboardSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-onboard',
-    description: 'Guided onboarding for OpenSpec - walk through a complete workflow cycle with narration and real codebase work. Also use when the user says "openspec onboard" or "opsx onboard".',
+    name: 'outline-spec-onboard',
+    description: 'Guided onboarding for outline-spec - walk through a complete workflow cycle with narration and real codebase work. Also use when the user says "outline-spec onboard".',
     instructions: getOnboardInstructions(),
     license: 'MIT',
-    compatibility: 'Requires openspec CLI.',
-    metadata: { author: 'openspec', version: '1.0' },
+    compatibility: 'Requires outline-spec CLI.',
+    metadata: { author: 'outline-spec', version: '1.0' },
   };
 }
 
 function getOnboardInstructions(): string {
-  return `Guide the user through their first complete OpenSpec workflow cycle. This is a teaching experience—you'll do real work in their codebase while explaining each step.
+  return `Guide the user through their first complete outline-spec workflow cycle. This is a teaching experience—you'll do real work in their codebase while explaining each step.
 
 ${STORE_SELECTION_GUIDANCE}
 
@@ -92,17 +92,17 @@ ${PROJECT_ROOT_GUARD}
 
 ## Preflight
 
-Before starting, check if the OpenSpec CLI is installed:
+Before starting, check if the outline-spec CLI is installed:
 
 \`\`\`bash
 # Unix/macOS
-openspec --version 2>&1 || echo "CLI_NOT_INSTALLED"
+outline-spec --version 2>&1 || echo "CLI_NOT_INSTALLED"
 # Windows (PowerShell)
-# if (Get-Command openspec -ErrorAction SilentlyContinue) { openspec --version } else { echo "CLI_NOT_INSTALLED" }
+# if (Get-Command outline-spec -ErrorAction SilentlyContinue) { outline-spec --version } else { echo "CLI_NOT_INSTALLED" }
 \`\`\`
 
 **If CLI not installed:**
-> OpenSpec CLI is not installed. Install it first, then come back to \`/opsx:onboard\`.
+> outline-spec CLI is not installed. Install it first, then come back to \`/outline-spec:onboard\`.
 
 Stop here if not installed.
 
@@ -113,7 +113,7 @@ Stop here if not installed.
 Display:
 
 \`\`\`
-## Welcome to OpenSpec!
+## Welcome to outline-spec!
 
 I'll walk you through a complete change cycle—from idea to implementation—using a real task in your codebase. Along the way, you'll learn the workflow by doing it.
 
@@ -191,7 +191,7 @@ Which task interests you? (Pick a number or describe your own)
 If the user picks or describes something too large (major feature, multi-day work):
 
 \`\`\`
-That's a valuable task, but it's probably larger than ideal for your first OpenSpec run-through.
+That's a valuable task, but it's probably larger than ideal for your first outline-spec run-through.
 
 For learning the workflow, smaller is better—it lets you see the full cycle without getting stuck in implementation details.
 
@@ -244,14 +244,14 @@ Now let's create a change to hold our work.
 \`\`\`
 ## Creating a Change
 
-A "change" in OpenSpec is a container for all the thinking and planning around a piece of work. It lives at the \`changeRoot\` reported by \`openspec status --change "<name>" --json\` and holds your artifacts—outline, design, tasks.
+A "change" in outline-spec is a container for all the thinking and planning around a piece of work. It lives at the \`changeRoot\` reported by \`outline-spec status --change "<name>" --json\` and holds your artifacts—outline, design, tasks.
 
 Let me create one for our task.
 \`\`\`
 
 **DO:** Create the change with a derived kebab-case name:
 \`\`\`bash
-openspec new change "<derived-name>"
+outline-spec new change "<derived-name>"
 \`\`\`
 
 **SHOW:**
@@ -277,7 +277,7 @@ Now let's write the first artifact—the outline.
 \`\`\`
 ## The Outline
 
-The project's specs live in \`openspec/specs/<spec>/spec.md\` as labeled outlines: each numbered item is a requirement (a name, a colon, one sentence), with details nested under it as a. / i. / 1.
+The project's specs live in \`outline-spec/specs/<spec>/spec.md\` as labeled outlines: each numbered item is a requirement (a name, a colon, one sentence), with details nested under it as a. / i. / 1.
 
 A change never edits those files directly. Its outline.md states the proposal in a sentence or two, then lists only the spec edits it makes:
 - A new requirement or detail is written plainly, labeled after the last one at its level.
@@ -285,12 +285,12 @@ A change never edits those files directly. Its outline.md states the proposal in
 - A removed item is wholly struck, with its live text.
 - Labels never shift: a removed item leaves a gap.
 
-When the work is done, \`openspec land\` applies these edits to the live specs.
+When the work is done, \`outline-spec land\` applies these edits to the live specs.
 \`\`\`
 
-**DO:** Read the specs this task touches (\`openspec list --specs\`, then \`openspec show "<spec>" --type spec\`), and get the artifact instructions:
+**DO:** Read the specs this task touches (\`outline-spec list --specs\`, then \`outline-spec show "<spec>" --type spec\`), and get the artifact instructions:
 \`\`\`bash
-openspec instructions outline --change "<name>" --json
+outline-spec instructions outline --change "<name>" --json
 \`\`\`
 
 Draft the outline (don't save yet), following the returned \`template\` and \`instruction\`:
@@ -322,7 +322,7 @@ Every line here is an edit the change makes to a live spec. Does this capture th
 
 After approval, write it to the \`resolvedOutputPath\` from the instructions JSON, then check it lands cleanly:
 \`\`\`bash
-openspec validate "<name>"
+outline-spec validate "<name>"
 \`\`\`
 
 \`\`\`
@@ -342,7 +342,7 @@ Next up: design, if the change needs one.
 The design captures **how** we'll build it—technical decisions and tradeoffs. It's optional: only write one when the change needs decisions explained. Small changes usually skip it.
 \`\`\`
 
-**DO:** Decide whether this change needs a design. If it does, draft design.md following \`openspec instructions design --change "<name>" --json\`, show it, and save it to the \`resolvedOutputPath\`. If not, say so and move on.
+**DO:** Decide whether this change needs a design. If it does, draft design.md following \`outline-spec instructions design --change "<name>" --json\`, show it, and save it to the \`resolvedOutputPath\`. If not, say so and move on.
 
 ---
 
@@ -374,7 +374,7 @@ Here are the implementation tasks:
 ## 2. Integration Verification
 
 - [ ] 2.1 Verify [broader integration or system behavior] with [end-to-end test or observable result]
-- [ ] 2.2 Land the change with \`openspec land <name>\`
+- [ ] 2.2 Land the change with \`outline-spec land <name>\`
 
 ---
 
@@ -383,7 +383,7 @@ Each checkbox becomes a unit of work in the apply phase. Does this task breakdow
 
 **PAUSE** - Wait for user approval/feedback.
 
-After approval, save to the \`resolvedOutputPath\` from \`openspec instructions tasks --change "<name>" --json\`.
+After approval, save to the \`resolvedOutputPath\` from \`outline-spec instructions tasks --change "<name>" --json\`.
 
 Then ask:
 > "Tasks are saved. Ready to implement?"
@@ -437,12 +437,12 @@ Landing applies the change's outline.md to the live specs and deletes the change
 
 **DO:** Validate, preview, then land (\`--yes\` answers the confirmation prompt, which you cannot answer from a tool call):
 \`\`\`bash
-openspec validate "<name>"
-openspec land "<name>" --dry-run
-openspec land "<name>" --yes
+outline-spec validate "<name>"
+outline-spec land "<name>" --dry-run
+outline-spec land "<name>" --yes
 \`\`\`
 
-Show the dry-run result before landing. If validate or land reports a mismatch, fix outline.md so its struck text and labels match the live spec—never hand-edit \`openspec/specs/\`.
+Show the dry-run result before landing. If validate or land reports a mismatch, fix outline.md so its struck text and labels match the live spec—never hand-edit \`outline-spec/specs/\`.
 
 **SHOW:**
 \`\`\`
@@ -456,7 +456,7 @@ Landed. The specs now describe the new behavior, the change folder is gone, and 
 \`\`\`
 ## Congratulations!
 
-You just completed a full OpenSpec cycle:
+You just completed a full outline-spec cycle:
 
 1. **Explore** - Thought through the problem
 2. **New** - Created a change container
@@ -494,9 +494,9 @@ ${NEXT_STEP_INVITE}
 If the user says they need to stop, want to pause, or seem disengaged:
 
 \`\`\`
-No problem! Your change is saved at the \`changeRoot\` reported by \`openspec status --change "<name>" --json\`.
+No problem! Your change is saved at the \`changeRoot\` reported by \`outline-spec status --change "<name>" --json\`.
 
-To pick up where we left off later, \`openspec status --change "<name>" --json\` shows exactly where the change stands.
+To pick up where we left off later, \`outline-spec status --change "<name>" --json\` shows exactly where the change stands.
 ${RESUME_HINTS}
 
 The work won't be lost. Come back whenever you're ready.
@@ -509,7 +509,7 @@ Exit gracefully without pressure.
 If the user says they just want to see the commands or skip the tutorial:
 
 \`\`\`
-## OpenSpec Quick Reference
+## outline-spec Quick Reference
 
 **The commands you have installed:**
 
@@ -535,10 +535,10 @@ Exit gracefully.
 - **Adjust scope gently**—guide toward smaller tasks but respect user choice`;
 }
 
-export function getOpsxOnboardCommandTemplate(): CommandTemplate {
+export function getOutlineSpecOnboardCommandTemplate(): CommandTemplate {
   return {
-    name: 'OPSX: Onboard',
-    description: 'Guided onboarding - walk through a complete OpenSpec workflow cycle with narration',
+    name: 'outline-spec: Onboard',
+    description: 'Guided onboarding - walk through a complete outline-spec workflow cycle with narration',
     category: 'Workflow',
     tags: ['workflow', 'onboarding', 'tutorial', 'learning'],
     content: getOnboardInstructions(),

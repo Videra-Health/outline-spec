@@ -6,9 +6,9 @@ import {
 } from '../../src/core/config.js';
 
 /**
- * The `openspec init` tool picker filters on a tool's name and id. A user whose
+ * The `outline-spec init` tool picker filters on a tool's name and id. A user whose
  * assistant is not on the list searches for the category, not the directory
- * OpenSpec writes to, and used to find nothing (#653). Search aliases close
+ * outline-spec writes to, and used to find nothing (#653). Search aliases close
  * that gap, so the vendor-neutral entry has to keep carrying them.
  */
 describe('tool search aliases', () => {

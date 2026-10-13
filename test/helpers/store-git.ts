@@ -1,16 +1,16 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
-import { DEFAULT_OPENSPEC_SCHEMA } from '../../src/core/index.js';
+import { DEFAULT_OUTLINE_SPEC_SCHEMA } from '../../src/core/index.js';
 
 /**
  * Shared fixtures for store tests that touch real Git.
  */
 
-export function createHealthyOpenSpecRoot(root: string, configName = 'config.yaml'): void {
-  fs.mkdirSync(path.join(root, 'openspec', 'specs'), { recursive: true });
-  fs.mkdirSync(path.join(root, 'openspec', 'changes'), { recursive: true });
-  fs.writeFileSync(path.join(root, 'openspec', configName), `schema: ${DEFAULT_OPENSPEC_SCHEMA}\n`);
+export function createHealthyOutlineSpecRoot(root: string, configName = 'config.yaml'): void {
+  fs.mkdirSync(path.join(root, 'outline-spec', 'specs'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'outline-spec', 'changes'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'outline-spec', configName), `schema: ${DEFAULT_OUTLINE_SPEC_SCHEMA}\n`);
 }
 
 /**

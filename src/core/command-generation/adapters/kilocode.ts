@@ -10,14 +10,14 @@ import type { CommandContent, ToolCommandAdapter } from '../types.js';
 
 /**
  * Kilo Code adapter for command generation.
- * File path: .kilo/command/opsx-<id>.md
+ * File path: .kilo/command/outline-spec-<id>.md
  * Format: Plain markdown without frontmatter
  */
 export const kilocodeAdapter: ToolCommandAdapter = {
   toolId: 'kilocode',
 
   getFilePath(commandId: string): string {
-    return path.join('.kilo', 'command', `opsx-${commandId}.md`);
+    return path.join('.kilo', 'command', `outline-spec-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {

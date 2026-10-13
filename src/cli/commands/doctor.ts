@@ -6,7 +6,7 @@ import type { DoctorOptions } from '../../commands/doctor.js';
 export function registerDoctorCommand(program: Command): void {
   const description =
     COMMAND_REGISTRY.find((entry) => entry.name === 'doctor')?.description ??
-    'Report relationship health for the resolved OpenSpec root';
+    'Report relationship health for the resolved outline-spec root';
 
   program
     .command('doctor')

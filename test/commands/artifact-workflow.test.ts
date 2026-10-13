@@ -12,8 +12,8 @@ describe('artifact-workflow CLI commands', () => {
   const canonical = (targetPath: string): string => FileSystemUtils.canonicalizeExistingPath(targetPath);
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-artifact-workflow-'));
-    changesDir = path.join(tempDir, 'openspec', 'changes');
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-artifact-workflow-'));
+    changesDir = path.join(tempDir, 'outline-spec', 'changes');
     await fs.mkdir(changesDir, { recursive: true });
   });
 
@@ -120,7 +120,7 @@ describe('artifact-workflow CLI commands', () => {
     it('keeps unknown metadata warnings inside status and instructions JSON', async () => {
       const changeDir = await createTestChange('unknown-metadata-json', ['outline']);
       await fs.writeFile(
-        path.join(changeDir, '.openspec.yaml'),
+        path.join(changeDir, '.outline-spec.yaml'),
         'schema: outline\nskip_design: true\n'
       );
 
@@ -155,7 +155,7 @@ describe('artifact-workflow CLI commands', () => {
 
       const json = JSON.parse(result.stdout);
       expect(json.artifacts.map((a: any) => a.id)).toEqual(['outline', 'design', 'tasks']);
-      expect(json.nextSteps[0]).toContain('openspec instructions design');
+      expect(json.nextSteps[0]).toContain('outline-spec instructions design');
     });
 
     // #906: the text surface reported state and no verb, so someone resuming a
@@ -180,7 +180,7 @@ describe('artifact-workflow CLI commands', () => {
 
         expect(result.exitCode).toBe(0);
         expect(lastLine(result)).toBe(
-          'Next: openspec instructions design --change "resume-planning" --json'
+          'Next: outline-spec instructions design --change "resume-planning" --json'
         );
       });
 
@@ -194,7 +194,7 @@ describe('artifact-workflow CLI commands', () => {
         // remain, so it must be followed by the command that resumes the work.
         expect(result.stdout).toContain('All planning artifacts complete!');
         expect(lastLine(result)).toBe(
-          'Next: openspec instructions apply --change "resume-apply" --json'
+          'Next: outline-spec instructions apply --change "resume-apply" --json'
         );
       });
 
@@ -202,7 +202,7 @@ describe('artifact-workflow CLI commands', () => {
         // The line is built from the resolved artifact id, so a project whose
         // schema has no outline/design/tasks must still get a usable
         // command rather than a hard-coded default-schema one.
-        const schemaDir = path.join(tempDir, 'openspec', 'schemas', 'lean');
+        const schemaDir = path.join(tempDir, 'outline-spec', 'schemas', 'lean');
         await fs.mkdir(path.join(schemaDir, 'templates'), { recursive: true });
         await fs.writeFile(path.join(schemaDir, 'templates', 'brief.md'), '# Brief\n');
         await fs.writeFile(path.join(schemaDir, 'templates', 'plan.md'), '# Plan\n');
@@ -230,13 +230,13 @@ describe('artifact-workflow CLI commands', () => {
 
         const changeDir = path.join(changesDir, 'lean-change');
         await fs.mkdir(changeDir, { recursive: true });
-        await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: lean\n');
+        await fs.writeFile(path.join(changeDir, '.outline-spec.yaml'), 'schema: lean\n');
         await fs.writeFile(path.join(changeDir, 'brief.md'), '# Brief\n\nThe brief.\n');
 
         const ready = await runCLI(['status', '--change', 'lean-change'], { cwd: tempDir });
         expect(ready.exitCode).toBe(0);
         expect(lastLine(ready)).toBe(
-          'Next: openspec instructions plan --change "lean-change" --json'
+          'Next: outline-spec instructions plan --change "lean-change" --json'
         );
 
         await fs.writeFile(path.join(changeDir, 'plan.md'), '# Plan\n\nThe plan.\n');
@@ -244,7 +244,7 @@ describe('artifact-workflow CLI commands', () => {
         const complete = await runCLI(['status', '--change', 'lean-change'], { cwd: tempDir });
         expect(complete.exitCode).toBe(0);
         expect(lastLine(complete)).toBe(
-          'Next: openspec instructions apply --change "lean-change" --json'
+          'Next: outline-spec instructions apply --change "lean-change" --json'
         );
       });
 
@@ -310,7 +310,7 @@ describe('artifact-workflow CLI commands', () => {
       expect(status.isPlanningComplete).toBe(true);
       expect(status.isComplete).toBe(true);
       expect(status.nextSteps[0]).toContain(
-        'openspec instructions apply --change "planned-change" --json'
+        'outline-spec instructions apply --change "planned-change" --json'
       );
       expect(status.nextSteps[0]).not.toContain('before implementation');
       expect(apply.state).toBe('ready');
@@ -321,7 +321,7 @@ describe('artifact-workflow CLI commands', () => {
       const result = await runCLI(['status'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('No active changes');
-      expect(result.stdout).toContain('openspec new change');
+      expect(result.stdout).toContain('outline-spec new change');
     });
 
     it('exits gracefully with JSON when no changes exist', async () => {
@@ -426,7 +426,7 @@ describe('artifact-workflow CLI commands', () => {
   describe('instructions command', () => {
     it('keeps instructions available for missing companion outputs after a glob artifact is done', async () => {
       const schemaName = 'companion-outputs';
-      const schemaDir = path.join(tempDir, 'openspec', 'schemas', schemaName);
+      const schemaDir = path.join(tempDir, 'outline-spec', 'schemas', schemaName);
       const outputPath = 'reviews/*/notes.md';
       const template = '# Review\n\n## Findings\n';
       await fs.mkdir(path.join(schemaDir, 'templates'), { recursive: true });
@@ -457,7 +457,7 @@ artifacts:
       await fs.writeFile(path.join(schemaDir, 'templates', 'review.md'), template);
       await fs.writeFile(path.join(schemaDir, 'templates', 'signoff.md'), '# Signoff\n');
       await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
+        path.join(tempDir, 'outline-spec', 'config.yaml'),
         `schema: ${schemaName}
 context: Review both the API and UI components.
 rules:
@@ -468,7 +468,7 @@ rules:
       const changeName = 'companion-review';
       const changeDir = path.join(changesDir, changeName);
       await fs.mkdir(changeDir, { recursive: true });
-      await fs.writeFile(path.join(changeDir, '.openspec.yaml'), `schema: ${schemaName}\n`);
+      await fs.writeFile(path.join(changeDir, '.outline-spec.yaml'), `schema: ${schemaName}\n`);
       const briefPath = path.join(changeDir, 'brief.md');
       await fs.writeFile(briefPath, '# Brief\nReview the API and UI.\n');
       const apiPath = path.join(changeDir, 'reviews', 'api', 'notes.md');
@@ -677,7 +677,7 @@ rules:
       const stat = await fs.stat(changeDir);
       expect(stat.isDirectory()).toBe(true);
 
-      const metadata = await fs.readFile(path.join(changeDir, '.openspec.yaml'), 'utf-8');
+      const metadata = await fs.readFile(path.join(changeDir, '.outline-spec.yaml'), 'utf-8');
       expect(metadata).not.toContain('skip_specs');
     });
 
@@ -714,7 +714,7 @@ rules:
       expect(result.exitCode).toBe(0);
 
       const metadata = await fs.readFile(
-        path.join(changesDir, 'goal-change', '.openspec.yaml'),
+        path.join(changesDir, 'goal-change', '.outline-spec.yaml'),
         'utf-8'
       );
       expect(metadata).toContain('schema: outline');
@@ -774,7 +774,7 @@ rules:
 
     it('shows blocked state when required artifacts are missing', async () => {
       await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
+        path.join(tempDir, 'outline-spec', 'config.yaml'),
         `schema: outline
 context: Required blocked-state context
 operations:
@@ -820,7 +820,7 @@ operations:
 
     it('returns current context and matching apply guidance as separate JSON fields', async () => {
       await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
+        path.join(tempDir, 'outline-spec', 'config.yaml'),
         `schema: outline
 context: |
   Current project context
@@ -866,7 +866,7 @@ operations:
 
     it('renders required context and advisory apply guidance as distinct text sections', async () => {
       await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
+        path.join(tempDir, 'outline-spec', 'config.yaml'),
         `schema: outline
 context: Project background
 operations:
@@ -893,7 +893,7 @@ operations:
 
     it('omits absent operation inputs without changing apply state behavior', async () => {
       await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
+        path.join(tempDir, 'outline-spec', 'config.yaml'),
         `schema: outline
 rules:
   outline:
@@ -916,7 +916,7 @@ rules:
     });
 
     it('reads a fresh apply config snapshot on every command invocation', async () => {
-      const configPath = path.join(tempDir, 'openspec', 'config.yaml');
+      const configPath = path.join(tempDir, 'outline-spec', 'config.yaml');
       await createTestChange('apply-fresh-inputs', ['outline', 'design', 'tasks']);
       await fs.writeFile(
         configPath,
@@ -960,7 +960,7 @@ operations:
 
     it('reads malformed operation config once and emits one warning per command', async () => {
       await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
+        path.join(tempDir, 'outline-spec', 'config.yaml'),
         `schema: outline
 operations:
   apply:
@@ -983,7 +983,7 @@ operations:
     });
 
     it('resolves single-star glob artifacts consistently between status and apply', async () => {
-      const schemaDir = path.join(tempDir, 'openspec', 'schemas', 'glob-test');
+      const schemaDir = path.join(tempDir, 'outline-spec', 'schemas', 'glob-test');
       const templatesDir = path.join(schemaDir, 'templates');
       await fs.mkdir(templatesDir, { recursive: true });
 
@@ -1008,7 +1008,7 @@ apply:
       const changeDir = path.join(changesDir, 'single-star-glob');
       const specPath = path.join(changeDir, 'specs', 'single-star-glob', 'spec.md');
       await fs.mkdir(path.dirname(specPath), { recursive: true });
-      await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: glob-test\n');
+      await fs.writeFile(path.join(changeDir, '.outline-spec.yaml'), 'schema: glob-test\n');
       await fs.writeFile(specPath, '# Nested spec\n');
 
       const statusResult = await runCLI(['status', '--change', 'single-star-glob', '--json'], {
@@ -1052,7 +1052,7 @@ apply:
 
     it('shows all_done state when all tasks are complete', async () => {
       await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
+        path.join(tempDir, 'outline-spec', 'config.yaml'),
         `schema: outline
 context: Required all-done context
 operations:
@@ -1127,7 +1127,7 @@ operations:
     it('fallback: requires all artifacts when schema has no apply block', async () => {
       // Create a minimal schema without an apply block in user schemas dir
       const userDataDir = path.join(tempDir, 'user-data');
-      const noApplySchemaDir = path.join(userDataDir, 'openspec', 'schemas', 'no-apply');
+      const noApplySchemaDir = path.join(userDataDir, 'outline-spec', 'schemas', 'no-apply');
       const templatesDir = path.join(noApplySchemaDir, 'templates');
       await fs.mkdir(templatesDir, { recursive: true });
 
@@ -1177,7 +1177,7 @@ artifacts:
     it('fallback: ready when all artifacts exist for schema without apply block', async () => {
       // Create a minimal schema without an apply block
       const userDataDir = path.join(tempDir, 'user-data-2');
-      const noApplySchemaDir = path.join(userDataDir, 'openspec', 'schemas', 'no-apply-full');
+      const noApplySchemaDir = path.join(userDataDir, 'outline-spec', 'schemas', 'no-apply-full');
       const templatesDir = path.join(noApplySchemaDir, 'templates');
       await fs.mkdir(templatesDir, { recursive: true });
 
@@ -1220,7 +1220,7 @@ artifacts:
   describe('instructions land command (archive alias)', () => {
     it('returns current archive context, guidance, and the root envelope in JSON', async () => {
       await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
+        path.join(tempDir, 'outline-spec', 'config.yaml'),
         `schema: outline
 context: Archive project context
 rules:
@@ -1260,7 +1260,7 @@ operations:
 
     it('renders required context and advisory land guidance as separate text sections', async () => {
       await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
+        path.join(tempDir, 'outline-spec', 'config.yaml'),
         `schema: outline
 context: Archive background
 operations:
@@ -1287,7 +1287,7 @@ operations:
 
     it('succeeds with valid empty inputs and omits optional JSON fields', async () => {
       await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
+        path.join(tempDir, 'outline-spec', 'config.yaml'),
         'schema: outline\n'
       );
       await createTestChange('archive-no-inputs');
@@ -1333,7 +1333,7 @@ operations:
     });
 
     it('reads fresh archive inputs without mutating specs or the change', async () => {
-      const configPath = path.join(tempDir, 'openspec', 'config.yaml');
+      const configPath = path.join(tempDir, 'outline-spec', 'config.yaml');
       const changeDir = await createTestChange('archive-read-only', [
         'outline',
         'design',
@@ -1381,11 +1381,11 @@ operations:
       });
       expect(await fs.readFile(outlinePath, 'utf-8')).toBe(outlineBefore);
       expect(
-        await fs.readdir(path.join(tempDir, 'openspec', 'changes'))
+        await fs.readdir(path.join(tempDir, 'outline-spec', 'changes'))
       ).toContain('archive-read-only');
       expect(
         await fs
-          .stat(path.join(tempDir, 'openspec', 'specs'))
+          .stat(path.join(tempDir, 'outline-spec', 'specs'))
           .then(() => true)
           .catch(() => false)
       ).toBe(false);
@@ -1441,7 +1441,7 @@ operations:
       });
       expect(result.exitCode).toBe(0);
 
-      const skillFile = path.join(tempDir, '.agents', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
     });
@@ -1456,7 +1456,7 @@ operations:
       expect(output).toContain('.claude/');
 
       // Verify skill files were created
-      const skillFile = path.join(tempDir, '.claude', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.claude', 'skills', 'outline-spec-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
     });
@@ -1471,14 +1471,14 @@ operations:
       expect(output).toContain('.cursor/');
 
       // Verify skill files were created
-      const skillFile = path.join(tempDir, '.cursor', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.cursor', 'skills', 'outline-spec-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
 
       // Verify commands were created with Cursor format
-      const commandFile = path.join(tempDir, '.cursor', 'commands', 'opsx-explore.md');
+      const commandFile = path.join(tempDir, '.cursor', 'commands', 'outline-spec-explore.md');
       const content = await fs.readFile(commandFile, 'utf-8');
-      expect(content).toContain('name: "/opsx-explore"');
+      expect(content).toContain('name: "/outline-spec-explore"');
     });
 
     it('creates skills for the retired windsurf id, under Devin Desktop', async () => {
@@ -1491,7 +1491,7 @@ operations:
       expect(output).toContain('.devin/');
 
       // Verify skill files were created
-      const skillFile = path.join(tempDir, '.devin', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillFile = path.join(tempDir, '.devin', 'skills', 'outline-spec-explore', 'SKILL.md');
       const stat = await fs.stat(skillFile);
       expect(stat.isFile()).toBe(true);
     });
@@ -1501,9 +1501,9 @@ operations:
     describe('new change uses config schema', () => {
       it('creates change with schema from project config', async () => {
         // Create project config with outline schema
-        // Note: changesDir is already at tempDir/openspec/changes (created in beforeEach)
+        // Note: changesDir is already at tempDir/outline-spec/changes (created in beforeEach)
         await fs.writeFile(
-          path.join(tempDir, 'openspec', 'config.yaml'),
+          path.join(tempDir, 'outline-spec', 'config.yaml'),
           'schema: outline\n'
         );
 
@@ -1512,16 +1512,16 @@ operations:
         expect(result.exitCode).toBe(0);
 
         // Verify the change was created with outline schema
-        const metadataPath = path.join(changesDir, 'test-change', '.openspec.yaml');
+        const metadataPath = path.join(changesDir, 'test-change', '.outline-spec.yaml');
         const metadata = await fs.readFile(metadataPath, 'utf-8');
         expect(metadata).toContain('schema: outline');
       }, 60000);
 
       it('CLI schema overrides config schema', async () => {
         // Create project config with outline schema
-        // Note: openspec directory already exists (from changesDir creation in beforeEach)
+        // Note: outline-spec directory already exists (from changesDir creation in beforeEach)
         await fs.writeFile(
-          path.join(tempDir, 'openspec', 'config.yaml'),
+          path.join(tempDir, 'outline-spec', 'config.yaml'),
           'schema: outline\n'
         );
 
@@ -1533,7 +1533,7 @@ operations:
         expect(result.exitCode).toBe(0);
 
         // Verify the change uses the CLI-specified schema
-        const metadataPath = path.join(changesDir, 'override-test', '.openspec.yaml');
+        const metadataPath = path.join(changesDir, 'override-test', '.outline-spec.yaml');
         const metadata = await fs.readFile(metadataPath, 'utf-8');
         expect(metadata).toContain('schema: outline');
       }, 60000);
@@ -1542,9 +1542,9 @@ operations:
     describe('instructions command with config', () => {
       it('injects context and rules from config into instructions', async () => {
         // Create project config with context and rules
-        // Note: openspec directory already exists (from changesDir creation in beforeEach)
+        // Note: outline-spec directory already exists (from changesDir creation in beforeEach)
         await fs.writeFile(
-          path.join(tempDir, 'openspec', 'config.yaml'),
+          path.join(tempDir, 'outline-spec', 'config.yaml'),
           `schema: outline
 context: |
   Tech stack: TypeScript, React
@@ -1577,9 +1577,9 @@ rules:
 
       it('does not inject rules for non-matching artifact', async () => {
         // Create project config with rules only for outline
-        // Note: openspec directory already exists (from changesDir creation in beforeEach)
+        // Note: outline-spec directory already exists (from changesDir creation in beforeEach)
         await fs.writeFile(
-          path.join(tempDir, 'openspec', 'config.yaml'),
+          path.join(tempDir, 'outline-spec', 'config.yaml'),
           `schema: outline
 rules:
   outline:
@@ -1629,7 +1629,7 @@ rules:
         // Create change with explicit schema in metadata
         const changeDir = await createTestChange('metadata-only-change');
         await fs.writeFile(
-          path.join(changeDir, '.openspec.yaml'),
+          path.join(changeDir, '.outline-spec.yaml'),
           'schema: outline\ncreated: "2025-01-05"\n'
         );
 
@@ -1646,9 +1646,9 @@ rules:
     describe('config changes reflected immediately', () => {
       it('config changes are reflected without restart', async () => {
         // Create initial config
-        // Note: openspec directory already exists (from changesDir creation in beforeEach)
+        // Note: outline-spec directory already exists (from changesDir creation in beforeEach)
         await fs.writeFile(
-          path.join(tempDir, 'openspec', 'config.yaml'),
+          path.join(tempDir, 'outline-spec', 'config.yaml'),
           `schema: outline
 context: Initial context
 `
@@ -1667,7 +1667,7 @@ context: Initial context
 
         // Update config
         await fs.writeFile(
-          path.join(tempDir, 'openspec', 'config.yaml'),
+          path.join(tempDir, 'outline-spec', 'config.yaml'),
           `schema: outline
 context: Updated context
 `

@@ -16,7 +16,7 @@ describe('artifact-graph/outputs', () => {
   const canonical = (targetPath: string): string => FileSystemUtils.canonicalizeExistingPath(targetPath);
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-outputs-test-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-outputs-test-'));
   });
 
   afterEach(() => {
@@ -108,7 +108,7 @@ describe('artifact-graph/outputs', () => {
     '{content/safe,content/linked/deep}/review.md',
     '{content/{safe,linked/deep},other}/review.md',
   ])('confines directory pattern %s even without matching files', (pattern) => {
-    const outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-outside-'));
+    const outsideDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-outside-'));
     fs.mkdirSync(path.join(tempDir, 'content', 'safe'), { recursive: true });
     fs.symlinkSync(outsideDir, path.join(tempDir, 'content', 'linked'),
       process.platform === 'win32' ? 'junction' : 'dir');
@@ -122,7 +122,7 @@ describe('artifact-graph/outputs', () => {
   });
 
   it.each([false, true])('rejects brace-expanded parent traversal before globbing (file exists: %s)', (exists) => {
-    const outsideDir = fs.mkdtempSync(path.join(path.dirname(tempDir), 'openspec-outside-'));
+    const outsideDir = fs.mkdtempSync(path.join(path.dirname(tempDir), 'outline-spec-outside-'));
     const pattern = `{safe,../${path.basename(outsideDir)}}/review.md`;
     if (exists) fs.writeFileSync(path.join(outsideDir, 'review.md'), 'private');
     const glob = vi.spyOn(fg, 'sync');

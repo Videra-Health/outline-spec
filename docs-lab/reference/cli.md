@@ -1,6 +1,6 @@
 # CLI
 
-> The `openspec` terminal commands.
+> The `outline-spec` terminal commands.
 
 <!-- Installing, updating, and uninstalling the CLI itself live in installation.md. -->
 
@@ -10,19 +10,19 @@
 
 | Command | What it does |
 |---|---|
-| [`openspec init`](#openspec-init) | Initialize OpenSpec in a project. |
-| [`openspec update`](#openspec-update) | Update OpenSpec's installed instruction files. |
-| [`openspec config`](#openspec-config) | View and change global configuration. |
+| [`outline-spec init`](#outline-spec-init) | Initialize outline-spec in a project. |
+| [`outline-spec update`](#outline-spec-update) | Update outline-spec's installed instruction files. |
+| [`outline-spec config`](#outline-spec-config) | View and change global configuration. |
 
 **Changes and specs**
 
 | Command | What it does |
 |---|---|
-| [`openspec list`](#openspec-list) | List changes, or specs with `--specs`. |
-| [`openspec show`](#openspec-show) | Print a change or spec, as markdown or JSON. |
-| [`openspec view`](#openspec-view) | One-screen dashboard of specs and changes. |
-| [`openspec validate`](#openspec-validate) | Check changes and specs for structural issues. |
-| [`openspec archive`](#openspec-archive) | Move a completed change to the archive and update the main specs. |
+| [`outline-spec list`](#outline-spec-list) | List changes, or specs with `--specs`. |
+| [`outline-spec show`](#outline-spec-show) | Print a change or spec, as markdown or JSON. |
+| [`outline-spec view`](#outline-spec-view) | One-screen dashboard of specs and changes. |
+| [`outline-spec validate`](#outline-spec-validate) | Check changes and specs for structural issues. |
+| [`outline-spec archive`](#outline-spec-archive) | Move a completed change to the archive and update the main specs. |
 
 **Workflows and schemas**
 
@@ -30,66 +30,66 @@ Your agent runs most of these during the workflow.
 
 | Command | What it does |
 |---|---|
-| [`openspec new`](#openspec-new) | Create a new change directory. |
-| [`openspec status`](#openspec-status) | Artifact completion status for one or every active change. |
-| [`openspec instructions`](#openspec-instructions) | Instructions for creating an artifact, applying, or archiving. |
-| [`openspec templates`](#openspec-templates) | Resolved template paths for a schema's artifacts. |
-| [`openspec schemas`](#openspec-schemas) | List available workflow schemas. |
-| [`openspec schema`](#openspec-schema) | Inspect, fork, or create a schema (experimental). |
+| [`outline-spec new`](#outline-spec-new) | Create a new change directory. |
+| [`outline-spec status`](#outline-spec-status) | Artifact completion status for one or every active change. |
+| [`outline-spec instructions`](#outline-spec-instructions) | Instructions for creating an artifact, applying, or archiving. |
+| [`outline-spec templates`](#outline-spec-templates) | Resolved template paths for a schema's artifacts. |
+| [`outline-spec schemas`](#outline-spec-schemas) | List available workflow schemas. |
+| [`outline-spec schema`](#outline-spec-schema) | Inspect, fork, or create a schema (experimental). |
 
 **Multi-repo (beta)**
 
 | Command | What it does |
 |---|---|
-| [`openspec store`](#openspec-store) | Create and manage stores: standalone OpenSpec repos registered on your machine. |
-| [`openspec doctor`](#openspec-doctor) | Report relationship health for the resolved OpenSpec root. |
-| [`openspec context`](#openspec-context) | Print the working context for the resolved OpenSpec root. |
-| [`openspec workset`](#openspec-workset) | Compose, keep, and open personal working views. |
+| [`outline-spec store`](#outline-spec-store) | Create and manage stores: standalone outline-spec repos registered on your machine. |
+| [`outline-spec doctor`](#outline-spec-doctor) | Report relationship health for the resolved outline-spec root. |
+| [`outline-spec context`](#outline-spec-context) | Print the working context for the resolved outline-spec root. |
+| [`outline-spec workset`](#outline-spec-workset) | Compose, keep, and open personal working views. |
 
 **Utilities**
 
 | Command | What it does |
 |---|---|
-| [`openspec version`](#openspec-version) | Report the installed version and optionally check for an update. |
-| [`openspec feedback`](#openspec-feedback) | Submit feedback about OpenSpec. |
-| [`openspec completion`](#openspec-completion) | Install or generate shell completions. |
+| [`outline-spec version`](#outline-spec-version) | Report the installed version and optionally check for an update. |
+| [`outline-spec feedback`](#outline-spec-feedback) | Submit feedback about outline-spec. |
+| [`outline-spec completion`](#outline-spec-completion) | Install or generate shell completions. |
 
 **Deprecated**
 
 | Command | What it does |
 |---|---|
-| [`openspec change`](#openspec-change) | Noun form of show, list, and validate for changes. The CLI warns and points to the verb-first commands. |
-| [`openspec spec`](#openspec-spec) | Noun form of show, list, and validate for specs, with the same warning. |
+| [`outline-spec change`](#outline-spec-change) | Noun form of show, list, and validate for changes. The CLI warns and points to the verb-first commands. |
+| [`outline-spec spec`](#outline-spec-spec) | Noun form of show, list, and validate for specs, with the same warning. |
 
-Every command takes `-h, --help`. The bare `openspec` command also takes:
+Every command takes `-h, --help`. The bare `outline-spec` command also takes:
 
 - `-V, --version`: print the CLI version.
 - `--no-color`: disable colored output.
 
-## openspec init
+## outline-spec init
 
-Initializes OpenSpec in a project.
+Initializes outline-spec in a project.
 
 ```bash
-openspec init                        # current directory, interactive tool picker
-openspec init --tools claude,cursor  # set up specific tools, no prompts
-openspec init --tools none           # openspec/ structure only, no tool files
+outline-spec init                        # current directory, interactive tool picker
+outline-spec init --tools claude,cursor  # set up specific tools, no prompts
+outline-spec init --tools none           # outline-spec/ structure only, no tool files
 ```
 
 With no `--tools`, init prompts you to pick tools in an interactive terminal. Outside one, it sets up the tools it detects in the project. With none detected it exits 1 and lists the valid ids.
 
 **Store-only repositories**
 
-When `openspec/config.yaml` contains a `store:` line and the repo has no local specs or changes, run init from the repository root:
+When `outline-spec/config.yaml` contains a `store:` line and the repo has no local specs or changes, run init from the repository root:
 
 ```bash
 # install Claude Code integration files in the code repo
-openspec init --tools claude
+outline-spec init --tools claude
 ```
 
 - **Integration files**: written in the code repo.
-- **`openspec/config.yaml`**: preserved byte-for-byte.
-- **`openspec/specs/` and `openspec/changes/`**: not created in the code repo.
+- **`outline-spec/config.yaml`**: preserved byte-for-byte.
+- **`outline-spec/specs/` and `outline-spec/changes/`**: not created in the code repo.
 
 Running init from a subdirectory exits 1 and tells you to run it from the repository root. `--language` also exits 1 because the language belongs in the external store's config. Run init in the store root or edit that config directly.
 
@@ -105,47 +105,47 @@ Running init from a subdirectory exits 1 and tells you to run it from the reposi
 |---|---|
 | `--tools <tools>` | Comma-separated tool ids, `all`, or `none`. Skips the picker. Ids are listed in [Supported tools](supported-tools.md). |
 | `--language <language>` | Add a language instruction to a new project config. Rejected when the repo's `store:` line points to an external store. |
-| `--force` | Remove files from older OpenSpec layouts without asking. Interactive runs otherwise confirm the cleanup first. |
+| `--force` | Remove files from older outline-spec layouts without asking. Interactive runs otherwise confirm the cleanup first. |
 | `--profile <profile>` | Override the global config profile for this run: `core` (the standard workflow set) or `custom` (the workflows saved in global config). |
 | `--no-animation` | Show a static welcome screen instead of the animated one. |
 
 **Output**
 
-Each selected tool gets OpenSpec's skills and commands in its own directory:
+Each selected tool gets outline-spec's skills and commands in its own directory:
 
 ```
-▌ OpenSpec structure created
+▌ outline-spec structure created
 ✔ Setup complete for Claude Code
 
-OpenSpec Setup Complete
+outline-spec Setup Complete
 
 Created: Claude Code
 6 skills and 6 commands in .claude/
-Config: openspec/config.yaml (schema: spec-driven)
+Config: outline-spec/config.yaml (schema: spec-driven)
 
 Getting started:
-  Start your first change: /opsx:propose "your idea"
+  Start your first change: /outline-spec:propose "your idea"
 
 Restart your IDE for the new commands to take effect.
 ```
 
-`--tools none` creates only `openspec/config.yaml`. On an already-initialized project, init rewrites the installed files in place and the summary reads `Refreshed: Claude Code` with `Config: openspec/config.yaml (exists)`.
+`--tools none` creates only `outline-spec/config.yaml`. On an already-initialized project, init rewrites the installed files in place and the summary reads `Refreshed: Claude Code` with `Config: outline-spec/config.yaml (exists)`.
 
 **Exit codes**
 
 - `0`: setup completed.
 - `1`: invalid `--tools` or `--profile` value, a non-interactive run with no tools detected and no `--tools`, or an invalid store-only invocation.
 
-## openspec update
+## outline-spec update
 
-Updates OpenSpec's installed instruction files.
+Updates outline-spec's installed instruction files.
 
 ```bash
-openspec update           # refresh tools whose files are older than the CLI
-openspec update --force   # rewrite files even when they're current
+outline-spec update           # refresh tools whose files are older than the CLI
+outline-spec update --force   # rewrite files even when they're current
 ```
 
-update finds the tools init configured and compares their generated files against the CLI's version. When a newer OpenSpec release exists, it first offers to upgrade the CLI, then reruns with the upgraded version. Set `OPENSPEC_NO_UPDATE_CHECK=1` to skip the check.
+update finds the tools init configured and compares their generated files against the CLI's version. When a newer outline-spec release exists, it first offers to upgrade the CLI, then reruns with the upgraded version. Set `OUTLINE_SPEC_NO_UPDATE_CHECK=1` to skip the check.
 
 **Arguments**
 
@@ -183,25 +183,25 @@ Tools: Claude Code
 Restart your IDE for changes to take effect.
 ```
 
-In a directory without OpenSpec, update refuses:
+In a directory without outline-spec, update refuses:
 
 ```
-✖ Error: No OpenSpec directory found. Run 'openspec init' first.
+✖ Error: No outline-spec directory found. Run 'outline-spec init' first.
 ```
 
 **Exit codes**
 
 - `0`: files updated, or everything already up to date.
-- `1`: no OpenSpec directory at the path, or the update failed.
+- `1`: no outline-spec directory at the path, or the update failed.
 
-## openspec config
+## outline-spec config
 
 Views and changes global configuration.
 
 ```bash
-openspec config list                  # see current settings
-openspec config set delivery skills   # change one value
-openspec config profile               # interactive workflow picker
+outline-spec config list                  # see current settings
+outline-spec config set delivery skills   # change one value
+outline-spec config profile               # interactive workflow picker
 ```
 
 | Subcommand | What it does |
@@ -215,23 +215,23 @@ openspec config profile               # interactive workflow picker
 | `edit` | Open the config file in `$EDITOR`. |
 | `profile [preset]` | Configure delivery mode and workflows. |
 
-Config is global to your machine, stored as JSON where `config path` points: `$XDG_CONFIG_HOME/openspec/config.json` if set, else `~/.config/openspec/config.json` (macOS, Linux) or `%APPDATA%\openspec\config.json` (Windows). Every subcommand accepts `--scope <scope>`, but only `global` works today. Any other scope exits 1 with `Error: Project-local config is not yet implemented`.
+Config is global to your machine, stored as JSON where `config path` points: `$XDG_CONFIG_HOME/outline-spec/config.json` if set, else `~/.config/outline-spec/config.json` (macOS, Linux) or `%APPDATA%\outline-spec\config.json` (Windows). Every subcommand accepts `--scope <scope>`, but only `global` works today. Any other scope exits 1 with `Error: Project-local config is not yet implemented`.
 
-### openspec config path
-
-```bash
-openspec config path
-```
-
-```
-/Users/you/.config/openspec/config.json
-```
-
-### openspec config list
+### outline-spec config path
 
 ```bash
-openspec config list          # readable settings plus profile summary
-openspec config list --json   # raw config as JSON
+outline-spec config path
+```
+
+```
+/Users/you/.config/outline-spec/config.json
+```
+
+### outline-spec config list
+
+```bash
+outline-spec config list          # readable settings plus profile summary
+outline-spec config list --json   # raw config as JSON
 ```
 
 **Options**
@@ -255,10 +255,10 @@ Profile settings:
   workflows: propose, explore, apply, update, sync, archive (from core profile)
 ```
 
-### openspec config get
+### outline-spec config get
 
 ```bash
-openspec config get delivery
+outline-spec config get delivery
 ```
 
 **Arguments**
@@ -280,11 +280,11 @@ both
 - `0`: value printed.
 - `1`: key has no value, and nothing is printed.
 
-### openspec config set
+### outline-spec config set
 
 ```bash
-openspec config set delivery skills
-openspec config set featureFlags.workspaces true
+outline-spec config set delivery skills
+outline-spec config set featureFlags.workspaces true
 ```
 
 **Arguments**
@@ -311,7 +311,7 @@ Unknown keys and invalid values fail with exit 1 before anything is saved:
 
 ```
 Error: Invalid configuration key "bogus.key". Unknown top-level key "bogus".
-Use "openspec config list" to see available keys.
+Use "outline-spec config list" to see available keys.
 Pass --allow-unknown to bypass this check.
 ```
 
@@ -319,19 +319,19 @@ Pass --allow-unknown to bypass this check.
 Error: Invalid configuration - delivery: Invalid option: expected one of "both"|"skills"|"commands"
 ```
 
-If the config file exists but does not hold a JSON object, whether because it is not valid JSON at all or because its root is something else such as `null` or an array, `config set`, `config unset` and `config profile` exit 1 and leave the file unchanged. Fix it with `openspec config edit`, or replace it with `openspec config reset --all`:
+If the config file exists but does not hold a JSON object, whether because it is not valid JSON at all or because its root is something else such as `null` or an array, `config set`, `config unset` and `config profile` exit 1 and leave the file unchanged. Fix it with `outline-spec config edit`, or replace it with `outline-spec config reset --all`:
 
 ```
-Error: /home/you/.config/openspec/config.json could not be parsed, so it was left unchanged.
-Fix it with "openspec config edit", or reset it with "openspec config reset --all".
+Error: /home/you/.config/outline-spec/config.json could not be parsed, so it was left unchanged.
+Fix it with "outline-spec config edit", or reset it with "outline-spec config reset --all".
 ```
 
 Until it is fixed, telemetry and the update check stay off.
 
-### openspec config unset
+### outline-spec config unset
 
 ```bash
-openspec config unset delivery
+outline-spec config unset delivery
 ```
 
 Removes the key so the default applies again. Keys with built-in defaults always count as set, so this reports success even if you never set them:
@@ -342,11 +342,11 @@ Unset delivery (reverted to default)
 
 A key with no value at all prints `Key "featureFlags.nothere" was not set`. Both cases exit 0. A config file that cannot be parsed exits 1 instead, as for `config set`.
 
-### openspec config reset
+### outline-spec config reset
 
 ```bash
-openspec config reset --all      # asks for confirmation
-openspec config reset --all -y   # no prompt
+outline-spec config reset --all      # asks for confirmation
+outline-spec config reset --all -y   # no prompt
 ```
 
 **Options**
@@ -370,10 +370,10 @@ Without `--all` it exits 1 and prints the usage line.
 - `1`: `--all` missing.
 - `130`: prompt cancelled with Ctrl-C.
 
-### openspec config edit
+### outline-spec config edit
 
 ```bash
-openspec config edit
+outline-spec config edit
 ```
 
 Opens the config file in `$EDITOR` (falling back to `$VISUAL`), creating it with defaults first if missing. When the editor closes, the file is validated. Invalid JSON or an invalid config exits 1.
@@ -388,11 +388,11 @@ Set the EDITOR or VISUAL environment variable to your preferred editor
 Example: export EDITOR=vim
 ```
 
-### openspec config profile
+### outline-spec config profile
 
 ```bash
-openspec config profile        # interactive picker (needs a terminal)
-openspec config profile core   # apply the core preset directly
+outline-spec config profile        # interactive picker (needs a terminal)
+outline-spec config profile core   # apply the core preset directly
 ```
 
 **Arguments**
@@ -401,10 +401,10 @@ openspec config profile core   # apply the core preset directly
 |---|---|
 | `preset` | Optional preset name. Only `core` exists. It selects the core workflows and keeps your delivery setting. |
 
-With no preset, an interactive picker shows your current delivery and workflows, lets you change either or both (delivery: both, skills only, or commands only; workflows: a checkbox list), prints the diff, and inside an OpenSpec project offers to run `openspec update` for you. Outside a terminal it exits 1:
+With no preset, an interactive picker shows your current delivery and workflows, lets you change either or both (delivery: both, skills only, or commands only; workflows: a checkbox list), prints the diff, and inside an outline-spec project offers to run `outline-spec update` for you. Outside a terminal it exits 1:
 
 ```
-Interactive mode required. Use `openspec config profile core` or set config via environment/flags.
+Interactive mode required. Use `outline-spec config profile core` or set config via environment/flags.
 ```
 
 **Output**
@@ -412,28 +412,28 @@ Interactive mode required. Use `openspec config profile core` or set config via 
 Changed config doesn't reach projects until they update:
 
 ```
-Config updated. Run `openspec update` in your projects to apply.
+Config updated. Run `outline-spec update` in your projects to apply.
 ```
 
 **Exit codes**
 
 - `0`: profile saved, or you kept current settings.
-- `1`: unknown preset, no terminal, or the offered `openspec update` failed.
+- `1`: unknown preset, no terminal, or the offered `outline-spec update` failed.
 - `130`: picker cancelled with Ctrl-C.
 
-## openspec list
+## outline-spec list
 
 Lists changes, or specs with `--specs`.
 
 ```bash
-openspec list                    # active changes, most recently modified first
-openspec list --archived         # archived changes
-openspec list --all              # active and archived changes
-openspec list --specs            # specs with requirement counts
-openspec list --json             # machine-readable, includes the resolved root
+outline-spec list                    # active changes, most recently modified first
+outline-spec list --archived         # archived changes
+outline-spec list --all              # active and archived changes
+outline-spec list --specs            # specs with requirement counts
+outline-spec list --json             # machine-readable, includes the resolved root
 ```
 
-Rows come from `openspec/changes/` and `openspec/specs/` under the resolved root. The default change listing skips `openspec/changes/archive/`.
+Rows come from `outline-spec/changes/` and `outline-spec/specs/` under the resolved root. The default change listing skips `outline-spec/changes/archive/`.
 
 **Options**
 
@@ -445,7 +445,7 @@ Rows come from `openspec/changes/` and `openspec/specs/` under the resolved root
 | `--all` | List active and archived changes. Can't be combined with `--specs`. Takes precedence over `--archived`. |
 | `--sort <order>` | `recent` (last modified first) or `name`. Default: `recent`. Specs always sort by name. |
 | `--json` | Print JSON instead of the table. |
-| `--store <id>` | Use a registered store as the OpenSpec root instead of the current project. |
+| `--store <id>` | Use a registered store as the outline-spec root instead of the current project. |
 
 **Output**
 
@@ -495,27 +495,27 @@ With `--archived` or `--all`, every change object includes an `archived` boolean
 
 An empty listing prints `No active changes found.`, `No archived changes found.`, `No changes found.`, or `No specs found.` and still exits 0.
 
-A change is a directory directly under `openspec/changes/`. Unlike specs, changes cannot be nested in a namespace folder. A folder like `changes/mobile/` that only wraps a change (`changes/mobile/refresh-token/`) is listed with the status `not a change`, followed by a warning that names the nested directories. `--json` marks that entry with a `nested` array and adds a top-level `warnings` array. `show`, `status`, `validate` and `archive` refuse the folder with the same message. To fix it, move the change up and fold the namespace into its name:
+A change is a directory directly under `outline-spec/changes/`. Unlike specs, changes cannot be nested in a namespace folder. A folder like `changes/mobile/` that only wraps a change (`changes/mobile/refresh-token/`) is listed with the status `not a change`, followed by a warning that names the nested directories. `--json` marks that entry with a `nested` array and adds a top-level `warnings` array. `show`, `status`, `validate` and `archive` refuse the folder with the same message. To fix it, move the change up and fold the namespace into its name:
 
 ```bash
-mv openspec/changes/mobile/refresh-token openspec/changes/mobile-refresh-token
-rmdir openspec/changes/mobile
+mv outline-spec/changes/mobile/refresh-token outline-spec/changes/mobile-refresh-token
+rmdir outline-spec/changes/mobile
 ```
 
 **Exit codes**
 
 - `0`: listing printed, even when empty.
-- `1`: no OpenSpec root found (outside a project, no `--store`).
+- `1`: no outline-spec root found (outside a project, no `--store`).
 
-## openspec show
+## outline-spec show
 
 Prints a change or spec, as markdown or JSON.
 
 ```bash
-openspec show add-rate-limit              # change: prints proposal.md
-openspec show add-rate-limit --diff       # change: append requirement diffs
-openspec show api                         # spec: prints spec.md
-openspec show api --json --no-scenarios   # spec JSON without scenario text
+outline-spec show add-rate-limit              # change: prints proposal.md
+outline-spec show add-rate-limit --diff       # change: append requirement diffs
+outline-spec show api                         # spec: prints spec.md
+outline-spec show api --json --no-scenarios   # spec JSON without scenario text
 ```
 
 With no name, show asks change or spec, then lists items to pick from. Outside an interactive terminal it exits 1 and prints the direct forms instead.
@@ -539,7 +539,7 @@ With no name, show asks change or spec, then lists items to pick from. Outside a
 | `--requirements` | JSON, spec: keep requirement text, empty the `scenarios` arrays. |
 | `--no-scenarios` | JSON, spec: same output as `--requirements`. |
 | `-r, --requirement <id>` | JSON, spec: output one requirement by 1-based position. Can't combine with `--requirements`. |
-| `--store <id>` | Use a registered store as the OpenSpec root instead of the current project. |
+| `--store <id>` | Use a registered store as the outline-spec root instead of the current project. |
 
 Flags that don't apply to the resolved type are ignored with a warning on stderr.
 
@@ -619,7 +619,7 @@ A spec with `--json` lists its requirements with scenarios. Requirements and sce
   ],
   "metadata": {
     "version": "1.0.0",
-    "format": "openspec"
+    "format": "outline-spec"
   },
   "root": {
     "path": "/Users/you/projects/my-app",
@@ -635,12 +635,12 @@ An unknown name suggests near matches: `Unknown item 'does-not-exist'. Did you m
 - `0`: item printed.
 - `1`: unknown or ambiguous name, no name outside a terminal, an out-of-range `-r` index, `--requirements` combined with `-r`, or a delta or main spec cannot be read for `--diff`.
 
-## openspec view
+## outline-spec view
 
 Prints a one-screen dashboard of specs and changes.
 
 ```bash
-openspec view   # project summary in one screen
+outline-spec view   # project summary in one screen
 ```
 
 view prints the dashboard once and exits. It reads no keystrokes. Changes group by task progress: Draft (no tasks yet), Active (tasks underway, with a progress bar and percent), Completed (every task checked). Specs list with requirement counts, largest first.
@@ -649,12 +649,12 @@ view prints the dashboard once and exits. It reads no keystrokes. Changes group 
 
 | Flag | Effect |
 |---|---|
-| `--store <id>` | Use a registered store as the OpenSpec root instead of the current project. |
+| `--store <id>` | Use a registered store as the outline-spec root instead of the current project. |
 
 **Output**
 
 ```
-OpenSpec Dashboard
+outline-spec Dashboard
 
 ════════════════════════════════════════════════════════════
 Summary:
@@ -673,7 +673,7 @@ Specifications
 
 ════════════════════════════════════════════════════════════
 
-Use openspec list --changes or openspec list --specs for detailed views
+Use outline-spec list --changes or outline-spec list --specs for detailed views
 ```
 
 A `Task Progress` summary line appears when any change has tasks underway.
@@ -691,20 +691,20 @@ Each active change also shows its schema and artifact states below its task prog
 | No marker | It is blocked by a missing dependency. |
 | `(skipped)` | The change skips it. |
 
-If a workflow cannot be loaded, view prints a warning and keeps that change's task progress visible. Run `openspec status --change <name>` to inspect the workflow separately. After `openspec view --store <id>`, pass the same `--store <id>` to status.
+If a workflow cannot be loaded, view prints a warning and keeps that change's task progress visible. Run `outline-spec status --change <name>` to inspect the workflow separately. After `outline-spec view --store <id>`, pass the same `--store <id>` to status.
 
 **Exit codes**
 
 - `0`: dashboard printed.
-- `1`: no OpenSpec root found (outside a project, no `--store`).
+- `1`: no outline-spec root found (outside a project, no `--store`).
 
-## openspec validate
+## outline-spec validate
 
 Checks changes and specs for structural issues.
 
 ```bash
-openspec validate add-rate-limit   # one change or spec, by name
-openspec validate --all            # every change and spec
+outline-spec validate add-rate-limit   # one change or spec, by name
+outline-spec validate --all            # every change and spec
 ```
 
 With no name and no bulk flag, validate prompts you to pick items. Outside an interactive terminal it exits 1 and prints the bulk flags instead.
@@ -727,9 +727,9 @@ With no name and no bulk flag, validate prompts you to pick items. Outside an in
 | `--type <change\|spec>` | Pick the type when a change and a spec share a name. |
 | `--json` | Print a structured report instead of text. |
 | `--report <mode>` | Bulk output: `full` (default) or `findings`. Requires an explicit bulk scope. |
-| `--concurrency <n>` | Max parallel validations in bulk runs. Default: `OPENSPEC_CONCURRENCY`, else 6. |
+| `--concurrency <n>` | Max parallel validations in bulk runs. Default: `OUTLINE_SPEC_CONCURRENCY`, else 6. |
 | `--no-interactive` | Never prompt: a missing or ambiguous name becomes an error. |
-| `--store <id>` | Use a registered store as the OpenSpec root instead of the current project. |
+| `--store <id>` | Use a registered store as the outline-spec root instead of the current project. |
 
 **Output**
 
@@ -743,10 +743,10 @@ Totals: 2 passed, 0 failed (2 items)
 
 **Task checkbox findings**
 
-Progress counts checkboxes and nothing else, so a task file written as plain bullets reads as zero tasks: `openspec list` and `openspec status` report no work, and `openspec archive` has nothing to flag as incomplete. Validate reports a `WARNING` on each tracked task file that lists work without a checkbox:
+Progress counts checkboxes and nothing else, so a task file written as plain bullets reads as zero tasks: `outline-spec list` and `outline-spec status` report no work, and `outline-spec archive` has nothing to flag as incomplete. Validate reports a `WARNING` on each tracked task file that lists work without a checkbox:
 
 ```text
-⚠ [WARNING] tasks.md: This change counts as 0 tasks: no line in its tracked task files is a checkbox, so "openspec list" and "openspec status" report no work and "openspec archive" has nothing to flag as incomplete. Write each task as "- [ ] 1.1 Description".
+⚠ [WARNING] tasks.md: This change counts as 0 tasks: no line in its tracked task files is a checkbox, so "outline-spec list" and "outline-spec status" report no work and "outline-spec archive" has nothing to flag as incomplete. Write each task as "- [ ] 1.1 Description".
 ```
 
 The warning fires only when the change's whole tracked set holds no checkbox at all. One file of prose beside a real checklist is not reported, and a change mid-authoring keeps its progress the moment a single checkbox exists. `--strict` turns the warning into a failure. The line number is in the `--json` report.
@@ -775,7 +775,7 @@ Change 'add-rate-limit' has issues
 Next steps:
   - Ensure change has deltas in specs/: use headers ## ADDED/MODIFIED/REMOVED/RENAMED Requirements
   - Each requirement MUST include at least one #### Scenario: block
-  - Debug parsed deltas: openspec show add-rate-limit --json --deltas-only
+  - Debug parsed deltas: outline-spec show add-rate-limit --json --deltas-only
 ```
 
 `--json` prints one report for the run:
@@ -818,7 +818,7 @@ Next steps:
 **Exit codes**
 
 - `0`: every validated item passed, including an empty bulk scope.
-- `1`: an item failed, the report request is invalid, or the run failed (for example an unknown name or no OpenSpec root).
+- `1`: an item failed, the report request is invalid, or the run failed (for example an unknown name or no outline-spec root).
 
 ### --report full|findings
 
@@ -828,8 +828,8 @@ Selects the output for an explicit bulk validation scope:
 - **`findings`**: only items with issues, including passing items with warnings or information. Every item is still validated. Totals, strict-mode behavior, and exit codes are unchanged.
 
 ```bash
-openspec validate --all --report findings
-openspec validate --archived --report findings --json
+outline-spec validate --all --report findings
+outline-spec validate --archived --report findings --json
 ```
 
 **Scopes**
@@ -903,7 +903,7 @@ Both explicit report modes reject these requests before root selection or item d
 In JSON mode, a rejected request exits 1 with only a single-element `status` array. It has no `root` or report payload:
 
 ```bash
-openspec validate --all --report bogus --json
+outline-spec validate --all --report bogus --json
 ```
 
 ```json
@@ -928,7 +928,7 @@ For a custom JSON view, filter the full report with `jq` or PowerShell. These sc
 In Bash with `jq`:
 
 ```bash
-if validation_json=$(openspec validate --all --json); then
+if validation_json=$(outline-spec validate --all --json); then
   validation_exit=0
 else
   validation_exit=$?
@@ -941,7 +941,7 @@ exit "$validation_exit"
 In PowerShell:
 
 ```powershell
-$validationJson = openspec validate --all --json
+$validationJson = outline-spec validate --all --json
 $validationExit = $LASTEXITCODE
 $validationReport = $validationJson | ConvertFrom-Json
 if ($validationReport.PSObject.Properties.Name -contains 'items') {
@@ -953,13 +953,13 @@ exit $validationExit
 
 These custom views keep the full report's keys but omit clean items. They are neither complete full-v1 reports nor the versioned `--report findings` shape.
 
-## openspec archive
+## outline-spec archive
 
 Moves a completed change to the archive and updates the main specs.
 
 ```bash
-openspec archive add-rate-limit -y                # archive one change, merge its deltas
-openspec archive add-rate-limit -y --skip-specs   # archive without touching the specs
+outline-spec archive add-rate-limit -y                # archive one change, merge its deltas
+outline-spec archive add-rate-limit -y --skip-specs   # archive without touching the specs
 ```
 
 With no name, archive prompts you to pick a change. Outside an interactive terminal it exits 1 and prints the rerun command instead.
@@ -978,7 +978,7 @@ With no name, archive prompts you to pick a change. Outside an interactive termi
 | `--skip-specs` | Archive without touching the main specs (infrastructure, tooling, or doc-only changes). |
 | `--no-validate` | Skip validation. Archive asks you to confirm first, and `-y` answers it. |
 | `--json` | Print a structured result instead of text. Needs `--yes` to confirm spec updates. |
-| `--store <id>` | Use a registered store as the OpenSpec root instead of the current project. |
+| `--store <id>` | Use a registered store as the outline-spec root instead of the current project. |
 
 **Output**
 
@@ -989,14 +989,14 @@ Task status: ✓ Complete
 
 Specs to update:
   api: update
-Applying changes to openspec/specs/api/spec.md:
+Applying changes to outline-spec/specs/api/spec.md:
   + 1 added
 Totals: + 1, ~ 0, - 0, → 0
 Specs updated successfully.
 Change 'add-rate-limit' archived as '2026-08-11-add-rate-limit'.
 ```
 
-The change folder moves whole to `openspec/changes/archive/2026-08-11-add-rate-limit/`, today's date prefixed to its name. Each delta merges into its main spec: the ADDED requirement above was appended to `openspec/specs/api/spec.md`. Without `-y`, archive shows the preview and asks before updating. Declining still archives the change and leaves the specs alone.
+The change folder moves whole to `outline-spec/changes/archive/2026-08-11-add-rate-limit/`, today's date prefixed to its name. Each delta merges into its main spec: the ADDED requirement above was appended to `outline-spec/specs/api/spec.md`. Without `-y`, archive shows the preview and asks before updating. Declining still archives the change and leaves the specs alone.
 
 With `--json --yes`:
 
@@ -1005,7 +1005,7 @@ With `--json --yes`:
   "archive": {
     "change": "add-rate-limit",
     "archivedAs": "2026-08-11-add-rate-limit",
-    "path": "/Users/you/projects/my-app/openspec/changes/archive/2026-08-11-add-rate-limit",
+    "path": "/Users/you/projects/my-app/outline-spec/changes/archive/2026-08-11-add-rate-limit",
     "specsUpdated": true,
     "totals": {
       "added": 1,
@@ -1043,23 +1043,23 @@ Warning: 1 incomplete task(s) found. Continuing due to --yes flag.
 - `0`: the change was archived, with or without spec updates.
 - `1`: validation failed, the change name is unknown, or a confirmation was needed and no answer could be read.
 
-## openspec new
+## outline-spec new
 
 Creates a new change directory.
 
 ```bash
-openspec new change add-caching                                # metadata only
-openspec new change add-search --goal "Users can search docs"  # record a goal
+outline-spec new change add-caching                                # metadata only
+outline-spec new change add-search --goal "Users can search docs"  # record a goal
 ```
 
-`new` has one subcommand, `new change <name>`. It creates `openspec/changes/<name>/` containing a single [`.openspec.yaml` metadata file](configuration/change-metadata.md):
+`new` has one subcommand, `new change <name>`. It creates `outline-spec/changes/<name>/` containing a single [`.outline-spec.yaml` metadata file](configuration/change-metadata.md):
 
 ```yaml
 schema: spec-driven
 created: 2026-08-11
 ```
 
-Artifacts (proposal, specs, design, tasks) aren't scaffolded here. You write them later, and `openspec status` tells you which one is next.
+Artifacts (proposal, specs, design, tasks) aren't scaffolded here. You write them later, and `outline-spec status` tells you which one is next.
 
 **Arguments**
 
@@ -1072,40 +1072,40 @@ Artifacts (proposal, specs, design, tasks) aren't scaffolded here. You write the
 | Flag | Effect |
 |---|---|
 | `--description <text>` | Also create a `README.md` in the change directory with this text. |
-| `--goal <text>` | Store a `goal:` line in `.openspec.yaml`. |
+| `--goal <text>` | Store a `goal:` line in `.outline-spec.yaml`. |
 | `--schema <name>` | Workflow schema for the change. Default: `spec-driven`, the only schema that ships. |
 | `--json` | Print the created change as JSON instead of text. |
-| `--store <id>` | Use a registered store as the OpenSpec root instead of the current project. |
+| `--store <id>` | Use a registered store as the outline-spec root instead of the current project. |
 
 **Output**
 
 ```
-Created change 'add-caching' at openspec/changes/add-caching/
+Created change 'add-caching' at outline-spec/changes/add-caching/
 Schema: spec-driven
-Next: openspec status --change add-caching
+Next: outline-spec status --change add-caching
 ```
 
-When no `openspec/` directory was found, `new change` creates one where you are and says so:
+When no `outline-spec/` directory was found, `new change` creates one where you are and says so:
 
 ```
-Created change 'add-caching' at openspec/changes/add-caching/
+Created change 'add-caching' at outline-spec/changes/add-caching/
 Schema: spec-driven
-Next: openspec status --change add-caching
+Next: outline-spec status --change add-caching
 
-Note: no OpenSpec root was found here, so one was created at openspec/.
-Run `openspec init` to finish setting this project up, or delete that directory if you meant a different project.
+Note: no outline-spec root was found here, so one was created at outline-spec/.
+Run `outline-spec init` to finish setting this project up, or delete that directory if you meant a different project.
 ```
 
 The notice goes to stdout with the rest of the human output, and never appears with `--json`.
 
-With `--json`, in a project that already has `openspec/`:
+With `--json`, in a project that already has `outline-spec/`:
 
 ```json
 {
   "change": {
     "id": "add-caching",
-    "path": "/Users/you/projects/my-app/openspec/changes/add-caching",
-    "metadataPath": "/Users/you/projects/my-app/openspec/changes/add-caching/.openspec.yaml",
+    "path": "/Users/you/projects/my-app/outline-spec/changes/add-caching",
+    "metadataPath": "/Users/you/projects/my-app/outline-spec/changes/add-caching/.outline-spec.yaml",
     "schema": "spec-driven"
   },
   "root": {
@@ -1115,7 +1115,7 @@ With `--json`, in a project that already has `openspec/`:
 }
 ```
 
-When no `openspec/` directory was found and `new change` created one, the JSON has the same shape. `root.path` is the directory you ran it from, and `root.source` reads `implicit`:
+When no `outline-spec/` directory was found and `new change` created one, the JSON has the same shape. `root.path` is the directory you ran it from, and `root.source` reads `implicit`:
 
 ```json
 "root": {
@@ -1129,15 +1129,15 @@ When no `openspec/` directory was found and `new change` created one, the JSON h
 - `0`: change created.
 - `1`: the change already exists, or the schema is unknown.
 
-## openspec status
+## outline-spec status
 
 Reports artifact completion status for one change or every active change.
 
 ```bash
-openspec status --change add-rate-limit          # checklist view
-openspec status --change add-rate-limit --json   # structured report
-openspec status --all                            # every active change
-openspec status --all --json                     # one batch report
+outline-spec status --change add-rate-limit          # checklist view
+outline-spec status --change add-rate-limit --json   # structured report
+outline-spec status --all                            # every active change
+outline-spec status --all --json                     # one batch report
 ```
 
 When active changes exist, use exactly one of `--change` or `--all`. Without either, status exits 1 and lists the available changes, even when only one exists:
@@ -1147,7 +1147,7 @@ When active changes exist, use exactly one of `--change` or `--all`. Without eit
   add-rate-limit
 ```
 
-When the project has no active changes, status prints `No active changes. Create one with: openspec new change <name>` and exits 0 even without either flag. With `--all --json`, the same empty state is `{ "changes": [], "message": "No active changes.", "root": ... }`.
+When the project has no active changes, status prints `No active changes. Create one with: outline-spec new change <name>` and exits 0 even without either flag. With `--all --json`, the same empty state is `{ "changes": [], "message": "No active changes.", "root": ... }`.
 
 **Options**
 
@@ -1155,9 +1155,9 @@ When the project has no active changes, status prints `No active changes. Create
 |---|---|
 | `--change <id>` | The change to report on, by folder name. |
 | `--all` | Report every active change, sorted by name. Can't be combined with `--change`. |
-| `--schema <name>` | Override the schema auto-detected from `openspec/config.yaml`. An unknown name is an error. |
+| `--schema <name>` | Override the schema auto-detected from `outline-spec/config.yaml`. An unknown name is an error. |
 | `--json` | Print a structured report instead of text. |
-| `--store <id>` | Use a registered store as the OpenSpec root instead of the current project. |
+| `--store <id>` | Use a registered store as the outline-spec root instead of the current project. |
 
 **Output**
 
@@ -1166,7 +1166,7 @@ A checklist of the schema's artifacts: `[x]` done, `[ ]` ready to write, `[-]` b
 ```
 Change: add-rate-limit
 Schema: spec-driven
-Change root: /Users/you/projects/my-app/openspec/changes/add-rate-limit
+Change root: /Users/you/projects/my-app/outline-spec/changes/add-rate-limit
 Progress: 2/4 artifacts complete
 
 [x] proposal
@@ -1174,10 +1174,10 @@ Progress: 2/4 artifacts complete
 [ ] design
 [-] tasks (blocked by: design)
 
-Next: openspec instructions design --change "add-rate-limit" --json
+Next: outline-spec instructions design --change "add-rate-limit" --json
 ```
 
-The `Next:` line names the one command that moves the change forward, so `openspec status` is enough to pick a change back up in a fresh session. It names the next ready artifact while planning is unfinished, and `openspec instructions apply` once every planning artifact exists:
+The `Next:` line names the one command that moves the change forward, so `outline-spec status` is enough to pick a change back up in a fresh session. It names the next ready artifact while planning is unfinished, and `outline-spec instructions apply` once every planning artifact exists:
 
 ```
 [x] proposal
@@ -1186,7 +1186,7 @@ The `Next:` line names the one command that moves the change forward, so `opensp
 [x] tasks
 
 All planning artifacts complete!
-Next: openspec instructions apply --change "add-rate-limit" --json
+Next: outline-spec instructions apply --change "add-rate-limit" --json
 ```
 
 It carries `--store <id>` whenever the resolved root is a store, and names the same command as the JSON `nextSteps` sentence.
@@ -1199,7 +1199,7 @@ It carries `--store <id>` whenever the resolved root is a store, and names the s
   "schemaName": "spec-driven",
   "isComplete": false,
   "nextSteps": [
-    "Run openspec instructions design --change \"add-rate-limit\" --json before writing that artifact."
+    "Run outline-spec instructions design --change \"add-rate-limit\" --json before writing that artifact."
   ],
   "artifacts": [
     {
@@ -1257,14 +1257,14 @@ If one change can't load, the batch continues. Its entry contains `changeName` a
 - `0`: every requested status printed; an empty `--all` report also exits 0.
 - `1`: a requested change failed to load, `--change` or `--all` is missing, the two flags were combined, the change doesn't exist, or the schema override is unknown.
 
-## openspec instructions
+## outline-spec instructions
 
 Prints instructions for creating an artifact, applying, or archiving. Your agent runs this during the workflow to fetch the instruction text for its next step.
 
 ```bash
-openspec instructions proposal --change add-rate-limit   # how to write one artifact
-openspec instructions apply --change add-rate-limit      # how to implement the change
-openspec instructions archive --change add-rate-limit    # inputs for archiving
+outline-spec instructions proposal --change add-rate-limit   # how to write one artifact
+outline-spec instructions apply --change add-rate-limit      # how to implement the change
+outline-spec instructions archive --change add-rate-limit    # inputs for archiving
 ```
 
 **Arguments**
@@ -1280,7 +1280,7 @@ openspec instructions archive --change add-rate-limit    # inputs for archiving
 | `--change <id>` | The change to generate instructions for. Required. |
 | `--schema <name>` | Override the schema. Auto-detected from `config.yaml` otherwise. |
 | `--json` | Print a structured object instead of text. |
-| `--store <id>` | Use a registered store as the OpenSpec root instead of the current project. |
+| `--store <id>` | Use a registered store as the outline-spec root instead of the current project. |
 
 **Output**
 
@@ -1295,7 +1295,7 @@ Initial proposal document outlining the change
 </task>
 
 <output>
-Write to: /Users/you/projects/my-app/openspec/changes/add-rate-limit/proposal.md
+Write to: /Users/you/projects/my-app/outline-spec/changes/add-rate-limit/proposal.md
 </output>
 
 <instruction>
@@ -1310,9 +1310,9 @@ Create the proposal document that establishes WHY this change is needed.
 Schema: spec-driven
 
 ### Context Files
-- proposal: /Users/you/projects/my-app/openspec/changes/add-rate-limit/proposal.md
-- specs: /Users/you/projects/my-app/openspec/changes/add-rate-limit/specs/api/spec.md
-- tasks: /Users/you/projects/my-app/openspec/changes/add-rate-limit/tasks.md
+- proposal: /Users/you/projects/my-app/outline-spec/changes/add-rate-limit/proposal.md
+- specs: /Users/you/projects/my-app/outline-spec/changes/add-rate-limit/specs/api/spec.md
+- tasks: /Users/you/projects/my-app/outline-spec/changes/add-rate-limit/tasks.md
 
 ### Progress
 1/3 complete
@@ -1338,7 +1338,7 @@ With `--json`, each form returns one object. The artifact form starts:
   "changeName": "add-rate-limit",
   "artifactId": "proposal",
   "schemaName": "spec-driven",
-  "changeDir": "/Users/you/projects/my-app/openspec/changes/add-rate-limit",
+  "changeDir": "/Users/you/projects/my-app/outline-spec/changes/add-rate-limit",
   ...
 ```
 
@@ -1353,13 +1353,13 @@ Each `tasks` entry carries `id`, `description`, `done`, `sourcePath`, and `line`
 - `0`: instructions printed.
 - `1`: unknown artifact, unknown change, unknown schema, or missing `--change`. Each error lists the valid values.
 
-## openspec templates
+## outline-spec templates
 
 Prints the resolved template paths for a schema's artifacts.
 
 ```bash
-openspec templates          # default schema: spec-driven
-openspec templates --json   # map of artifact ids to paths
+outline-spec templates          # default schema: spec-driven
+outline-spec templates --json   # map of artifact ids to paths
 ```
 
 **Options**
@@ -1376,33 +1376,33 @@ Schema: spec-driven
 Source: package
 
 proposal:
-  /usr/local/lib/node_modules/@fission-ai/openspec/schemas/spec-driven/templates/proposal.md
+  /usr/local/lib/node_modules/outline-spec/schemas/spec-driven/templates/proposal.md
 specs:
-  /usr/local/lib/node_modules/@fission-ai/openspec/schemas/spec-driven/templates/spec.md
+  /usr/local/lib/node_modules/outline-spec/schemas/spec-driven/templates/spec.md
 design:
-  /usr/local/lib/node_modules/@fission-ai/openspec/schemas/spec-driven/templates/design.md
+  /usr/local/lib/node_modules/outline-spec/schemas/spec-driven/templates/design.md
 tasks:
-  /usr/local/lib/node_modules/@fission-ai/openspec/schemas/spec-driven/templates/tasks.md
+  /usr/local/lib/node_modules/outline-spec/schemas/spec-driven/templates/tasks.md
 ```
 
-`Source` names where the schema resolved from: `project` (`openspec/schemas/` in your project), `user` (a global override), or `package` (built into the CLI). Project wins over user, user over package.
+`Source` names where the schema resolved from: `project` (`outline-spec/schemas/` in your project), `user` (a global override), or `package` (built into the CLI). Project wins over user, user over package.
 
 ```json
 {
   "proposal": {
-    "path": "/usr/local/lib/node_modules/@fission-ai/openspec/schemas/spec-driven/templates/proposal.md",
+    "path": "/usr/local/lib/node_modules/outline-spec/schemas/spec-driven/templates/proposal.md",
     "source": "package"
   },
   "specs": {
-    "path": "/usr/local/lib/node_modules/@fission-ai/openspec/schemas/spec-driven/templates/spec.md",
+    "path": "/usr/local/lib/node_modules/outline-spec/schemas/spec-driven/templates/spec.md",
     "source": "package"
   },
   "design": {
-    "path": "/usr/local/lib/node_modules/@fission-ai/openspec/schemas/spec-driven/templates/design.md",
+    "path": "/usr/local/lib/node_modules/outline-spec/schemas/spec-driven/templates/design.md",
     "source": "package"
   },
   "tasks": {
-    "path": "/usr/local/lib/node_modules/@fission-ai/openspec/schemas/spec-driven/templates/tasks.md",
+    "path": "/usr/local/lib/node_modules/outline-spec/schemas/spec-driven/templates/tasks.md",
     "source": "package"
   }
 }
@@ -1413,13 +1413,13 @@ tasks:
 - `0`: paths printed.
 - `1`: unknown schema. The error lists available schemas.
 
-## openspec schemas
+## outline-spec schemas
 
 Lists available workflow schemas.
 
 ```bash
-openspec schemas          # names, descriptions, artifact order
-openspec schemas --json   # machine-readable, for agent use
+outline-spec schemas          # names, descriptions, artifact order
+outline-spec schemas --json   # machine-readable, for agent use
 ```
 
 **Options**
@@ -1434,7 +1434,7 @@ openspec schemas --json   # machine-readable, for agent use
 Available schemas:
 
   spec-driven
-    Default OpenSpec workflow - proposal → specs → design → tasks
+    Default outline-spec workflow - proposal → specs → design → tasks
     Artifacts: proposal → specs → design → tasks
 ```
 
@@ -1444,7 +1444,7 @@ Schemas from your project are labeled `(project)`, and global overrides are labe
 [
   {
     "name": "spec-driven",
-    "description": "Default OpenSpec workflow - proposal → specs → design → tasks",
+    "description": "Default outline-spec workflow - proposal → specs → design → tasks",
     "artifacts": [
       "proposal",
       "specs",
@@ -1461,14 +1461,14 @@ Schemas from your project are labeled `(project)`, and global overrides are labe
 - `0`: schemas listed.
 - `1`: the schema list couldn't be read.
 
-## openspec schema
+## outline-spec schema
 
 Inspects, forks, or creates a schema (experimental). Every subcommand first prints `Note: Schema commands are experimental and may change.` on stderr.
 
 ```bash
-openspec schema which spec-driven          # where a schema resolves from
-openspec schema fork spec-driven my-flow   # copy a schema into the project
-openspec schema init my-schema             # create a schema from scratch
+outline-spec schema which spec-driven          # where a schema resolves from
+outline-spec schema fork spec-driven my-flow   # copy a schema into the project
+outline-spec schema init my-schema             # create a schema from scratch
 ```
 
 | Subcommand | What it does |
@@ -1482,17 +1482,17 @@ Schemas resolve from three locations. The first match wins:
 
 | Source | Location |
 |---|---|
-| `project` | `openspec/schemas/` in the current project. |
-| `user` | `~/.local/share/openspec/schemas/` (`XDG_DATA_HOME` and Windows `%LOCALAPPDATA%` respected). |
+| `project` | `outline-spec/schemas/` in the current project. |
+| `user` | `~/.local/share/outline-spec/schemas/` (`XDG_DATA_HOME` and Windows `%LOCALAPPDATA%` respected). |
 | `package` | The schemas shipped with the CLI. `spec-driven` lives here. |
 
-### openspec schema which
+### outline-spec schema which
 
 Shows which copy of a schema the CLI will use.
 
 ```bash
-openspec schema which spec-driven
-openspec schema which --all        # every schema, grouped by source
+outline-spec schema which spec-driven
+outline-spec schema which --all        # every schema, grouped by source
 ```
 
 **Arguments**
@@ -1513,7 +1513,7 @@ openspec schema which --all        # every schema, grouped by source
 ```
 Schema: spec-driven
 Source: package
-Path: /usr/local/lib/node_modules/@fission-ai/openspec/schemas/spec-driven
+Path: /usr/local/lib/node_modules/outline-spec/schemas/spec-driven
 ```
 
 When a higher-priority copy hides another, a `Shadows:` section lists the hidden copies. With `--json`:
@@ -1522,23 +1522,23 @@ When a higher-priority copy hides another, a `Shadows:` section lists the hidden
 {
   "name": "my-flow",
   "source": "project",
-  "path": "/Users/you/projects/my-app/openspec/schemas/my-flow",
+  "path": "/Users/you/projects/my-app/outline-spec/schemas/my-flow",
   "shadows": []
 }
 ```
 
 An unknown name exits 1 and lists the available schemas.
 
-### openspec schema validate
+### outline-spec schema validate
 
 Checks a schema's structure and templates.
 
 ```bash
-openspec schema validate spec-driven   # one schema, from any source
-openspec schema validate               # every project-local schema
+outline-spec schema validate spec-driven   # one schema, from any source
+outline-spec schema validate               # every project-local schema
 ```
 
-It verifies that `schema.yaml` exists and parses, that the structure matches the schema format, that every artifact's template file exists inside the schema's `templates/` directory, and that the dependency graph has no cycles or unknown references, including in `apply.requires`. An `apply.tracks` value that isn't exactly equal to some artifact's `generates` value prints a `warning:` line but does not fail validation, because OpenSpec then can't tell which artifact's progress that file belongs to.
+It verifies that `schema.yaml` exists and parses, that the structure matches the schema format, that every artifact's template file exists inside the schema's `templates/` directory, and that the dependency graph has no cycles or unknown references, including in `apply.requires`. An `apply.tracks` value that isn't exactly equal to some artifact's `generates` value prints a `warning:` line but does not fail validation, because outline-spec then can't tell which artifact's progress that file belongs to.
 
 **Options**
 
@@ -1560,12 +1560,12 @@ With no name, each project schema gets one line under a `Validation Results:` he
   error: Template file 'tasks.md' not found for artifact 'tasks'
 ```
 
-### openspec schema fork
+### outline-spec schema fork
 
 Copies an existing schema into the project so you can customize it.
 
 ```bash
-openspec schema fork spec-driven my-flow
+outline-spec schema fork spec-driven my-flow
 ```
 
 **Arguments**
@@ -1587,14 +1587,14 @@ openspec schema fork spec-driven my-flow
 ```
 ✔ Forked 'spec-driven' to 'my-flow'
 
-Source: /usr/local/lib/node_modules/@fission-ai/openspec/schemas/spec-driven (package)
-Destination: /Users/you/projects/my-app/openspec/schemas/my-flow
+Source: /usr/local/lib/node_modules/outline-spec/schemas/spec-driven (package)
+Destination: /Users/you/projects/my-app/outline-spec/schemas/my-flow
 ```
 
-The fork lands in `openspec/schemas/`, and the `name:` field in its `schema.yaml` is rewritten to the new name:
+The fork lands in `outline-spec/schemas/`, and the `name:` field in its `schema.yaml` is rewritten to the new name:
 
 ```
-openspec/schemas/my-flow/
+outline-spec/schemas/my-flow/
 ├── schema.yaml
 └── templates/
     ├── design.md
@@ -1605,12 +1605,12 @@ openspec/schemas/my-flow/
 
 An existing destination is an error unless you pass `--force`. A fork that keeps the source's name shadows the original.
 
-### openspec schema init
+### outline-spec schema init
 
 Creates a new project-local schema with starter templates.
 
 ```bash
-openspec schema init my-schema --description "Lightweight flow" --artifacts proposal,tasks
+outline-spec schema init my-schema --description "Lightweight flow" --artifacts proposal,tasks
 ```
 
 With no `--description` and no `--artifacts` in an interactive terminal, init prompts for a description, an artifact checklist, and whether to make the schema the project default. Outside a terminal it uses the defaults below.
@@ -1627,19 +1627,19 @@ With no `--description` and no `--artifacts` in an interactive terminal, init pr
 |---|---|
 | `--description <text>` | Schema description. Default: `Custom workflow schema for <name>`. |
 | `--artifacts <list>` | Comma-separated artifact IDs from `proposal`, `specs`, `design`, `tasks`. Default: all four. |
-| `--default` | Writes `schema: <name>` to the existing `openspec/config.yaml` or `openspec/config.yml`. Creates `openspec/config.yaml` if neither exists. New changes use this schema. |
+| `--default` | Writes `schema: <name>` to the existing `outline-spec/config.yaml` or `outline-spec/config.yml`. Creates `outline-spec/config.yaml` if neither exists. New changes use this schema. |
 | `--no-default` | Skip the prompt about the default. |
 | `--force` | Overwrite an existing schema with the same name. |
 | `--json` | Print the result as JSON. |
 
-Schema creation and the `--default` config update are one operation. If OpenSpec cannot validate or write the config, it leaves both the config and any existing schema unchanged.
+Schema creation and the `--default` config update are one operation. If outline-spec cannot validate or write the config, it leaves both the config and any existing schema unchanged.
 
 **Output**
 
 ```
 ✔ Created schema 'my-schema'
 
-Schema created at: /Users/you/projects/my-app/openspec/schemas/my-schema
+Schema created at: /Users/you/projects/my-app/outline-spec/schemas/my-schema
 
 Artifacts: proposal, tasks
 ```
@@ -1647,26 +1647,26 @@ Artifacts: proposal, tasks
 The layout on disk:
 
 ```
-openspec/schemas/my-schema/
+outline-spec/schemas/my-schema/
 ├── schema.yaml
 └── templates/
     ├── proposal.md
     └── tasks.md
 ```
 
-`schema.yaml` wires the selected artifacts with their dependencies. When `tasks` is included it also gets an `apply` phase that tracks `tasks.md`. Use the schema with `openspec new --schema my-schema`.
+`schema.yaml` wires the selected artifacts with their dependencies. When `tasks` is included it also gets an `apply` phase that tracks `tasks.md`. Use the schema with `outline-spec new --schema my-schema`.
 
-## openspec store
+## outline-spec store
 
-Creates and manages stores: standalone OpenSpec repos registered on your machine.
+Creates and manages stores: standalone outline-spec repos registered on your machine.
 
 ```bash
-openspec store setup team-context --path ~/openspec/team-context   # create and register
-openspec store register ~/stores/design-system                     # register an existing checkout
-openspec store list                                                # see what's registered
+outline-spec store setup team-context --path ~/outline-spec/team-context   # create and register
+outline-spec store register ~/stores/design-system                     # register an existing checkout
+outline-spec store list                                                # see what's registered
 ```
 
-Registrations live in a per-machine registry: `~/.local/share/openspec/stores/registry.yaml`, or `$XDG_DATA_HOME/openspec/stores/registry.yaml` when `XDG_DATA_HOME` is set. Every subcommand takes `--json` to print a structured report instead of text. Running `openspec store` with a missing or unknown subcommand exits 1 and lists the subcommands.
+Registrations live in a per-machine registry: `~/.local/share/outline-spec/stores/registry.yaml`, or `$XDG_DATA_HOME/outline-spec/stores/registry.yaml` when `XDG_DATA_HOME` is set. Every subcommand takes `--json` to print a structured report instead of text. Running `outline-spec store` with a missing or unknown subcommand exits 1 and lists the subcommands.
 
 | Subcommand | What it does |
 |---|---|
@@ -1677,17 +1677,17 @@ Registrations live in a per-machine registry: `~/.local/share/openspec/stores/re
 | `list` (alias `ls`) | List registered stores. |
 | `doctor [id]` | Check registration, metadata, and Git state for registered stores. |
 
-### openspec store setup
+### outline-spec store setup
 
 Creates a store folder and registers it.
 
 ```bash
-openspec store setup team-context --path ~/openspec/team-context
+outline-spec store setup team-context --path ~/outline-spec/team-context
 ```
 
 In an interactive terminal, setup prompts for a missing name and location and confirms before creating anything. Outside one, a missing name or `--path` exits 1 with the flag to pass. Rerunning setup for a registered store reports `Registry: already registered`.
 
-Setup exits 1 with `store_setup_inside_git_repo` when `--path` is inside another Git repository, because initializing the store there would nest one repository in another. `--no-init-git` creates no repository, so it skips that check. Use it to keep a store at `~/openspec/<id>` when your home directory is itself a Git repository, such as a dotfiles repo.
+Setup exits 1 with `store_setup_inside_git_repo` when `--path` is inside another Git repository, because initializing the store there would nest one repository in another. `--no-init-git` creates no repository, so it skips that check. Use it to keep a store at `~/outline-spec/<id>` when your home directory is itself a Git repository, such as a dotfiles repo.
 
 **Arguments**
 
@@ -1709,11 +1709,11 @@ Setup exits 1 with `store_setup_inside_git_repo` when `--path` is inside another
 ```
 Store ready: team-context
 Location: /Users/you/stores/team-context
-OpenSpec root: ready
+outline-spec root: ready
 Registry: registered
 
-Next: run normal OpenSpec commands against this store, for example:
-  openspec new change <change-id> --store team-context
+Next: run normal outline-spec commands against this store, for example:
+  outline-spec new change <change-id> --store team-context
 Share this store by committing and pushing it like any Git repo.
 ```
 
@@ -1724,10 +1724,10 @@ Share this store by committing and pushing it like any Git repo.
   "store": {
     "id": "design-system",
     "root": "/Users/you/stores/design-system",
-    "metadata_path": "/Users/you/stores/design-system/.openspec-store/store.yaml"
+    "metadata_path": "/Users/you/stores/design-system/.outline-spec-store/store.yaml"
   },
   "registry": {
-    "path": "/Users/you/.local/share/openspec/stores/registry.yaml",
+    "path": "/Users/you/.local/share/outline-spec/stores/registry.yaml",
     "registered": true,
     "already_registered": false
   },
@@ -1737,28 +1737,28 @@ Share this store by committing and pushing it like any Git repo.
     "committed": true
   },
   "created_files": [
-    "openspec/",
-    "openspec/specs/",
-    "openspec/changes/",
-    "openspec/changes/archive/",
-    "openspec/config.yaml",
-    "openspec/specs/.gitkeep",
-    "openspec/changes/archive/.gitkeep",
-    ".openspec-store/store.yaml"
+    "outline-spec/",
+    "outline-spec/specs/",
+    "outline-spec/changes/",
+    "outline-spec/changes/archive/",
+    "outline-spec/config.yaml",
+    "outline-spec/specs/.gitkeep",
+    "outline-spec/changes/archive/.gitkeep",
+    ".outline-spec-store/store.yaml"
   ],
   "status": []
 }
 ```
 
-### openspec store register
+### outline-spec store register
 
 Registers an existing store folder, for example a teammate's store you cloned.
 
 ```bash
-openspec store register ~/stores/design-system
+outline-spec store register ~/stores/design-system
 ```
 
-The folder must contain a healthy `openspec/` root. With `.openspec-store/store.yaml` present, register reuses the recorded id. Without it, register asks before creating that metadata. Outside an interactive terminal, pass `--yes` instead. A machine can register one checkout per store id. A second path under the same id, or the same path under a second id, exits 1.
+The folder must contain a healthy `outline-spec/` root. With `.outline-spec-store/store.yaml` present, register reuses the recorded id. Without it, register asks before creating that metadata. Outside an interactive terminal, pass `--yes` instead. A machine can register one checkout per store id. A second path under the same id, or the same path under a second id, exits 1.
 
 **Arguments**
 
@@ -1771,25 +1771,25 @@ The folder must contain a healthy `openspec/` root. With `.openspec-store/store.
 | Flag | Effect |
 |---|---|
 | `--id <id>` | Store id. Defaults to metadata or folder name. |
-| `--yes` | Confirm creating store identity metadata for a healthy OpenSpec root. |
+| `--yes` | Confirm creating store identity metadata for a healthy outline-spec root. |
 
 **Output**
 
 ```
 Store registered: design-system
 Location: /Users/you/stores/design-system
-OpenSpec root: ready
+outline-spec root: ready
 Registry: registered
 ```
 
 `--json` prints the same document shape as `store setup --json`.
 
-### openspec store unregister
+### outline-spec store unregister
 
 Forgets the registration. The folder stays on disk.
 
 ```bash
-openspec store unregister design-system
+outline-spec store unregister design-system
 ```
 
 ```
@@ -1797,22 +1797,22 @@ Unregistered store: design-system
 Files kept at: /Users/you/stores/design-system
 ```
 
-### openspec store remove
+### outline-spec store remove
 
 Forgets the registration and deletes the folder.
 
 ```bash
-openspec store remove design-system --yes
+outline-spec store remove design-system --yes
 ```
 
 Interactively, remove asks before deleting. With `--json` or outside an interactive terminal, deletion requires `--yes`:
 
 ```
 Error: Pass --yes to delete store files non-interactively.
-Fix: openspec store remove design-system --yes
+Fix: outline-spec store remove design-system --yes
 ```
 
-Remove exits 1 and deletes nothing when the folder lacks matching store metadata, or when it contains another registered store (for example a store vendored as a Git submodule). In that case the error is `store_remove_contains_registered_store`: run `openspec store unregister <nested-id>` first, or `openspec store unregister <id>` to forget the store without deleting files.
+Remove exits 1 and deletes nothing when the folder lacks matching store metadata, or when it contains another registered store (for example a store vendored as a Git submodule). In that case the error is `store_remove_contains_registered_store`: run `outline-spec store unregister <nested-id>` first, or `outline-spec store unregister <id>` to forget the store without deleting files.
 
 **Options**
 
@@ -1827,16 +1827,16 @@ Removed store: design-system
 Deleted: /Users/you/stores/design-system
 ```
 
-### openspec store list
+### outline-spec store list
 
 Lists registered stores. `ls` is an alias.
 
 ```bash
-openspec store list
+outline-spec store list
 ```
 
 ```
-OpenSpec stores (2)
+outline-spec stores (2)
 
 ID              Location
 design-system   /Users/you/stores/design-system
@@ -1845,13 +1845,13 @@ team-context    /Users/you/stores/team-context
 
 With nothing registered, list prints `No stores registered.` and the setup and register commands to run next.
 
-### openspec store doctor
+### outline-spec store doctor
 
 Checks registration, metadata, and Git state for registered stores.
 
 ```bash
-openspec store doctor                # every registered store
-openspec store doctor team-context  # one store
+outline-spec store doctor                # every registered store
+outline-spec store doctor team-context  # one store
 ```
 
 **Output**
@@ -1861,7 +1861,7 @@ Store doctor
 
 team-context
   Location: /Users/you/stores/team-context
-  OpenSpec root: ok
+  outline-spec root: ok
   Metadata: ok
   Git: repository detected (commits: yes, uncommitted changes: no, remote: none)
   Issues: none
@@ -1872,22 +1872,22 @@ team-context
 - `0`: the report printed, even when a store reports issues.
 - `1`: the report couldn't run (for example an unknown store id).
 
-## openspec doctor
+## outline-spec doctor
 
-Reports relationship health for the resolved OpenSpec root.
+Reports relationship health for the resolved outline-spec root.
 
 ```bash
-openspec doctor                       # nearest openspec/ root above your cwd
-openspec doctor --store team-context  # a registered store as the root
+outline-spec doctor                       # nearest outline-spec/ root above your cwd
+outline-spec doctor --store team-context  # a registered store as the root
 ```
 
-Doctor is read-only: it never clones, syncs, or repairs. It reports whether the root is healthy and whether each reference declared in `openspec/config.yaml` resolves on this machine. With no root above your cwd and no `--store`, it exits 1 and names your registered stores.
+Doctor is read-only: it never clones, syncs, or repairs. It reports whether the root is healthy and whether each reference declared in `outline-spec/config.yaml` resolves on this machine. With no root above your cwd and no `--store`, it exits 1 and names your registered stores.
 
 **Options**
 
 | Flag | Effect |
 |---|---|
-| `--store <id>` | Use a registered store as the OpenSpec root instead of the current project. |
+| `--store <id>` | Use a registered store as the outline-spec root instead of the current project. |
 | `--json` | Print the health report as JSON. |
 
 **Output**
@@ -1897,7 +1897,7 @@ Doctor
 
 Root
   Location: /Users/you/projects/my-app
-  OpenSpec root: ok
+  outline-spec root: ok
 
 References
   - team-context: ok (/Users/you/stores/team-context)
@@ -1906,12 +1906,12 @@ References
 With `--store`, the root is the store and the report adds a store line:
 
 ```
-Using OpenSpec root: team-context (/Users/you/stores/team-context)
+Using outline-spec root: team-context (/Users/you/stores/team-context)
 Doctor
 
 Root
   Location: /Users/you/stores/team-context
-  OpenSpec root: ok
+  outline-spec root: ok
   Store: team-context (metadata ok)
 
 References
@@ -1941,16 +1941,16 @@ References
 **Exit codes**
 
 - `0`: the report printed, including when it lists issues.
-- `1`: no root resolved (no `openspec/` above your cwd and no `--store`), or an unknown `--store` id.
+- `1`: no root resolved (no `outline-spec/` above your cwd and no `--store`), or an unknown `--store` id.
 
-## openspec context
+## outline-spec context
 
-Prints the working context for the resolved OpenSpec root: the root plus every referenced store declared in `openspec/config.yaml`, each with a fetch command.
+Prints the working context for the resolved outline-spec root: the root plus every referenced store declared in `outline-spec/config.yaml`, each with a fetch command.
 
 ```bash
-openspec context                       # nearest openspec/ root above your cwd
-openspec context --store team-context  # a registered store as the root
-openspec context --json                # agent brief
+outline-spec context                       # nearest outline-spec/ root above your cwd
+outline-spec context --store team-context  # a registered store as the root
+outline-spec context --json                # agent brief
 ```
 
 References that don't resolve on this machine land in a `Not available on this machine` section, each with a fix.
@@ -1959,7 +1959,7 @@ References that don't resolve on this machine land in a `Not available on this m
 
 | Flag | Effect |
 |---|---|
-| `--store <id>` | Use a registered store as the OpenSpec root instead of the current project. |
+| `--store <id>` | Use a registered store as the outline-spec root instead of the current project. |
 | `--json` | Print the agent brief as JSON. |
 | `--code-workspace <path>` | Also write a VS Code workspace file for the set. |
 | `--force` | Overwrite an existing `--code-workspace` file. |
@@ -1969,21 +1969,21 @@ References that don't resolve on this machine land in a `Not available on this m
 ```
 Working context for my-app (/Users/you/projects/my-app)
 
-OpenSpec root
+outline-spec root
   my-app  /Users/you/projects/my-app
 
 Referenced stores
   team-context  /Users/you/stores/team-context
-    Fetch: openspec show <spec-id> --type spec --store team-context
+    Fetch: outline-spec show <spec-id> --type spec --store team-context
 ```
 
 With `--store`, the store is the whole set:
 
 ```
-Using OpenSpec root: team-context (/Users/you/stores/team-context)
+Using outline-spec root: team-context (/Users/you/stores/team-context)
 Working context for team-context (/Users/you/stores/team-context)
 
-OpenSpec root
+outline-spec root
   team-context  /Users/you/stores/team-context
 
 No references declared; the working set is this root alone.
@@ -1994,14 +1994,14 @@ No references declared; the working set is this root alone.
   "root": {
     "path": "/Users/you/projects/my-app",
     "source": "nearest",
-    "role": "openspec_root"
+    "role": "outline_spec_root"
   },
   "members": [
     {
       "role": "referenced_store",
       "id": "team-context",
       "path": "/Users/you/stores/team-context",
-      "fetch": "openspec show <spec-id> --type spec --store team-context",
+      "fetch": "outline-spec show <spec-id> --type spec --store team-context",
       "status": []
     }
   ],
@@ -2011,7 +2011,7 @@ No references declared; the working set is this root alone.
 
 **Writing a workspace file**
 
-`--code-workspace` writes a VS Code workspace file at the path you give: one folder for the root, one `ref:<id>` folder per available referenced store. Unavailable references are skipped and named in the summary line, `Wrote /Users/you/projects/my-app/openspec.code-workspace (2 folders)`. The summary prints on stderr, so `--json` stdout stays one JSON document. An existing file exits 1 unless you pass `--force`.
+`--code-workspace` writes a VS Code workspace file at the path you give: one folder for the root, one `ref:<id>` folder per available referenced store. Unavailable references are skipped and named in the summary line, `Wrote /Users/you/projects/my-app/outline-spec.code-workspace (2 folders)`. The summary prints on stderr, so `--json` stdout stays one JSON document. An existing file exits 1 unless you pass `--force`.
 
 ```json
 {
@@ -2031,16 +2031,16 @@ No references declared; the working set is this root alone.
 **Exit codes**
 
 - `0`: the report printed.
-- `1`: no root resolved (no `openspec/` above your cwd and no `--store`), or the `--code-workspace` write was refused.
+- `1`: no root resolved (no `outline-spec/` above your cwd and no `--store`), or the `--code-workspace` write was refused.
 
-## openspec workset
+## outline-spec workset
 
 Composes, keeps, and opens personal working views. A workset is a saved, named list of folders you work across together.
 
 ```bash
-openspec workset create checkout --member ~/projects/checkout-api --member web=~/projects/checkout-web
-openspec workset list
-openspec workset remove checkout --yes
+outline-spec workset create checkout --member ~/projects/checkout-api --member web=~/projects/checkout-web
+outline-spec workset list
+outline-spec workset remove checkout --yes
 ```
 
 | Subcommand | What it does |
@@ -2052,16 +2052,16 @@ openspec workset remove checkout --yes
 
 A workset is purely local:
 
-- Its state lives in one folder: `~/.local/share/openspec/worksets/` (`$XDG_DATA_HOME/openspec/worksets/` when set; `%LOCALAPPDATA%\openspec\worksets\` on Windows).
+- Its state lives in one folder: `~/.local/share/outline-spec/worksets/` (`$XDG_DATA_HOME/outline-spec/worksets/` when set; `%LOCALAPPDATA%\outline-spec\worksets\` on Windows).
 - Nothing is written into the member folders, and nothing is committed or shared.
 - Deleting that one folder removes every trace.
 
-### openspec workset create
+### outline-spec workset create
 
 Saves a named working view of folders.
 
 ```bash
-openspec workset create checkout \
+outline-spec workset create checkout \
   --member ~/projects/checkout-api \
   --member web=~/projects/checkout-web
 ```
@@ -2086,15 +2086,15 @@ In an interactive terminal, create prompts for whatever the flags didn't provide
 
 ```
 Saved workset 'checkout' (2 members) to your machine.
-Open it any time with: openspec workset open checkout
+Open it any time with: outline-spec workset open checkout
 ```
 
-### openspec workset list
+### outline-spec workset list
 
 Shows saved worksets with their members, sorted by name.
 
 ```bash
-openspec workset list   # alias: ls
+outline-spec workset list   # alias: ls
 ```
 
 **Options**
@@ -2105,7 +2105,7 @@ openspec workset list   # alias: ls
 
 **Output**
 
-One block per workset: the name, its tool when it has one, then one `name  path` row per member. With nothing saved, list prints `No worksets saved. Create one with: openspec workset create`.
+One block per workset: the name, its tool when it has one, then one `name  path` row per member. With nothing saved, list prints `No worksets saved. Create one with: outline-spec workset create`.
 
 ```
 checkout
@@ -2138,13 +2138,13 @@ With `--json`:
 }
 ```
 
-### openspec workset open
+### outline-spec workset open
 
 Opens a saved workset in your tool. Editor tools (`code`, `cursor`) get a generated `.code-workspace` file. A window opens and the command returns. CLI agent tools (`claude`, `codex`) would take over this terminal with every member attached. They are temporarily disabled while that flow is reworked, so worksets open in an IDE for now.
 
 ```bash
-openspec workset open checkout                # saved tool, or a prompt
-openspec workset open checkout --tool cursor  # this tool just this once
+outline-spec workset open checkout                # saved tool, or a prompt
+outline-spec workset open checkout --tool cursor  # this tool just this once
 ```
 
 **Arguments**
@@ -2170,12 +2170,12 @@ With no `--tool` and no saved tool, open prompts you to pick an installed tool. 
 - Mirrors the tool: the command exits with the tool's own exit code, and a signal becomes `128+n` (`130` after Ctrl-C).
 - `1`: unknown workset, no member folder available, or no usable tool.
 
-### openspec workset remove
+### outline-spec workset remove
 
 Deletes a saved workset and its generated `.code-workspace` file. Member folders are never touched.
 
 ```bash
-openspec workset remove checkout --yes
+outline-spec workset remove checkout --yes
 ```
 
 In an interactive terminal, remove shows the workset and asks you to confirm. With `--json`, or outside a terminal, it requires `--yes` and exits 1 without it.
@@ -2193,18 +2193,18 @@ In an interactive terminal, remove shows the workset and asks you to confirm. Wi
 Removed workset 'checkout'. Member folders were not touched.
 ```
 
-## openspec version
+## outline-spec version
 
-Reports the running OpenSpec version and how this copy was installed.
+Reports the running outline-spec version and how this copy was installed.
 
 ```bash
-openspec version                 # local version and install details
-openspec version --json          # structured local report
-openspec version --check         # also check the registry for an update
-openspec version --check --json  # structured local and update report
+outline-spec version                 # local version and install details
+outline-spec version --json          # structured local report
+outline-spec version --check         # also check the registry for an update
+outline-spec version --check --json  # structured local and update report
 ```
 
-Without `--check`, this command is local and does not contact a registry. It works outside an OpenSpec project. The existing `openspec --version` flag remains the shortest form and prints only the bare version number.
+Without `--check`, this command is local and does not contact a registry. It works outside an outline-spec project. The existing `outline-spec --version` flag remains the shortest form and prints only the bare version number.
 
 **Options**
 
@@ -2218,10 +2218,10 @@ Without `--check`, this command is local and does not contact a registry. It wor
 For a global npm install:
 
 ```text
-OpenSpec 1.13.2 (npm, global)
+outline-spec 1.13.2 (npm, global)
 ```
 
-The install scope is `global`, `project`, `temporary` for an ephemeral runner such as npx, or `source` for a checkout. OpenSpec omits details it cannot identify instead of guessing.
+The install scope is `global`, `project`, `temporary` for an ephemeral runner such as npx, or `source` for a checkout. outline-spec omits details it cannot identify instead of guessing.
 
 `--json` keeps unknown details as explicit `null` values:
 
@@ -2230,19 +2230,19 @@ The install scope is `global`, `project`, `temporary` for an ephemeral runner su
   "schemaVersion": 1,
   "version": "1.13.2",
   "install": {
-    "location": "/opt/homebrew/lib/node_modules/@fission-ai/openspec",
+    "location": "/opt/homebrew/lib/node_modules/outline-spec",
     "packageManager": "npm",
     "scope": "global"
   }
 }
 ```
 
-With `--check`, an available update adds the latest version and a command when OpenSpec can identify a safe command for that install:
+With `--check`, an available update adds the latest version and a command when outline-spec can identify a safe command for that install:
 
 ```text
-OpenSpec 1.13.2 (npm, global)
+outline-spec 1.13.2 (npm, global)
 Update available: 1.14.0
-  npm install -g @fission-ai/openspec@latest
+  npm install -g outline-spec@latest
 ```
 
 ```json
@@ -2250,14 +2250,14 @@ Update available: 1.14.0
   "schemaVersion": 1,
   "version": "1.13.2",
   "install": {
-    "location": "/opt/homebrew/lib/node_modules/@fission-ai/openspec",
+    "location": "/opt/homebrew/lib/node_modules/outline-spec",
     "packageManager": "npm",
     "scope": "global"
   },
   "update": {
     "status": "available",
     "latest": "1.14.0",
-    "command": "npm install -g @fission-ai/openspec@latest",
+    "command": "npm install -g outline-spec@latest",
     "canSelfUpgrade": true
   }
 }
@@ -2272,23 +2272,23 @@ Update status values:
 | `disabled` | An existing privacy or update-check setting blocked registry access. `latest` is `null`. |
 | `offline` | The registry was unavailable or returned an unusable response. `latest` is `null`. |
 
-`DO_NOT_TRACK`, telemetry opt-outs, `OPENSPEC_NO_UPDATE_CHECK`, CI detection, and rejected non-HTTPS registry overrides disable the check. Disabled and offline checks still exit 0 because update availability is advisory. This command never upgrades OpenSpec; `canSelfUpgrade` only reports whether the existing `openspec update` path could safely upgrade this copy.
+`DO_NOT_TRACK`, telemetry opt-outs, `OUTLINE_SPEC_NO_UPDATE_CHECK`, CI detection, and rejected non-HTTPS registry overrides disable the check. Disabled and offline checks still exit 0 because update availability is advisory. This command never upgrades outline-spec; `canSelfUpgrade` only reports whether the existing `outline-spec update` path could safely upgrade this copy.
 
 **Exit codes**
 
 - `0`: the local report printed, including disabled or offline update checks.
 - `1`: command syntax was invalid, such as the unsupported `--upgrade` option.
 
-## openspec feedback
+## outline-spec feedback
 
-Submits feedback about OpenSpec.
+Submits feedback about outline-spec.
 
 ```bash
-openspec feedback "Validate output is hard to scan"
-openspec feedback "Archive fails on Windows" --body "Steps: init, propose, archive. Error: EPERM."
+outline-spec feedback "Validate output is hard to scan"
+outline-spec feedback "Archive fails on Windows" --body "Steps: init, propose, archive. Error: EPERM."
 ```
 
-The CLI files your message as a GitHub issue on the `Fission-AI/OpenSpec` repo through your `gh` CLI. The title becomes `Feedback: <message>`. The body holds your `--body` text plus a footer with CLI version, platform, and timestamp. The issue gets the `feedback` label. If the repo doesn't define that label, the CLI retries without it and says so.
+The CLI files your message as a GitHub issue on the `heneryville/outline-spec` repo through your `gh` CLI. The title becomes `Feedback: <message>`. The body holds your `--body` text plus a footer with CLI version, platform, and timestamp. The issue gets the `feedback` label. If the repo doesn't define that label, the CLI retries without it and says so.
 
 **Arguments**
 
@@ -2308,7 +2308,7 @@ On success:
 
 ```
 ✓ Feedback submitted successfully!
-Issue URL: https://github.com/Fission-AI/OpenSpec/issues/1234
+Issue URL: https://github.com/heneryville/outline-spec/issues/1234
 ```
 
 Without `gh` installed, or with `gh` not logged in, nothing is submitted. The CLI prints your formatted feedback between `--- FORMATTED FEEDBACK ---` markers, then a prefilled new-issue URL to open in the browser. The not-logged-in path adds `To auto-submit in the future: gh auth login`.
@@ -2319,13 +2319,13 @@ Without `gh` installed, or with `gh` not logged in, nothing is submitted. The CL
 - `1`: no message given.
 - `gh`'s own code: `gh` failed after authentication (network, rate limit, issues disabled). The CLI reprints your feedback and the manual-submission URL first.
 
-## openspec completion
+## outline-spec completion
 
 Installs or generates shell completions.
 
 ```bash
-openspec completion install        # detect your shell, install, wire up config
-openspec completion generate zsh   # print the script to stdout
+outline-spec completion install        # detect your shell, install, wire up config
+outline-spec completion generate zsh   # print the script to stdout
 ```
 
 Supported shells: `zsh`, `bash`, `fish`, `powershell`. Every subcommand takes an optional shell argument. Omit it and the CLI detects your shell from the environment.
@@ -2338,34 +2338,34 @@ Supported shells: `zsh`, `bash`, `fish`, `powershell`. Every subcommand takes an
 
 Installed with Nix, completions are already in place: the flake package ships the Bash, Fish, and Zsh scripts at the standard locations, so `install` is not needed ([Installation](../start/installation.md#nix)).
 
-### openspec completion generate
+### outline-spec completion generate
 
 Prints the script and writes nothing.
 
 ```
-#compdef openspec
+#compdef outline-spec
 
-# Zsh completion script for OpenSpec CLI
+# Zsh completion script for outline-spec CLI
 # Auto-generated - do not edit manually
 
-_openspec() {
+_outline_spec() {
   local context state line
   typeset -A opt_args
 ...
 ```
 
-### openspec completion install
+### outline-spec completion install
 
-Writes the script and edits your shell config. Config edits sit between `# OPENSPEC:START` and `# OPENSPEC:END` markers. An existing script is backed up first (`.backup-<timestamp>` copy).
+Writes the script and edits your shell config. Config edits sit between `# OUTLINE_SPEC:START` and `# OUTLINE_SPEC:END` markers. An existing script is backed up first (`.backup-<timestamp>` copy).
 
 | Shell | Script location | Config edited |
 |---|---|---|
-| zsh | `~/.zsh/completions/_openspec` | `~/.zshrc` |
-| bash | `~/.local/share/bash-completion/completions/openspec` | `~/.bashrc` |
-| fish | `~/.config/fish/completions/openspec.fish` | None: fish auto-loads it. |
-| powershell | `OpenSpecCompletion.ps1` beside your profile | `$PROFILE` |
+| zsh | `~/.zsh/completions/_outline_spec` | `~/.zshrc` |
+| bash | `~/.local/share/bash-completion/completions/outline-spec` | `~/.bashrc` |
+| fish | `~/.config/fish/completions/outline-spec.fish` | None: fish auto-loads it. |
+| powershell | `OutlineSpecCompletion.ps1` beside your profile | `$PROFILE` |
 
-With Oh My Zsh installed, the script lands in `$ZSH_CUSTOM/completions/_openspec` instead (default `~/.oh-my-zsh/custom/completions/_openspec`).
+With Oh My Zsh installed, the script lands in `$ZSH_CUSTOM/completions/_outline_spec` instead (default `~/.oh-my-zsh/custom/completions/_outline_spec`).
 
 **Options**
 
@@ -2381,7 +2381,7 @@ With Oh My Zsh installed, the script lands in `$ZSH_CUSTOM/completions/_openspec
 Restart your shell or run: exec zsh
 ```
 
-### openspec completion uninstall
+### outline-spec completion uninstall
 
 Removes the script and the marked config block. It asks before touching your config (default: No).
 
@@ -2394,7 +2394,7 @@ Removes the script and the marked config block. It asks before touching your con
 **Output**
 
 ```
-✓ Completion script removed from /Users/you/.zsh/completions/_openspec. Removed OpenSpec configuration from ~/.zshrc
+✓ Completion script removed from /Users/you/.zsh/completions/_outline_spec. Removed outline-spec configuration from ~/.zshrc
 ```
 
 **Exit codes**
@@ -2402,37 +2402,37 @@ Removes the script and the marked config block. It asks before touching your con
 - `0`: script generated, installed, or removed. A cancelled uninstall also exits 0.
 - `1`: shell not supported or not detected, or an install or uninstall step failed.
 
-## openspec change
+## outline-spec change
 
 Deprecated noun form of `show`, `list`, and `validate`. Every run warns and points to the verb-first commands, then runs anyway:
 
 ```
-Warning: The "openspec change ..." commands are deprecated. Prefer verb-first commands (e.g., "openspec list", "openspec validate --changes").
-Warning: "openspec change list" is deprecated. Use "openspec list".
+Warning: The "outline-spec change ..." commands are deprecated. Prefer verb-first commands (e.g., "outline-spec list", "outline-spec validate --changes").
+Warning: "outline-spec change list" is deprecated. Use "outline-spec list".
 add-rate-limit
 ```
 
 | Deprecated | Use instead |
 |---|---|
-| `openspec change show <name>` | `openspec show <name>` |
-| `openspec change list` | `openspec list` |
-| `openspec change validate <name>` | `openspec validate <name>` (all changes: `openspec validate --changes`) |
+| `outline-spec change show <name>` | `outline-spec show <name>` |
+| `outline-spec change list` | `outline-spec list` |
+| `outline-spec change validate <name>` | `outline-spec validate <name>` (all changes: `outline-spec validate --changes`) |
 
 The verb-first sections document the flags.
 
-## openspec spec
+## outline-spec spec
 
 Deprecated noun form of `show`, `list`, and `validate`. Every run warns and points to the verb-first commands, then runs anyway:
 
 ```
-Warning: The "openspec spec ..." commands are deprecated. Prefer verb-first commands (e.g., "openspec show", "openspec validate --specs").
+Warning: The "outline-spec spec ..." commands are deprecated. Prefer verb-first commands (e.g., "outline-spec show", "outline-spec validate --specs").
 api
 ```
 
 | Deprecated | Use instead |
 |---|---|
-| `openspec spec show <id>` | `openspec show <id>` |
-| `openspec spec list` | `openspec list --specs` |
-| `openspec spec validate <id>` | `openspec validate <id>` (all specs: `openspec validate --specs`) |
+| `outline-spec spec show <id>` | `outline-spec show <id>` |
+| `outline-spec spec list` | `outline-spec list --specs` |
+| `outline-spec spec validate <id>` | `outline-spec validate <id>` (all specs: `outline-spec validate --specs`) |
 
 The verb-first sections document the flags.

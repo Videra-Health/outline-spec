@@ -42,7 +42,7 @@ describe('update-flake.sh confines every hash rewrite to the pnpmDeps block', ()
   // three sed operations against a flake with three FODs, pnpmDeps in the
   // middle, so a first-match bug and a global-replace bug both show up.
   it('touches only the pnpmDeps hash in a flake with several derivations', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-flake-scope-'));
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-flake-scope-'));
     const flake = path.join(dir, 'flake.nix');
     const other = 'sha256-OTHEROTHEROTHEROTHEROTHEROTHEROTHEROTHEROT0=';
     const pnpm = 'sha256-PNPMPNPMPNPMPNPMPNPMPNPMPNPMPNPMPNPMPNPMPN0=';

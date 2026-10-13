@@ -7,4 +7,4 @@
 
 ## 2. Land
 
-- [ ] 2.1 Run `openspec validate <change>`, then `openspec land <change>` to apply outline.md to the live specs
+- [ ] 2.1 Run `outline-spec validate <change>`, then `outline-spec land <change>` to apply outline.md to the live specs

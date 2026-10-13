@@ -6,11 +6,11 @@ import { FileSystemUtils, removeMarkerBlock } from '../../src/utils/file-system.
 
 describe('FileSystemUtils.updateFileWithMarkers', () => {
   let testDir: string;
-  const START_MARKER = '<!-- OPENSPEC:START -->';
-  const END_MARKER = '<!-- OPENSPEC:END -->';
+  const START_MARKER = '<!-- OUTLINE_SPEC:START -->';
+  const END_MARKER = '<!-- OUTLINE_SPEC:END -->';
 
   beforeEach(async () => {
-    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-marker-test-'));
+    testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-marker-test-'));
   });
 
   afterEach(async () => {
@@ -20,7 +20,7 @@ describe('FileSystemUtils.updateFileWithMarkers', () => {
   describe('new file creation', () => {
     it('should create new file with markers and content', async () => {
       const filePath = path.join(testDir, 'new-file.md');
-      const content = 'OpenSpec content';
+      const content = 'outline-spec content';
       
       await FileSystemUtils.updateFileWithMarkers(
         filePath,
@@ -40,7 +40,7 @@ describe('FileSystemUtils.updateFileWithMarkers', () => {
       const existingContent = '# Existing Content\nUser content here';
       await fs.writeFile(filePath, existingContent);
       
-      const newContent = 'OpenSpec content';
+      const newContent = 'outline-spec content';
       await FileSystemUtils.updateFileWithMarkers(
         filePath,
         newContent,
@@ -59,13 +59,13 @@ describe('FileSystemUtils.updateFileWithMarkers', () => {
     it('should replace content between markers', async () => {
       const filePath = path.join(testDir, 'with-markers.md');
       const beforeContent = '# Before\nSome content before';
-      const oldManagedContent = 'Old OpenSpec content';
+      const oldManagedContent = 'Old outline-spec content';
       const afterContent = '# After\nSome content after';
       
       const existingFile = `${beforeContent}\n${START_MARKER}\n${oldManagedContent}\n${END_MARKER}\n${afterContent}`;
       await fs.writeFile(filePath, existingFile);
       
-      const newContent = 'New OpenSpec content';
+      const newContent = 'New outline-spec content';
       await FileSystemUtils.updateFileWithMarkers(
         filePath,
         newContent,
@@ -284,8 +284,8 @@ ${END_MARKER}
     });
   });
   describe('line endings', () => {
-    const START = '# >>> openspec >>>';
-    const END = '# <<< openspec <<<';
+    const START = '# >>> outline-spec >>>';
+    const END = '# <<< outline-spec <<<';
 
     function countEndings(content: string): { crlf: number; loneLf: number } {
       return {
@@ -302,13 +302,13 @@ ${END_MARKER}
 
       await FileSystemUtils.updateFileWithMarkers(
         filePath,
-        'alias openspec="npx openspec"',
+        'alias outline-spec="npx outline-spec"',
         START,
         END
       );
 
       const result = await fs.readFile(filePath, 'utf-8');
-      expect(result).toContain('alias openspec');
+      expect(result).toContain('alias outline-spec');
       expect(result).toContain('export EDITOR');
       expect(countEndings(result).loneLf).toBe(0);
     });
@@ -319,7 +319,7 @@ ${END_MARKER}
 
       await FileSystemUtils.updateFileWithMarkers(
         filePath,
-        'alias openspec="npx openspec"',
+        'alias outline-spec="npx outline-spec"',
         START,
         END
       );
@@ -355,14 +355,14 @@ ${END_MARKER}
 });
 
 describe('removeMarkerBlock', () => {
-  const START_MARKER = '<!-- OPENSPEC:START -->';
-  const END_MARKER = '<!-- OPENSPEC:END -->';
+  const START_MARKER = '<!-- OUTLINE_SPEC:START -->';
+  const END_MARKER = '<!-- OUTLINE_SPEC:END -->';
 
   describe('basic removal', () => {
     it('should remove marker block and preserve content before', () => {
       const content = `User content before
 ${START_MARKER}
-OpenSpec content
+outline-spec content
 ${END_MARKER}`;
       const result = removeMarkerBlock(content, START_MARKER, END_MARKER);
       expect(result).toBe('User content before\n');
@@ -372,7 +372,7 @@ ${END_MARKER}`;
 
     it('should remove marker block and preserve content after', () => {
       const content = `${START_MARKER}
-OpenSpec content
+outline-spec content
 ${END_MARKER}
 User content after`;
       const result = removeMarkerBlock(content, START_MARKER, END_MARKER);
@@ -382,7 +382,7 @@ User content after`;
     it('should remove marker block and preserve content before and after', () => {
       const content = `User content before
 ${START_MARKER}
-OpenSpec content
+outline-spec content
 ${END_MARKER}
 User content after`;
       const result = removeMarkerBlock(content, START_MARKER, END_MARKER);
@@ -393,7 +393,7 @@ User content after`;
 
     it('should return empty string when only markers remain', () => {
       const content = `${START_MARKER}
-OpenSpec content
+outline-spec content
 ${END_MARKER}`;
       const result = removeMarkerBlock(content, START_MARKER, END_MARKER);
       expect(result).toBe('');
@@ -437,7 +437,7 @@ ${START_MARKER}`;
 
 
 ${START_MARKER}
-OpenSpec content
+outline-spec content
 ${END_MARKER}
 
 
@@ -449,7 +449,7 @@ Line 2`;
     it('should handle markers with whitespace on same line', () => {
       const content = `User content
   ${START_MARKER}
-OpenSpec content
+outline-spec content
   ${END_MARKER}
 More content`;
       const result = removeMarkerBlock(content, START_MARKER, END_MARKER);
@@ -492,8 +492,8 @@ After block content`;
   });
 
   describe('line endings', () => {
-    const MD_START = '<!-- OPENSPEC:START -->';
-    const MD_END = '<!-- OPENSPEC:END -->';
+    const MD_START = '<!-- OUTLINE_SPEC:START -->';
+    const MD_END = '<!-- OUTLINE_SPEC:END -->';
 
     it('collapses a blank-line run without leaving a lone LF in a CRLF file', () => {
       // The collapse rebuilds the separator it matched. Spelling that '\n'
@@ -555,16 +555,16 @@ After block content`;
   });
 
   describe('shell markers', () => {
-    const SHELL_START = '# OPENSPEC:START';
-    const SHELL_END = '# OPENSPEC:END';
+    const SHELL_START = '# OUTLINE_SPEC:START';
+    const SHELL_END = '# OUTLINE_SPEC:END';
 
     it('should work with shell-style markers', () => {
       const content = `# User config
 export PATH="/usr/local/bin:$PATH"
 
 ${SHELL_START}
-# OpenSpec managed
-alias openspec="npx openspec"
+# outline-spec managed
+alias outline-spec="npx outline-spec"
 ${SHELL_END}
 
 # More user config
@@ -572,7 +572,7 @@ export EDITOR="vim"`;
       const result = removeMarkerBlock(content, SHELL_START, SHELL_END);
       expect(result).toContain('export PATH');
       expect(result).toContain('export EDITOR');
-      expect(result).not.toContain('alias openspec');
+      expect(result).not.toContain('alias outline-spec');
       expect(result).not.toContain(SHELL_START);
     });
   });

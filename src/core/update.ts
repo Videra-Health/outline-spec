@@ -1,7 +1,7 @@
 /**
  * Update Command
  *
- * Refreshes OpenSpec skills and commands for configured tools.
+ * Refreshes outline-spec skills and commands for configured tools.
  * Supports profile-aware updates, delivery changes, migration, and smart update detection.
  */
 
@@ -12,7 +12,7 @@ import * as fs from 'fs';
 import { createRequire } from 'module';
 import { FileSystemUtils } from '../utils/file-system.js';
 import { getTransformerForTool } from '../utils/command-references.js';
-import { AI_TOOLS, OPENSPEC_DIR_NAME } from './config.js';
+import { AI_TOOLS, OUTLINE_SPEC_DIR_NAME } from './config.js';
 import {
   generateCommands,
   CommandAdapterRegistry,
@@ -66,13 +66,13 @@ import {
 import { includesGitHubCopilot, writeCopilotCloudFiles, removeCopilotCloudFiles, isCopilotCloudEnabled, readCopilotCloudOptIn, findUnmanagedCloudFiles } from './github-copilot/cloud-agent.js';
 
 const require = createRequire(import.meta.url);
-const { version: OPENSPEC_VERSION } = require('../../package.json');
+const { version: OUTLINE_SPEC_VERSION } = require('../../package.json');
 
 type ToolFailure = { name: string; error: string };
 
 function throwIfUpdateFailed(failedTools: readonly ToolFailure[]): void {
   if (failedTools.length > 0) {
-    throw new Error(`OpenSpec update failed for: ${failedTools.map((tool) => tool.name).join(', ')}`);
+    throw new Error(`outline-spec update failed for: ${failedTools.map((tool) => tool.name).join(', ')}`);
   }
 }
 
@@ -114,21 +114,21 @@ export class UpdateCommand {
   }
 
   /**
-   * Refreshes OpenSpec skills and commands for all configured tools,
+   * Refreshes outline-spec skills and commands for all configured tools,
    * regenerating artifacts according to the effective profile and delivery mode.
    *
-   * @param projectPath - Path to the project root containing the openspec directory
+   * @param projectPath - Path to the project root containing the outline-spec directory
    */
   async execute(projectPath: string): Promise<void> {
     const resolvedProjectPath = path.resolve(projectPath);
-    const openspecPath = path.join(resolvedProjectPath, OPENSPEC_DIR_NAME);
+    const outlineSpecPath = path.join(resolvedProjectPath, OUTLINE_SPEC_DIR_NAME);
 
-    // 1. Check openspec directory exists
-    if (!await FileSystemUtils.directoryExists(openspecPath)) {
-      throw new Error(`No OpenSpec directory found. Run 'openspec init' first.`);
+    // 1. Check outline-spec directory exists
+    if (!await FileSystemUtils.directoryExists(outlineSpecPath)) {
+      throw new Error(`No outline-spec directory found. Run 'outline-spec init' first.`);
     }
 
-    // 2. Migrate OpenSpec-managed skills left in renamed tool directories
+    // 2. Migrate outline-spec-managed skills left in renamed tool directories
     // (e.g. .kimi -> .kimi-code) so they stay detected and get refreshed,
     // then perform the one-time profile migration if needed before any
     // legacy upgrade generation.
@@ -140,7 +140,7 @@ export class UpdateCommand {
     }
     const declinedMigrations = await this.offerConsentedLegacyMigrations(resolvedProjectPath);
 
-    // Use detected tool directories to preserve existing opsx skills/commands.
+    // Use detected tool directories to preserve existing outline-spec skills/commands.
     const detectedTools = getAvailableTools(resolvedProjectPath);
     migrateIfNeededShared(resolvedProjectPath, detectedTools);
 
@@ -163,26 +163,26 @@ export class UpdateCommand {
         for (const migration of declinedMigrations) {
           console.log(
             chalk.yellow(
-              `Nothing to update: this project's OpenSpec files are still in ${migration.from}/, ` +
-                `which OpenSpec no longer writes.`
+              `Nothing to update: this project's outline-spec files are still in ${migration.from}/, ` +
+                `which outline-spec no longer writes.`
             )
           );
           console.log(
-            chalk.dim(`Re-run "openspec update" and accept the move to ${migration.to}/ to resume updates.`)
+            chalk.dim(`Re-run "outline-spec update" and accept the move to ${migration.to}/ to resume updates.`)
           );
         }
         return;
       }
       await this.syncCopilotCloudFiles(resolvedProjectPath, configuredTools);
       console.log(chalk.yellow('No configured tools found.'));
-      console.log(chalk.dim('Run "openspec init" to set up tools.'));
+      console.log(chalk.dim('Run "outline-spec init" to set up tools.'));
       return;
     }
 
     // 6. Check version status for all configured tools, against the same workflow set
     //    the generation loop below writes.
     const toolStatuses = configuredTools.map((toolId) =>
-      getToolVersionStatus(resolvedProjectPath, toolId, OPENSPEC_VERSION, {
+      getToolVersionStatus(resolvedProjectPath, toolId, OUTLINE_SPEC_VERSION, {
         workflows: desiredWorkflows,
       })
     );
@@ -291,7 +291,7 @@ export class UpdateCommand {
               resolveCommandSurfaceCapability(tool.value),
               resolveCommandInvocation(tool.value)
             );
-            const skillContent = generateSkillContent(template, OPENSPEC_VERSION, transformer);
+            const skillContent = generateSkillContent(template, OUTLINE_SPEC_VERSION, transformer);
             FileSystemUtils.assertPathWithin(skillsRoot, skillFile);
             await FileSystemUtils.writeFile(skillFile, skillContent);
           }
@@ -314,7 +314,7 @@ export class UpdateCommand {
           // Persist the selected owner even when commands-only delivery leaves
           // this target with no generated skills.
           writeSharedSkillTarget(resolvedProjectPath, tool.value);
-          // A tool with no command adapter now has zero OpenSpec artifacts;
+          // A tool with no command adapter now has zero outline-spec artifacts;
           // say so like init does, rather than deleting its skills silently
           // and letting tool detection re-suggest an init that would also
           // generate nothing under this delivery setting.
@@ -377,7 +377,7 @@ export class UpdateCommand {
     // 11. Summary
     console.log();
     if (updatedTools.length > 0) {
-      console.log(chalk.green(`✓ Updated: ${updatedTools.join(', ')} (v${OPENSPEC_VERSION})`));
+      console.log(chalk.green(`✓ Updated: ${updatedTools.join(', ')} (v${OUTLINE_SPEC_VERSION})`));
     }
     if (failedTools.length > 0) {
       console.log(chalk.red(`✗ Failed: ${failedTools.map(f => `${f.name} (${f.error})`).join(', ')}`));
@@ -397,7 +397,7 @@ export class UpdateCommand {
         chalk.yellow(
           `No skills or commands remain for ${names}: delivery is set to 'commands' but ` +
             `${zeroArtifactTools.length === 1 ? 'it supports' : 'they support'} only skills. ` +
-            `Run 'openspec config set delivery both' to generate skills.`
+            `Run 'outline-spec config set delivery both' to generate skills.`
         )
       );
     }
@@ -437,7 +437,7 @@ export class UpdateCommand {
       if (includesGitHubCopilot(configuredTools)) {
         // Cloud files are opt-in (see cloud-agent.ts). `update` never prompts,
         // so it only refreshes files the user has already opted into (via
-        // `openspec init` or a `githubCopilot.cloudAgent: true` config), or that
+        // `outline-spec init` or a `githubCopilot.cloudAgent: true` config), or that
         // a pre-opt-in project already has. Opting in is a deliberate init/config
         // step, never a silent side effect of running update.
         if (await isCopilotCloudEnabled(projectPath)) {
@@ -446,8 +446,8 @@ export class UpdateCommand {
           if (collisions.length > 0) {
             console.log(
               chalk.dim(
-                `Left your existing ${collisions.join(' and ')} untouched — add the OpenSpec ` +
-                  `install step by hand so the Copilot cloud agent can run openspec.`
+                `Left your existing ${collisions.join(' and ')} untouched — add the outline-spec ` +
+                  `install step by hand so the Copilot cloud agent can run outline-spec.`
               )
             );
           }
@@ -468,7 +468,7 @@ export class UpdateCommand {
         } else if (isInteractive()) {
           console.log(
             chalk.dim(
-              "GitHub Copilot cloud coding-agent files are available (opt-in). Enable with 'openspec init --copilot-cloud'."
+              "GitHub Copilot cloud coding-agent files are available (opt-in). Enable with 'outline-spec init --copilot-cloud'."
             )
           );
         }
@@ -523,7 +523,7 @@ export class UpdateCommand {
         if (!fs.existsSync(skillFile)) return false;
         try {
           const existing = fs.readFileSync(skillFile, 'utf-8');
-          const generated = generateSkillContent(template, OPENSPEC_VERSION, transformer);
+          const generated = generateSkillContent(template, OUTLINE_SPEC_VERSION, transformer);
           return normalizeGeneratedFile(existing) !== normalizeGeneratedFile(generated);
         } catch {
           return true;
@@ -537,7 +537,7 @@ export class UpdateCommand {
    */
   private displayUpToDateMessage(toolStatuses: ToolVersionStatus[]): void {
     const toolNames = toolStatuses.map((s) => s.toolId);
-    console.log(chalk.green(`✓ All ${toolStatuses.length} tool(s) up to date (v${OPENSPEC_VERSION})`));
+    console.log(chalk.green(`✓ All ${toolStatuses.length} tool(s) up to date (v${OUTLINE_SPEC_VERSION})`));
     console.log(chalk.dim(`  Tools: ${toolNames.join(', ')}`));
     console.log();
     console.log(chalk.dim('Use --force to refresh files anyway.'));
@@ -556,7 +556,7 @@ export class UpdateCommand {
       const status = statusByTool.get(toolId);
       if (status?.needsUpdate) {
         const fromVersion = status.generatedByVersion ?? 'unknown';
-        return `${status.toolId} (${fromVersion} → ${OPENSPEC_VERSION})`;
+        return `${status.toolId} (${fromVersion} → ${OUTLINE_SPEC_VERSION})`;
       }
       // Say why: a user who edited a SKILL.md on purpose is owed the reason
       // their edit is about to be overwritten.
@@ -604,7 +604,7 @@ export class UpdateCommand {
       console.log();
       console.log(
         chalk.yellow(
-          `Detected new ${toolNoun}: ${newToolNames.join(', ')}. Run 'openspec init' to add ${pronoun}.`
+          `Detected new ${toolNoun}: ${newToolNames.join(', ')}. Run 'outline-spec init' to add ${pronoun}.`
         )
       );
     }
@@ -612,7 +612,7 @@ export class UpdateCommand {
 
   /**
    * Prints the profile notes, in order, with one pointer at
-   * `openspec config profile` rather than three.
+   * `outline-spec config profile` rather than three.
    *
    * Every note is evaluated: reading them as one short-circuited `||` chain
    * would swallow whichever ran second.
@@ -651,7 +651,7 @@ export class UpdateCommand {
     const extraWorkflows = installedWorkflows.filter((w) => !profileSet.has(w));
 
     if (extraWorkflows.length > 0) {
-      console.log(chalk.dim(`Note: ${extraWorkflows.length} extra workflows not in profile (use \`openspec config profile\` to manage)`));
+      console.log(chalk.dim(`Note: ${extraWorkflows.length} extra workflows not in profile (use \`outline-spec config profile\` to manage)`));
       return true;
     }
     return false;
@@ -677,14 +677,14 @@ export class UpdateCommand {
     const label = missing.length === 1 ? 'workflow' : 'workflows';
     const pronoun = missing.length === 1 ? 'it' : 'them';
     console.log(chalk.dim(`Note: Your custom profile is missing ${missing.length} core ${label}: ${missing.join(', ')}`));
-    console.log(chalk.dim(`Run \`openspec config profile\` to add ${pronoun}, or \`openspec config profile core\` to use the core set.`));
+    console.log(chalk.dim(`Run \`outline-spec config profile\` to add ${pronoun}, or \`outline-spec config profile core\` to use the core set.`));
     return true;
   }
 
   /**
    * Fallback pointer to the workflows the profile leaves out.
    *
-   * `update` already points at `openspec config profile` when files drift from
+   * `update` already points at `outline-spec config profile` when files drift from
    * the profile, and when a custom profile is missing core workflows. Neither
    * fires for the default `core` profile, so the user `update` is most likely
    * to be helping — the one who ran it because a command they read about never
@@ -843,7 +843,7 @@ export class UpdateCommand {
   }
 
   /**
-   * Offers to move OpenSpec content out of a renamed tool's former directory
+   * Offers to move outline-spec content out of a renamed tool's former directory
    * when the old location might still be the live one — today, Windsurf's
    * `.windsurf/` after the Devin Desktop rebrand.
    *
@@ -890,12 +890,12 @@ export class UpdateCommand {
           shouldMigrate = false;
         }
         if (!shouldMigrate) {
-          // Say what declining costs. OpenSpec writes the current root now, so
-          // the files keep working where they are, but OpenSpec stops managing
+          // Say what declining costs. outline-spec writes the current root now, so
+          // the files keep working where they are, but outline-spec stops managing
           // them — it no longer looks in the former directory.
           console.log(
             chalk.dim(
-              `Left in place. OpenSpec writes ${migration.to}/ now and will not manage ` +
+              `Left in place. outline-spec writes ${migration.to}/ now and will not manage ` +
                 `${migration.from}/, so those files stay as they are until you move them. ` +
                 `You will be asked again next run.`
             )

@@ -15,10 +15,10 @@ describe('generateApplyInstructions task list', () => {
   let changeDir: string;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-apply-tasks-'));
-    changeDir = path.join(tempDir, 'openspec', 'changes', 'my-change');
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-apply-tasks-'));
+    changeDir = path.join(tempDir, 'outline-spec', 'changes', 'my-change');
     fs.mkdirSync(changeDir, { recursive: true });
-    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: outline\n');
+    fs.writeFileSync(path.join(changeDir, '.outline-spec.yaml'), 'schema: outline\n');
     fs.writeFileSync(path.join(changeDir, 'outline.md'), '## Proposal\nx\n\n## Requirements\n1. demo: A demo.\n  a. Demo: It demos.\n');
   });
 
@@ -32,7 +32,7 @@ describe('generateApplyInstructions task list', () => {
   }
 
   function writeGlobTasksSchema(): void {
-    const schemaDir = path.join(tempDir, 'openspec', 'schemas', 'glob-tasks');
+    const schemaDir = path.join(tempDir, 'outline-spec', 'schemas', 'glob-tasks');
     fs.mkdirSync(schemaDir, { recursive: true });
     fs.writeFileSync(
       path.join(schemaDir, 'schema.yaml'),
@@ -49,11 +49,11 @@ apply:
   tracks: "**/tasks.md"
 `
     );
-    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: glob-tasks\n');
+    fs.writeFileSync(path.join(changeDir, '.outline-spec.yaml'), 'schema: glob-tasks\n');
   }
 
   it.each([true, false])('resolves custom tracking configuration (enabled: %s)', async (tracked) => {
-    const schemaDir = path.join(tempDir, 'openspec', 'schemas', 'custom');
+    const schemaDir = path.join(tempDir, 'outline-spec', 'schemas', 'custom');
     fs.mkdirSync(schemaDir, { recursive: true });
     fs.writeFileSync(
       path.join(schemaDir, 'schema.yaml'),
@@ -69,7 +69,7 @@ apply:
   requires: [implementation]
 ${tracked ? '  tracks: checklist.md\n' : ''}`
     );
-    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: custom\n');
+    fs.writeFileSync(path.join(changeDir, '.outline-spec.yaml'), 'schema: custom\n');
     const checklist = path.join(changeDir, 'checklist.md');
     fs.writeFileSync(checklist, '- [x] Finished task\n- [ ] Pending task\n');
 
@@ -121,7 +121,7 @@ ${tracked ? '  tracks: checklist.md\n' : ''}`
 
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
     const listProgress = await getTaskProgressForChange(
-      path.join(tempDir, 'openspec', 'changes'),
+      path.join(tempDir, 'outline-spec', 'changes'),
       'my-change',
       tempDir
     );
@@ -244,7 +244,7 @@ ${tracked ? '  tracks: checklist.md\n' : ''}`
     expect(instructions.progress).toEqual({ total: 3, complete: 1, remaining: 2 });
   });
 
-  it('reports the totals openspec list reports for the same change', async () => {
+  it('reports the totals outline-spec list reports for the same change', async () => {
     writeTasks(
       ['## 1. Implementation', '- [x] 1.1 Parent task', '  - [ ] 1.1.1 Unfinished sub-task', ''].join(
         '\n'
@@ -252,10 +252,10 @@ ${tracked ? '  tracks: checklist.md\n' : ''}`
     );
 
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
-    // `openspec list` reads progress through getTaskProgressForChange, not the
+    // `outline-spec list` reads progress through getTaskProgressForChange, not the
     // apply parser. The two must not disagree about the same file.
     const listProgress = await getTaskProgressForChange(
-      path.join(tempDir, 'openspec', 'changes'),
+      path.join(tempDir, 'outline-spec', 'changes'),
       'my-change',
       tempDir
     );
@@ -279,14 +279,14 @@ ${tracked ? '  tracks: checklist.md\n' : ''}`
   });
 
   it('counts a text-less checkbox toward progress even though it lists none', async () => {
-    // Progress must not disagree with `openspec list` or archive's gate just
+    // Progress must not disagree with `outline-spec list` or archive's gate just
     // because a line carries no text an agent could act on: hiding the row is
     // presentation, dropping it from the count would understate the work left.
     writeTasks('## 1. Implementation\n- [x] 1.1 Real task\n- [ ]   \n');
 
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
     const listProgress = await getTaskProgressForChange(
-      path.join(tempDir, 'openspec', 'changes'),
+      path.join(tempDir, 'outline-spec', 'changes'),
       'my-change',
       tempDir
     );
@@ -308,7 +308,7 @@ ${tracked ? '  tracks: checklist.md\n' : ''}`
 
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
     const listProgress = await getTaskProgressForChange(
-      path.join(tempDir, 'openspec', 'changes'),
+      path.join(tempDir, 'outline-spec', 'changes'),
       'my-change',
       tempDir
     );

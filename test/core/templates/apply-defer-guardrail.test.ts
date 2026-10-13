@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   getApplyInstructions,
   getApplyChangeSkillTemplate,
-  getOpsxApplyCommandTemplate,
+  getOutlineSpecApplyCommandTemplate,
 } from '../../../src/core/templates/workflows/apply-change.js';
 
 // #1529: agents were silently simplifying or deferring work mid-apply and
@@ -31,7 +31,7 @@ describe('apply instructions surface deferred scope (#1529)', () => {
   it('describes the outline model and lands rather than archives', () => {
     expect(instructions).toContain('outline.md');
     expect(instructions).toContain('Never edit live specs');
-    for (const stale of ['delta', 'Scenario', 'SHALL', '/opsx:sync', 'spec-driven', '/opsx:archive']) {
+    for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven', '/outline-spec:archive']) {
       expect(instructions).not.toContain(stale);
     }
   });
@@ -39,6 +39,6 @@ describe('apply instructions surface deferred scope (#1529)', () => {
   it('carries the same guidance on both the skill and command surfaces', () => {
     const needle = 'surface the added scope';
     expect(getApplyChangeSkillTemplate().instructions).toContain(needle);
-    expect(getOpsxApplyCommandTemplate().content).toContain(needle);
+    expect(getOutlineSpecApplyCommandTemplate().content).toContain(needle);
   });
 });

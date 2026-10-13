@@ -10,20 +10,20 @@ import { escapeYamlValue } from '../yaml.js';
 
 /**
  * iFlow adapter for command generation.
- * File path: .iflow/commands/opsx-<id>.md
+ * File path: .iflow/commands/outline-spec-<id>.md
  * Frontmatter: name, id, category, description
  */
 export const iflowAdapter: ToolCommandAdapter = {
   toolId: 'iflow',
 
   getFilePath(commandId: string): string {
-    return path.join('.iflow', 'commands', `opsx-${commandId}.md`);
+    return path.join('.iflow', 'commands', `outline-spec-${commandId}.md`);
   },
 
   formatFile(content: CommandContent): string {
     return `---
-name: ${escapeYamlValue(`/opsx-${content.id}`)}
-id: ${escapeYamlValue(`opsx-${content.id}`)}
+name: ${escapeYamlValue(`/outline-spec-${content.id}`)}
+id: ${escapeYamlValue(`outline-spec-${content.id}`)}
 category: ${escapeYamlValue(content.category)}
 description: ${escapeYamlValue(content.description)}
 ---

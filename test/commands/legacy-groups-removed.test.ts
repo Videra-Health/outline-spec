@@ -5,7 +5,7 @@ import * as path from 'node:path';
 
 import { getGlobalDataDir, registerStore } from '../../src/core/index.js';
 import { runCLI } from '../helpers/run-cli.js';
-import { createHealthyOpenSpecRoot } from '../helpers/store-git.js';
+import { createHealthyOutlineSpecRoot } from '../helpers/store-git.js';
 import { cleanupTempPath } from '../helpers/temp-cleanup.js';
 
 const SURVIVING_COMMANDS_TIMEOUT_MS = 30_000;
@@ -16,7 +16,7 @@ describe('legacy command groups are removed', () => {
   let env: NodeJS.ProcessEnv;
 
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'openspec-legacy-removed-'));
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'outline-spec-legacy-removed-'));
     env = {
       XDG_DATA_HOME: path.join(tempDir, 'data'),
       XDG_CONFIG_HOME: path.join(tempDir, 'config'),
@@ -55,7 +55,7 @@ describe('legacy command groups are removed', () => {
   // on-disk state still behaves, independent of serializer drift (the
   // writer itself dies in 4.1).
   function writeWorkspaceViewFixture(dir: string): void {
-    const metadataDir = path.join(dir, '.openspec-workspace');
+    const metadataDir = path.join(dir, '.outline-spec-workspace');
     fs.mkdirSync(metadataDir, { recursive: true });
     fs.writeFileSync(
       path.join(metadataDir, 'view.yaml'),
@@ -86,14 +86,14 @@ describe('legacy command groups are removed', () => {
     const result = await runCLI(['update'], { cwd: tempDir, env });
 
     expect(result.exitCode).toBe(1);
-    expect(result.stderr).toContain('No OpenSpec directory found');
+    expect(result.stderr).toContain('No outline-spec directory found');
     expect(result.stderr).not.toContain('workspace');
   });
 
   it('keeps initiative data and view state byte-identical across surviving commands', async () => {
     // A store carrying initiative data created by the deleted commands.
     const storeRoot = path.join(tempDir, 'team-context');
-    createHealthyOpenSpecRoot(storeRoot);
+    createHealthyOutlineSpecRoot(storeRoot);
     const initiativeDir = path.join(storeRoot, 'initiatives', 'billing-launch');
     fs.mkdirSync(initiativeDir, { recursive: true });
     fs.writeFileSync(
@@ -104,7 +104,7 @@ describe('legacy command groups are removed', () => {
 
     // An unrelated store, so `store remove` runs without touching the first.
     const otherRoot = path.join(tempDir, 'other-context');
-    createHealthyOpenSpecRoot(otherRoot);
+    createHealthyOutlineSpecRoot(otherRoot);
     await registerStore({ id: 'other-context', localPath: otherRoot, globalDataDir });
 
     // Leftover workspace view state in a project dir.
@@ -113,7 +113,7 @@ describe('legacy command groups are removed', () => {
     writeWorkspaceViewFixture(projectDir);
 
     const initiativeBefore = snapshotDirectory(path.join(storeRoot, 'initiatives'));
-    const viewBefore = snapshotDirectory(path.join(projectDir, '.openspec-workspace'));
+    const viewBefore = snapshotDirectory(path.join(projectDir, '.outline-spec-workspace'));
 
     expect((await runCLI(['store', 'list', '--json'], { cwd: projectDir, env })).exitCode).toBe(0);
     expect((await runCLI(['store', 'doctor', '--json'], { cwd: projectDir, env })).exitCode).toBe(0);
@@ -140,16 +140,16 @@ describe('legacy command groups are removed', () => {
     ).toBe(0);
 
     expect(snapshotDirectory(path.join(storeRoot, 'initiatives'))).toEqual(initiativeBefore);
-    expect(snapshotDirectory(path.join(projectDir, '.openspec-workspace'))).toEqual(viewBefore);
+    expect(snapshotDirectory(path.join(projectDir, '.outline-spec-workspace'))).toEqual(viewBefore);
   }, SURVIVING_COMMANDS_TIMEOUT_MS);
 
   it('tolerates legacy initiative metadata without re-emitting it', async () => {
     const projectDir = path.join(tempDir, 'legacy-project');
-    createHealthyOpenSpecRoot(projectDir);
-    const changeDir = path.join(projectDir, 'openspec', 'changes', 'legacy-change');
+    createHealthyOutlineSpecRoot(projectDir);
+    const changeDir = path.join(projectDir, 'outline-spec', 'changes', 'legacy-change');
     fs.mkdirSync(changeDir, { recursive: true });
     fs.writeFileSync(
-      path.join(changeDir, '.openspec.yaml'),
+      path.join(changeDir, '.outline-spec.yaml'),
       ['schema: outline', 'initiative:', '  store: team-context', '  id: billing-launch'].join(
         '\n'
       ) + '\n'
@@ -168,11 +168,11 @@ describe('legacy command groups are removed', () => {
     // workspace-planning mode has been CLI-unreachable since slice 1.2's
     // resolver demotion; this pins that the deletion changed nothing.
     const projectDir = path.join(tempDir, 'view-project');
-    createHealthyOpenSpecRoot(projectDir);
+    createHealthyOutlineSpecRoot(projectDir);
     writeWorkspaceViewFixture(projectDir);
-    const changeDir = path.join(projectDir, 'openspec', 'changes', 'mode-check');
+    const changeDir = path.join(projectDir, 'outline-spec', 'changes', 'mode-check');
     fs.mkdirSync(changeDir, { recursive: true });
-    fs.writeFileSync(path.join(changeDir, '.openspec.yaml'), 'schema: outline\n');
+    fs.writeFileSync(path.join(changeDir, '.outline-spec.yaml'), 'schema: outline\n');
 
     const result = await runCLI(['status', '--change', 'mode-check', '--json'], {
       cwd: projectDir,

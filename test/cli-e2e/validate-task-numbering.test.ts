@@ -4,7 +4,7 @@ import path from 'path';
 import { tmpdir } from 'os';
 import { runCLI } from '../helpers/run-cli.js';
 
-describe('openspec validate checks task numbering (#1520)', () => {
+describe('outline-spec validate checks task numbering (#1520)', () => {
   let projectDir: string;
 
   const write = async (relative: string, content: string) => {
@@ -46,14 +46,14 @@ describe('openspec validate checks task numbering (#1520)', () => {
   ].join('\n');
 
   beforeAll(async () => {
-    projectDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-task-numbering-e2e-'));
+    projectDir = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-task-numbering-e2e-'));
 
     await write(
-      'openspec/changes/bad-numbering/outline.md',
+      'outline-spec/changes/bad-numbering/outline.md',
       validOutline
     );
     await write(
-      'openspec/changes/bad-numbering/tasks.md',
+      'outline-spec/changes/bad-numbering/tasks.md',
       [
         '## 10. First release',
         '',
@@ -71,11 +71,11 @@ describe('openspec validate checks task numbering (#1520)', () => {
     );
 
     await write(
-      'openspec/changes/valid-numbering/outline.md',
+      'outline-spec/changes/valid-numbering/outline.md',
       validOutline
     );
     await write(
-      'openspec/changes/valid-numbering/tasks.md',
+      'outline-spec/changes/valid-numbering/tasks.md',
       [
         '# Tasks',
         '- [ ] an unnumbered task before any numbered group',
@@ -91,21 +91,21 @@ describe('openspec validate checks task numbering (#1520)', () => {
       ].join('\n')
     );
 
-    await write('openspec/schemas/glob-tasks/schema.yaml', globTasksSchema);
+    await write('outline-spec/schemas/glob-tasks/schema.yaml', globTasksSchema);
     await write(
-      'openspec/changes/nested-numbering/.openspec.yaml',
+      'outline-spec/changes/nested-numbering/.outline-spec.yaml',
       'schema: glob-tasks\n'
     );
     await write(
-      'openspec/changes/nested-numbering/outline.md',
+      'outline-spec/changes/nested-numbering/outline.md',
       validOutline
     );
     await write(
-      'openspec/changes/nested-numbering/backend/tasks.md',
+      'outline-spec/changes/nested-numbering/backend/tasks.md',
       '## 2. Backend\n- [ ] 3.1 wrong group\n'
     );
     await write(
-      'openspec/changes/nested-numbering/frontend/tasks.md',
+      'outline-spec/changes/nested-numbering/frontend/tasks.md',
       '## 4. Frontend\n- [ ] 4.1 correct group\n'
     );
   });

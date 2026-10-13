@@ -38,7 +38,7 @@ export interface LegacyToolRoot {
 }
 
 /**
- * Former tool roots whose OpenSpec-managed content belongs under the tool's
+ * Former tool roots whose outline-spec-managed content belongs under the tool's
  * current skillsDir. User files are never touched.
  */
 export const LEGACY_TOOL_ROOTS: Record<string, LegacyToolRoot[]> = {
@@ -72,7 +72,7 @@ export interface LegacyToolMigration {
   /** Command files that moved, or would move */
   commandFiles: number;
   /**
-   * OpenSpec-managed files left under the legacy root because the copy there
+   * outline-spec-managed files left under the legacy root because the copy there
    * differs materially from the one that survives, so it is reported rather
    * than dropped.
    */
@@ -82,7 +82,7 @@ export interface LegacyToolMigration {
 }
 
 /**
- * Classifies one OpenSpec-managed file. `move` is the fast path (nothing at
+ * Classifies one outline-spec-managed file. `move` is the fast path (nothing at
  * the destination yet); `drop` means the destination already holds equivalent
  * generated content, so the legacy copy is redundant; `keep` means the two
  * differ materially and the legacy copy is not ours to discard.
@@ -109,7 +109,7 @@ function classifyManagedFile(source: string, destination: string): FileDispositi
 
 /**
  * Rewrites a generated command path from the tool's current root to a legacy
- * one, so `.devin/workflows/opsx-apply.md` locates its `.windsurf/` twin
+ * one, so `.devin/workflows/outline-spec-apply.md` locates its `.windsurf/` twin
  * without the migration hard-coding either layout.
  *
  * Returns undefined for adapters whose paths are absolute (global-scoped
@@ -129,7 +129,7 @@ function legacyCommandPath(
 }
 
 /**
- * Reports the OpenSpec content sitting under each tool's legacy root, without
+ * Reports the outline-spec content sitting under each tool's legacy root, without
  * moving anything. Callers use this to ask before a move that needs consent.
  */
 export function findLegacyToolMigrations(
@@ -140,8 +140,8 @@ export function findLegacyToolMigrations(
 }
 
 /**
- * Moves OpenSpec-managed skill directories (openspec-*) and command files
- * (opsx-*) from a tool's legacy root to its current one. When the destination
+ * Moves outline-spec-managed skill directories (outline-spec-*) and command files
+ * (outline-spec-*) from a tool's legacy root to its current one. When the destination
  * already exists the legacy copy is removed instead. Legacy directories are
  * deleted only when left empty, so user files under the old location — a
  * hand-written Cascade workflow next to the generated ones — are preserved.
@@ -275,7 +275,7 @@ function migrateSkillDirs(
     try {
       // Move the generated file, never the directory around it. A skill
       // directory can also hold files the user wrote, and this destination is
-      // one OpenSpec deletes on its own — commands-only delivery and a
+      // one outline-spec deletes on its own — commands-only delivery and a
       // deselected workflow both remove the whole skill directory. Carrying a
       // user's file across would be handing it to that later removal.
       if (disposition === 'drop') {
@@ -320,7 +320,7 @@ function migrateCommandFiles(
       currentPath.split(/[\\/]/).join(path.sep)
     );
     // An after-generation move runs once the tool has written its replacement.
-    // No replacement means this command is not one OpenSpec installs now — a
+    // No replacement means this command is not one outline-spec installs now — a
     // skills-only delivery or a deselected workflow — so relocating the legacy
     // file would resurrect it under the current root.
     if (requireDestination && !fs.existsSync(destination)) continue;
@@ -372,14 +372,14 @@ export function describeLegacyMigration(migration: LegacyToolMigration): string 
 }
 
 /**
- * Names OpenSpec-managed files the move deliberately left behind, so a user
+ * Names outline-spec-managed files the move deliberately left behind, so a user
  * who customized one knows there are now two copies to reconcile.
  */
 export function keptInPlaceNotice(migration: LegacyToolMigration): string | undefined {
   if (migration.keptInPlace === 0) return undefined;
   const n = migration.keptInPlace;
   // Deliberately does not claim the difference came from an edit: an older
-  // OpenSpec version's output differs too. Either way nothing was overwritten,
+  // outline-spec version's output differs too. Either way nothing was overwritten,
   // and the user is the one who decides which copy to keep.
   return (
     `Left ${n} file${n === 1 ? '' : 's'} in ${migration.from}/ that ` +
@@ -605,8 +605,8 @@ export function migrateIfNeeded(projectPath: string, tools: AIToolOption[]): voi
   console.log(`Migrated: custom profile with ${installedWorkflows.length} workflows`);
   // Each detected tool resolves to a propose reference for its surface: the
   // command name its generated files answer to when commands will exist for it
-  // under the effective delivery (/opsx:propose when namespaced under opsx/,
-  // /opsx-propose when the filename is the command), its documented skill
+  // under the effective delivery (/outline-spec:propose when namespaced under outline-spec/,
+  // /outline-spec-propose when the filename is the command), its documented skill
   // invocation otherwise. When the tools disagree — including command tools
   // mixed with skill-only tools — stay syntax-neutral rather than advertise a
   // form that is wrong for one of them.
@@ -620,12 +620,12 @@ export function migrateIfNeeded(projectPath: string, tools: AIToolOption[]): voi
           resolveCommandSurfaceCapability(tool.value),
           resolveCommandInvocation(tool.value)
         );
-        return transformer ? transformer('/opsx:propose') : '/opsx:propose';
+        return transformer ? transformer('/outline-spec:propose') : '/outline-spec:propose';
       }
-      return getSkillReferenceTransformer(tool.value)('/opsx:propose');
+      return getSkillReferenceTransformer(tool.value)('/outline-spec:propose');
     })
   );
   const proposeReference =
-    proposeReferences.size === 1 ? [...proposeReferences][0] : 'the openspec-propose skill';
-  console.log(`New in this version: ${proposeReference}. Try 'openspec config profile core' for the streamlined experience.`);
+    proposeReferences.size === 1 ? [...proposeReferences][0] : 'the outline-spec-propose skill';
+  console.log(`New in this version: ${proposeReference}. Try 'outline-spec config profile core' for the streamlined experience.`);
 }

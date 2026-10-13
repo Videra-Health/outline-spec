@@ -8,7 +8,7 @@ import { ZshInstaller } from '../../../../src/core/completions/installers/zsh-in
  * Installing and then uninstalling zsh completions must hand the user's .zshrc
  * back byte for byte, as bash does since #1872. Uninstall used to strip every
  * blank line at the top of the file, so a .zshrc that started with blank lines
- * lost them, even when the OpenSpec block was not at the top.
+ * lost them, even when the outline-spec block was not at the top.
  */
 describe('ZshInstaller .zshrc round trip', () => {
   let homeDir: string;
@@ -18,7 +18,7 @@ describe('ZshInstaller .zshrc round trip', () => {
   let savedZsh: string | undefined;
 
   beforeEach(async () => {
-    homeDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-zshrc-round-trip-'));
+    homeDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-zshrc-round-trip-'));
     zshrcPath = path.join(homeDir, '.zshrc');
     completionsDir = path.join(homeDir, '.zsh', 'completions');
     installer = new ZshInstaller(homeDir);
@@ -33,11 +33,11 @@ describe('ZshInstaller .zshrc round trip', () => {
     await fs.rm(homeDir, { recursive: true, force: true });
   });
 
-  /** Writes `original`, adds the OpenSpec block, removes it, and returns the file. */
+  /** Writes `original`, adds the outline-spec block, removes it, and returns the file. */
   async function roundTrip(original: string): Promise<string> {
     await fs.writeFile(zshrcPath, original);
     expect(await installer.configureZshrc(completionsDir)).toBe(true);
-    expect(await fs.readFile(zshrcPath, 'utf-8')).toContain('# OPENSPEC:START');
+    expect(await fs.readFile(zshrcPath, 'utf-8')).toContain('# OUTLINE_SPEC:START');
     expect(await installer.removeZshrcConfig()).toBe(true);
     return fs.readFile(zshrcPath, 'utf-8');
   }
@@ -56,7 +56,7 @@ describe('ZshInstaller .zshrc round trip', () => {
   it('keeps leading blank lines when the user moved the block further down', async () => {
     await fs.writeFile(
       zshrcPath,
-      ['', 'export PATH="$HOME/bin:$PATH"', '# OPENSPEC:START', '# OpenSpec shell completions configuration', '# OPENSPEC:END', 'alias ll="ls -la"', ''].join('\n')
+      ['', 'export PATH="$HOME/bin:$PATH"', '# OUTLINE_SPEC:START', '# outline-spec shell completions configuration', '# OUTLINE_SPEC:END', 'alias ll="ls -la"', ''].join('\n')
     );
 
     expect(await installer.removeZshrcConfig()).toBe(true);
@@ -67,7 +67,7 @@ describe('ZshInstaller .zshrc round trip', () => {
     // The user deleted the separator line, so nothing blank follows the block.
     await fs.writeFile(
       zshrcPath,
-      '# OPENSPEC:START\n# OpenSpec shell completions configuration\n# OPENSPEC:END\nalias ll="ls -la"\n\nexport EDITOR=vim\n'
+      '# OUTLINE_SPEC:START\n# outline-spec shell completions configuration\n# OUTLINE_SPEC:END\nalias ll="ls -la"\n\nexport EDITOR=vim\n'
     );
 
     expect(await installer.removeZshrcConfig()).toBe(true);

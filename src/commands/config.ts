@@ -23,7 +23,7 @@ import {
   DEFAULT_CONFIG,
 } from '../core/config-schema.js';
 import { CORE_WORKFLOWS, ALL_WORKFLOWS, getProfileWorkflows } from '../core/profiles.js';
-import { OPENSPEC_DIR_NAME } from '../core/config.js';
+import { OUTLINE_SPEC_DIR_NAME } from '../core/config.js';
 import { asErrorMessage, isPromptCancellationError } from './shared-output.js';
 
 type EditorOutcome =
@@ -159,7 +159,7 @@ function refuseUnreadableConfig(): boolean {
     return false;
   }
   console.error(`Error: ${getGlobalConfigPath()} could not be parsed, so it was left unchanged.`);
-  console.error('Fix it with "openspec config edit", or reset it with "openspec config reset --all".');
+  console.error('Fix it with "outline-spec config edit", or reset it with "outline-spec config reset --all".');
   process.exitCode = 1;
   return true;
 }
@@ -223,7 +223,7 @@ export const WORKFLOW_PROMPT_META: Record<string, WorkflowPromptMeta> = {
   },
   onboard: {
     name: 'Onboard',
-    description: 'Guided onboarding flow for OpenSpec',
+    description: 'Guided onboarding flow for outline-spec',
   },
 };
 
@@ -324,8 +324,8 @@ async function maybeWarnProjectConfigDrift(
   state: ProfileState,
   colorize: (message: string) => string
 ): Promise<void> {
-  const openspecDir = path.join(projectDir, OPENSPEC_DIR_NAME);
-  if (!fs.existsSync(openspecDir)) {
+  const outlineSpecDir = path.join(projectDir, OUTLINE_SPEC_DIR_NAME);
+  if (!fs.existsSync(outlineSpecDir)) {
     return;
   }
   // Loaded here, not at the top: it pulls in every tool's command adapter,
@@ -334,11 +334,11 @@ async function maybeWarnProjectConfigDrift(
   if (!hasProjectConfigDrift(projectDir, state.workflows, state.delivery)) {
     return;
   }
-  console.log(colorize('Warning: Global config is not applied to this project. Run `openspec update` to sync.'));
+  console.log(colorize('Warning: Global config is not applied to this project. Run `outline-spec update` to sync.'));
 }
 
 function printConfigProfileApplyGuidance(): void {
-  console.log('Config updated. Run `openspec update` in your projects to apply.');
+  console.log('Config updated. Run `outline-spec update` in your projects to apply.');
 }
 
 export function configPathCommand(): void {
@@ -409,7 +409,7 @@ export function configSetCommand(key: string, value: string, options: { string?:
   if (!keyValidation.valid && (!allowUnknown || unsafeKey)) {
     const reason = keyValidation.reason ? ` ${keyValidation.reason}.` : '';
     console.error(`Error: Invalid configuration key "${key}".${reason}`);
-    console.error('Use "openspec config list" to see available keys.');
+    console.error('Use "outline-spec config list" to see available keys.');
     if (!allowUnknown && !unsafeKey) {
       console.error('Pass --allow-unknown to bypass this check.');
     }
@@ -464,7 +464,7 @@ export function configUnsetCommand(key: string): void {
 export async function configResetCommand(options: { all?: boolean; yes?: boolean }): Promise<void> {
   if (!options.all) {
     console.error('Error: --all flag is required for reset');
-    console.error('Usage: openspec config reset --all [-y]');
+    console.error('Usage: outline-spec config reset --all [-y]');
     process.exitCode = 1;
     return;
   }
@@ -550,7 +550,7 @@ export async function configProfileCommand(preset?: string): Promise<void> {
     return;
   }
 
-  // Preset shortcut: `openspec config profile core`
+  // Preset shortcut: `outline-spec config profile core`
   if (preset === 'core') {
     const config = getGlobalConfig();
     config.profile = 'core';
@@ -569,7 +569,7 @@ export async function configProfileCommand(preset?: string): Promise<void> {
 
   // Non-interactive check
   if (!process.stdout.isTTY) {
-    console.error('Interactive mode required. Use `openspec config profile core` or set config via environment/flags.');
+    console.error('Interactive mode required. Use `outline-spec config profile core` or set config via environment/flags.');
     process.exitCode = 1;
     return;
   }
@@ -718,10 +718,10 @@ export async function configProfileCommand(preset?: string): Promise<void> {
     }
     saveGlobalConfig(config);
 
-    // Check if inside an OpenSpec project
+    // Check if inside an outline-spec project
     const projectDir = process.cwd();
-    const openspecDir = path.join(projectDir, OPENSPEC_DIR_NAME);
-    if (fs.existsSync(openspecDir)) {
+    const outlineSpecDir = path.join(projectDir, OUTLINE_SPEC_DIR_NAME);
+    if (fs.existsSync(outlineSpecDir)) {
       const applyNow = await confirm({
         message: 'Apply changes to this project now?',
         default: true,
@@ -731,9 +731,9 @@ export async function configProfileCommand(preset?: string): Promise<void> {
         try {
           const { UpdateCommand } = await import('../core/update.js');
           await new UpdateCommand().execute(projectDir);
-          console.log('Run `openspec update` in your other projects to apply.');
+          console.log('Run `outline-spec update` in your other projects to apply.');
         } catch (error) {
-          console.error(`\`openspec update\` failed: ${asErrorMessage(error)}`);
+          console.error(`\`outline-spec update\` failed: ${asErrorMessage(error)}`);
           console.error('Please run it manually to apply the profile changes.');
           process.exitCode = 1;
         }

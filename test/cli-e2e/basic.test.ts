@@ -7,7 +7,7 @@ import { runCLI, cliProjectRoot } from '../helpers/run-cli.js';
 import { isolatedGitEnv } from '../helpers/store-git.js';
 import { AI_TOOLS } from '../../src/core/config.js';
 import { getGlobalDataDir, registerStore } from '../../src/core/index.js';
-import { createOpenSpecRoot } from '../helpers/openspec-fixtures.js';
+import { createOutlineSpecRoot } from '../helpers/outline-spec-fixtures.js';
 
 async function fileExists(filePath: string): Promise<boolean> {
   try {
@@ -21,7 +21,7 @@ async function fileExists(filePath: string): Promise<boolean> {
 const tempRoots: string[] = [];
 
 async function prepareFixture(fixtureName: string): Promise<string> {
-  const base = await fs.mkdtemp(path.join(tmpdir(), 'openspec-cli-e2e-'));
+  const base = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-cli-e2e-'));
   tempRoots.push(base);
   const projectDir = path.join(base, 'project');
   await fs.mkdir(projectDir, { recursive: true });
@@ -40,9 +40,9 @@ afterAll(async () => {
   await Promise.all(tempRoots.map((dir) => fs.rm(dir, { recursive: true, force: true })));
 });
 
-describe('openspec CLI e2e basics', () => {
+describe('outline-spec CLI e2e basics', () => {
   it('preserves initialized directories through a Git clone without listing anchors as work', async () => {
-    const base = await fs.mkdtemp(path.join(tmpdir(), 'openspec-init-clone-'));
+    const base = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-init-clone-'));
     tempRoots.push(base);
     const projectDir = path.join(base, 'project');
     const cloneDir = path.join(base, 'clone');
@@ -57,12 +57,12 @@ describe('openspec CLI e2e basics', () => {
 
     const gitOptions = { cwd: projectDir, env: { ...process.env, ...env }, stdio: 'pipe' as const };
     execFileSync('git', ['init'], gitOptions);
-    execFileSync('git', ['add', 'openspec'], gitOptions);
-    execFileSync('git', ['commit', '-m', 'Initialize OpenSpec'], gitOptions);
+    execFileSync('git', ['add', 'outline-spec'], gitOptions);
+    execFileSync('git', ['commit', '-m', 'Initialize outline-spec'], gitOptions);
     execFileSync('git', ['clone', '--no-local', projectDir, cloneDir], gitOptions);
 
-    expect(await fs.readdir(path.join(cloneDir, 'openspec', 'specs'))).toEqual(['.gitkeep']);
-    expect(await fs.readdir(path.join(cloneDir, 'openspec', 'changes'))).toEqual(['.gitkeep']);
+    expect(await fs.readdir(path.join(cloneDir, 'outline-spec', 'specs'))).toEqual(['.gitkeep']);
+    expect(await fs.readdir(path.join(cloneDir, 'outline-spec', 'changes'))).toEqual(['.gitkeep']);
     const changes = await runCLI(['list', '--json'], { cwd: cloneDir, env });
     expectJsonOnlyOutput(changes);
     expect(JSON.parse(changes.stdout).changes).toEqual([]);
@@ -75,7 +75,7 @@ describe('openspec CLI e2e basics', () => {
   it('shows help output', async () => {
     const result = await runCLI(['--help']);
     expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('Usage: openspec');
+    expect(result.stdout).toContain('Usage: outline-spec');
     expect(result.stderr).toBe('');
 
   });
@@ -104,7 +104,7 @@ describe('openspec CLI e2e basics', () => {
 
   describe('version command', () => {
     it('reports the local version', async () => {
-      const cwd = await fs.mkdtemp(path.join(tmpdir(), 'openspec-version-empty-'));
+      const cwd = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-version-empty-'));
       tempRoots.push(cwd);
       const pkgRaw = await fs.readFile(path.join(cliProjectRoot, 'package.json'), 'utf-8');
       const pkg = JSON.parse(pkgRaw);
@@ -112,7 +112,7 @@ describe('openspec CLI e2e basics', () => {
       const result = await runCLI(['version'], { cwd });
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toBe(`OpenSpec ${pkg.version}\n`);
+      expect(result.stdout).toBe(`outline-spec ${pkg.version}\n`);
       expect(result.stderr).toBe('');
     });
 
@@ -158,7 +158,7 @@ describe('openspec CLI e2e basics', () => {
 
   it('reports a malformed changes/ as an error instead of an empty JSON list', async () => {
     const projectDir = await prepareFixture('tmp-init');
-    const malformedPath = path.join(projectDir, 'openspec', 'changes');
+    const malformedPath = path.join(projectDir, 'outline-spec', 'changes');
     await fs.rm(malformedPath, { recursive: true, force: true });
     await fs.writeFile(malformedPath, 'not a directory\n');
 
@@ -180,7 +180,7 @@ describe('openspec CLI e2e basics', () => {
 
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toBe(output);
-      expect(result.stderr).toContain('Warning: "openspec change list" is deprecated. Use "openspec list".');
+      expect(result.stderr).toContain('Warning: "outline-spec change list" is deprecated. Use "outline-spec list".');
     });
 
     it('preserves JSON output and warns on stderr', async () => {
@@ -191,7 +191,7 @@ describe('openspec CLI e2e basics', () => {
       expect(JSON.parse(result.stdout)).toEqual([
         { id: 'c1', title: 'c1', specCount: 1, taskStatus: { total: 0, completed: 0 } },
       ]);
-      expect(result.stderr).toContain('Warning: "openspec change list" is deprecated. Use "openspec list".');
+      expect(result.stderr).toContain('Warning: "outline-spec change list" is deprecated. Use "outline-spec list".');
     });
 
     it('rejects the unsupported --all option', async () => {
@@ -210,7 +210,7 @@ describe('openspec CLI e2e basics', () => {
     { tasks: '- [x] Done\n', completedTasks: 1, totalTasks: 1, status: 'complete' },
   ])('lists custom-schema task status ($status) without inventing a schema field', async (expected) => {
     const projectDir = await prepareFixture('tmp-init');
-    const schemaDir = path.join(projectDir, 'openspec', 'schemas', 'custom-workflow');
+    const schemaDir = path.join(projectDir, 'outline-spec', 'schemas', 'custom-workflow');
     await fs.mkdir(schemaDir, { recursive: true });
     await fs.writeFile(path.join(schemaDir, 'schema.yaml'), [
       'name: custom-workflow',
@@ -227,9 +227,9 @@ describe('openspec CLI e2e basics', () => {
       '  tracks: work.md',
       '',
     ].join('\n'));
-    const changeDir = path.join(projectDir, 'openspec', 'changes', 'custom-change');
+    const changeDir = path.join(projectDir, 'outline-spec', 'changes', 'custom-change');
     await fs.mkdir(changeDir, { recursive: true });
-    await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: custom-workflow\n');
+    await fs.writeFile(path.join(changeDir, '.outline-spec.yaml'), 'schema: custom-workflow\n');
     await fs.writeFile(path.join(changeDir, 'work.md'), expected.tasks);
 
     const listResult = await runCLI(['list', '--json'], { cwd: projectDir });
@@ -307,12 +307,12 @@ describe('openspec CLI e2e basics', () => {
 
       expect(result.exitCode).toBe(0);
       const config = await fs.readFile(
-        path.join(emptyProjectDir, 'openspec', 'config.yaml'),
+        path.join(emptyProjectDir, 'outline-spec', 'config.yaml'),
         'utf-8',
       );
       expect(config).toContain('Language: French');
       expect(config).toContain('All artifacts must be written in French.');
-      expect(config).toContain('Keep OpenSpec structural headings (such as ## Requirements) in English.');
+      expect(config).toContain('Keep outline-spec structural headings (such as ## Requirements) in English.');
 
       const created = await runCLI(['new', 'change', 'language-check'], {
         cwd: emptyProjectDir,
@@ -340,14 +340,14 @@ describe('openspec CLI e2e basics', () => {
       });
       expect(result.timedOut).toBe(false);
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('OpenSpec Setup Complete');
+      expect(result.stdout).toContain('outline-spec Setup Complete');
 
       // Check that skills were created for multiple tools
-      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/openspec-explore/SKILL.md');
-      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/openspec-explore/SKILL.md');
+      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/outline-spec-explore/SKILL.md');
+      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/outline-spec-explore/SKILL.md');
       const minimaxSkillPath = path.join(
         testHome,
-        '.minimax/skills/openspec-explore/SKILL.md'
+        '.minimax/skills/outline-spec-explore/SKILL.md'
       );
       expect(await fileExists(claudeSkillPath)).toBe(true);
       expect(await fileExists(cursorSkillPath)).toBe(true);
@@ -361,12 +361,12 @@ describe('openspec CLI e2e basics', () => {
 
       const result = await runCLI(['init', '--tools', 'claude'], { cwd: emptyProjectDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('OpenSpec Setup Complete');
+      expect(result.stdout).toContain('outline-spec Setup Complete');
       expect(result.stdout).toContain('Claude Code');
 
       // New init creates skills, not CLAUDE.md
-      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/openspec-explore/SKILL.md');
-      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/openspec-explore/SKILL.md');
+      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/outline-spec-explore/SKILL.md');
+      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/outline-spec-explore/SKILL.md');
       expect(await fileExists(claudeSkillPath)).toBe(true);
       expect(await fileExists(cursorSkillPath)).toBe(false); // Not selected
     });
@@ -378,9 +378,9 @@ describe('openspec CLI e2e basics', () => {
 
       const result = await runCLI(['init', '--tools', 'agents'], { cwd: emptyProjectDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('OpenSpec Setup Complete');
+      expect(result.stdout).toContain('outline-spec Setup Complete');
 
-      const skillPath = path.join(emptyProjectDir, '.agents', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillPath = path.join(emptyProjectDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillPath)).toBe(true);
     });
 
@@ -391,26 +391,26 @@ describe('openspec CLI e2e basics', () => {
 
       const result = await runCLI(['init', '--tools', 'zed'], { cwd: emptyProjectDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('OpenSpec Setup Complete');
+      expect(result.stdout).toContain('outline-spec Setup Complete');
       expect(result.stdout).toContain('Zed Agent');
       expect(result.stdout).not.toContain('Restart your IDE');
 
-      const skillPath = path.join(emptyProjectDir, '.agents', 'skills', 'openspec-explore', 'SKILL.md');
+      const skillPath = path.join(emptyProjectDir, '.agents', 'skills', 'outline-spec-explore', 'SKILL.md');
       expect(await fileExists(skillPath)).toBe(true);
       expect(await fs.readFile(
-        path.join(emptyProjectDir, '.agents', 'skills', '.openspec-target'),
+        path.join(emptyProjectDir, '.agents', 'skills', '.outline-spec-target'),
         'utf-8'
       )).toBe('zed\n');
 
       const updateResult = await runCLI(['update'], { cwd: emptyProjectDir });
       expect(updateResult.exitCode).toBe(0);
       expect(await fs.readFile(
-        path.join(emptyProjectDir, '.agents', 'skills', '.openspec-target'),
+        path.join(emptyProjectDir, '.agents', 'skills', '.outline-spec-target'),
         'utf-8'
       )).toBe('zed\n');
       const updatedSkill = await fs.readFile(skillPath, 'utf-8');
-      expect(updatedSkill).toContain('/openspec-explore');
-      expect(updatedSkill).not.toContain('$openspec-explore');
+      expect(updatedSkill).toContain('/outline-spec-explore');
+      expect(updatedSkill).not.toContain('$outline-spec-explore');
     });
 
     it('initializes with --tools none option', async () => {
@@ -420,11 +420,11 @@ describe('openspec CLI e2e basics', () => {
 
       const result = await runCLI(['init', '--tools', 'none'], { cwd: emptyProjectDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('OpenSpec Setup Complete');
+      expect(result.stdout).toContain('outline-spec Setup Complete');
 
       // With --tools none, no tool skills should be created
-      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/openspec-explore/SKILL.md');
-      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/openspec-explore/SKILL.md');
+      const claudeSkillPath = path.join(emptyProjectDir, '.claude/skills/outline-spec-explore/SKILL.md');
+      const cursorSkillPath = path.join(emptyProjectDir, '.cursor/skills/outline-spec-explore/SKILL.md');
 
       expect(await fileExists(claudeSkillPath)).toBe(false);
       expect(await fileExists(cursorSkillPath)).toBe(false);
@@ -458,11 +458,11 @@ describe('openspec CLI e2e basics', () => {
     const OUTLINE = '## Proposal\nDocument greeting behavior.\n\n## Requirements\n1. greeting: How the system greets.\n  a. Greeting: The system greets the user.\n';
 
     async function prepareChange(options: { tasksComplete?: boolean } = {}): Promise<string> {
-      const base = await fs.mkdtemp(path.join(tmpdir(), 'openspec-archive-e2e-'));
+      const base = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-archive-e2e-'));
       tempRoots.push(base);
-      const changeDir = path.join(base, 'openspec', 'changes', 'add-greeting');
+      const changeDir = path.join(base, 'outline-spec', 'changes', 'add-greeting');
       await fs.mkdir(changeDir, { recursive: true });
-      await fs.mkdir(path.join(base, 'openspec', 'specs'), { recursive: true });
+      await fs.mkdir(path.join(base, 'outline-spec', 'specs'), { recursive: true });
       await fs.writeFile(path.join(changeDir, 'outline.md'), OUTLINE);
       await fs.writeFile(
         path.join(changeDir, 'tasks.md'),
@@ -480,11 +480,11 @@ describe('openspec CLI e2e basics', () => {
       expect(output).not.toContain('force closed the prompt');
       expect(output).toContain('1 incomplete task(s) found');
       expect(output).toContain('no answer could be read from stdin');
-      expect(output).toContain('openspec land add-greeting --yes');
+      expect(output).toContain('outline-spec land add-greeting --yes');
 
       // The change is untouched: nothing was landed.
-      expect(await fileExists(path.join(projectDir, 'openspec', 'changes', 'add-greeting', 'outline.md'))).toBe(true);
-      expect(await fileExists(path.join(projectDir, 'openspec', 'specs', 'greeting', 'spec.md'))).toBe(false);
+      expect(await fileExists(path.join(projectDir, 'outline-spec', 'changes', 'add-greeting', 'outline.md'))).toBe(true);
+      expect(await fileExists(path.join(projectDir, 'outline-spec', 'specs', 'greeting', 'spec.md'))).toBe(false);
     });
 
     it('lands without prompting when every task is done', async () => {
@@ -492,9 +492,9 @@ describe('openspec CLI e2e basics', () => {
       const result = await runCLI(['archive', 'add-greeting'], { cwd: projectDir });
 
       expect(result.exitCode, result.stderr).toBe(0);
-      expect(result.stderr).toContain('Note: "openspec archive" is now "openspec land".');
-      expect(await fileExists(path.join(projectDir, 'openspec', 'specs', 'greeting', 'spec.md'))).toBe(true);
-      expect(await fileExists(path.join(projectDir, 'openspec', 'changes', 'add-greeting'))).toBe(false);
+      expect(result.stderr).toContain('Note: "outline-spec archive" is now "outline-spec land".');
+      expect(await fileExists(path.join(projectDir, 'outline-spec', 'specs', 'greeting', 'spec.md'))).toBe(true);
+      expect(await fileExists(path.join(projectDir, 'outline-spec', 'changes', 'add-greeting'))).toBe(false);
     });
 
     it('archives normally once that flag is passed', async () => {
@@ -502,7 +502,7 @@ describe('openspec CLI e2e basics', () => {
       const result = await runCLI(['archive', 'add-greeting', '--yes'], { cwd: projectDir });
 
       expect(result.exitCode).toBe(0);
-      expect(await fs.readFile(path.join(projectDir, 'openspec', 'specs', 'greeting', 'spec.md'), 'utf-8')).toBe(
+      expect(await fs.readFile(path.join(projectDir, 'outline-spec', 'specs', 'greeting', 'spec.md'), 'utf-8')).toBe(
         '# greeting\nHow the system greets.\n\n1. Greeting: The system greets the user.\n'
       );
     });
@@ -514,7 +514,7 @@ describe('openspec CLI e2e basics', () => {
       const output = `${result.stdout}${result.stderr}`;
       expect(result.exitCode).toBe(1);
       expect(output).toContain('A change name is required');
-      expect(await fileExists(path.join(projectDir, 'openspec', 'changes', 'add-greeting', 'outline.md'))).toBe(true);
+      expect(await fileExists(path.join(projectDir, 'outline-spec', 'changes', 'add-greeting', 'outline.md'))).toBe(true);
     });
 
     async function prepareStoreChange(base: string, changeName: string): Promise<NodeJS.ProcessEnv> {
@@ -523,14 +523,14 @@ describe('openspec CLI e2e basics', () => {
         XDG_CONFIG_HOME: path.join(base, 'config'),
       };
       const storeRoot = path.join(base, 'team-store');
-      createOpenSpecRoot(storeRoot);
+      createOutlineSpecRoot(storeRoot);
       await registerStore({
         id: 'team-store',
         localPath: storeRoot,
         globalDataDir: getGlobalDataDir({ env }),
       });
 
-      const changeDir = path.join(storeRoot, 'openspec', 'changes', changeName);
+      const changeDir = path.join(storeRoot, 'outline-spec', 'changes', changeName);
       await fs.mkdir(changeDir, { recursive: true });
       await fs.writeFile(path.join(changeDir, 'outline.md'), OUTLINE);
       await fs.writeFile(path.join(changeDir, 'tasks.md'), '- [ ] Task 1\n');
@@ -542,7 +542,7 @@ describe('openspec CLI e2e basics', () => {
     it('keeps --store in the suggested rerun for a store-rooted change', async () => {
       // The rerun has to name the same root the blocked run used, or pasting
       // it lands from the wrong place - or from nowhere.
-      const base = await fs.mkdtemp(path.join(tmpdir(), 'openspec-archive-store-e2e-'));
+      const base = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-archive-store-e2e-'));
       tempRoots.push(base);
       const env = await prepareStoreChange(base, 'add-greeting');
 
@@ -553,12 +553,12 @@ describe('openspec CLI e2e basics', () => {
 
       const output = `${result.stdout}${result.stderr}`;
       expect(result.exitCode).toBe(1);
-      expect(output).toContain('openspec land add-greeting --yes --store team-store');
+      expect(output).toContain('outline-spec land add-greeting --yes --store team-store');
     });
 
     it('keeps --store in front of the `--` for a dash-leading change name', async () => {
       // The store flag stays an option (in front of `--`) while the name stays an argument (behind it).
-      const base = await fs.mkdtemp(path.join(tmpdir(), 'openspec-archive-store-dash-e2e-'));
+      const base = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-archive-store-dash-e2e-'));
       tempRoots.push(base);
       const env = await prepareStoreChange(base, '--force');
 
@@ -569,7 +569,7 @@ describe('openspec CLI e2e basics', () => {
 
       const output = `${result.stdout}${result.stderr}`;
       expect(result.exitCode).toBe(1);
-      expect(output).toContain('openspec land --yes --store team-store -- --force');
+      expect(output).toContain('outline-spec land --yes --store team-store -- --force');
     });
   });
 });

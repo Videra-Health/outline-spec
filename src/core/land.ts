@@ -7,10 +7,10 @@ import { describeNestedChange, findNestedChangesIn } from '../utils/nested-chang
 import {
   emitStoreRootBanner,
   isRootSelectionError,
-  resolveOpenSpecRoot,
+  resolveOutlineSpecRoot,
   toRootOutput,
   withStoreFlag,
-  type ResolvedOpenSpecRoot,
+  type ResolvedOutlineSpecRoot,
 } from './root-selection.js';
 import { writeSpec } from './outline/outline.js';
 import {
@@ -67,9 +67,9 @@ const quote = (name: string) => (/^[A-Za-z0-9._/-]+$/.test(name) ? name : `"${na
 export class LandCommand {
   async execute(changeName?: string, options: LandOptions = {}): Promise<void> {
     const json = !!options.json;
-    let root: ResolvedOpenSpecRoot;
+    let root: ResolvedOutlineSpecRoot;
     try {
-      root = await resolveOpenSpecRoot({
+      root = await resolveOutlineSpecRoot({
         ...(options.store !== undefined ? { store: options.store } : {}),
         ...(options.storePath !== undefined ? { storePath: options.storePath } : {}),
       });
@@ -92,7 +92,7 @@ export class LandCommand {
     await this.run(changeName, options, root, false);
   }
 
-  private printJsonFailure(root: ResolvedOpenSpecRoot | undefined, diagnostic: LandDiagnostic): void {
+  private printJsonFailure(root: ResolvedOutlineSpecRoot | undefined, diagnostic: LandDiagnostic): void {
     console.log(
       JSON.stringify({ landed: null, specs: [], ...(root ? { root: toRootOutput(root) } : {}), status: [diagnostic] }, null, 2)
     );
@@ -102,22 +102,22 @@ export class LandCommand {
   private async run(
     changeName: string | undefined,
     options: LandOptions,
-    root: ResolvedOpenSpecRoot,
+    root: ResolvedOutlineSpecRoot,
     json: boolean
   ): Promise<LandResult | null> {
     const { changesDir, specsDir } = root;
     // A dash-leading name would read as an option, so it goes after `--`, behind any --store.
     const rerun = (name: string) =>
       name.startsWith('-')
-        ? `${withStoreFlag(root, 'openspec land --yes')} -- ${quote(name)}`
-        : withStoreFlag(root, `openspec land ${quote(name)} --yes`);
+        ? `${withStoreFlag(root, 'outline-spec land --yes')} -- ${quote(name)}`
+        : withStoreFlag(root, `outline-spec land ${quote(name)} --yes`);
 
     if (!changeName) {
       if (json) {
         throw new LandBlockedError(
           'land_change_name_required',
           'A change name is required: land --json is non-interactive.',
-          withStoreFlag(root, 'openspec land <change-name> --json')
+          withStoreFlag(root, 'outline-spec land <change-name> --json')
         );
       }
       const selected = await this.selectChange(root);
@@ -155,7 +155,7 @@ export class LandCommand {
       throw new LandBlockedError(
         'land_conflicts',
         `Cannot land '${changeName}'; nothing was written:\n${(error as Error).message}`,
-        `Fix outline.md in openspec/changes/${changeName}/ so it matches the live specs, then rerun.`
+        `Fix outline.md in outline-spec/changes/${changeName}/ so it matches the live specs, then rerun.`
       );
     }
 
@@ -169,7 +169,7 @@ export class LandCommand {
         throw new LandBlockedError(
           'land_tasks_incomplete',
           `${incomplete} incomplete task(s) found for change '${changeName}'.`,
-          `Complete the tasks or rerun with ${rerun(changeName).replace('openspec land', 'openspec land --json')}`
+          `Complete the tasks or rerun with ${rerun(changeName).replace('outline-spec land', 'outline-spec land --json')}`
         );
       } else {
         let proceed: boolean;
@@ -216,7 +216,7 @@ export class LandCommand {
     return { landed: changeName, specs };
   }
 
-  private async selectChange(root: ResolvedOpenSpecRoot): Promise<string | null> {
+  private async selectChange(root: ResolvedOutlineSpecRoot): Promise<string | null> {
     const names = listChanges(root.changesDir);
     if (names.length === 0) {
       console.log('No active changes found.');
@@ -227,7 +227,7 @@ export class LandCommand {
       throw new LandBlockedError(
         'land_change_name_required',
         'A change name is required: no terminal is available to choose one from a list.',
-        withStoreFlag(root, 'openspec land <change-name>')
+        withStoreFlag(root, 'outline-spec land <change-name>')
       );
     }
     const width = Math.max(...names.map((n) => n.length));
@@ -245,7 +245,7 @@ export class LandCommand {
         throw new LandBlockedError(
           'land_change_name_required',
           'A change name is required: no answer could be read from stdin.',
-          withStoreFlag(root, 'openspec land <change-name>')
+          withStoreFlag(root, 'outline-spec land <change-name>')
         );
       }
       return null;

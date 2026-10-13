@@ -10,7 +10,7 @@ import { cliProjectRoot } from '../../helpers/run-cli.js';
 
 /**
  * `parseSchema` checked `artifacts[].requires` but never the `apply` block, so
- * a typo there passed `openspec schema validate` and failed silently at run
+ * a typo there passed `outline-spec schema validate` and failed silently at run
  * time: an unknown `apply.requires` id was skipped, turning off the apply gate,
  * and an unmatched `apply.tracks` blocked apply for good.
  */

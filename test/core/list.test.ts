@@ -12,7 +12,7 @@ describe('ListCommand', () => {
 
   beforeEach(async () => {
     // Create temp directory
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-list-test-'));
+    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-list-test-'));
 
     // Mock console.log to capture output
     originalLog = console.log;
@@ -33,7 +33,7 @@ describe('ListCommand', () => {
 
   describe('change listing', () => {
     async function writeChange(name: string, tasks = '- [x] Done\n- [ ] Pending\n'): Promise<string> {
-      const changeDir = path.join(tempDir, 'openspec', 'changes', name);
+      const changeDir = path.join(tempDir, 'outline-spec', 'changes', name);
       await fs.mkdir(changeDir, { recursive: true });
       await fs.writeFile(path.join(changeDir, 'tasks.md'), tasks);
       return changeDir;
@@ -71,7 +71,7 @@ describe('ListCommand', () => {
       await writeChange('complete', '- [x] Done\n');
       await writeChange('incomplete');
       await writeChange('no-tasks', 'No checkboxes\n');
-      const root = { path: path.join(tempDir, 'openspec'), source: 'nearest' as const };
+      const root = { path: path.join(tempDir, 'outline-spec'), source: 'nearest' as const };
 
       await new ListCommand().execute(tempDir, 'changes', { json: true, sort: 'name', root });
 
@@ -85,7 +85,7 @@ describe('ListCommand', () => {
     });
 
     it('preserves root metadata in empty JSON', async () => {
-      const root = { path: path.join(tempDir, 'openspec'), source: 'nearest' as const };
+      const root = { path: path.join(tempDir, 'outline-spec'), source: 'nearest' as const };
 
       await new ListCommand().execute(tempDir, 'changes', { json: true, root });
 
@@ -139,7 +139,7 @@ describe('ListCommand', () => {
     });
 
     it('resolves task progress using project-local schema metadata', async () => {
-      const schemaDir = path.join(tempDir, 'openspec', 'schemas', 'custom-tasks');
+      const schemaDir = path.join(tempDir, 'outline-spec', 'schemas', 'custom-tasks');
       await fs.mkdir(schemaDir, { recursive: true });
       await fs.writeFile(path.join(schemaDir, 'schema.yaml'), [
         'name: custom-tasks',
@@ -157,7 +157,7 @@ describe('ListCommand', () => {
         ''
       ].join('\n'));
       const changeDir = await writeChange('custom-change', '- [x] Wrong tasks file\n');
-      await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: custom-tasks\n');
+      await fs.writeFile(path.join(changeDir, '.outline-spec.yaml'), 'schema: custom-tasks\n');
       await fs.mkdir(path.join(changeDir, 'backend'));
       await fs.writeFile(path.join(changeDir, 'backend', 'checklist.md'), '- [x] Parent\n  - [ ] Child\n');
       await fs.mkdir(path.join(changeDir, 'frontend'));
@@ -172,7 +172,7 @@ describe('ListCommand', () => {
   });
 
   describe('execute', () => {
-    it('should treat a missing openspec/changes directory as no active changes', async () => {
+    it('should treat a missing outline-spec/changes directory as no active changes', async () => {
       const listCommand = new ListCommand();
 
       await listCommand.execute(tempDir, 'changes');
@@ -181,7 +181,7 @@ describe('ListCommand', () => {
     });
 
     it('should handle empty changes directory', async () => {
-      const changesDir = path.join(tempDir, 'openspec', 'changes');
+      const changesDir = path.join(tempDir, 'outline-spec', 'changes');
       await fs.mkdir(changesDir, { recursive: true });
 
       const listCommand = new ListCommand();
@@ -190,9 +190,9 @@ describe('ListCommand', () => {
       expect(logOutput).toEqual(['No active changes found.']);
     });
 
-    it('should not report a malformed openspec/changes path as empty', async () => {
-      await fs.mkdir(path.join(tempDir, 'openspec'), { recursive: true });
-      await fs.writeFile(path.join(tempDir, 'openspec', 'changes'), 'not a directory\n');
+    it('should not report a malformed outline-spec/changes path as empty', async () => {
+      await fs.mkdir(path.join(tempDir, 'outline-spec'), { recursive: true });
+      await fs.writeFile(path.join(tempDir, 'outline-spec', 'changes'), 'not a directory\n');
 
       const listCommand = new ListCommand();
 
@@ -201,7 +201,7 @@ describe('ListCommand', () => {
     });
 
     it('should exclude archive directory', async () => {
-      const changesDir = path.join(tempDir, 'openspec', 'changes');
+      const changesDir = path.join(tempDir, 'outline-spec', 'changes');
       await fs.mkdir(path.join(changesDir, 'archive'), { recursive: true });
       await fs.mkdir(path.join(changesDir, 'my-change'), { recursive: true });
       
@@ -220,7 +220,7 @@ describe('ListCommand', () => {
     });
 
     it('should count tasks correctly', async () => {
-      const changesDir = path.join(tempDir, 'openspec', 'changes');
+      const changesDir = path.join(tempDir, 'outline-spec', 'changes');
       await fs.mkdir(path.join(changesDir, 'test-change'), { recursive: true });
       
       await fs.writeFile(
@@ -242,7 +242,7 @@ Regular text that should be ignored
     });
 
     it('should show complete status for fully completed changes', async () => {
-      const changesDir = path.join(tempDir, 'openspec', 'changes');
+      const changesDir = path.join(tempDir, 'outline-spec', 'changes');
       await fs.mkdir(path.join(changesDir, 'completed-change'), { recursive: true });
       
       await fs.writeFile(
@@ -257,7 +257,7 @@ Regular text that should be ignored
     });
 
     it('does not report a change with unfinished sub-tasks as complete (#1485)', async () => {
-      const changesDir = path.join(tempDir, 'openspec', 'changes');
+      const changesDir = path.join(tempDir, 'outline-spec', 'changes');
       await fs.mkdir(path.join(changesDir, 'nested-change'), { recursive: true });
 
       await fs.writeFile(
@@ -273,7 +273,7 @@ Regular text that should be ignored
     });
 
     it('does not report a change whose remaining work uses an unrecognised marker as complete (#1761)', async () => {
-      const changesDir = path.join(tempDir, 'openspec', 'changes');
+      const changesDir = path.join(tempDir, 'outline-spec', 'changes');
       await fs.mkdir(path.join(changesDir, 'deferred-change'), { recursive: true });
 
       await fs.writeFile(
@@ -289,7 +289,7 @@ Regular text that should be ignored
     });
 
     it('should handle changes without tasks.md', async () => {
-      const changesDir = path.join(tempDir, 'openspec', 'changes');
+      const changesDir = path.join(tempDir, 'outline-spec', 'changes');
       await fs.mkdir(path.join(changesDir, 'no-tasks'), { recursive: true });
 
       const listCommand = new ListCommand();
@@ -299,7 +299,7 @@ Regular text that should be ignored
     });
 
     it('should sort changes alphabetically when sort=name', async () => {
-      const changesDir = path.join(tempDir, 'openspec', 'changes');
+      const changesDir = path.join(tempDir, 'outline-spec', 'changes');
       await fs.mkdir(path.join(changesDir, 'zebra'), { recursive: true });
       await fs.mkdir(path.join(changesDir, 'alpha'), { recursive: true });
       await fs.mkdir(path.join(changesDir, 'middle'), { recursive: true });
@@ -317,7 +317,7 @@ Regular text that should be ignored
     });
 
     it('should handle multiple changes with various states', async () => {
-      const changesDir = path.join(tempDir, 'openspec', 'changes');
+      const changesDir = path.join(tempDir, 'outline-spec', 'changes');
       
       // Complete change
       await fs.mkdir(path.join(changesDir, 'completed'), { recursive: true });
@@ -347,7 +347,7 @@ Regular text that should be ignored
 
     describe('a namespace folder holding nested changes (#1846)', () => {
       async function seedNestedChange(): Promise<string> {
-        const changesDir = path.join(tempDir, 'openspec', 'changes');
+        const changesDir = path.join(tempDir, 'outline-spec', 'changes');
         await fs.mkdir(path.join(changesDir, 'mobile', 'refresh-token'), { recursive: true });
         await fs.writeFile(
           path.join(changesDir, 'mobile', 'refresh-token', 'tasks.md'),
@@ -378,7 +378,7 @@ Regular text that should be ignored
 
         const warning = logOutput.find(line => line.startsWith('Warning:'));
         expect(warning).toBeDefined();
-        expect(warning).toContain('openspec/changes/mobile/refresh-token/');
+        expect(warning).toContain('outline-spec/changes/mobile/refresh-token/');
         expect(warning).toContain('mobile-refresh-token');
       });
 
@@ -411,7 +411,7 @@ Regular text that should be ignored
       });
 
       it('omits warnings from --json when nothing is nested', async () => {
-        const changesDir = path.join(tempDir, 'openspec', 'changes');
+        const changesDir = path.join(tempDir, 'outline-spec', 'changes');
         await fs.mkdir(path.join(changesDir, 'add-auth'), { recursive: true });
 
         await new ListCommand().execute(tempDir, 'changes', { json: true });
@@ -426,7 +426,7 @@ Regular text that should be ignored
     // next to every file with unsaved edits. One such entry used to fail the
     // whole listing with ENOENT, so `list --json` reported zero changes.
     async function writeChange(name: string): Promise<string> {
-      const changeDir = path.join(tempDir, 'openspec', 'changes', name);
+      const changeDir = path.join(tempDir, 'outline-spec', 'changes', name);
       await fs.mkdir(changeDir, { recursive: true });
       await fs.writeFile(path.join(changeDir, 'tasks.md'), '- [x] Task 1\n- [ ] Task 2\n');
       return changeDir;
@@ -501,7 +501,7 @@ Regular text that should be ignored
 
     it.skipIf(process.platform === 'win32')('keeps list --json working end to end', async () => {
       const changeDir = await writeChange('cli-change');
-      await fs.mkdir(path.join(tempDir, 'openspec', 'specs'), { recursive: true });
+      await fs.mkdir(path.join(tempDir, 'outline-spec', 'specs'), { recursive: true });
       await fs.symlink('user@host.4242:1789000000', path.join(changeDir, '.#tasks.md'));
       const home = path.join(tempDir, 'home');
       await fs.mkdir(home, { recursive: true });

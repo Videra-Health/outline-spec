@@ -11,7 +11,7 @@ import {
   resolveRootForCommand,
   toRootOutput,
   withStoreFlag,
-  type ResolvedOpenSpecRoot,
+  type ResolvedOutlineSpecRoot,
   isStoreSelectedRoot,
 } from '../core/root-selection.js';
 import { isInteractive, resolveNoInteractive } from '../utils/interactive.js';
@@ -145,17 +145,17 @@ export class ValidateCommand {
 
   /**
    * Resolve change IDs by directory existence within the resolved root — the
-   * same rule `openspec status`/`instructions` use (`getAvailableChanges`) —
+   * same rule `outline-spec status`/`instructions` use (`getAvailableChanges`) —
    * rather than requiring `proposal.md`. This lets `validate` resolve a
    * scaffolded or still-authoring change that the sibling commands already
    * resolve (#1182). Sorted to preserve the prior `getActiveChangeIds` ordering.
    */
-  private async listChangeIds(root: ResolvedOpenSpecRoot): Promise<string[]> {
+  private async listChangeIds(root: ResolvedOutlineSpecRoot): Promise<string[]> {
     const ids = await getAvailableChanges(root.path, root.changesDir);
     return ids.sort();
   }
 
-  private async runInteractiveSelector(root: ResolvedOpenSpecRoot, opts: { strict: boolean; json: boolean; concurrency?: string }): Promise<void> {
+  private async runInteractiveSelector(root: ResolvedOutlineSpecRoot, opts: { strict: boolean; json: boolean; concurrency?: string }): Promise<void> {
     const { select } = await import('@inquirer/prompts');
     const choice = await select({
       message: 'What would you like to validate?',
@@ -185,16 +185,16 @@ export class ValidateCommand {
     await this.validateByType(root, picked.type, picked.id, opts);
   }
 
-  private printNonInteractiveHint(root: ResolvedOpenSpecRoot): void {
+  private printNonInteractiveHint(root: ResolvedOutlineSpecRoot): void {
     console.error('Nothing to validate. Try one of:');
-    console.error(`  ${withStoreFlag(root, 'openspec validate --all')}`);
-    console.error(`  ${withStoreFlag(root, 'openspec validate --changes')}`);
-    console.error(`  ${withStoreFlag(root, 'openspec validate --specs')}`);
-    console.error(`  ${withStoreFlag(root, 'openspec validate <item-name>')}`);
+    console.error(`  ${withStoreFlag(root, 'outline-spec validate --all')}`);
+    console.error(`  ${withStoreFlag(root, 'outline-spec validate --changes')}`);
+    console.error(`  ${withStoreFlag(root, 'outline-spec validate --specs')}`);
+    console.error(`  ${withStoreFlag(root, 'outline-spec validate <item-name>')}`);
     console.error('Or run in an interactive terminal.');
   }
 
-  private async validateDirectItem(root: ResolvedOpenSpecRoot, itemName: string, opts: { typeOverride?: ItemType; strict: boolean; json: boolean }): Promise<void> {
+  private async validateDirectItem(root: ResolvedOutlineSpecRoot, itemName: string, opts: { typeOverride?: ItemType; strict: boolean; json: boolean }): Promise<void> {
     const [changes, specs] = await Promise.all([this.listChangeIds(root), getSpecIds(root.path)]);
     const isChange = changes.includes(itemName);
     const isSpec = specs.includes(itemName);
@@ -247,7 +247,7 @@ export class ValidateCommand {
       if (isStoreSelectedRoot(root)) {
         console.error('Pass --type change|spec.');
       } else {
-        console.error('Pass --type change|spec, or use: openspec change validate / openspec spec validate');
+        console.error('Pass --type change|spec, or use: outline-spec change validate / outline-spec spec validate');
       }
       process.exitCode = 1;
       return;
@@ -263,7 +263,7 @@ export class ValidateCommand {
    * (#1846). Returns undefined for every ordinary change.
    */
   private async nestedChangeReport(
-    root: ResolvedOpenSpecRoot,
+    root: ResolvedOutlineSpecRoot,
     id: string
   ): Promise<{ valid: false; issues: ValidationIssue[] } | undefined> {
     const nested = await findNestedChangesIn(root.changesDir, id);
@@ -274,7 +274,7 @@ export class ValidateCommand {
     };
   }
 
-  private async validateByType(root: ResolvedOpenSpecRoot, type: ItemType, id: string, opts: { strict: boolean; json: boolean }): Promise<void> {
+  private async validateByType(root: ResolvedOutlineSpecRoot, type: ItemType, id: string, opts: { strict: boolean; json: boolean }): Promise<void> {
     // `--type` skips the membership check above, so the name still has to be
     // guarded before it is joined onto a directory. `show` already rejects a
     // traversing id.
@@ -331,7 +331,7 @@ export class ValidateCommand {
     process.exitCode = report.valid ? 0 : 1;
   }
 
-  private printReport(type: ItemType, id: string, report: { valid: boolean; issues: any[] }, durationMs: number, json: boolean, root: ResolvedOpenSpecRoot): void {
+  private printReport(type: ItemType, id: string, report: { valid: boolean; issues: any[] }, durationMs: number, json: boolean, root: ResolvedOutlineSpecRoot): void {
     if (json) {
       const out = { items: [{ id, type, valid: report.valid, issues: report.issues, durationMs }], summary: { totals: { items: 1, passed: report.valid ? 1 : 0, failed: report.valid ? 0 : 1 }, byType: { [type]: { items: 1, passed: report.valid ? 1 : 0, failed: report.valid ? 0 : 1 } } }, version: '1.0', root: toRootOutput(root) };
       console.log(JSON.stringify(out, null, 2));
@@ -351,25 +351,25 @@ export class ValidateCommand {
     }
   }
 
-  private printNextSteps(type: ItemType, id: string, root: ResolvedOpenSpecRoot, issues: Array<{ message: string }> = []): void {
+  private printNextSteps(type: ItemType, id: string, root: ResolvedOutlineSpecRoot, issues: Array<{ message: string }> = []): void {
     const bullets: string[] = [];
     // A namespace folder has nothing to land, so outline advice would point at the wrong directory (#1846).
     const nestedIssue = issues.some(i => i.message.includes(NESTED_CHANGE_ISSUE_MARKER));
     if (type === 'change' && nestedIssue) {
-      bullets.push('- Move each nested change directly under openspec/changes/, folding the namespace into its name');
+      bullets.push('- Move each nested change directly under outline-spec/changes/, folding the namespace into its name');
       bullets.push('- Only specs may be nested by domain; change directories are always flat');
     } else if (type === 'change') {
       bullets.push('- Edit outline.md so its "## Requirements" items match the live specs (struck text, labels, "(patch)")');
-      bullets.push(`- Preview the result: ${withStoreFlag(root, `openspec land ${id} --dry-run`)}`);
+      bullets.push(`- Preview the result: ${withStoreFlag(root, `outline-spec land ${id} --dry-run`)}`);
     } else {
       bullets.push('- A spec is "# <name>", a purpose line, then numbered requirements with a./i./1. details');
-      bullets.push('- Convert old-format specs with: openspec migrate-specs');
+      bullets.push('- Convert old-format specs with: outline-spec migrate-specs');
     }
     console.error('Next steps:');
     bullets.forEach(b => console.error(`  ${b}`));
   }
 
-  private printFindingsReport(full: BulkValidationResult, scope: BulkScope, json: boolean, root: ResolvedOpenSpecRoot): void {
+  private printFindingsReport(full: BulkValidationResult, scope: BulkScope, json: boolean, root: ResolvedOutlineSpecRoot): void {
     const findings = projectValidationFindings(full, scope);
     if (json) {
       console.log(JSON.stringify(findings, null, 2));
@@ -390,17 +390,17 @@ export class ValidateCommand {
     this.printBulkDetails(full.items, root);
   }
 
-  private printBulkDetails(results: BulkItemResult[], root: ResolvedOpenSpecRoot): void {
+  private printBulkDetails(results: BulkItemResult[], root: ResolvedOutlineSpecRoot): void {
     const firstFailure = results.find((res) => !res.valid);
     if (firstFailure) {
       const storeFlag = isStoreSelectedRoot(root) ? ` --store ${root.storeId}` : '';
       console.log(
-        `Details: openspec validate ${firstFailure.id} --type ${firstFailure.type}${storeFlag}`
+        `Details: outline-spec validate ${firstFailure.id} --type ${firstFailure.type}${storeFlag}`
       );
     }
   }
 
-  private async runBulkValidation(root: ResolvedOpenSpecRoot, scope: { changes: boolean; specs: boolean }, opts: { strict: boolean; json: boolean; concurrency?: string; noInteractive?: boolean; findingsScope?: BulkScope }): Promise<void> {
+  private async runBulkValidation(root: ResolvedOutlineSpecRoot, scope: { changes: boolean; specs: boolean }, opts: { strict: boolean; json: boolean; concurrency?: string; noInteractive?: boolean; findingsScope?: BulkScope }): Promise<void> {
     const spinner = !opts.json && !opts.noInteractive ? ora('Validating...').start() : undefined;
     const [changeIds, specIds] = await Promise.all([
       scope.changes ? this.listChangeIds(root) : Promise.resolve<string[]>([]),
@@ -409,7 +409,7 @@ export class ValidateCommand {
 
     const DEFAULT_CONCURRENCY = 6;
     const maxSuggestions = 5; // used by nearestMatches
-    const concurrency = normalizeConcurrency(opts.concurrency) ?? normalizeConcurrency(process.env.OPENSPEC_CONCURRENCY) ?? DEFAULT_CONCURRENCY;
+    const concurrency = normalizeConcurrency(opts.concurrency) ?? normalizeConcurrency(process.env.OUTLINE_SPEC_CONCURRENCY) ?? DEFAULT_CONCURRENCY;
     const validator = new Validator(opts.strict);
     const queue: Array<() => Promise<BulkItemResult>> = [];
 

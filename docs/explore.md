@@ -1,6 +1,6 @@
 # Explore First
 
-**`/opsx:explore` is your thinking partner. Reach for it whenever you have a problem but not yet a plan.** It investigates your codebase, weighs options with you, and clarifies what you actually want, all before a line of code is written. When the picture is clear, it hands off to `/opsx:propose`.
+**`/outline-spec:explore` is your thinking partner. Reach for it whenever you have a problem but not yet a plan.** It investigates your codebase, weighs options with you, and clarifies what you actually want, all before a line of code is written. When the picture is clear, it hands off to `/outline-spec:propose`.
 
 If you take one habit from these docs, take this one: **when you're not sure, explore before you propose.**
 
@@ -16,7 +16,7 @@ Explore is the right first step more often than people expect. Use it when any o
 - The requirements are fuzzy and you want to sharpen them before committing.
 - You suspect the work is bigger or smaller than it looks and want to scope it honestly.
 
-Skip explore only when you already know exactly what you want and how. In that case go straight to [`/opsx:propose`](commands.md#opsxpropose).
+Skip explore only when you already know exactly what you want and how. In that case go straight to [`/outline-spec:propose`](commands.md#outlineSpecpropose).
 
 ## What it does (and doesn't)
 
@@ -27,8 +27,8 @@ Explore is a **conversation**, not a generator.
 - Compare options and name the tradeoffs of each.
 - Draw diagrams to make a design legible.
 - Help you narrow a vague idea into a concrete, buildable scope.
-- Capture the exploration when you ask, or when you accept its offer: it scaffolds the change with `openspec new change` and writes the planning artifacts you named, or updates an existing change's artifacts.
-- Transition to `/opsx:propose` when you're ready.
+- Capture the exploration when you ask, or when you accept its offer: it scaffolds the change with `outline-spec new change` and writes the planning artifacts you named, or updates an existing change's artifacts.
+- Transition to `/outline-spec:propose` when you're ready.
 
 **It does not:**
 - Write or modify code. Explore never writes code, on any path, capture included.
@@ -40,14 +40,14 @@ That's the point. Exploring costs you nothing and commits you to nothing until y
 
 ## It's already installed
 
-Good news: `/opsx:explore` ships in the default **core** profile, right alongside `propose`, `apply`, `update`, `sync`, and `archive`. You don't need to enable anything. If OpenSpec is set up in your project, explore is ready in your AI chat. (As with all `/opsx:*` commands, you type it in your assistant's chat, not the terminal. See [How Commands Work](how-commands-work.md).)
+Good news: `/outline-spec:explore` ships in the default **core** profile, right alongside `propose`, `apply`, `update`, `sync`, and `archive`. You don't need to enable anything. If outline-spec is set up in your project, explore is ready in your AI chat. (As with all `/outline-spec:*` commands, you type it in your assistant's chat, not the terminal. See [How Commands Work](how-commands-work.md).)
 
 ## A full example
 
 Watch how a vague worry becomes a sharp, buildable change.
 
 ```text
-You: /opsx:explore
+You: /outline-spec:explore
 
 AI:  What would you like to explore?
 
@@ -78,9 +78,9 @@ AI:  Let me dig into the checkout path...
 
 You: Yes, let's do the idempotency key.
 
-You: /opsx:propose add-order-idempotency-key
+You: /outline-spec:propose add-order-idempotency-key
 
-AI:  Created openspec/changes/add-order-idempotency-key/, with a proposal
+AI:  Created outline-spec/changes/add-order-idempotency-key/, with a proposal
      and delta spec grounded in what we just found. Ready for implementation.
 ```
 
@@ -95,13 +95,13 @@ explore  ──►  propose  ──►  apply  ──►  archive
  (think)     (agree)       (build)     (record)
 ```
 
-You can say it in plain language ("let's turn this into a change") or run `/opsx:propose <name>` directly. Either way, the exploration you just did becomes the foundation of the proposal, not throwaway chat.
+You can say it in plain language ("let's turn this into a change") or run `/outline-spec:propose <name>` directly. Either way, the exploration you just did becomes the foundation of the proposal, not throwaway chat.
 
-You can also ask explore to capture the change itself, without leaving the conversation: "start a change for this" scaffolds the folder, and "write the proposal too" writes exactly the artifacts you named. Scaffolding also lays down the change's own metadata, and fills in anything your project is missing at the top level (`openspec/specs/`, `openspec/changes/archive/`, a `config.yaml`).
+You can also ask explore to capture the change itself, without leaving the conversation: "start a change for this" scaffolds the folder, and "write the proposal too" writes exactly the artifacts you named. Scaffolding also lays down the change's own metadata, and fills in anything your project is missing at the top level (`outline-spec/specs/`, `outline-spec/changes/archive/`, a `config.yaml`).
 
 That's the same destination as handing off, with one difference: propose writes the whole set your schema requires to reach implementation, while capture writes only the artifacts you named.
 
-If you use the expanded command set, explore can hand off to `/opsx:new` instead, for step-by-step artifact creation. See [Workflows](workflows.md).
+If you use the expanded command set, explore can hand off to `/outline-spec:new` instead, for step-by-step artifact creation. See [Workflows](workflows.md).
 
 ## Tips for a good exploration
 
@@ -109,19 +109,19 @@ If you use the expanded command set, explore can hand off to `/opsx:new` instead
 - **Ask for the tradeoffs out loud.** "What are the downsides of each option?" gets you a more honest comparison.
 - **Let it read first.** The best explorations start with the AI actually looking at your code, not guessing. Point it at the relevant area if it helps.
 - **It's okay to bail.** If exploration reveals the idea isn't worth it, that's a win. You learned it cheaply.
-- **Explore again mid-change.** Stuck during `/opsx:apply`? You can step back and explore a sub-problem, then return.
+- **Explore again mid-change.** Stuck during `/outline-spec:apply`? You can step back and explore a sub-problem, then return.
 
 ## The honest tradeoffs
 
 **What you gain:** explore catches wrong turns at the cheapest possible moment, before you've committed to anything. It's especially powerful in unfamiliar code, where the AI's ability to read and summarize the system saves you an afternoon of spelunking.
 
-**What it costs:** a little patience. Explore is a conversation, so it's slower than firing off `/opsx:propose` and hoping. For work you genuinely understand already, that extra step is pure overhead, and you should skip it.
+**What it costs:** a little patience. Explore is a conversation, so it's slower than firing off `/outline-spec:propose` and hoping. For work you genuinely understand already, that extra step is pure overhead, and you should skip it.
 
 The rule of thumb: the fuzzier the task, the more explore pays off. The clearer the task, the more you can skip straight to proposing.
 
 ## Where to go next
 
-- [Commands: `/opsx:explore`](commands.md#opsxexplore): the precise reference
+- [Commands: `/outline-spec:explore`](commands.md#outlineSpecexplore): the precise reference
 - [Workflows](workflows.md): explore as part of the everyday loop
 - [Examples & Recipes](examples.md#recipe-3-exploring-before-you-commit): explore in a full walkthrough
 - [Getting Started](getting-started.md): the first-change guide, exploration included

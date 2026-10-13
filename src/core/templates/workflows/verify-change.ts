@@ -25,17 +25,17 @@ ${input}
    If a name is provided, use it. Otherwise:
    - Infer from conversation context if the user mentioned a change
    - Auto-select if only one active change exists
-   - If ambiguous, run \`openspec list --json\` to get available changes and ask the user to select one
+   - If ambiguous, run \`outline-spec list --json\` to get available changes and ask the user to select one
 
    When prompting, show all active changes returned by the list, including changes with \`status: "no-tasks"\`.
    Include the schema used for each change if available.
    Mark changes with incomplete tasks as "(In Progress)".
 
-   Always announce: "Using change: <name>" and how to override (e.g., \`/opsx:verify <other>\`).
+   Always announce: "Using change: <name>" and how to override (e.g., \`/outline-spec:verify <other>\`).
 
 2. **Check status to understand the schema**
    \`\`\`bash
-   openspec status --change "<name>" --json
+   outline-spec status --change "<name>" --json
    \`\`\`
    Parse the JSON to understand:
    - \`schemaName\`: The workflow being used (e.g., "outline")
@@ -45,7 +45,7 @@ ${input}
 3. **Get planning context and load artifacts**
 
    \`\`\`bash
-   openspec instructions apply --change "<name>" --json
+   outline-spec instructions apply --change "<name>" --json
    \`\`\`
 
    This returns the change directory, \`contextFiles\` (artifact ID -> array of concrete file paths), \`taskTrackingConfigured\`, and top-level \`tasks\` and \`progress\` aggregated from every concrete file matched by the schema's \`apply.tracks\` configuration that could be read. Read all available artifacts from \`contextFiles\`.
@@ -62,7 +62,7 @@ ${input}
    - **Removed**: an item wholly in \`~~ ~~\`; that behavior should be gone
    - **Renamed**: \`~~Old~~ **New** (patch):\`; the name changes, the behavior stays
 
-   For each spec the outline touches, read the live spec with \`openspec show "<spec>" --type spec\` for the unchanged surrounding requirements. Run \`openspec validate "<name>"\` to confirm the outline still lands cleanly, and \`openspec land "<name>" --dry-run\` to see the resulting spec text — that landed text is what the code must satisfy. Never edit live specs; a mismatch is fixed in outline.md.
+   For each spec the outline touches, read the live spec with \`outline-spec show "<spec>" --type spec\` for the unchanged surrounding requirements. Run \`outline-spec validate "<name>"\` to confirm the outline still lands cleanly, and \`outline-spec land "<name>" --dry-run\` to see the resulting spec text — that landed text is what the code must satisfy. Never edit live specs; a mismatch is fixed in outline.md.
 
 5. **Initialize verification report structure**
 
@@ -92,11 +92,11 @@ ${input}
    - If \`progress.remaining\` is greater than 0:
      - Add CRITICAL issue for each listed incomplete task. If the remaining count exceeds the listed incomplete tasks, also report the incomplete checkboxes without descriptions and recommend adding descriptions and completing them. Do not infer completion from the listed tasks alone.
      - Recommendation: "Complete task: <description>" or "Mark as done if already implemented"
-     - Ignore the final landing task (\`openspec land\`); it runs after verification.
+     - Ignore the final landing task (\`outline-spec land\`); it runs after verification.
 
    **Spec Coverage**:
    - If the schema defines no outline artifact, report the spec-dependent checks as not applicable. If outline.md exists but its \`## Requirements\` is empty, report them as not applicable (the change edits no specs).
-   - If outline.md is absent or unreadable, or \`openspec validate\` reports it no longer lands, mark **Spec Coverage**, **Requirement Implementation Mapping**, and **Detail Coverage** as not verified; do not treat any of them as clean. Recommend fixing outline.md against the live spec.
+   - If outline.md is absent or unreadable, or \`outline-spec validate\` reports it no longer lands, mark **Spec Coverage**, **Requirement Implementation Mapping**, and **Detail Coverage** as not verified; do not treat any of them as clean. Recommend fixing outline.md against the live spec.
    - For each new or edited requirement and detail:
      - Search codebase for keywords related to it
      - Assess if implementation likely exists
@@ -104,7 +104,7 @@ ${input}
        - Add CRITICAL issue: "Requirement not found: <spec>: <requirement name>"
        - Recommendation: "Implement <requirement>: <description>"
    - For each removed item, invert the check:
-     - Search codebase for the removed behavior. Matches in \`openspec/\` artifacts or docs are not evidence by themselves.
+     - Search codebase for the removed behavior. Matches in \`outline-spec/\` artifacts or docs are not evidence by themselves.
      - Finding no implementation is the expected result. Never report a removed item as "Requirement not found" or recommend implementing it.
      - If the behavior is still present:
        - Add CRITICAL issue: "Removed requirement still implemented: <name>"
@@ -192,7 +192,7 @@ ${input}
    - If CRITICAL issues: "X critical issue(s) found. Fix before landing." If any check was skipped, also name every skipped check and its reason.
    - If no CRITICAL issues, one or more warnings, and no checks were skipped: "No critical issues. Y warning(s) to consider. Ready to land (with noted improvements)."
    - If only suggestions and no checks were skipped: "No critical issues or warnings. Z suggestion(s) to consider. Ready to land (with noted improvements)."
-   - If no issues and no checks were skipped: "All checks passed. Ready to land with ${optionalWorkflow('land', '\`/opsx:land\`', '\`openspec land "<name>"\`')}."
+   - If no issues and no checks were skipped: "All checks passed. Ready to land with ${optionalWorkflow('land', '\`/outline-spec:land\`', '\`outline-spec land "<name>"\`')}."
    - If any check was skipped and there are no CRITICAL issues: do not claim readiness. Say "No critical issues found in the checks that ran. <check(s)> not verified: <reason>." Include the warning count when nonzero.
    - Include the suggestion count when nonzero in every final assessment.
 
@@ -216,25 +216,25 @@ Use clear markdown with:
 
 export function getVerifyChangeSkillTemplate(): SkillTemplate {
   return {
-    name: 'openspec-verify-change',
-    description: 'Verify implementation matches OpenSpec change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before landing. Also use when the user says "openspec verify" or "opsx verify".',
+    name: 'outline-spec-verify-change',
+    description: 'Verify implementation matches outline-spec change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before landing. Also use when the user says "outline-spec verify".',
     instructions: getVerifyInstructions(
       '**Input**: Optionally specify a change name. If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
     ),
     license: 'MIT',
-    compatibility: 'Requires openspec CLI.',
-    metadata: { author: 'openspec', version: '1.0' },
+    compatibility: 'Requires outline-spec CLI.',
+    metadata: { author: 'outline-spec', version: '1.0' },
   };
 }
 
-export function getOpsxVerifyCommandTemplate(): CommandTemplate {
+export function getOutlineSpecVerifyCommandTemplate(): CommandTemplate {
   return {
-    name: 'OPSX: Verify',
+    name: 'outline-spec: Verify',
     description: 'Verify implementation matches change artifacts before landing',
     category: 'Workflow',
     tags: ['workflow', 'verify', 'experimental'],
     content: getVerifyInstructions(
-      '**Input**: Optionally specify a change name after `/opsx:verify` (e.g., `/opsx:verify add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
+      '**Input**: Optionally specify a change name after `/outline-spec:verify` (e.g., `/outline-spec:verify add-auth`). If omitted, check if it can be inferred from conversation context. If vague or ambiguous you MUST prompt for available changes.'
     ),
   };
 }

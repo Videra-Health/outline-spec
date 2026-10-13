@@ -12,8 +12,8 @@ describe('ChangeCommand.list', () => {
   beforeAll(async () => {
     cmd = new ChangeCommand();
     originalCwd = process.cwd();
-    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-change-command-list-'));
-    const changeDir = path.join(tempRoot, 'openspec', 'changes', 'demo');
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-change-command-list-'));
+    const changeDir = path.join(tempRoot, 'outline-spec', 'changes', 'demo');
     await fs.mkdir(changeDir, { recursive: true });
     const outline = '## Proposal\nTest list.\n\n## Requirements\n1. auth: Sign-in.\n  a. Login: Users sign in.\n2. billing: Invoices.\n  a. Invoice: Users get invoices.\n';
     await fs.writeFile(path.join(changeDir, 'outline.md'), outline, 'utf-8');
@@ -90,11 +90,11 @@ describe('ChangeCommand.list with a change that has no outline.md', () => {
   beforeAll(async () => {
     cmd = new ChangeCommand();
     originalCwd = process.cwd();
-    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-change-list-noproposal-'));
-    // What `openspec new change` leaves behind, plus tasks: no outline.md.
-    const scaffolded = path.join(tempRoot, 'openspec', 'changes', 'scaffolded');
+    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-change-list-noproposal-'));
+    // What `outline-spec new change` leaves behind, plus tasks: no outline.md.
+    const scaffolded = path.join(tempRoot, 'outline-spec', 'changes', 'scaffolded');
     await fs.mkdir(scaffolded, { recursive: true });
-    await fs.writeFile(path.join(scaffolded, '.openspec.yaml'), 'schema: outline\n', 'utf-8');
+    await fs.writeFile(path.join(scaffolded, '.outline-spec.yaml'), 'schema: outline\n', 'utf-8');
     await fs.writeFile(path.join(scaffolded, 'tasks.md'), '- [x] Task 1\n- [ ] Task 2\n', 'utf-8');
     process.chdir(tempRoot);
   });
@@ -104,7 +104,7 @@ describe('ChangeCommand.list with a change that has no outline.md', () => {
     await fs.rm(tempRoot, { recursive: true, force: true });
   });
 
-  it('lists it, matching what `openspec list` resolves', async () => {
+  it('lists it, matching what `outline-spec list` resolves', async () => {
     expect(await capture(() => cmd.list({}))).toContain('scaffolded');
   });
 

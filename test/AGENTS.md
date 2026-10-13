@@ -1,4 +1,4 @@
-# OpenSpec Test Guidance
+# outline-spec Test Guidance
 
 Applies to tests under `test/`.
 

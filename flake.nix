@@ -1,5 +1,5 @@
 {
-  description = "OpenSpec - AI-native system for spec-driven development";
+  description = "outline-spec - outline specs for AI-assisted development";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -26,8 +26,8 @@
     in
     {
       overlays.default = final: _prev: {
-        openspec = final.stdenv.mkDerivation (finalAttrs: {
-          pname = "openspec";
+        outline-spec = final.stdenv.mkDerivation (finalAttrs: {
+          pname = "outline-spec";
           version = (builtins.fromJSON (builtins.readFile ./package.json)).version;
 
           src = final.lib.fileset.toSource {
@@ -74,27 +74,25 @@
 
           dontNpmPrune = true;
 
-          # `openspec completion generate` renders a static command registry, so it
-          # needs no project and no network. Opting out of telemetry also disables
-          # the update check, keeping the build offline.
+          # `outline-spec completion generate` renders a static command registry, so it
+          # needs no project and no network.
           postInstall = final.lib.optionalString (final.stdenv.buildPlatform.canExecute final.stdenv.hostPlatform) ''
-            export OPENSPEC_TELEMETRY=0
             completions=$(mktemp -d)
             for shell in bash fish zsh; do
-              $out/bin/openspec completion generate "$shell" > "$completions/openspec.$shell"
+              $out/bin/outline-spec completion generate "$shell" > "$completions/outline-spec.$shell"
             done
-            installShellCompletion --cmd openspec \
-              --bash "$completions/openspec.bash" \
-              --fish "$completions/openspec.fish" \
-              --zsh "$completions/openspec.zsh"
+            installShellCompletion --cmd outline-spec \
+              --bash "$completions/outline-spec.bash" \
+              --fish "$completions/outline-spec.fish" \
+              --zsh "$completions/outline-spec.zsh"
           '';
 
           meta = with final.lib; {
             description = "AI-native system for spec-driven development";
-            homepage = "https://github.com/Fission-AI/OpenSpec";
+            homepage = "https://github.com/heneryville/outline-spec";
             license = licenses.mit;
             maintainers = [ ];
-            mainProgram = "openspec";
+            mainProgram = "outline-spec";
           };
         });
       };
@@ -105,15 +103,15 @@
           pkgs = pkgsFor system;
         in
         {
-          default = pkgs.openspec;
-          inherit (pkgs) openspec;
+          default = pkgs.outline-spec;
+          inherit (pkgs) outline-spec;
         }
       );
 
       apps = forAllSystems (system: {
         default = {
           type = "app";
-          program = "${self.packages.${system}.default}/bin/openspec";
+          program = "${self.packages.${system}.default}/bin/outline-spec";
         };
       });
 
@@ -130,7 +128,7 @@
             ];
 
             shellHook = ''
-              echo "OpenSpec development environment"
+              echo "outline-spec development environment"
               echo "Node version: $(node --version)"
               echo "pnpm version: $(pnpm --version)"
               echo "Run 'pnpm install' to install dependencies"

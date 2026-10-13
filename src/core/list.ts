@@ -122,7 +122,7 @@ export class ListCommand {
     const { sort = 'recent', json = false, root } = options;
 
     if (mode === 'changes') {
-      const changesDir = path.join(targetPath, 'openspec', 'changes');
+      const changesDir = path.join(targetPath, 'outline-spec', 'changes');
       // An `archive` folder left by older projects is not a change.
       const changeDirs = (await readChangeDirectoryEntries(changesDir))
         .filter(entry => entry.isDirectory() && entry.name !== 'archive')
@@ -218,7 +218,7 @@ export class ListCommand {
     }
 
     // specs mode
-    const specsDir = path.join(targetPath, 'openspec', 'specs');
+    const specsDir = path.join(targetPath, 'outline-spec', 'specs');
     try {
       await fs.access(specsDir);
     } catch {

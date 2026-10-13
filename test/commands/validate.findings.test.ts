@@ -4,7 +4,7 @@ import os from 'os';
 import path from 'path';
 import ora from 'ora';
 import { ValidateCommand, projectValidationFindings } from '../../src/commands/validate.js';
-import { resolveRootForCommand, toRootOutput, type ResolvedOpenSpecRoot } from '../../src/core/root-selection.js';
+import { resolveRootForCommand, toRootOutput, type ResolvedOutlineSpecRoot } from '../../src/core/root-selection.js';
 import { Validator } from '../../src/core/validation/validator.js';
 
 vi.mock('../../src/core/root-selection.js', async (importOriginal) => ({
@@ -17,7 +17,7 @@ type Options = NonNullable<Parameters<ValidateCommand['execute']>[1]>;
 
 describe('validate findings reports', () => {
   let directory: string;
-  let root: ResolvedOpenSpecRoot;
+  let root: ResolvedOutlineSpecRoot;
   let previousExitCode: typeof process.exitCode;
   let stdout: string[];
   let stderr: string[];
@@ -36,19 +36,19 @@ describe('validate findings reports', () => {
 
   // A tracked tasks.md without a checkbox is the change-level WARNING.
   async function writeWarningChange(id: string): Promise<void> {
-    await write(`openspec/changes/${id}/outline.md`, outline());
-    await write(`openspec/changes/${id}/tasks.md`, '- an unchecked bullet\n');
+    await write(`outline-spec/changes/${id}/outline.md`, outline());
+    await write(`outline-spec/changes/${id}/tasks.md`, '- an unchecked bullet\n');
   }
 
   async function seed(): Promise<void> {
-    await write('openspec/changes/a-clean/outline.md', outline());
+    await write('outline-spec/changes/a-clean/outline.md', outline());
     await writeWarningChange('b-warning');
-    await write('openspec/changes/c-info/outline.md', outline(false));
+    await write('outline-spec/changes/c-info/outline.md', outline(false));
     await fs.mkdir(path.join(root.changesDir, 'd-error'));
-    await write('openspec/specs/clean/spec.md', '# clean\nThis specification defines a deterministic example for testing validation output contracts.\n\n1. Example behavior: The feature returns its documented result.\n');
-    await write('openspec/specs/error/spec.md', '# Invalid specification\n');
+    await write('outline-spec/specs/clean/spec.md', '# clean\nThis specification defines a deterministic example for testing validation output contracts.\n\n1. Example behavior: The feature returns its documented result.\n');
+    await write('outline-spec/specs/error/spec.md', '# Invalid specification\n');
     // Left by older projects; discovery must not treat it as a change.
-    await write('openspec/changes/archive/old/tasks.md', '- [ ] 1.1 Pending\n');
+    await write('outline-spec/changes/archive/old/tasks.md', '- [ ] 1.1 Pending\n');
   }
 
   async function run(options: Options, item?: string) {
@@ -68,11 +68,11 @@ describe('validate findings reports', () => {
 
   beforeEach(async () => {
     previousExitCode = process.exitCode;
-    directory = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-findings-'));
+    directory = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-findings-'));
     root = {
       path: directory,
-      changesDir: path.join(directory, 'openspec', 'changes'),
-      specsDir: path.join(directory, 'openspec', 'specs'),
+      changesDir: path.join(directory, 'outline-spec', 'changes'),
+      specsDir: path.join(directory, 'outline-spec', 'specs'),
       defaultSchema: 'outline',
       source: 'nearest',
     };
@@ -151,7 +151,7 @@ describe('validate findings reports', () => {
   });
 
   it('keeps an INFO-only strict run successful while displaying its finding', async () => {
-    await write('openspec/changes/info/outline.md', outline(false));
+    await write('outline-spec/changes/info/outline.md', outline(false));
     const findings = await json({ changes: true, strict: true, report: 'findings' });
     expect(findings.document.itemFindings).toHaveLength(1);
     expect(findings.document.itemFindings[0].issues[0].level).toBe('INFO');
@@ -164,7 +164,7 @@ describe('validate findings reports', () => {
     const human = await run({ all: true, report: 'findings' });
     expect(human.stdout[0]).toMatch(/^Scope:/);
     expect(human.stdout[1]).toMatch(/^Totals:/);
-    expect(human.stdout[2]).toMatch(/^Details: openspec validate d-error --type change/);
+    expect(human.stdout[2]).toMatch(/^Details: outline-spec validate d-error --type change/);
     expect(human.stdout).toHaveLength(3);
     const errorText = human.stderr.join('\n');
     expect(errorText).not.toContain('change/a-clean');
@@ -202,7 +202,7 @@ describe('validate findings reports', () => {
   });
 
   it('distinguishes a clean non-empty scope from an empty scope', async () => {
-    await write('openspec/changes/clean/outline.md', outline());
+    await write('outline-spec/changes/clean/outline.md', outline());
     const result = await json({ changes: true, report: 'findings' });
     expect(result.document.report).toMatchObject({ returnedItems: 0, totalItems: 1, scope: 'changes' });
     expect(result.document.itemFindings).toEqual([]);
@@ -259,8 +259,8 @@ describe('validate findings reports', () => {
 
   describe('a namespace folder holding nested changes (#1846)', () => {
     async function seedNamespaceFolder(): Promise<void> {
-      await write('openspec/changes/mobile/refresh-token/proposal.md', '# Refresh token\n');
-      await write('openspec/changes/mobile/refresh-token/outline.md', outline());
+      await write('outline-spec/changes/mobile/refresh-token/proposal.md', '# Refresh token\n');
+      await write('outline-spec/changes/mobile/refresh-token/outline.md', outline());
     }
 
     it('reports the nesting instead of a missing outline, in the bulk sweep', async () => {
@@ -296,12 +296,12 @@ describe('validate findings reports', () => {
       const result = await run({}, 'mobile');
 
       const output = result.stderr.join('\n');
-      expect(output).toContain('Move each nested change directly under openspec/changes/');
+      expect(output).toContain('Move each nested change directly under outline-spec/changes/');
       expect(output).not.toContain('Edit outline.md');
     });
 
     it('leaves an ordinary change with an outline untouched', async () => {
-      await write('openspec/changes/add-auth/outline.md', outline());
+      await write('outline-spec/changes/add-auth/outline.md', outline());
 
       const { document } = await json({ changes: true });
 

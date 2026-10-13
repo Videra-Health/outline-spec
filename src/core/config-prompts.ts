@@ -22,7 +22,7 @@ export function serializeConfig(config: Partial<ProjectConfig>): string {
   } else {
     // Context section with comments
     lines.push('# Project context (optional)');
-    lines.push('# Add only constraints that should guide OpenSpec artifacts and workflows.');
+    lines.push('# Add only constraints that should guide outline-spec artifacts and workflows.');
     lines.push('# Include constraints an agent cannot infer by reading the code.');
     lines.push('# Keep general project documentation and discoverable codebase facts out.');
     lines.push('# Example:');

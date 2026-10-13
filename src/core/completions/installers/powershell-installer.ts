@@ -15,8 +15,8 @@ export class PowerShellInstaller {
    * Markers for PowerShell profile configuration management
    */
   private readonly PROFILE_MARKERS = {
-    start: '# OPENSPEC:START',
-    end: '# OPENSPEC:END',
+    start: '# OUTLINE_SPEC:START',
+    end: '# OUTLINE_SPEC:END',
   };
 
   constructor(homeDir: string = os.homedir()) {
@@ -120,7 +120,7 @@ export class PowerShellInstaller {
   getInstallationPath(): string {
     const profilePath = this.getProfilePath();
     const profileDir = path.dirname(profilePath);
-    return path.join(profileDir, 'OpenSpecCompletion.ps1');
+    return path.join(profileDir, 'OutlineSpecCompletion.ps1');
   }
 
   /**
@@ -166,7 +166,7 @@ export class PowerShellInstaller {
    */
   private generateProfileConfig(scriptPath: string): string {
     return [
-      '# OpenSpec shell completions configuration',
+      '# outline-spec shell completions configuration',
       `if (Test-Path "${scriptPath}") {`,
       `    . "${scriptPath}"`,
       '}',
@@ -228,16 +228,16 @@ export class PowerShellInstaller {
           continue; // Already configured, skip
         }
 
-        // Add OpenSpec completion configuration with markers
-        const openspecBlock = [
+        // Add outline-spec completion configuration with markers
+        const outlineSpecBlock = [
           '',
-          '# OPENSPEC:START - OpenSpec completion (managed block, do not edit manually)',
+          '# OUTLINE_SPEC:START - outline-spec completion (managed block, do not edit manually)',
           scriptLine,
-          '# OPENSPEC:END',
+          '# OUTLINE_SPEC:END',
           '',
         ].join('\n');
 
-        const newContent = profileContent + openspecBlock;
+        const newContent = profileContent + outlineSpecBlock;
         if (!(await FileSystemUtils.canWriteFile(profilePath))) {
           throw new Error(`Path is not writable: ${profilePath}`);
         }
@@ -281,13 +281,13 @@ export class PowerShellInstaller {
           continue;
         }
 
-        // Remove OPENSPEC:START -> OPENSPEC:END block
-        const startMarker = '# OPENSPEC:START';
-        const endMarker = '# OPENSPEC:END';
+        // Remove OUTLINE_SPEC:START -> OUTLINE_SPEC:END block
+        const startMarker = '# OUTLINE_SPEC:START';
+        const endMarker = '# OUTLINE_SPEC:END';
         const startIndex = profileContent.indexOf(startMarker);
 
         if (startIndex === -1) {
-          continue; // No OpenSpec block found
+          continue; // No outline-spec block found
         }
 
         const endIndex = profileContent.indexOf(endMarker, startIndex);
@@ -411,7 +411,7 @@ export class PowerShellInstaller {
       '',
       `To enable completions, add the following to your PowerShell profile (${profilePath}):`,
       '',
-      '  # Source OpenSpec completions',
+      '  # Source outline-spec completions',
       `  if (Test-Path "${installedPath}") {`,
       `      . "${installedPath}"`,
       '  }',
