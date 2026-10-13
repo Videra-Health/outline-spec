@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { Validator } from '../../src/core/validation/validator.js';
 import { loadChangeContext } from '../../src/core/artifact-graph/instruction-loader.js';
 import { METADATA_FILENAME } from '../../src/utils/change-metadata.js';
 import {
@@ -24,71 +23,6 @@ describe('unrecognized keys in .openspec.yaml', () => {
     expect([...CHANGE_METADATA_KNOWN_KEYS].sort()).toEqual(
       Object.keys(ChangeMetadataSchema.shape).sort()
     );
-  });
-
-  const testDir = path.join(process.cwd(), 'test-validation-unknown-metadata-tmp');
-
-  beforeEach(async () => {
-    await fs.mkdir(testDir, { recursive: true });
-  });
-
-  afterEach(async () => {
-    await fs.rm(testDir, { recursive: true, force: true });
-  });
-
-  async function writeMetadata(body: string): Promise<void> {
-    await fs.writeFile(path.join(testDir, METADATA_FILENAME), body, 'utf-8');
-  }
-
-  it('warns when skip_design and other unknown keys are silently ignored', async () => {
-    await writeMetadata(
-      'schema: spec-driven\nskip_specs: true\nskip_design: true\nbogus_key: 1\n'
-    );
-
-    const report = await new Validator().validateChangeDeltaSpecs(testDir);
-
-    const warning = report.issues.find(
-      (issue) => issue.level === 'WARNING' && issue.path === METADATA_FILENAME
-    );
-    expect(warning).toBeDefined();
-    expect(warning?.message).toContain('skip_design');
-    expect(warning?.message).toContain('bogus_key');
-    expect(warning?.message).toMatch(/ignored/i);
-    expect(warning?.message).toContain('skip_specs');
-    expect(report.valid).toBe(true);
-  });
-
-  it('fails --strict when an unrecognized metadata key is present', async () => {
-    await writeMetadata(
-      'schema: spec-driven\nskip_specs: true\nskip_design: true\n'
-    );
-
-    const report = await new Validator(true).validateChangeDeltaSpecs(testDir);
-
-    expect(report.valid).toBe(false);
-    expect(report.issues.some((issue) => issue.level === 'WARNING' && issue.message.includes('skip_design'))).toBe(
-      true
-    );
-  });
-
-  it('does not warn when every key is a known metadata field', async () => {
-    await writeMetadata('schema: spec-driven\nskip_specs: true\ncreated: "2026-09-19"\n');
-
-    const report = await new Validator().validateChangeDeltaSpecs(testDir);
-
-    expect(
-      report.issues.filter((issue) => issue.path === METADATA_FILENAME && issue.level === 'WARNING')
-    ).toHaveLength(0);
-    expect(report.valid).toBe(true);
-  });
-
-  it('still accepts skip_specs when an unknown key sits beside it', async () => {
-    await writeMetadata('schema: spec-driven\nskip_specs: true\nskip_design: true\n');
-
-    const report = await new Validator().validateChangeDeltaSpecs(testDir);
-
-    expect(report.issues.some((issue) => issue.level === 'ERROR')).toBe(false);
-    expect(report.issues.some((issue) => issue.message.includes('skip_specs is set'))).toBe(true);
   });
 });
 
@@ -115,7 +49,9 @@ describe('status/instructions report unrecognized change metadata keys', () => {
   it('returns a warning when loading a change whose .openspec.yaml has unknown keys', () => {
     const context = loadChangeContext(tempDir, 'probe');
 
-    expect(context.metadata?.skip_specs).toBe(true);
+    // skip_specs went away with delta specs, so it is now just another unknown key.
+    expect(context.metadata).not.toHaveProperty('skip_specs');
     expect(context.warnings).toEqual([expect.stringContaining('skip_design')]);
+    expect(context.warnings[0]).toContain('skip_specs');
   });
 });

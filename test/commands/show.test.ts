@@ -15,11 +15,11 @@ describe('top-level show command', () => {
     await fs.mkdir(changesDir, { recursive: true });
     await fs.mkdir(specsDir, { recursive: true });
 
-    const changeContent = `# Change: Demo\n\n## Why\nBecause reasons.\n\n## What Changes\n- **auth:** Add requirement\n`;
+    const changeContent = `## Proposal\nBecause reasons.\n\n## Requirements\n1. auth:\n  b. Logout: Users can sign out.\n`;
     await fs.mkdir(path.join(changesDir, 'demo'), { recursive: true });
-    await fs.writeFile(path.join(changesDir, 'demo', 'proposal.md'), changeContent, 'utf-8');
+    await fs.writeFile(path.join(changesDir, 'demo', 'outline.md'), changeContent, 'utf-8');
 
-    const specContent = `## Purpose\nAuth spec.\n\n## Requirements\n\n### Requirement: User Authentication\nText\n`;
+    const specContent = `# auth\nAuth spec.\n\n1. User Authentication: Users sign in.\n  a. Valid credentials sign the user in.\n    i. The session lasts one day.\n`;
     await fs.mkdir(path.join(specsDir, 'auth'), { recursive: true });
     await fs.writeFile(path.join(specsDir, 'auth', 'spec.md'), specContent, 'utf-8');
   });
@@ -58,15 +58,15 @@ describe('top-level show command', () => {
       const output = execFileSync('node', [openspecBin, 'show', 'demo', '--json'], { encoding: 'utf-8' });
       const json = JSON.parse(output);
       expect(json.id).toBe('demo');
-      expect(Array.isArray(json.deltas)).toBe(true);
+      expect(json.outline).toContain('## Requirements');
+      expect(json.touches).toEqual(['auth › Logout']);
     } finally {
       process.chdir(originalCwd);
     }
   });
 
   it('does not warn about spec-only flags that were never passed', () => {
-    // commander defaults `scenarios` to true for --no-scenarios, so a plain
-    // `show <change>` must not warn about a flag the user never typed.
+    // A plain `show <change>` must not warn about a flag the user never typed.
     const res = spawnSync('node', [openspecBin, 'show', 'demo', '--json'], {
       encoding: 'utf-8',
       cwd: testDir,
@@ -75,35 +75,56 @@ describe('top-level show command', () => {
     expect(res.stderr).not.toContain('not applicable');
   });
 
-  it('still warns when --no-scenarios is explicitly passed for a change', () => {
+  it('still warns when --item is explicitly passed for a change', () => {
     const res = spawnSync(
       'node',
-      [openspecBin, 'show', 'demo', '--json', '--no-scenarios'],
+      [openspecBin, 'show', 'demo', '--json', '--item', '1'],
       { encoding: 'utf-8', cwd: testDir }
     );
     expect(res.status).toBe(0);
-    expect(res.stderr).toContain('Ignoring flags not applicable to change: scenarios');
+    expect(res.stderr).toContain('Ignoring flags not applicable to change: item');
+  });
+
+  it('warns when --diff is passed for a spec', () => {
+    const res = spawnSync('node', [openspecBin, 'show', 'auth', '--diff'], { encoding: 'utf-8', cwd: testDir });
+    expect(res.status).toBe(0);
+    expect(res.stderr).toContain('Ignoring flags not applicable to spec: diff');
   });
 
   it('auto-detects spec id and supports spec-only flags', () => {
     const originalCwd = process.cwd();
     try {
       process.chdir(testDir);
-      const output = execFileSync('node', [openspecBin, 'show', 'auth', '--json', '--requirements'], { encoding: 'utf-8' });
+      const output = execFileSync('node', [openspecBin, 'show', 'auth', '--json', '--item', 'User Authentication'], { encoding: 'utf-8' });
       const json = JSON.parse(output);
-      expect(json.id).toBe('auth');
-      expect(Array.isArray(json.requirements)).toBe(true);
+      expect(json.name).toBe('auth');
+      expect(json.node).toMatchObject({ label: '1', text: 'User Authentication: Users sign in.' });
     } finally {
       process.chdir(originalCwd);
     }
   });
 
+  it.each([
+    ['1.a', '  a. Valid credentials sign the user in.\n    i. The session lasts one day.'],
+    ['User Authentication.a.i', '    i. The session lasts one day.'],
+  ])('shows the spec item at --item %s', (item, expected) => {
+    const res = spawnSync('node', [openspecBin, 'show', 'auth', '--item', item], { encoding: 'utf-8', cwd: testDir });
+    expect(res.status, res.stderr).toBe(0);
+    expect(res.stdout.trimEnd()).toBe(expected);
+  });
+
+  it('reports an unknown --item and exits non-zero', () => {
+    const res = spawnSync('node', [openspecBin, 'show', 'auth', '--item', '1.z'], { encoding: 'utf-8', cwd: testDir });
+    expect(res.status).not.toBe(0);
+    expect(res.stderr).toContain('No item "z" under 1. in auth');
+  });
+
   it('handles ambiguity and suggests --type', async () => {
     // create matching spec and change named 'foo'
     await fs.mkdir(path.join(changesDir, 'foo'), { recursive: true });
-    await fs.writeFile(path.join(changesDir, 'foo', 'proposal.md'), '# Change: Foo\n\n## Why\n\n## What Changes\n', 'utf-8');
+    await fs.writeFile(path.join(changesDir, 'foo', 'outline.md'), '## Proposal\nFoo.\n', 'utf-8');
     await fs.mkdir(path.join(specsDir, 'foo'), { recursive: true });
-    await fs.writeFile(path.join(specsDir, 'foo', 'spec.md'), '## Purpose\n\n## Requirements\n\n### Requirement: R\nX', 'utf-8');
+    await fs.writeFile(path.join(specsDir, 'foo', 'spec.md'), '# foo\nFoo spec.\n\n1. R: X.\n', 'utf-8');
 
     const originalCwd = process.cwd();
     try {
@@ -122,7 +143,7 @@ describe('top-level show command', () => {
     }
   });
 
-  it('resolves a scaffolded change that has no proposal.md yet', async () => {
+  it('resolves a scaffolded change that has no outline.md yet', async () => {
     // `openspec new change <name>` writes only .openspec.yaml, so `show` must
     // resolve the change the same way `list` and `status` already do.
     await fs.mkdir(path.join(changesDir, 'scaffolded'), { recursive: true });
@@ -139,22 +160,22 @@ describe('top-level show command', () => {
       const stderr = err.stderr.toString();
       // Resolved as a change, not rejected as an unknown item.
       expect(stderr).not.toContain('Unknown item');
-      expect(stderr).toContain('has no proposal.md yet');
+      expect(stderr).toContain('has no outline.md yet');
       expect(stderr).toContain('openspec status --change scaffolded');
     } finally {
       process.chdir(originalCwd);
     }
   });
 
-  it('reports a namespace folder as such instead of a proposal-less change (#1846)', async () => {
+  it('reports a namespace folder as such instead of an outline-less change (#1846)', async () => {
     // `changes/mobile/refresh-token/` is not a layout OpenSpec supports: the
     // nested change is invisible and the folder around it reads as an empty
-    // change. Saying "no proposal.md yet" would send the user to a second dead
+    // change. Saying "no outline.md yet" would send the user to a second dead
     // end (`status --change mobile`).
     await fs.mkdir(path.join(changesDir, 'mobile', 'refresh-token'), { recursive: true });
     await fs.writeFile(
-      path.join(changesDir, 'mobile', 'refresh-token', 'proposal.md'),
-      '# Refresh token\n',
+      path.join(changesDir, 'mobile', 'refresh-token', 'outline.md'),
+      '## Proposal\nRefresh token.\n',
       'utf-8'
     );
 
@@ -171,7 +192,7 @@ describe('top-level show command', () => {
       expect(stderr).toContain('"mobile" is not a change');
       expect(stderr).toContain('openspec/changes/mobile/refresh-token/');
       expect(stderr).toContain('mobile-refresh-token');
-      expect(stderr).not.toContain('has no proposal.md yet');
+      expect(stderr).not.toContain('has no outline.md yet');
     } finally {
       process.chdir(originalCwd);
     }

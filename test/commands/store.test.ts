@@ -100,7 +100,7 @@ describe('store command', () => {
     expect(fs.existsSync(path.join(root, 'openspec', 'config.yaml')) || fs.existsSync(path.join(root, 'openspec', 'config.yml'))).toBe(true);
     expect(fs.existsSync(path.join(root, 'openspec', 'specs'))).toBe(true);
     expect(fs.existsSync(path.join(root, 'openspec', 'changes'))).toBe(true);
-    expect(fs.existsSync(path.join(root, 'openspec', 'changes', 'archive'))).toBe(true);
+    expect(fs.existsSync(path.join(root, 'openspec', 'changes', 'archive'))).toBe(false);
   }
 
   function expectNoGeneratedAgentOrBetaArtifacts(root: string): void {
@@ -156,10 +156,9 @@ describe('store command', () => {
       'openspec/',
       'openspec/specs/',
       'openspec/changes/',
-      'openspec/changes/archive/',
       'openspec/config.yaml',
       'openspec/specs/.gitkeep',
-      'openspec/changes/archive/.gitkeep',
+      'openspec/changes/.gitkeep',
       '.openspec-store/store.yaml',
     ]);
     expect(payload.status).toEqual([]);
@@ -290,10 +289,9 @@ describe('store command', () => {
       'openspec/',
       'openspec/specs/',
       'openspec/changes/',
-      'openspec/changes/archive/',
       'openspec/config.yaml',
       'openspec/specs/.gitkeep',
-      'openspec/changes/archive/.gitkeep',
+      'openspec/changes/.gitkeep',
       '.openspec-store/store.yaml',
     ]);
     expect(fs.existsSync(path.join(storeRoot, '.git'))).toBe(true);
@@ -313,9 +311,9 @@ describe('store command', () => {
     expect(result.exitCode).toBe(0);
     const payload = parseJson(result);
     // First-time accept of an existing root anchors its empty directories
-    // (specs/ has user content here, so only archive/ gets an anchor).
+    // (specs/ has user content here, so only changes/ gets an anchor).
     expect(payload.created_files).toEqual([
-      'openspec/changes/archive/.gitkeep',
+      'openspec/changes/.gitkeep',
       '.openspec-store/store.yaml',
     ]);
     expect(fs.existsSync(path.join(storeRoot, 'openspec', 'config.yaml'))).toBe(false);
@@ -579,10 +577,9 @@ describe('store command', () => {
     expect(payload.created_files).toEqual([]);
     expect(fs.existsSync(path.join(storeRoot, 'openspec', 'changes'))).toBe(false);
     expect(fs.existsSync(path.join(storeRoot, 'openspec', 'specs'))).toBe(false);
-    expect(fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'archive'))).toBe(false);
   });
 
-  it('registers a store with active changes before specs or archive exist', async () => {
+  it('registers a store with active changes before specs exist', async () => {
     const storeRoot = mkdir('team-context');
     fs.mkdirSync(path.join(storeRoot, 'openspec', 'changes', 'add-widget'), { recursive: true });
     fs.writeFileSync(
@@ -1071,8 +1068,7 @@ describe('store command', () => {
   it('reports OpenSpec root health separately without repairing it', async () => {
     const storeRoot = mkdir('team-context');
     fs.mkdirSync(path.join(storeRoot, 'openspec', 'specs'), { recursive: true });
-    fs.mkdirSync(path.join(storeRoot, 'openspec', 'changes'), { recursive: true });
-    fs.writeFileSync(path.join(storeRoot, 'openspec', 'changes', 'archive'), 'not a dir\n');
+    fs.writeFileSync(path.join(storeRoot, 'openspec', 'changes'), 'not a dir\n');
     fs.writeFileSync(path.join(storeRoot, 'openspec', 'config.yaml'), `schema: ${DEFAULT_OPENSPEC_SCHEMA}\n`);
     await writeStoreMetadataState(storeRoot, { version: 1, id: 'team-context' });
     await writeStoreRegistryState(
@@ -1097,13 +1093,14 @@ describe('store command', () => {
 
     expect(result.exitCode).toBe(0);
     const store = parseJson(result).stores[0];
-    expect(store.openspec_root.archive.present).toBe(false);
+    expect(store.openspec_root.changes.present).toBe(false);
+    expect(store.openspec_root).not.toHaveProperty('archive');
     expect(store.openspec_root.status[0]).toEqual(
       expect.objectContaining({
-        code: 'openspec_archive_not_directory',
+        code: 'openspec_changes_not_directory',
       })
     );
-    expect(fs.readFileSync(path.join(storeRoot, 'openspec', 'changes', 'archive'), 'utf-8')).toBe('not a dir\n');
+    expect(fs.readFileSync(path.join(storeRoot, 'openspec', 'changes'), 'utf-8')).toBe('not a dir\n');
   });
 
   it('register errors are terminal: one-checkout rule, no circular fix texts', async () => {

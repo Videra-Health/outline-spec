@@ -68,7 +68,7 @@ describe('InitCommand', () => {
       expect(await directoryExists(openspecPath)).toBe(true);
       expect(await directoryExists(path.join(openspecPath, 'specs'))).toBe(true);
       expect(await directoryExists(path.join(openspecPath, 'changes'))).toBe(true);
-      expect(await directoryExists(path.join(openspecPath, 'changes', 'archive'))).toBe(true);
+      expect(await directoryExists(path.join(openspecPath, 'changes', 'archive'))).toBe(false);
     });
 
     it('should create .gitkeep files in empty directories', async () => {
@@ -78,9 +78,7 @@ describe('InitCommand', () => {
 
       const openspecPath = path.join(testDir, 'openspec');
       expect(await fileExists(path.join(openspecPath, 'specs', '.gitkeep'))).toBe(true);
-      // The archive anchor also keeps its parent changes/ directory in Git.
-      expect(await fileExists(path.join(openspecPath, 'changes', '.gitkeep'))).toBe(false);
-      expect(await fileExists(path.join(openspecPath, 'changes', 'archive', '.gitkeep'))).toBe(true);
+      expect(await fileExists(path.join(openspecPath, 'changes', '.gitkeep'))).toBe(true);
     });
 
     it('should restore missing directories and anchors in extend mode', async () => {
@@ -98,8 +96,7 @@ describe('InitCommand', () => {
       await initCommand2.execute(testDir);
 
       expect(await fileExists(path.join(openspecPath, 'specs', '.gitkeep'))).toBe(true);
-      expect(await fileExists(path.join(openspecPath, 'changes', '.gitkeep'))).toBe(false);
-      expect(await fileExists(path.join(openspecPath, 'changes', 'archive', '.gitkeep'))).toBe(true);
+      expect(await fileExists(path.join(openspecPath, 'changes', '.gitkeep'))).toBe(true);
     });
 
     it('should preserve existing directory anchor contents when re-running init', async () => {
@@ -114,16 +111,16 @@ describe('InitCommand', () => {
 
     it('should not add anchors to populated directories', async () => {
       const specsPath = path.join(testDir, 'openspec', 'specs');
-      const archivePath = path.join(testDir, 'openspec', 'changes', 'archive');
+      const changesPath = path.join(testDir, 'openspec', 'changes');
       await fs.mkdir(specsPath, { recursive: true });
-      await fs.mkdir(archivePath, { recursive: true });
+      await fs.mkdir(changesPath, { recursive: true });
       await fs.writeFile(path.join(specsPath, '.custom'), 'keep me');
-      await fs.mkdir(path.join(archivePath, '2026-08-27-example'));
+      await fs.mkdir(path.join(changesPath, 'example'));
 
       await new InitCommand({ tools: 'none', force: true }).execute(testDir);
 
       expect(await fs.readdir(specsPath)).toEqual(['.custom']);
-      expect(await fs.readdir(archivePath)).toEqual(['2026-08-27-example']);
+      expect(await fs.readdir(changesPath)).toEqual(['example']);
     });
 
     it.skipIf(process.platform === 'win32').each([false, true])(
@@ -197,7 +194,7 @@ describe('InitCommand', () => {
 
     it('should not overwrite an existing config when --language is used', async () => {
       const openspecPath = path.join(testDir, 'openspec');
-      await fs.mkdir(path.join(openspecPath, 'changes', 'archive'), { recursive: true });
+      await fs.mkdir(path.join(openspecPath, 'changes'), { recursive: true });
       await fs.mkdir(path.join(openspecPath, 'specs'), { recursive: true });
       const configPath = path.join(openspecPath, 'config.yaml');
       const originalConfig = 'schema: spec-driven\ncontext: |\n  Keep this context exactly.\n';
@@ -213,7 +210,7 @@ describe('InitCommand', () => {
 
     it('should protect an existing config.yml when --language is used', async () => {
       const openspecPath = path.join(testDir, 'openspec');
-      await fs.mkdir(path.join(openspecPath, 'changes', 'archive'), { recursive: true });
+      await fs.mkdir(path.join(openspecPath, 'changes'), { recursive: true });
       await fs.mkdir(path.join(openspecPath, 'specs'), { recursive: true });
       const configPath = path.join(openspecPath, 'config.yml');
       const originalConfig = 'schema: spec-driven\ncontext: Keep this YAML context.\n';
@@ -281,7 +278,7 @@ describe('InitCommand', () => {
       'should reject a dangling language config symlink before creating other files',
       async () => {
         const openspecPath = path.join(testDir, 'openspec');
-        await fs.mkdir(path.join(openspecPath, 'changes', 'archive'), { recursive: true });
+        await fs.mkdir(path.join(openspecPath, 'changes'), { recursive: true });
         await fs.mkdir(path.join(openspecPath, 'specs'), { recursive: true });
         const configPath = path.join(openspecPath, 'config.yaml');
         await fs.symlink(path.join(testDir, 'missing-config.yaml'), configPath);

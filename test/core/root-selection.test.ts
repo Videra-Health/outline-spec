@@ -64,7 +64,7 @@ describe('resolveOpenSpecRoot', () => {
 
   function createOpenSpecRoot(rootDir: string): void {
     fs.mkdirSync(path.join(rootDir, 'openspec', 'specs'), { recursive: true });
-    fs.mkdirSync(path.join(rootDir, 'openspec', 'changes', 'archive'), { recursive: true });
+    fs.mkdirSync(path.join(rootDir, 'openspec', 'changes'), { recursive: true });
     fs.writeFileSync(path.join(rootDir, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
   }
 
@@ -130,7 +130,7 @@ describe('resolveOpenSpecRoot', () => {
     expect(root.path).toBe(storeRoot);
     expect(root.changesDir).toBe(path.join(storeRoot, 'openspec', 'changes'));
     expect(root.specsDir).toBe(path.join(storeRoot, 'openspec', 'specs'));
-    expect(root.archiveDir).toBe(path.join(storeRoot, 'openspec', 'changes', 'archive'));
+    expect(root).not.toHaveProperty('archiveDir');
     expect(root.defaultSchema).toBe('spec-driven');
   });
 

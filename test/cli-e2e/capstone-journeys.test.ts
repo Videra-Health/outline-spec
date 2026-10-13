@@ -44,7 +44,7 @@ describe('capstone persona journeys (6.1)', () => {
     writeSpec(
       storeRoot,
       'billing-rules',
-      '## Purpose\n\nAll invoices are immutable after issue.\n'
+      '# billing-rules\nAll invoices are immutable after issue.\n\n1. Immutable invoices: The system never edits an issued invoice.\n'
     );
     await registerStore({
       id: 'product-requirements',
@@ -137,9 +137,8 @@ describe('capstone persona journeys (6.1)', () => {
     );
     expect(instructions.exitCode).toBe(0);
 
-    // Work the change: write every artifact the schema requires. The
-    // instructions outputPath is change-relative (specs is a glob), so
-    // resolve concretely under the change dir.
+    // Work the change: write each document artifact the schema names, and
+    // the spec edits as outline.md (delta specs no longer exist).
     const artifacts = JSON.parse(status.stdout).artifacts as Array<{ id: string }>;
     for (const artifact of artifacts) {
       const artifactStatus = await runCLI(
@@ -147,33 +146,27 @@ describe('capstone persona journeys (6.1)', () => {
         { cwd: codeRepo, env }
       );
       expect(artifactStatus.exitCode).toBe(0);
-      const target =
-        artifact.id === 'specs'
-          ? path.join(changeDir, 'specs', 'api', 'spec.md')
-          : path.join(changeDir, `${artifact.id}.md`);
-      fs.mkdirSync(path.dirname(target), { recursive: true });
-      fs.writeFileSync(
-        target,
-        artifact.id === 'specs'
-          ? '## ADDED Requirements\n\n### Requirement: Rate limits\nThe API SHALL rate-limit.\n\n#### Scenario: Limit hit\n- **WHEN** the limit is exceeded\n- **THEN** requests are rejected\n'
-          : `# ${artifact.id}\n\nDone.\n`
-      );
+      if (artifact.id === 'specs') continue;
+      fs.writeFileSync(path.join(changeDir, `${artifact.id}.md`), `# ${artifact.id}\n\nDone.\n`);
     }
+    fs.writeFileSync(
+      path.join(changeDir, 'outline.md'),
+      '## Proposal\nRate-limit the API.\n\n## Requirements\n1. api: The public API.\n  a. Rate limits: The API rejects requests over the limit.\n'
+    );
 
     // Everything written landed inside the store's change dir.
     const writtenArtifacts = fs.readdirSync(changeDir).sort();
-    expect(writtenArtifacts).toEqual(['.openspec.yaml', 'design.md', 'proposal.md', 'specs', 'tasks.md']);
+    expect(writtenArtifacts).toEqual(['.openspec.yaml', 'design.md', 'outline.md', 'proposal.md', 'tasks.md']);
 
-    // Archive completes the lifecycle, still without --store.
-    const archived = await runCLI(
-      ['archive', 'add-rate-limits', '--yes', '--skip-specs', '--json'],
-      { cwd: codeRepo, env }
-    );
-    expect(archived.exitCode).toBe(0);
+    // Land completes the lifecycle, still without --store.
+    const landed = await runCLI(['land', 'add-rate-limits', '--yes', '--json'], {
+      cwd: codeRepo,
+      env,
+    });
+    expect(landed.exitCode).toBe(0);
+    expect(JSON.parse(landed.stdout).specs).toEqual([{ name: 'api', action: 'created' }]);
     expect(fs.existsSync(changeDir)).toBe(false);
-    const archiveDir = path.join(storeRoot, 'openspec', 'changes', 'archive');
-    const archivedNames = fs.readdirSync(archiveDir);
-    expect(archivedNames.some((name) => name.endsWith('add-rate-limits'))).toBe(true);
+    expect(fs.existsSync(path.join(storeRoot, 'openspec', 'specs', 'api', 'spec.md'))).toBe(true);
 
     // The code repo never grew planning state.
     expect(fs.readdirSync(path.join(codeRepo, 'openspec'))).toEqual(['config.yaml']);

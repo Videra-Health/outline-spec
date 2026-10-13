@@ -70,17 +70,6 @@ describe('generateApplyInstructions blocked prerequisites', () => {
     );
   });
 
-  it('counts a skipped specs artifact as built', async () => {
-    fs.writeFileSync(
-      path.join(changeDir, '.openspec.yaml'),
-      'schema: spec-driven\nskip_specs: true\n'
-    );
-
-    const instructions = await generateApplyInstructions(tempDir, 'my-change');
-
-    expect(instructions.missingPrerequisites).toEqual(['design', 'tasks']);
-  });
-
   it('points at a command every profile has, never at a skill it may not', async () => {
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
 

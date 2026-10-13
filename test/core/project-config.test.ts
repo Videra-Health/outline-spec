@@ -932,7 +932,7 @@ rules:
         },
       };
 
-      expect(OPERATION_IDS).toEqual(['apply', 'archive']);
+      expect(OPERATION_IDS).toEqual(['apply', 'land', 'archive']);
       expect(loadOperationInputs(config, 'apply')).toEqual({
         context: 'Project background',
         operationGuidance: ['Apply guidance'],
@@ -940,6 +940,20 @@ rules:
       expect(loadOperationInputs(config, 'archive')).toEqual({
         context: 'Project background',
         operationGuidance: ['Archive guidance'],
+      });
+      // `archive` is the old name for `land`, so its guidance carries over.
+      expect(loadOperationInputs(config, 'land')).toEqual({
+        context: 'Project background',
+        operationGuidance: ['Archive guidance'],
+      });
+      expect(
+        loadOperationInputs(
+          { ...config, operations: { ...config.operations, land: { guidance: ['Land guidance'] } } },
+          'land'
+        )
+      ).toEqual({
+        context: 'Project background',
+        operationGuidance: ['Land guidance'],
       });
       expect(JSON.stringify(loadOperationInputs(config, 'apply'))).not.toContain(
         'Artifact-only rule'

@@ -12,10 +12,14 @@ describe('validation report CLI contract', () => {
     projectDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-findings-e2e-'));
     await fs.mkdir(path.join(projectDir, 'openspec', 'specs'), { recursive: true });
     await fs.writeFile(path.join(projectDir, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
-    for (const [id, checkbox] of [['done', 'x'], ['unfinished', ' ']]) {
-      const dir = path.join(projectDir, 'openspec', 'changes', 'archive', id);
+    // "unfinished" patches a requirement no spec has, so it fails to land.
+    for (const [id, requirement] of [['done', 'Work: It works.'], ['unfinished', 'Missing (patch):']]) {
+      const dir = path.join(projectDir, 'openspec', 'changes', id);
       await fs.mkdir(dir, { recursive: true });
-      await fs.writeFile(path.join(dir, 'tasks.md'), `# Tasks\n\n- [${checkbox}] 1.1 Work\n`);
+      await fs.writeFile(
+        path.join(dir, 'outline.md'),
+        `## Proposal\nWhy.\n\n## Requirements\n1. ${id}-spec: Purpose.\n  a. ${requirement}\n`
+      );
     }
   });
 
@@ -24,15 +28,15 @@ describe('validation report CLI contract', () => {
   });
 
   it('selects findings through the real CLI while retaining full totals and failure status', async () => {
-    const full = await runCLI(['validate', '--archived', '--json'], { cwd: projectDir });
-    const compact = await runCLI(['validate', '--archived', '--json', '--report', 'findings'], { cwd: projectDir });
+    const full = await runCLI(['validate', '--changes', '--json'], { cwd: projectDir });
+    const compact = await runCLI(['validate', '--changes', '--json', '--report', 'findings'], { cwd: projectDir });
     expect(compact.exitCode).toBe(full.exitCode);
     expect(compact.exitCode).toBe(1);
     expect(compact.stderr).toBe('');
     const fullDoc = JSON.parse(full.stdout);
     const compactDoc = JSON.parse(compact.stdout);
     expect(compactDoc.report).toEqual({
-      kind: 'validation-findings', version: '1.0', scope: 'archived', returnedItems: 1, totalItems: 2,
+      kind: 'validation-findings', version: '1.0', scope: 'changes', returnedItems: 1, totalItems: 2,
     });
     expect(compactDoc.itemFindings).toEqual([
       { ...fullDoc.items.find((item: { id: string }) => item.id === 'unfinished'), durationMs: expect.any(Number) },
@@ -48,7 +52,6 @@ describe('validation report CLI contract', () => {
     ['--all', '--report=FINDINGS'],
     ['--report', 'findings'],
     ['some-item', '--all', '--report', 'full'],
-    ['--all', '--archived', '--report', 'findings'],
   ])('returns semantic errors as JSON before resolving a nonexistent store: %j', async (...args) => {
     const result = await runCLI(['validate', ...args, '--json', '--store', 'missing-store'], { cwd: projectDir });
     expect(result.exitCode).toBe(1);
@@ -72,7 +75,7 @@ describe('validation report CLI contract', () => {
       XDG_DATA_HOME: path.join(projectDir, 'data'),
     };
     await registerStore({ id: 'report-store', localPath: projectDir, globalDataDir: getGlobalDataDir({ env }) });
-    const result = await runCLI(['validate', '--archived', '--report', 'findings', '--json', '--store', 'report-store'], { cwd: projectDir, env });
+    const result = await runCLI(['validate', '--changes', '--report', 'findings', '--json', '--store', 'report-store'], { cwd: projectDir, env });
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toBe('');
     const output = JSON.parse(result.stdout);
@@ -80,7 +83,7 @@ describe('validation report CLI contract', () => {
     expect(realpathSync.native(output.root.path)).toBe(realpathSync.native(projectDir));
     expect(output.root.source).toBe('store');
     expect(output.root.store_id).toBe('report-store');
-    expect(output.report).toMatchObject({ scope: 'archived', totalItems: 2, returnedItems: 1 });
+    expect(output.report).toMatchObject({ scope: 'changes', totalItems: 2, returnedItems: 1 });
     expect(output.itemFindings[0].id).toBe('unfinished');
   });
 
@@ -95,12 +98,12 @@ describe('validation report CLI contract', () => {
     expect(output).not.toHaveProperty('report');
   });
 
-  it('retains fatal archive-discovery diagnostics', async () => {
+  it('retains fatal change-discovery diagnostics', async () => {
     const malformedDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-findings-malformed-'));
     try {
-      await fs.mkdir(path.join(malformedDir, 'openspec', 'changes'), { recursive: true });
-      await fs.writeFile(path.join(malformedDir, 'openspec', 'changes', 'archive'), 'not a directory');
-      const result = await runCLI(['validate', '--archived', '--report', 'findings', '--json'], { cwd: malformedDir });
+      await fs.mkdir(path.join(malformedDir, 'openspec', 'specs'), { recursive: true });
+      await fs.writeFile(path.join(malformedDir, 'openspec', 'changes'), 'not a directory');
+      const result = await runCLI(['validate', '--changes', '--report', 'findings', '--json'], { cwd: malformedDir });
       expect(result.exitCode).toBe(1);
       expect(result.stderr).toBe('');
       expect(JSON.parse(result.stdout)).toMatchObject({ status: [{ code: 'validate_error' }] });

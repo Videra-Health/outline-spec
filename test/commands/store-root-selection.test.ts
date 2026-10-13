@@ -12,40 +12,35 @@ import { runCLI, type RunCLIResult } from '../helpers/run-cli.js';
 import { cleanupTempPath } from '../helpers/temp-cleanup.js';
 import { writeSpec } from '../helpers/openspec-fixtures.js';
 
-const VALID_DELTA_SPEC = `## ADDED Requirements
+const VALID_OUTLINE = `## Proposal
+Billing needs work.
 
-### Requirement: Billing SHALL work
-The system SHALL create bills.
-
-#### Scenario: Creates bills
-- **WHEN** a billing period ends
-- **THEN** a bill is created
+## Requirements
+1. billing: Bills customers.
+  a. Billing: The system creates bills.
 `;
 
-const INVALID_DELTA_SPEC = `## ADDED Requirements
+// A new requirement with no sentence: the outline can't land.
+const INVALID_OUTLINE = `## Proposal
+Billing needs work.
 
-### Requirement: Billing SHALL work
-The system SHALL create bills.
+## Requirements
+1. billing: Bills customers.
+  a. Billing:
 `;
 
-// Targets a spec that does not exist yet: REMOVED deltas are ignored with a
-// human-mode warning, which must never leak into JSON stdout.
-const REMOVED_ONLY_DELTA_SPEC = `## REMOVED Requirements
+// Patches a requirement in a spec that does not exist yet.
+const PATCH_MISSING_SPEC_OUTLINE = `## Proposal
+Billing needs work.
 
-### Requirement: Old billing SHALL go away
+## Requirements
+1. billing:
+  a. Billing (patch): ~~The system creates bills.~~ **The system creates bills monthly.**
 `;
 
-// MODIFIED deltas against a spec that does not exist make buildUpdatedSpec
-// throw during the prepare pass.
-const MODIFIED_ONLY_DELTA_SPEC = `## MODIFIED Requirements
-
-### Requirement: Billing SHALL work
-The system SHALL create bills differently.
-
-#### Scenario: Creates bills
-- **WHEN** a billing period ends
-- **THEN** a bill is created
-`;
+function outlineSpec(name: string, purpose: string, requirement: string): string {
+  return `# ${name}\n${purpose}\n\n1. ${requirement}\n`;
+}
 
 describe('store root selection for normal commands', () => {
   let tempDir: string;
@@ -76,7 +71,7 @@ describe('store root selection for normal commands', () => {
 
   function createOpenSpecRoot(rootDir: string): void {
     fs.mkdirSync(path.join(rootDir, 'openspec', 'specs'), { recursive: true });
-    fs.mkdirSync(path.join(rootDir, 'openspec', 'changes', 'archive'), { recursive: true });
+    fs.mkdirSync(path.join(rootDir, 'openspec', 'changes'), { recursive: true });
     fs.writeFileSync(path.join(rootDir, 'openspec', 'config.yaml'), 'schema: spec-driven\n');
   }
 
@@ -90,7 +85,7 @@ describe('store root selection for normal commands', () => {
   function createChange(
     rootDir: string,
     name: string,
-    options: { deltaSpec?: string | null; tasksDone?: boolean } = {}
+    options: { outline?: string; tasksDone?: boolean } = {}
   ): string {
     const changeDir = path.join(rootDir, 'openspec', 'changes', name);
     fs.mkdirSync(changeDir, { recursive: true });
@@ -102,11 +97,7 @@ describe('store root selection for normal commands', () => {
       path.join(changeDir, 'tasks.md'),
       options.tasksDone === false ? '- [ ] Task 1\n' : '- [x] Task 1\n'
     );
-    if (options.deltaSpec !== null) {
-      const specDir = path.join(changeDir, 'specs', 'billing');
-      fs.mkdirSync(specDir, { recursive: true });
-      fs.writeFileSync(path.join(specDir, 'spec.md'), options.deltaSpec ?? VALID_DELTA_SPEC);
-    }
+    fs.writeFileSync(path.join(changeDir, 'outline.md'), options.outline ?? VALID_OUTLINE);
     return changeDir;
   }
 
@@ -140,14 +131,14 @@ describe('store root selection for normal commands', () => {
         fs.writeFileSync(path.join(configDir, 'config.json'), JSON.stringify({ defaultStore: 'team-context' }));
       }
 
-      const spec = '# Billing\n\n## Purpose\nBills from the selected root.\n\n## Requirements\n\n### Requirement: Billing\nThe system SHALL bill.\n\n#### Scenario: Bills\n- **WHEN** due\n- **THEN** billed\n';
-      writeSpec(selectedRoot, 'billing', spec);
-      writeSpec(selectedRoot, 'billing/invoices', spec);
+      const specFor = (id: string) => outlineSpec(id, 'Bills from the selected root.', 'Billing: The system bills.');
+      writeSpec(selectedRoot, 'billing', specFor('billing'));
+      writeSpec(selectedRoot, 'billing/invoices', specFor('billing/invoices'));
       createChange(selectedRoot, 'billing');
       if (source === 'store') {
         // A missing --store on the read must not silently return local content.
-        writeSpec(appRepo, 'billing', spec.replace('SHALL bill', 'SHALL use local billing'));
-        writeSpec(appRepo, 'local-only', spec);
+        writeSpec(appRepo, 'billing', specFor('billing').replace('system bills', 'system uses local billing'));
+        writeSpec(appRepo, 'local-only', specFor('local-only'));
       }
 
       const changes = await runCLI(['list', '--json', ...storeArgs], { cwd: appRepo, env });
@@ -169,22 +160,20 @@ describe('store root selection for normal commands', () => {
 
       for (const { id } of json.specs) {
         const shown = await runCLI(
-          ['show', id, '--type', 'spec', '--json', '--no-scenarios', ...storeArgs],
+          ['show', id, '--type', 'spec', '--json', ...storeArgs],
           { cwd: appRepo, env }
         );
         expect(shown.exitCode).toBe(0);
-        expect(parseJson(shown)).toMatchObject({
-          id,
-          overview: 'Bills from the selected root.',
-          requirementCount: 1,
-          requirements: [{ text: 'The system SHALL bill.', scenarios: [] }],
+        expect(parseJson(shown)).toEqual({
+          name: id,
+          purpose: 'Bills from the selected root.',
+          items: [{ label: '1', text: 'Billing: The system bills.', children: [] }],
           root: json.root,
         });
 
-        // The overview omits scenarios; decisions use the complete spec.
         const full = await runCLI(['show', id, '--type', 'spec', ...storeArgs], { cwd: appRepo, env });
         expect(full.exitCode).toBe(0);
-        expect(full.stdout.trim()).toBe(spec.trim());
+        expect(full.stdout.trim()).toBe(specFor(id).trim());
       }
     },
     30_000
@@ -395,7 +384,34 @@ operations:
       expect(json.root.store_id).toBe('team-context');
     });
 
-    it('archives a change into the store archive with JSON output', async () => {
+    it('lands a change into the store specs with JSON output', async () => {
+      createChange(storeRoot, 'store-change');
+
+      const result = await runCLI(
+        ['land', 'store-change', '--store', 'team-context', '--json', '--yes'],
+        { cwd: appRepo, env }
+      );
+      expect(result.exitCode).toBe(0);
+      expect(result.stdout.trim().startsWith('{')).toBe(true);
+
+      const json = parseJson(result);
+      expect(json.landed).toBe('store-change');
+      expect(json.specs).toEqual([{ name: 'billing', action: 'created' }]);
+      expect(json.root.store_id).toBe('team-context');
+
+      expect(
+        fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'store-change'))
+      ).toBe(false);
+      expect(
+        fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'archive'))
+      ).toBe(false);
+      expect(
+        fs.readFileSync(path.join(storeRoot, 'openspec', 'specs', 'billing', 'spec.md'), 'utf-8')
+      ).toBe(outlineSpec('billing', 'Bills customers.', 'Billing: The system creates bills.'));
+      expectNoLocalOpenSpec();
+    });
+
+    it('accepts archive as an alias of land with a rename note on stderr', async () => {
       createChange(storeRoot, 'store-change');
 
       const result = await runCLI(
@@ -403,25 +419,8 @@ operations:
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
-      expect(result.stdout.trim().startsWith('{')).toBe(true);
-
-      const json = parseJson(result);
-      expect(json.archive.change).toBe('store-change');
-      expect(json.archive.archivedAs).toMatch(/^\d{4}-\d{2}-\d{2}-store-change$/);
-      expect(json.archive.path).toBe(
-        path.join(storeRoot, 'openspec', 'changes', 'archive', json.archive.archivedAs)
-      );
-      expect(json.archive.specsUpdated).toBe(true);
-      expect(json.root.store_id).toBe('team-context');
-
-      expect(fs.existsSync(json.archive.path)).toBe(true);
-      expect(
-        fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'store-change'))
-      ).toBe(false);
-      expect(
-        fs.existsSync(path.join(storeRoot, 'openspec', 'specs', 'billing', 'spec.md'))
-      ).toBe(true);
-      expectNoLocalOpenSpec();
+      expect(result.stderr).toContain('"openspec archive" is now "openspec land"');
+      expect(parseJson(result).landed).toBe('store-change');
     });
   });
 
@@ -434,36 +433,25 @@ operations:
         env,
       });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout.startsWith('## Why')).toBe(true);
+      expect(result.stdout.startsWith('## Proposal')).toBe(true);
       expect(result.stderr).toContain(`Using OpenSpec root: team-context (${storeRoot})`);
     });
 
-    it('diffs a delta against the selected store\'s main specs', async () => {
+    it('diffs an outline against the selected store\'s main specs', async () => {
       // A same-named capability sits in the cwd repo with different text. If
       // --diff resolved main specs against the cwd instead of the store root,
-      // the diff below would be computed from this decoy.
-      fs.mkdirSync(path.join(appRepo, 'openspec', 'specs', 'billing'), { recursive: true });
-      fs.writeFileSync(
-        path.join(appRepo, 'openspec', 'specs', 'billing', 'spec.md'),
-        '# billing Specification\n\n## Purpose\nDecoy.\n\n## Requirements\n### Requirement: Billing SHALL work\nThe system SHALL create decoy bills.\n\n#### Scenario: Creates bills\n- **WHEN** a billing period ends\n- **THEN** a decoy bill is created\n'
-      );
-      fs.mkdirSync(path.join(storeRoot, 'openspec', 'specs', 'billing'), { recursive: true });
-      fs.writeFileSync(
-        path.join(storeRoot, 'openspec', 'specs', 'billing', 'spec.md'),
-        '# billing Specification\n\n## Purpose\nBilling.\n\n## Requirements\n### Requirement: Billing SHALL work\nThe system SHALL create bills.\n\n#### Scenario: Creates bills\n- **WHEN** a billing period ends\n- **THEN** a bill is created\n'
-      );
-      createChange(storeRoot, 'store-change', {
-        deltaSpec: '## MODIFIED Requirements\n\n### Requirement: Billing SHALL work\nThe system SHALL create bills monthly.\n\n#### Scenario: Creates bills\n- **WHEN** a billing period ends\n- **THEN** a bill is created\n',
-      });
+      // the patch below would not match the decoy's sentence.
+      writeSpec(appRepo, 'billing', outlineSpec('billing', 'Decoy.', 'Billing: The system creates decoy bills.'));
+      writeSpec(storeRoot, 'billing', outlineSpec('billing', 'Billing.', 'Billing: The system creates bills.'));
+      createChange(storeRoot, 'store-change', { outline: PATCH_MISSING_SPEC_OUTLINE });
 
       const result = await runCLI(
         ['show', 'store-change', '--store', 'team-context', '--diff'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('MODIFIED: Billing SHALL work');
-      expect(result.stdout).toContain('-The system SHALL create bills.');
-      expect(result.stdout).toContain('+The system SHALL create bills monthly.');
+      expect(result.stdout).toContain('--- openspec/specs/billing/spec.md (updated)');
+      expect(result.stdout).toContain('1. Billing: The system creates bills monthly.');
       expect(result.stdout).not.toContain('decoy');
     });
 
@@ -866,23 +854,23 @@ operations:
     });
   });
 
-  describe('archive --json is non-interactive', () => {
+  describe('land --json is non-interactive', () => {
     it('fails without a change name instead of opening a picker', async () => {
       createChange(storeRoot, 'store-change');
 
-      const result = await runCLI(['archive', '--store', 'team-context', '--json'], {
+      const result = await runCLI(['land', '--store', 'team-context', '--json'], {
         cwd: appRepo,
         env,
       });
       expect(result.exitCode).toBe(1);
       expect(result.stdout.trim().startsWith('{')).toBe(true);
       const json = parseJson(result);
-      expect(json.archive).toBeNull();
-      expect(json.status[0].code).toBe('archive_change_name_required');
+      expect(json.landed).toBeNull();
+      expect(json.status[0].code).toBe('land_change_name_required');
     });
 
     it('reports no active changes for a selected empty store without init guidance', async () => {
-      const blankStoreRoot = path.join(tempDir, 'stores', 'archive-blank-context');
+      const blankStoreRoot = path.join(tempDir, 'stores', 'land-blank-context');
       fs.mkdirSync(path.join(blankStoreRoot, 'openspec'), { recursive: true });
       fs.writeFileSync(
         path.join(blankStoreRoot, 'openspec', 'config.yaml'),
@@ -890,7 +878,7 @@ operations:
       );
       await writeStoreMetadataState(blankStoreRoot, {
         version: 1,
-        id: 'archive-blank-context',
+        id: 'land-blank-context',
       });
       const registered = await runCLI(
         ['store', 'register', blankStoreRoot, '--json'],
@@ -899,104 +887,98 @@ operations:
       expect(registered.exitCode).toBe(0);
 
       const result = await runCLI(
-        ['archive', 'missing-change', '--store', 'archive-blank-context', '--json', '--yes'],
+        ['land', 'missing-change', '--store', 'land-blank-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
 
       expect(result.exitCode).toBe(1);
       const json = parseJson(result);
-      expect(json.archive).toBeNull();
+      expect(json.landed).toBeNull();
       expect(json.status[0]).toEqual(expect.objectContaining({
-        code: 'archive_change_not_found',
+        code: 'land_change_not_found',
         message: "Change 'missing-change' not found. No active changes exist in this root.",
       }));
     });
 
-    it('reports validation failures as diagnostics without stdout prose', async () => {
-      createChange(storeRoot, 'bad-change', { deltaSpec: INVALID_DELTA_SPEC });
+    it('reports outline conflicts as diagnostics without stdout prose', async () => {
+      createChange(storeRoot, 'bad-change', { outline: INVALID_OUTLINE });
 
       const result = await runCLI(
-        ['archive', 'bad-change', '--store', 'team-context', '--json', '--yes'],
+        ['land', 'bad-change', '--store', 'team-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(1);
       expect(result.stdout.trim().startsWith('{')).toBe(true);
       const json = parseJson(result);
-      expect(json.archive).toBeNull();
-      expect(json.status[0].code).toBe('archive_validation_failed');
-      // The change was not archived.
+      expect(json.landed).toBeNull();
+      expect(json.status[0].code).toBe('land_conflicts');
+      // The change was not landed.
       expect(
         fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'bad-change'))
       ).toBe(true);
     });
 
-    it('keeps stdout pure when REMOVED deltas target a new spec', async () => {
-      createChange(storeRoot, 'removed-change', { deltaSpec: REMOVED_ONLY_DELTA_SPEC });
+    it('keeps stdout pure when --yes skips incomplete tasks', async () => {
+      createChange(storeRoot, 'wip-yes-change', { tasksDone: false });
 
       const result = await runCLI(
-        ['archive', 'removed-change', '--store', 'team-context', '--json', '--yes', '--no-validate'],
+        ['land', 'wip-yes-change', '--store', 'team-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
-      // The "REMOVED requirement(s) ignored for new spec" warning must not
-      // precede or pollute the JSON payload.
+      // The human-mode task status and --yes warning must not precede the JSON payload.
       expect(result.stdout.trim().startsWith('{')).toBe(true);
-      const json = parseJson(result);
-      expect(json.archive.change).toBe('removed-change');
+      expect(parseJson(result).landed).toBe('wip-yes-change');
     });
 
-    it('writes no spec when any rebuilt spec fails validation', async () => {
-      // Two delta specs in one change: 'aaa-good' targets a new spec and
-      // rebuilds cleanly; 'zzz-bad' targets an existing spec whose current
-      // requirement has no scenarios, so its rebuilt content fails the
-      // validator only at the late rebuilt-validation pass (the prepare-time
-      // structure check does not catch missing scenarios).
-      const changeDir = createChange(storeRoot, 'two-spec-change', { deltaSpec: null });
-      for (const capability of ['aaa-good', 'zzz-bad']) {
-        const specDir = path.join(changeDir, 'specs', capability);
-        fs.mkdirSync(specDir, { recursive: true });
-        fs.writeFileSync(path.join(specDir, 'spec.md'), VALID_DELTA_SPEC);
-      }
-      const badTargetDir = path.join(storeRoot, 'openspec', 'specs', 'zzz-bad');
-      fs.mkdirSync(badTargetDir, { recursive: true });
-      const badTargetContent =
-        '# zzz-bad\n\n## Purpose\nLegacy.\n\n## Requirements\n\n### Requirement: Old rule SHALL hold\nThe system SHALL hold.\n';
-      fs.writeFileSync(path.join(badTargetDir, 'spec.md'), badTargetContent);
+    it('writes no spec when any spec in the change fails to land', async () => {
+      // 'aaa-good' is a new spec that lands cleanly; 'zzz-bad' patches a
+      // requirement its live spec lacks, so the whole change must write nothing.
+      createChange(storeRoot, 'two-spec-change', {
+        outline: `## Requirements
+1. aaa-good: A good spec.
+  a. Good: The system is good.
+2. zzz-bad:
+  a. Missing rule (patch): ~~Old.~~ **New.**
+`,
+      });
+      const badTargetContent = outlineSpec('zzz-bad', 'Legacy.', 'Old rule: The system holds.');
+      writeSpec(storeRoot, 'zzz-bad', badTargetContent);
 
       const result = await runCLI(
-        ['archive', 'two-spec-change', '--store', 'team-context', '--json', '--yes'],
+        ['land', 'two-spec-change', '--store', 'team-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(1);
       const json = parseJson(result);
-      expect(json.archive).toBeNull();
-      expect(json.status[0].code).toBe('archive_spec_validation_failed');
+      expect(json.landed).toBeNull();
+      expect(json.status[0].code).toBe('land_conflicts');
 
-      // "No files were changed" must be true: the good spec was not created
+      // "Nothing was written" must be true: the good spec was not created
       // and the bad target is byte-identical.
       expect(
         fs.existsSync(path.join(storeRoot, 'openspec', 'specs', 'aaa-good', 'spec.md'))
       ).toBe(false);
-      expect(fs.readFileSync(path.join(badTargetDir, 'spec.md'), 'utf-8')).toBe(
-        badTargetContent
-      );
+      expect(
+        fs.readFileSync(path.join(storeRoot, 'openspec', 'specs', 'zzz-bad', 'spec.md'), 'utf-8')
+      ).toBe(badTargetContent);
       expect(
         fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'two-spec-change'))
       ).toBe(true);
     });
 
-    it('reports spec-update failures as diagnostics without stdout prose', async () => {
-      createChange(storeRoot, 'modified-change', { deltaSpec: MODIFIED_ONLY_DELTA_SPEC });
+    it('reports a patch to a missing spec as a diagnostic without stdout prose', async () => {
+      createChange(storeRoot, 'modified-change', { outline: PATCH_MISSING_SPEC_OUTLINE });
 
       const result = await runCLI(
-        ['archive', 'modified-change', '--store', 'team-context', '--json', '--yes', '--no-validate'],
+        ['land', 'modified-change', '--store', 'team-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(1);
       expect(result.stdout.trim().startsWith('{')).toBe(true);
       const json = parseJson(result);
-      expect(json.archive).toBeNull();
-      expect(json.status[0].code).toBe('archive_spec_update_failed');
+      expect(json.landed).toBeNull();
+      expect(json.status[0].code).toBe('land_conflicts');
       expect(
         fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'modified-change'))
       ).toBe(true);
@@ -1006,12 +988,12 @@ operations:
       createChange(storeRoot, 'wip-change', { tasksDone: false });
 
       const result = await runCLI(
-        ['archive', 'wip-change', '--store', 'team-context', '--json'],
+        ['land', 'wip-change', '--store', 'team-context', '--json'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(1);
       const json = parseJson(result);
-      expect(json.status[0].code).toMatch(/archive_tasks_incomplete|archive_confirmation_required/);
+      expect(json.status[0].code).toBe('land_tasks_incomplete');
       expect(
         fs.existsSync(path.join(storeRoot, 'openspec', 'changes', 'wip-change'))
       ).toBe(true);

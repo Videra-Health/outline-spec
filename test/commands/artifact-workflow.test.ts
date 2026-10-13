@@ -258,25 +258,6 @@ describe('artifact-workflow CLI commands', () => {
         );
       });
 
-      it('never points at a skipped artifact', async () => {
-        const changeDir = await createTestChange('skip-next-step', ['proposal']);
-        await fs.writeFile(
-          path.join(changeDir, '.openspec.yaml'),
-          'schema: spec-driven\nskip_specs: true\n'
-        );
-
-        const result = await runCLI(['status', '--change', 'skip-next-step'], { cwd: tempDir });
-
-        expect(result.exitCode).toBe(0);
-        // A skipped artifact satisfies its dependents but must never be
-        // created, so naming it would send the author to write a file the
-        // change forbids.
-        expect(result.stdout).toContain('[~] specs');
-        expect(lastLine(result)).toBe(
-          'Next: openspec instructions design --change "skip-next-step" --json'
-        );
-      });
-
       it('stays out of the JSON payload', async () => {
         await createTestChange('json-clean');
 
@@ -344,42 +325,6 @@ describe('artifact-workflow CLI commands', () => {
       expect(status.nextSteps[0]).not.toContain('before implementation');
       expect(apply.state).toBe('ready');
       expect(apply.progress.remaining).toBe(1);
-    });
-
-    it('reports skipped planning artifacts as complete without creating them', async () => {
-      const changeDir = await createTestChange('skip-specs-change', [
-        'proposal',
-        'design',
-        'tasks',
-      ]);
-      await fs.writeFile(
-        path.join(changeDir, '.openspec.yaml'),
-        'schema: spec-driven\nskip_specs: true\n'
-      );
-
-      const result = await runCLI(['status', '--change', 'skip-specs-change', '--json'], {
-        cwd: tempDir,
-      });
-
-      expect(result.exitCode).toBe(0);
-      const status = JSON.parse(result.stdout);
-      expect(status.isPlanningComplete).toBe(true);
-      expect(status.isComplete).toBe(status.isPlanningComplete);
-      expect(status.artifacts.find((artifact: any) => artifact.id === 'specs')?.status).toBe(
-        'skipped'
-      );
-      expect(status.artifactPaths.specs.existingOutputPaths).toEqual([]);
-      const instructionsResult = await runCLI(
-        ['instructions', 'specs', '--change', 'skip-specs-change', '--json'],
-        { cwd: tempDir }
-      );
-      expect(instructionsResult.exitCode).toBe(0);
-      expect(JSON.parse(instructionsResult.stdout)).toMatchObject({
-        skipped: true,
-        existingOutputPaths: [],
-        warning: expect.stringContaining('Do not create spec files'),
-      });
-      await expect(fs.stat(path.join(changeDir, 'specs'))).rejects.toMatchObject({ code: 'ENOENT' });
     });
 
     it('exits gracefully when no changes exist', async () => {
@@ -746,7 +691,7 @@ rules:
       expect(metadata).not.toContain('skip_specs');
     });
 
-    it('marks changes as skip_specs when their schema cannot generate specs', async () => {
+    it('does not mark changes as skip_specs when their schema cannot generate specs', async () => {
       const schemaDir = path.join(tempDir, 'openspec', 'schemas', 'no-specs');
       await fs.mkdir(path.join(schemaDir, 'templates'), { recursive: true });
       await fs.writeFile(
@@ -783,70 +728,10 @@ apply:
         path.join(changesDir, 'no-spec-change', '.openspec.yaml'),
         'utf-8'
       );
-      expect(metadata).toContain('skip_specs: true');
-
-      const validation = await runCLI(
-        ['validate', 'no-spec-change', '--type', 'change'],
-        { cwd: tempDir }
-      );
-      expect(validation.exitCode).toBe(0);
-    });
-
-    it('does not mark spec-producing schemas that use Windows separators', async () => {
-      const schemaName = 'windows-specs';
-      const generates = String.raw`specs\**\*.md`;
-      const schemaDir = path.join(tempDir, 'openspec', 'schemas', schemaName);
-      await fs.mkdir(path.join(schemaDir, 'templates'), { recursive: true });
-      await fs.writeFile(
-        path.join(schemaDir, 'schema.yaml'),
-        `name: ${schemaName}
-version: 1
-artifacts:
-  - id: specs
-    generates: '${generates}'
-    description: Specs
-    template: spec.md
-    requires: []
-`
-      );
-      await fs.writeFile(path.join(schemaDir, 'templates', 'spec.md'), '# Spec\n');
-      await fs.writeFile(
-        path.join(tempDir, 'openspec', 'config.yaml'),
-        `schema: ${schemaName}\n`
-      );
-
-      const changeName = `${schemaName}-change`;
-      const result = await runCLI(['new', 'change', changeName], { cwd: tempDir });
-      expect(result.exitCode).toBe(0);
-
-      const changeDir = path.join(changesDir, changeName);
-      const metadata = await fs.readFile(path.join(changeDir, '.openspec.yaml'), 'utf-8');
       expect(metadata).not.toContain('skip_specs');
-
-      const specDir = path.join(changeDir, 'specs', 'example');
-      await fs.mkdir(specDir, { recursive: true });
-      await fs.writeFile(
-        path.join(specDir, 'spec.md'),
-        `## ADDED Requirements
-### Requirement: Example behavior
-The system SHALL support the example behavior.
-
-#### Scenario: Example succeeds
-- **WHEN** the example runs
-- **THEN** it succeeds
-`
-      );
-
-      const status = await runCLI(['status', '--change', changeName, '--json'], {
-        cwd: tempDir,
-      });
-      expect(status.exitCode).toBe(0);
-      expect(JSON.parse(status.stdout).artifacts[0].status).toBe('done');
-
-      const validation = await runCLI(['validate', changeName, '--type', 'change'], {
-        cwd: tempDir,
-      });
-      expect(validation.exitCode).toBe(0);
+      await expect(
+        fs.stat(path.join(changesDir, 'archive'))
+      ).rejects.toMatchObject({ code: 'ENOENT' });
     });
 
     it('rejects --initiative and writes no change', async () => {
@@ -1386,7 +1271,7 @@ artifacts:
     });
   });
 
-  describe('instructions archive command', () => {
+  describe('instructions land command (archive alias)', () => {
     it('returns current archive context, guidance, and the root envelope in JSON', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
@@ -1427,7 +1312,7 @@ operations:
       expect(result.stdout).not.toContain('Perform the archive');
     });
 
-    it('renders required context and advisory archive guidance as separate text sections', async () => {
+    it('renders required context and advisory land guidance as separate text sections', async () => {
       await fs.writeFile(
         path.join(tempDir, 'openspec', 'config.yaml'),
         `schema: spec-driven
@@ -1441,12 +1326,12 @@ operations:
       await createTestChange('archive-text-inputs');
 
       const result = await runCLI(
-        ['instructions', 'archive', '--change', 'archive-text-inputs'],
+        ['instructions', 'land', '--change', 'archive-text-inputs'],
         { cwd: tempDir }
       );
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('## Archive Inputs: archive-text-inputs');
+      expect(result.stdout).toContain('## Land Inputs: archive-text-inputs');
       expect(result.stdout).toContain('### Project Context (required instruction input)');
       expect(result.stdout).toContain('Archive background');
       expect(result.stdout).toContain('### Operation Guidance (advisory)');

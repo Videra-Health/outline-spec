@@ -15,48 +15,31 @@ async function prepareNonEnglishSpec(): Promise<string> {
   await fs.writeFile(
     path.join(specDir, 'spec.md'),
     `# 日志记录
-
-## Purpose
 记录应用程序中的重要事件，以便团队能够诊断问题、调查故障、审计活动并了解长期的系统行为。
 
-## Requirements
-
-### Requirement: 事件记录
-系统必须记录应用程序中的重要事件。
-
-#### Scenario: 事件发生
-- **WHEN** 应用程序生成重要事件
-- **THEN** 系统保存该事件
+1. 事件记录: 系统记录应用程序中的重要事件。
+  a. 应用程序生成重要事件时，系统保存该事件。
 `
   );
   return projectDir;
 }
 
-/** Create a temporary project containing a non-English change delta. */
+/** Create a temporary project containing a non-English change that adds a spec. */
 async function prepareNonEnglishChange(): Promise<string> {
   const projectDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-i18n-change-validation-'));
   tempRoots.push(projectDir);
-  const specDir = path.join(
-    projectDir,
-    'openspec',
-    'changes',
-    '添加日志',
-    'specs',
-    '日志记录'
-  );
-  await fs.mkdir(specDir, { recursive: true });
+  const changeDir = path.join(projectDir, 'openspec', 'changes', '添加日志');
+  await fs.mkdir(changeDir, { recursive: true });
+  await fs.mkdir(path.join(projectDir, 'openspec', 'specs'), { recursive: true });
   await fs.writeFile(
-    path.join(specDir, 'spec.md'),
-    `# 日志记录变更
+    path.join(changeDir, 'outline.md'),
+    `## Proposal
+团队需要诊断问题。
 
-## ADDED Requirements
-
-### Requirement: 事件记录
-系统必须记录应用程序中的重要事件。
-
-#### Scenario: 事件发生
-- **WHEN** 应用程序生成重要事件
-- **THEN** 系统保存该事件
+## Requirements
+1. 日志记录: 记录应用程序中的重要事件。
+  a. 事件记录: 系统记录应用程序中的重要事件。
+    a. 应用程序生成重要事件时，系统保存该事件。
 `
   );
   return projectDir;
@@ -67,7 +50,7 @@ afterAll(async () => {
 });
 
 describe('non-English validation (#243)', () => {
-  it('passes normally with guidance but still fails in strict mode', async () => {
+  it('validates a non-English spec cleanly, strict mode included', async () => {
     const projectDir = await prepareNonEnglishSpec();
 
     const normal = await runCLI(
@@ -85,59 +68,28 @@ describe('non-English validation (#243)', () => {
     const report = JSON.parse(normalJson.stdout);
     expect(normalJson.exitCode).toBe(0);
     expect(report.summary.totals).toMatchObject({ passed: 1, failed: 0 });
-    expect(report.items[0].valid).toBe(true);
-    expect(report.items[0].issues).toContainEqual(
-      expect.objectContaining({
-        level: 'WARNING',
-        message: expect.stringContaining('should contain SHALL or MUST'),
-      })
-    );
+    expect(report.items[0]).toMatchObject({ valid: true, issues: [] });
 
     const strict = await runCLI(
       ['validate', '日志记录', '--type', 'spec', '--strict', '--no-interactive'],
       { cwd: projectDir }
     );
-    expect(strict.exitCode).toBe(1);
-    const strictOutput = `${strict.stdout}${strict.stderr}`;
-    expect(strictOutput).toContain('should contain SHALL or MUST');
-    expect(strictOutput).toContain('has issues');
+    expect(strict.exitCode).toBe(0);
+    expect(strict.stdout).toContain('is valid');
   });
 
-  it('validates a non-English change delta normally but not in strict mode', async () => {
+  it('validates a non-English change cleanly, strict mode included', async () => {
     const projectDir = await prepareNonEnglishChange();
 
-    const normalJson = await runCLI(
-      ['validate', '添加日志', '--type', 'change', '--json', '--no-interactive'],
-      { cwd: projectDir }
-    );
-    const normalReport = JSON.parse(normalJson.stdout);
-    expect(normalJson.exitCode).toBe(0);
-    expect(normalReport.summary.totals).toMatchObject({ passed: 1, failed: 0 });
-    expect(normalReport.items[0]).toMatchObject({
-      id: '添加日志',
-      type: 'change',
-      valid: true,
-    });
-    expect(normalReport.items[0].issues).toContainEqual(
-      expect.objectContaining({
-        level: 'WARNING',
-        message: expect.stringContaining('should contain SHALL or MUST'),
-      })
-    );
-
-    const strictJson = await runCLI(
-      ['validate', '添加日志', '--type', 'change', '--strict', '--json', '--no-interactive'],
-      { cwd: projectDir }
-    );
-    const strictReport = JSON.parse(strictJson.stdout);
-    expect(strictJson.exitCode).toBe(1);
-    expect(strictReport.summary.totals).toMatchObject({ passed: 0, failed: 1 });
-    expect(strictReport.items[0].valid).toBe(false);
-    expect(strictReport.items[0].issues).toContainEqual(
-      expect.objectContaining({
-        level: 'WARNING',
-        message: expect.stringContaining('should contain SHALL or MUST'),
-      })
-    );
+    for (const extra of [[], ['--strict']]) {
+      const result = await runCLI(
+        ['validate', '添加日志', '--type', 'change', '--json', '--no-interactive', ...extra],
+        { cwd: projectDir }
+      );
+      const report = JSON.parse(result.stdout);
+      expect(result.exitCode).toBe(0);
+      expect(report.summary.totals).toMatchObject({ passed: 1, failed: 0 });
+      expect(report.items[0]).toMatchObject({ id: '添加日志', type: 'change', valid: true, issues: [] });
+    }
   });
 });

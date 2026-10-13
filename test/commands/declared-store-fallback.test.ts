@@ -92,14 +92,8 @@ describe('declared store fallback (3.2)', () => {
 
     const changeDir = path.join(storeRoot, 'openspec', 'changes', 'billing-rework');
     fs.writeFileSync(
-      path.join(changeDir, 'proposal.md'),
-      '## Why\n\nBilling rework.\n\n## What Changes\n\n- **billing:** Rework billing\n'
-    );
-    const deltaDir = path.join(changeDir, 'specs', 'billing');
-    fs.mkdirSync(deltaDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(deltaDir, 'spec.md'),
-      '## ADDED Requirements\n\n### Requirement: Billing SHALL work\nThe system SHALL bill.\n\n#### Scenario: Bills\n- **WHEN** a period ends\n- **THEN** a bill exists\n'
+      path.join(changeDir, 'outline.md'),
+      '## Proposal\nBilling rework.\n\n## Requirements\n1. billing: Bills customers.\n  a. Billing: The system bills.\n'
     );
 
     const validate = await runCLI(['validate', 'billing-rework', '--json', '--no-interactive'], {
@@ -117,13 +111,13 @@ describe('declared store fallback (3.2)', () => {
     });
     expect(show.exitCode).toBe(0);
 
-    const archive = await runCLI(['archive', 'billing-rework', '--yes', '--json'], {
+    const land = await runCLI(['land', 'billing-rework', '--yes', '--json'], {
       cwd: pointerRepo,
       env,
     });
-    expect(archive.exitCode).toBe(0);
-    const archived = fs.readdirSync(path.join(storeRoot, 'openspec', 'changes', 'archive'));
-    expect(archived.some((name) => name.endsWith('billing-rework'))).toBe(true);
+    expect(land.exitCode).toBe(0);
+    expect(fs.existsSync(changeDir)).toBe(false);
+    expect(fs.existsSync(path.join(storeRoot, 'openspec', 'specs', 'billing', 'spec.md'))).toBe(true);
 
     // The pointer repo is byte-identical: no specs/, no changes/, nothing.
     expect(snapshot(pointerRepo)).toEqual(pointerBefore);
@@ -134,7 +128,7 @@ describe('declared store fallback (3.2)', () => {
   it('composes with 3.1: the declared root surfaces the store own references', async () => {
     const upstreamRoot = path.join(tempDir, 'upstream-context');
     createOpenSpecRoot(upstreamRoot);
-    writeSpec(upstreamRoot, 'platform-rules', '## Purpose\n\nPlatform rules.\n');
+    writeSpec(upstreamRoot, 'platform-rules', '# platform-rules\nPlatform rules.\n\n1. Rule: The platform has rules.\n');
     await registerStore({ id: 'upstream-context', localPath: upstreamRoot, globalDataDir });
     fs.writeFileSync(
       path.join(storeRoot, 'openspec', 'config.yaml'),

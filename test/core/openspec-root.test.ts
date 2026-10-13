@@ -29,7 +29,7 @@ describe('OpenSpec root helper', () => {
 
   function createHealthyRoot(root: string, configName = 'config.yaml'): void {
     fs.mkdirSync(path.join(root, 'openspec', 'specs'), { recursive: true });
-    fs.mkdirSync(path.join(root, 'openspec', 'changes', 'archive'), { recursive: true });
+    fs.mkdirSync(path.join(root, 'openspec', 'changes'), { recursive: true });
     fs.writeFileSync(path.join(root, 'openspec', configName), `schema: ${DEFAULT_OPENSPEC_SCHEMA}\n`);
   }
 
@@ -71,21 +71,21 @@ describe('OpenSpec root helper', () => {
     expect(inspection.diagnostics.map((diagnostic) => diagnostic.code)).toEqual([
       'openspec_config_missing',
     ]);
-    expect(fs.existsSync(path.join(root, 'openspec', 'changes', 'archive'))).toBe(false);
+    expect(fs.existsSync(path.join(root, 'openspec', 'specs'))).toBe(false);
   });
 
-  it('accepts roots before changes, applied specs, or archives exist', async () => {
+  it('accepts roots before changes or applied specs exist', async () => {
     const root = path.join(tempDir, 'store');
     fs.mkdirSync(path.join(root, 'openspec'), { recursive: true });
     fs.writeFileSync(path.join(root, 'openspec', 'config.yaml'), `schema: ${DEFAULT_OPENSPEC_SCHEMA}\n`);
 
     const inspection = await inspectOpenSpecRoot(root);
 
+    expect(inspection).not.toHaveProperty('archive');
     expect(inspection).toEqual(expect.objectContaining({
       healthy: true,
       specs: { present: false },
       changes: { present: false },
-      archive: { present: false },
       diagnostics: [],
     }));
   });
@@ -100,7 +100,6 @@ describe('OpenSpec root helper', () => {
 
     expect(inspection.healthy).toBe(false);
     expect(inspection.changes).toEqual({ present: false });
-    expect(inspection.archive).toEqual({ present: false });
     expect(inspection.diagnostics.map((diagnostic) => diagnostic.code)).toEqual([
       'openspec_changes_not_directory',
     ]);
@@ -115,7 +114,6 @@ describe('OpenSpec root helper', () => {
       'openspec/',
       'openspec/specs/',
       'openspec/changes/',
-      'openspec/changes/archive/',
       'openspec/config.yaml',
     ]);
     expect(result.inspection.healthy).toBe(true);
@@ -149,14 +147,14 @@ describe('OpenSpec root helper', () => {
 
     expect(result.createdArtifacts).toEqual([
       'openspec/specs/.gitkeep',
-      'openspec/changes/archive/.gitkeep',
+      'openspec/changes/.gitkeep',
     ]);
     expect((await ensureOpenSpecRoot(root, { anchorEmptyDirectories: true })).createdPaths).toEqual([]);
 
     await rollbackCreatedPaths(result.createdPaths);
 
     expect(fs.readdirSync(path.join(root, 'openspec', 'specs'))).toEqual([]);
-    expect(fs.readdirSync(path.join(root, 'openspec', 'changes', 'archive'))).toEqual([]);
+    expect(fs.readdirSync(path.join(root, 'openspec', 'changes'))).toEqual([]);
   });
 
   it.each(['file', 'directory', 'symlink'] as const)(
@@ -177,7 +175,7 @@ describe('OpenSpec root helper', () => {
 
       const result = await ensureOpenSpecRoot(root, { anchorEmptyDirectories: true });
 
-      expect(result.createdArtifacts).toEqual(['openspec/changes/archive/.gitkeep']);
+      expect(result.createdArtifacts).toEqual(['openspec/changes/.gitkeep']);
       if (kind === 'file') expect(fs.readFileSync(marker, 'utf-8')).toBe('keep me');
       if (kind === 'directory') expect(fs.lstatSync(marker).isDirectory()).toBe(true);
       if (kind === 'symlink') expect(fs.lstatSync(marker).isSymbolicLink()).toBe(true);

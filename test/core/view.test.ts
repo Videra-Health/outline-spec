@@ -51,20 +51,6 @@ describe('ViewCommand', () => {
     expect(lines.join('\n')).toContain('Task Progress: 2/4 (50% complete)');
   });
 
-  it('distinguishes skipped specs from completed and blocked artifacts', async () => {
-    const changeDir = path.join(tempDir, 'openspec', 'changes', 'refactor');
-    await fs.mkdir(changeDir, { recursive: true });
-    await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: spec-driven\nskip_specs: true\n');
-    await fs.writeFile(path.join(changeDir, 'proposal.md'), '# Proposal\n');
-    await fs.writeFile(path.join(changeDir, 'tasks.md'), '- [ ] Refactor\n');
-
-    await new ViewCommand().execute(tempDir);
-
-    expect(logOutput.map(stripAnsi)).toContain(
-      '    └─ [spec-driven] proposal✓ specs (skipped) design→ tasks✓'
-    );
-  });
-
   it.each([
     ['malformed YAML', 'schema: [', 'Invalid YAML'],
     ['invalid metadata', 'schema: 123\n', 'Invalid metadata'],
@@ -114,7 +100,7 @@ describe('ViewCommand', () => {
     const changeDir = path.join(openspecDir, 'changes', 'display-controls');
     const ready = '設計\u001b[2J';
     const blocked = 'blocked\u009bH';
-    const skipped = 'specs\r\n';
+    const optional = 'specs\r\n';
     const done = 'tasks\b\u0007';
     const artifact = (id: string, generates: string, requires: string[] = []) => ({
       id, generates, requires, description: 'Test artifact', template: 'template.md',
@@ -127,18 +113,18 @@ describe('ViewCommand', () => {
       artifacts: [
         artifact(ready, 'design.md'),
         artifact(blocked, 'review.md', [ready]),
-        artifact(skipped, 'specs/**/*.md'),
+        artifact(optional, 'specs/**/*.md'),
         artifact(done, 'tasks.md'),
       ],
       apply: { requires: [done], tracks: 'tasks.md' },
     }));
-    await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: custom\nskip_specs: true\n');
+    await fs.writeFile(path.join(changeDir, '.openspec.yaml'), 'schema: custom\n');
     await fs.writeFile(path.join(changeDir, 'tasks.md'), '- [ ] Pending\n');
 
     await new ViewCommand().execute(tempDir);
 
     expect(logOutput.map(stripAnsi)).toContain(
-      '    └─ [custom] 設計?[2J→ blocked?H specs?? (skipped) tasks??✓'
+      '    └─ [custom] 設計?[2J→ blocked?H specs??→ tasks??✓'
     );
     expect(logOutput.map(stripAnsi).join('\n')).toContain('Task Progress: 0/1 (0% complete)');
   });

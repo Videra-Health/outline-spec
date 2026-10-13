@@ -13,15 +13,14 @@ describe('openspec validate checks task numbering (#1520)', () => {
     await fs.writeFile(file, content, 'utf-8');
   };
 
-  const validDelta = [
-    '## ADDED Requirements',
+  const validOutline = [
+    '## Proposal',
+    'Task references should stay unambiguous.',
     '',
-    '### Requirement: Task validation SHALL preserve planning references',
-    'The validator SHALL preserve unambiguous task references.',
-    '',
-    '#### Scenario: Validate a task list',
-    '- **WHEN** strict validation runs',
-    '- **THEN** inconsistent task numbering is reported',
+    '## Requirements',
+    '1. tasks: Task list checks.',
+    '  a. Task references: The validator preserves unambiguous task references.',
+    '    a. Strict validation reports inconsistent task numbering.',
     '',
   ].join('\n');
 
@@ -50,8 +49,8 @@ describe('openspec validate checks task numbering (#1520)', () => {
     projectDir = await fs.mkdtemp(path.join(tmpdir(), 'openspec-task-numbering-e2e-'));
 
     await write(
-      'openspec/changes/bad-numbering/specs/tasks/spec.md',
-      validDelta
+      'openspec/changes/bad-numbering/outline.md',
+      validOutline
     );
     await write(
       'openspec/changes/bad-numbering/tasks.md',
@@ -72,8 +71,8 @@ describe('openspec validate checks task numbering (#1520)', () => {
     );
 
     await write(
-      'openspec/changes/valid-numbering/specs/tasks/spec.md',
-      validDelta
+      'openspec/changes/valid-numbering/outline.md',
+      validOutline
     );
     await write(
       'openspec/changes/valid-numbering/tasks.md',
@@ -98,8 +97,8 @@ describe('openspec validate checks task numbering (#1520)', () => {
       'schema: glob-tasks\n'
     );
     await write(
-      'openspec/changes/nested-numbering/specs/tasks/spec.md',
-      validDelta
+      'openspec/changes/nested-numbering/outline.md',
+      validOutline
     );
     await write(
       'openspec/changes/nested-numbering/backend/tasks.md',

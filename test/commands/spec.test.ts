@@ -13,38 +13,24 @@ describe('spec command', () => {
   beforeEach(async () => {
     await fs.mkdir(specsDir, { recursive: true });
     
-    // Create test spec files
-    const testSpec = `## Purpose
+    const testSpec = `# auth
 This is a test specification for the authentication system.
 
-## Requirements
-
-### Requirement: User Authentication
-The system SHALL provide secure user authentication
-
-#### Scenario: Successful login
-- **GIVEN** a user with valid credentials
-- **WHEN** they submit the login form  
-- **THEN** they are authenticated
-
-### Requirement: Password Reset
-The system SHALL allow users to reset their password
-
-#### Scenario: Reset via email
-- **GIVEN** a user with a registered email
-- **WHEN** they request a password reset
-- **THEN** they receive a reset link`;
+1. User Authentication: The system provides secure user authentication.
+  a. Valid credentials sign the user in.
+    i. The session lasts one day.
+2. Password Reset: The system lets users reset their password.
+  a. A reset link goes to the registered email.
+`;
 
     await fs.mkdir(path.join(specsDir, 'auth'), { recursive: true });
     await fs.writeFile(path.join(specsDir, 'auth', 'spec.md'), testSpec);
-    
-    const testSpec2 = `## Purpose
+
+    const testSpec2 = `# payment
 This specification defines the payment processing system.
 
-## Requirements
-
-### Requirement: Process Payments
-The system SHALL process credit card payments securely`;
+1. Process Payments: The system processes credit card payments securely.
+`;
 
     await fs.mkdir(path.join(specsDir, 'payment'), { recursive: true });
     await fs.writeFile(path.join(specsDir, 'payment', 'spec.md'), testSpec2);
@@ -71,112 +57,54 @@ The system SHALL process credit card payments securely`;
       }
     });
 
+    const run = (args: string[]): string => {
+      const originalCwd = process.cwd();
+      try {
+        process.chdir(testDir);
+        return execFileSync('node', [openspecBin, ...args], { encoding: 'utf-8' });
+      } finally {
+        process.chdir(originalCwd);
+      }
+    };
+
     it('should output spec as JSON with --json flag', () => {
-      const originalCwd = process.cwd();
-      try {
-        process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'show', 'auth', '--json'], {
-          encoding: 'utf-8'
-        });
-        
-        const json = JSON.parse(output);
-        expect(json.id).toBe('auth');
-        expect(json.title).toBe('auth');
-        expect(json.overview).toContain('test specification');
-        expect(json.requirements).toHaveLength(2);
-        expect(json.metadata.format).toBe('openspec');
-      } finally {
-        process.chdir(originalCwd);
-      }
+      const json = JSON.parse(run(['spec', 'show', 'auth', '--json']));
+      expect(json.name).toBe('auth');
+      expect(json.purpose).toContain('test specification');
+      expect(json.items).toHaveLength(2);
     });
 
-    it('names each requirement and scenario in show --json', () => {
-      const originalCwd = process.cwd();
-      try {
-        process.chdir(testDir);
-        const json = JSON.parse(execFileSync('node', [openspecBin, 'show', 'auth', '--type', 'spec', '--json'], {
-          encoding: 'utf-8'
-        }));
-        expect(json.requirements.map((r: any) => r.name)).toEqual(['User Authentication', 'Password Reset']);
-        expect(json.requirements[0].scenarios[0].name).toBe('Successful login');
-
-        const one = JSON.parse(execFileSync('node', [openspecBin, 'show', 'auth', '--type', 'spec', '--json', '-r', '2'], {
-          encoding: 'utf-8'
-        }));
-        expect(one.requirements[0].name).toBe('Password Reset');
-
-        const bare = JSON.parse(execFileSync('node', [openspecBin, 'show', 'auth', '--type', 'spec', '--json', '--no-scenarios'], {
-          encoding: 'utf-8'
-        }));
-        expect(bare.requirements[1].name).toBe('Password Reset');
-      } finally {
-        process.chdir(originalCwd);
-      }
+    it('names each requirement in show --json', () => {
+      const json = JSON.parse(run(['show', 'auth', '--type', 'spec', '--json']));
+      expect(json.items.map((r: any) => r.text.split(': ')[0])).toEqual(['User Authentication', 'Password Reset']);
+      expect(json.items[0].children[0]).toMatchObject({ label: 'a', text: 'Valid credentials sign the user in.' });
     });
 
-    it('should filter to show only requirements with --requirements flag (JSON only)', () => {
-      const originalCwd = process.cwd();
-      try {
-        process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'show', 'auth', '--json', '--requirements'], {
-          encoding: 'utf-8'
-        });
-        
-        const json = JSON.parse(output);
-        expect(json.requirements).toHaveLength(2);
-        // Scenarios should be excluded when --requirements is used
-        expect(json.requirements.every((r: any) => Array.isArray(r.scenarios) && r.scenarios.length === 0)).toBe(true);
-      } finally {
-        process.chdir(originalCwd);
-      }
+    it('shows one requirement by name with --item', () => {
+      expect(run(['spec', 'show', 'auth', '--item', 'Password Reset']).trim()).toBe(
+        '2. Password Reset: The system lets users reset their password.\n  a. A reset link goes to the registered email.'
+      );
     });
 
-    it('should exclude scenarios with --no-scenarios flag (JSON only)', () => {
-      const originalCwd = process.cwd();
-      try {
-        process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'show', 'auth', '--json', '--no-scenarios'], {
-          encoding: 'utf-8'
-        });
-        
-        const json = JSON.parse(output);
-        expect(json.requirements).toHaveLength(2);
-        expect(json.requirements.every((r: any) => Array.isArray(r.scenarios) && r.scenarios.length === 0)).toBe(true);
-      } finally {
-        process.chdir(originalCwd);
-      }
+    it('shows one item by label path with --item (JSON)', () => {
+      const json = JSON.parse(run(['spec', 'show', 'auth', '--json', '--item', '2.a']));
+      expect(json).toMatchObject({ name: 'auth', item: '2.a', node: { label: 'a', text: 'A reset link goes to the registered email.' } });
     });
 
-    it('should show specific requirement with -r flag (JSON only)', () => {
-      const originalCwd = process.cwd();
-      try {
-        process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'show', 'auth', '--json', '-r', '1'], {
-          encoding: 'utf-8'
-        });
-        
-        const json = JSON.parse(output);
-        expect(json.requirements).toHaveLength(1);
-        expect(json.requirements[0].text).toContain('The system SHALL provide secure user authentication');
-      } finally {
-        process.chdir(originalCwd);
-      }
+    it('shows a nested item by requirement name and labels with --item', () => {
+      expect(run(['spec', 'show', 'auth', '--item', 'User Authentication.a.i']).trim()).toBe('i. The session lasts one day.');
     });
 
-    it('should return JSON with filtered requirements', () => {
-      const originalCwd = process.cwd();
+    it('reports an unknown --item and exits non-zero', () => {
+      let error: any;
       try {
-        process.chdir(testDir);
-        const output = execFileSync('node', [openspecBin, 'spec', 'show', 'auth', '--json', '--no-scenarios'], {
-          encoding: 'utf-8'
-        });
-        
-        const json = JSON.parse(output);
-        expect(json.requirements).toHaveLength(2);
-        expect(json.requirements[0].scenarios).toHaveLength(0);
-      } finally {
-        process.chdir(originalCwd);
+        run(['spec', 'show', 'auth', '--item', 'Missing']);
+      } catch (e) {
+        error = e;
       }
+      expect(error).toBeDefined();
+      expect(error.status).not.toBe(0);
+      expect(error.stderr.toString()).toContain('No requirement or label "Missing" in auth');
     });
   });
 
@@ -268,10 +196,11 @@ The system SHALL process credit card payments securely`;
     });
 
     it('should detect invalid spec structure', async () => {
-      const invalidSpec = `## Purpose
+      // No purpose line and a requirement without "Name: sentence".
+      const invalidSpec = `# invalid
 
-## Requirements
-This section has no actual requirements`;
+1. No sentence here
+`;
 
       await fs.mkdir(path.join(specsDir, 'invalid'), { recursive: true });
       await fs.writeFile(path.join(specsDir, 'invalid', 'spec.md'), invalidSpec);

@@ -135,7 +135,7 @@ apply:
     await cli(['new', 'change', 'different-intent', ...flags]);
     expect(await fs.readFile(instructions.resolvedOutputPath, 'utf-8')).toBe('# Brief\n\nConfirmed planning artifact.\n');
     if (scope === 'store') {
-      expect(await fs.readdir(path.join(project, 'openspec', 'changes'))).toEqual(['archive']);
+      expect(await fs.readdir(path.join(project, 'openspec', 'changes'))).toEqual([]);
     }
   }, 30_000);
 

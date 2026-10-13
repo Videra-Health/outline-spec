@@ -12,9 +12,9 @@ describe('change show (interactive behavior)', () => {
 
   beforeEach(async () => {
     await fs.mkdir(changesDir, { recursive: true });
-    const content = `# Change: Demo\n\n## Why\n\n## What Changes\n- x`;
+    const content = `## Proposal\nBecause reasons.\n\n## Requirements\n1. spec-x: Something.\n  a. Thing: It does something.\n`;
     await fs.mkdir(path.join(changesDir, 'demo'), { recursive: true });
-    await fs.writeFile(path.join(changesDir, 'demo', 'proposal.md'), content, 'utf-8');
+    await fs.writeFile(path.join(changesDir, 'demo', 'outline.md'), content, 'utf-8');
   });
 
   afterEach(async () => {
@@ -34,7 +34,7 @@ describe('change show (interactive behavior)', () => {
       expect(err).toBeDefined();
       expect(err.status).not.toBe(0);
       expect(err.stderr.toString()).toContain('Available IDs:');
-      expect(err.stderr.toString()).toContain('openspec change list');
+      expect(err.stderr.toString()).toContain('Hint: use "openspec list"');
     } finally {
       process.chdir(originalCwd);
       process.env = originalEnv;

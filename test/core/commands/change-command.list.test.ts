@@ -15,8 +15,8 @@ describe('ChangeCommand.list', () => {
     tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-change-command-list-'));
     const changeDir = path.join(tempRoot, 'openspec', 'changes', 'demo');
     await fs.mkdir(changeDir, { recursive: true });
-    const proposal = `# Change: Demo\n\n## Why\nTest list.\n\n## What Changes\n- **auth:** Add requirement`;
-    await fs.writeFile(path.join(changeDir, 'proposal.md'), proposal, 'utf-8');
+    const outline = '## Proposal\nTest list.\n\n## Requirements\n1. auth: Sign-in.\n  a. Login: Users sign in.\n2. billing: Invoices.\n  a. Invoice: Users get invoices.\n';
+    await fs.writeFile(path.join(changeDir, 'outline.md'), outline, 'utf-8');
     await fs.writeFile(path.join(changeDir, 'tasks.md'), '- [x] Task 1\n- [ ] Task 2\n', 'utf-8');
     process.chdir(tempRoot);
   });
@@ -39,16 +39,9 @@ describe('ChangeCommand.list', () => {
 
       const output = logs.join('\n');
       const parsed = JSON.parse(output);
-      expect(Array.isArray(parsed)).toBe(true);
-      if (parsed.length > 0) {
-        const item = parsed[0];
-        expect(item).toHaveProperty('id');
-        expect(item).toHaveProperty('title');
-        expect(item).toHaveProperty('deltaCount');
-        expect(item).toHaveProperty('taskStatus');
-        expect(item.taskStatus).toHaveProperty('total');
-        expect(item.taskStatus).toHaveProperty('completed');
-      }
+      expect(parsed).toEqual([
+        { id: 'demo', title: 'demo', specCount: 2, taskStatus: { total: 2, completed: 1 } },
+      ]);
     } finally {
       console.log = origLog;
     }
@@ -63,12 +56,11 @@ describe('ChangeCommand.list', () => {
       };
       await cmd.list({});
       const idsOnly = logs.join('\n');
-      expect(idsOnly).toMatch(/\w+/);
+      expect(idsOnly).toBe('demo');
       logs.length = 0;
       await cmd.list({ long: true });
       const longOut = logs.join('\n');
-      expect(longOut).toMatch(/:\s/);
-      expect(longOut).toMatch(/\[deltas\s\d+\]/);
+      expect(longOut).toBe('demo: [specs 2] [tasks 1/2]');
     } finally {
       console.log = origLog;
     }
@@ -76,7 +68,7 @@ describe('ChangeCommand.list', () => {
   });
 });
 
-describe('ChangeCommand.list with a change that has no proposal.md', () => {
+describe('ChangeCommand.list with a change that has no outline.md', () => {
   let cmd: ChangeCommand;
   let tempRoot: string;
   let originalCwd: string;
@@ -99,7 +91,7 @@ describe('ChangeCommand.list with a change that has no proposal.md', () => {
     cmd = new ChangeCommand();
     originalCwd = process.cwd();
     tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-change-list-noproposal-'));
-    // What `openspec new change` leaves behind, plus tasks: no proposal.md.
+    // What `openspec new change` leaves behind, plus tasks: no outline.md.
     const scaffolded = path.join(tempRoot, 'openspec', 'changes', 'scaffolded');
     await fs.mkdir(scaffolded, { recursive: true });
     await fs.writeFile(path.join(scaffolded, '.openspec.yaml'), 'schema: spec-driven\n', 'utf-8');
@@ -116,9 +108,9 @@ describe('ChangeCommand.list with a change that has no proposal.md', () => {
     expect(await capture(() => cmd.list({}))).toContain('scaffolded');
   });
 
-  it('--long reports the missing proposal and keeps task counts', async () => {
+  it('--long reports the missing outline and keeps task counts', async () => {
     const out = await capture(() => cmd.list({ long: true }));
-    expect(out).toContain('scaffolded: (no proposal.md yet)');
+    expect(out).toContain('scaffolded: (no readable outline.md)');
     expect(out).toContain('[tasks 1/2]');
     expect(out).not.toContain('(unable to read)');
   });
@@ -129,7 +121,7 @@ describe('ChangeCommand.list with a change that has no proposal.md', () => {
     expect(parsed[0]).toMatchObject({
       id: 'scaffolded',
       title: 'scaffolded',
-      deltaCount: 0,
+      specCount: 0,
       taskStatus: { total: 2, completed: 1 },
     });
   });

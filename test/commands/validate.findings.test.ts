@@ -28,19 +28,27 @@ describe('validate findings reports', () => {
     await fs.writeFile(filename, contents);
   }
 
-  function delta(body = 'The feature SHALL return its documented result.'): string {
-    return `## ADDED Requirements\n### Requirement: Example behavior\n${body}\n\n#### Scenario: Normal request\n- **WHEN** requested\n- **THEN** the documented result is returned\n`;
+  /** A change outline that creates the `example` spec; `requirements: false` leaves it editing no specs. */
+  function outline(requirements = true): string {
+    const edits = '\n## Requirements\n1. example: A deterministic example.\n  a. Example behavior: The feature returns its documented result.\n';
+    return `## Proposal\nExercise validation output contracts.\n${requirements ? edits : ''}`;
+  }
+
+  // A tracked tasks.md without a checkbox is the change-level WARNING.
+  async function writeWarningChange(id: string): Promise<void> {
+    await write(`openspec/changes/${id}/outline.md`, outline());
+    await write(`openspec/changes/${id}/tasks.md`, '- an unchecked bullet\n');
   }
 
   async function seed(): Promise<void> {
-    await write('openspec/changes/a-clean/specs/example/spec.md', delta());
-    await write('openspec/changes/b-warning/specs/example/spec.md', delta('The feature returns its documented result.'));
-    await write('openspec/changes/c-info/specs/example/spec.md', `${delta()}\n### Notes\nNon-requirement notes.\n`);
+    await write('openspec/changes/a-clean/outline.md', outline());
+    await writeWarningChange('b-warning');
+    await write('openspec/changes/c-info/outline.md', outline(false));
     await fs.mkdir(path.join(root.changesDir, 'd-error'));
-    await write('openspec/specs/clean/spec.md', `## Purpose\nThis specification defines a deterministic example for testing validation output contracts.\n\n## Requirements\n${delta().replace('## ADDED Requirements\n', '')}`);
+    await write('openspec/specs/clean/spec.md', '# clean\nThis specification defines a deterministic example for testing validation output contracts.\n\n1. Example behavior: The feature returns its documented result.\n');
     await write('openspec/specs/error/spec.md', '# Invalid specification\n');
-    await write('openspec/changes/archive/a-clean/tasks.md', '- [x] 1.1 Done\n');
-    await write('openspec/changes/archive/b-error/tasks.md', '- [ ] 1.1 Pending\n');
+    // Left by older projects; discovery must not treat it as a change.
+    await write('openspec/changes/archive/old/tasks.md', '- [ ] 1.1 Pending\n');
   }
 
   async function run(options: Options, item?: string) {
@@ -65,7 +73,6 @@ describe('validate findings reports', () => {
       path: directory,
       changesDir: path.join(directory, 'openspec', 'changes'),
       specsDir: path.join(directory, 'openspec', 'specs'),
-      archiveDir: path.join(directory, 'openspec', 'changes', 'archive'),
       defaultSchema: 'spec-driven',
       source: 'nearest',
     };
@@ -92,7 +99,6 @@ describe('validate findings reports', () => {
     ['all', { changes: true, specs: true }],
     ['all', { all: true, changes: true }],
     ['all', { all: true, specs: true }],
-    ['archived', { archived: true }],
   ];
 
   it.each(scopes)('preserves full output and projects the complete %s scope (%j)', async (scope, options) => {
@@ -117,7 +123,6 @@ describe('validate findings reports', () => {
   it('preserves legacy mixed-flag precedence when report is omitted', async () => {
     await seed();
     for (const json of [false, true]) {
-      expect(await run({ archived: true, all: true, json })).toEqual(await run({ archived: true, json }));
       expect(await run({ all: true, json }, 'ignored-item')).toEqual(await run({ all: true, json }));
     }
   });
@@ -137,7 +142,7 @@ describe('validate findings reports', () => {
   });
 
   it.each([false, true])('preserves warning-only exit status without errors (strict=%s)', async (strict) => {
-    await write('openspec/changes/warning/specs/example/spec.md', delta('The feature returns its documented result.'));
+    await writeWarningChange('warning');
     const full = await json({ changes: true, strict });
     const findings = await json({ changes: true, strict, report: 'findings' });
     expect(findings.document.itemFindings).toHaveLength(1);
@@ -146,7 +151,7 @@ describe('validate findings reports', () => {
   });
 
   it('keeps an INFO-only strict run successful while displaying its finding', async () => {
-    await write('openspec/changes/info/specs/example/spec.md', `${delta()}\n### Notes\nNon-requirement notes.\n`);
+    await write('openspec/changes/info/outline.md', outline(false));
     const findings = await json({ changes: true, strict: true, report: 'findings' });
     expect(findings.document.itemFindings).toHaveLength(1);
     expect(findings.document.itemFindings[0].issues[0].level).toBe('INFO');
@@ -164,6 +169,7 @@ describe('validate findings reports', () => {
     const errorText = human.stderr.join('\n');
     expect(errorText).not.toContain('change/a-clean');
     expect(errorText).not.toContain('spec/clean');
+    expect(errorText).not.toContain('change/archive');
     let offset = -1;
     for (const item of findings.document.itemFindings) {
       const heading = `${item.type}/${item.id}`;
@@ -177,9 +183,6 @@ describe('validate findings reports', () => {
         offset = issueOffset;
       }
     }
-    const archived = await run({ archived: true, report: 'findings' });
-    expect(archived.stdout).toHaveLength(2);
-    expect(archived.stdout.join('\n')).not.toContain('Details:');
   });
 
   it.each(scopes)('keeps empty %s scopes explicit and successful (%j)', async (scope, options) => {
@@ -199,7 +202,7 @@ describe('validate findings reports', () => {
   });
 
   it('distinguishes a clean non-empty scope from an empty scope', async () => {
-    await write('openspec/changes/clean/specs/example/spec.md', delta());
+    await write('openspec/changes/clean/outline.md', outline());
     const result = await json({ changes: true, report: 'findings' });
     expect(result.document.report).toMatchObject({ returnedItems: 0, totalItems: 1, scope: 'changes' });
     expect(result.document.itemFindings).toEqual([]);
@@ -212,12 +215,11 @@ describe('validate findings reports', () => {
 
   it.each(['full', 'findings'])('rejects invalid %s requests before root resolution, progress, or validation', async (report) => {
     const validateSpec = vi.spyOn(Validator.prototype, 'validateSpec');
-    const validateChange = vi.spyOn(Validator.prototype, 'validateChangeDeltaSpecs');
+    const validateChange = vi.spyOn(Validator.prototype, 'validateChange');
     const invalid: Array<[Options, string?]> = [
       [{ report }],
       [{ report }, 'named-item'],
       [{ report, all: true }, 'named-item'],
-      ...[{ all: true }, { changes: true }, { specs: true }].map((scope): [Options] => [{ ...scope, archived: true, report }]),
       [{ report: 'unsupported', all: true }],
       [{ report: '', all: true }],
     ];
@@ -238,11 +240,11 @@ describe('validate findings reports', () => {
     expect(validateChange).not.toHaveBeenCalled();
   });
 
-  it.each([{ all: true }, { archived: true }])('preserves selected-store records, root, verdict, and full output (%j)', async (scope) => {
+  it('preserves selected-store records, root, verdict, and full output', async () => {
     await seed();
     root.source = 'store';
     root.storeId = 'team';
-    const options = { ...scope, store: 'team' };
+    const options = { all: true, store: 'team' };
     const full = await json(options);
     expect(await json({ ...options, report: 'full' })).toEqual(full);
     expect(await run({ ...options, report: 'full' })).toEqual(await run(options));
@@ -251,19 +253,17 @@ describe('validate findings reports', () => {
     expect(result.document.root).toEqual(toRootOutput(root));
     expect(result.document.itemFindings).toEqual(full.document.items.filter((item: { issues: unknown[] }) => item.issues.length));
     expect(result.exitCode).toBe(full.exitCode);
-    if ('all' in scope) {
-      const human = await run({ ...options, report: 'findings' });
-      expect(human.stdout.at(-1)).toContain('--store team');
-    }
+    const human = await run({ ...options, report: 'findings' });
+    expect(human.stdout.at(-1)).toContain('--store team');
   });
 
   describe('a namespace folder holding nested changes (#1846)', () => {
     async function seedNamespaceFolder(): Promise<void> {
       await write('openspec/changes/mobile/refresh-token/proposal.md', '# Refresh token\n');
-      await write('openspec/changes/mobile/refresh-token/specs/example/spec.md', delta());
+      await write('openspec/changes/mobile/refresh-token/outline.md', outline());
     }
 
-    it('reports the nesting instead of a missing delta, in the bulk sweep', async () => {
+    it('reports the nesting instead of a missing outline, in the bulk sweep', async () => {
       await seedNamespaceFolder();
 
       const { document } = await json({ changes: true });
@@ -277,7 +277,7 @@ describe('validate findings reports', () => {
           message: expect.stringContaining('"mobile" is not a change'),
         },
       ]);
-      expect(JSON.stringify(item.issues)).not.toContain('at least one delta');
+      expect(JSON.stringify(item.issues)).not.toContain('no outline.md');
     });
 
     it('reports the same thing when the change is validated by name', async () => {
@@ -287,21 +287,21 @@ describe('validate findings reports', () => {
 
       expect(result.exitCode).toBe(1);
       expect(result.stderr.join('\n')).toContain('"mobile" is not a change');
-      expect(result.stderr.join('\n')).not.toContain('at least one delta');
+      expect(result.stderr.join('\n')).not.toContain('no outline.md');
     });
 
-    it('replaces the delta-authoring next steps with the flat-layout fix', async () => {
+    it('replaces the outline next steps with the flat-layout fix', async () => {
       await seedNamespaceFolder();
 
       const result = await run({}, 'mobile');
 
       const output = result.stderr.join('\n');
       expect(output).toContain('Move each nested change directly under openspec/changes/');
-      expect(output).not.toContain('ADDED/MODIFIED/REMOVED/RENAMED Requirements');
+      expect(output).not.toContain('Edit outline.md');
     });
 
-    it('leaves an ordinary change with delta specs untouched', async () => {
-      await write('openspec/changes/add-auth/specs/example/spec.md', delta());
+    it('leaves an ordinary change with an outline untouched', async () => {
+      await write('openspec/changes/add-auth/outline.md', outline());
 
       const { document } = await json({ changes: true });
 

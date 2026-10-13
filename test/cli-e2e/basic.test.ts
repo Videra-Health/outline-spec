@@ -62,8 +62,7 @@ describe('openspec CLI e2e basics', () => {
     execFileSync('git', ['clone', '--no-local', projectDir, cloneDir], gitOptions);
 
     expect(await fs.readdir(path.join(cloneDir, 'openspec', 'specs'))).toEqual(['.gitkeep']);
-    expect(await fs.readdir(path.join(cloneDir, 'openspec', 'changes'))).toEqual(['archive']);
-    expect(await fs.readdir(path.join(cloneDir, 'openspec', 'changes', 'archive'))).toEqual(['.gitkeep']);
+    expect(await fs.readdir(path.join(cloneDir, 'openspec', 'changes'))).toEqual(['.gitkeep']);
     const changes = await runCLI(['list', '--json'], { cwd: cloneDir, env });
     expectJsonOnlyOutput(changes);
     expect(JSON.parse(changes.stdout).changes).toEqual([]);
@@ -188,83 +187,13 @@ describe('openspec CLI e2e basics', () => {
     expectJsonOnlyOutput(result);
   });
 
-  it.each([
-    { flags: ['--archived'], active: false },
-    { flags: ['--all'], active: true },
-    { flags: ['--archived', '--all'], active: true },
-  ])('lists archive entries as JSON with $flags', async ({ flags, active }) => {
+  it('reports a malformed changes/ as an error instead of an empty JSON list', async () => {
     const projectDir = await prepareFixture('tmp-init');
-    const archiveName = '2026-08-27-shipped';
-    const archiveDir = path.join(projectDir, 'openspec', 'changes', 'archive', archiveName);
-    await fs.mkdir(archiveDir, { recursive: true });
-    await fs.writeFile(path.join(archiveDir, 'tasks.md'), '- [x] Done\n- [ ] Deferred\n');
-
-    const result = await runCLI(['list', ...flags, '--sort', 'name', '--json'], { cwd: projectDir });
-
-    expectJsonOnlyOutput(result);
-    const output = JSON.parse(result.stdout);
-    expect(output.changes).toContainEqual(expect.objectContaining({
-      name: archiveName,
-      archived: true,
-      completedTasks: 1,
-      totalTasks: 2,
-      status: 'in-progress',
-    }));
-    expect(output.changes.some((change: { archived: boolean }) => !change.archived)).toBe(active);
-    expect(output.changes.map((change: { name: string }) => change.name)).toEqual(
-      output.changes.map((change: { name: string }) => change.name).sort((a: string, b: string) => a.localeCompare(b))
-    );
-    expect(realpathSync.native(output.root.path)).toBe(realpathSync.native(projectDir));
-  });
-
-  it.skipIf(process.platform === 'win32')('lists a change after archive leaves its relative notes link dangling', async () => {
-    const projectDir = await prepareFixture('tmp-init');
-    const changeName = '2026-08-28-linked-notes';
-    const changesDir = path.join(projectDir, 'openspec', 'changes');
-    const changeDir = path.join(changesDir, changeName);
-    await fs.mkdir(changeDir);
-    await fs.writeFile(path.join(changeDir, 'tasks.md'), '- [x] Done\n');
-    await fs.writeFile(path.join(changesDir, 'reference.md'), 'Shared notes\n');
-    await fs.symlink(path.join('..', 'reference.md'), path.join(changeDir, 'notes.md'));
-
-    const before = await runCLI(['list', '--json'], { cwd: projectDir });
-    expectJsonOnlyOutput(before);
-    const archived = await runCLI(['archive', changeName, '--skip-specs', '--yes'], { cwd: projectDir });
-    expect(archived.exitCode, archived.stderr).toBe(0);
-    const archivedNotes = path.join(changesDir, 'archive', changeName, 'notes.md');
-    expect((await fs.lstat(archivedNotes)).isSymbolicLink()).toBe(true);
-    await expect(fs.stat(archivedNotes)).rejects.toMatchObject({ code: 'ENOENT' });
-
-    const result = await runCLI(['list', '--archived', '--json'], { cwd: projectDir });
-
-    expectJsonOnlyOutput(result);
-    expect(JSON.parse(result.stdout).changes).toContainEqual(expect.objectContaining({
-      name: changeName, archived: true, completedTasks: 1, totalTasks: 1
-    }));
-  });
-
-  it.each(['--archived', '--all'])('rejects --specs with %s as a JSON error', async (flag) => {
-    const projectDir = await prepareFixture('tmp-init');
-    const result = await runCLI(['list', '--specs', flag, '--json'], { cwd: projectDir });
-
-    expect(result.exitCode).toBe(1);
-    expect(result.stderr).toBe('');
-    const output = JSON.parse(result.stdout);
-    expect(output.specs).toEqual([]);
-    expect(output.status).toEqual([expect.objectContaining({
-      severity: 'error',
-      code: 'list_error',
-      message: '--archived and --all can only be used when listing changes.',
-    })]);
-  });
-
-  it.each(['archive', ''])('reports malformed changes/%s as an error instead of an empty JSON list', async (entry) => {
-    const projectDir = await prepareFixture('tmp-init');
-    const malformedPath = path.join(projectDir, 'openspec', 'changes', entry);
+    const malformedPath = path.join(projectDir, 'openspec', 'changes');
     await fs.rm(malformedPath, { recursive: true, force: true });
     await fs.writeFile(malformedPath, 'not a directory\n');
 
-    const result = await runCLI(['list', '--archived', '--json'], { cwd: projectDir });
+    const result = await runCLI(['list', '--json'], { cwd: projectDir });
 
     expect(result.exitCode).toBe(1);
     const output = JSON.parse(result.stdout);
@@ -275,7 +204,7 @@ describe('openspec CLI e2e basics', () => {
   describe('legacy change list compatibility', () => {
     it.each([
       { args: [], output: 'c1\n' },
-      { args: ['--long'], output: 'c1: Test Change [deltas 1]\n' },
+      { args: ['--long'], output: 'c1: [specs 1]\n' },
     ])('preserves text output with $args and warns on stderr', async ({ args, output }) => {
       const projectDir = await prepareFixture('tmp-init');
       const result = await runCLI(['change', 'list', ...args], { cwd: projectDir });
@@ -291,7 +220,7 @@ describe('openspec CLI e2e basics', () => {
 
       expect(result.exitCode).toBe(0);
       expect(JSON.parse(result.stdout)).toEqual([
-        { id: 'c1', title: 'Test Change', deltaCount: 1, taskStatus: { total: 0, completed: 0 } },
+        { id: 'c1', title: 'c1', specCount: 1, taskStatus: { total: 0, completed: 0 } },
       ]);
       expect(result.stderr).toContain('Warning: "openspec change list" is deprecated. Use "openspec list".');
     });
@@ -557,43 +486,23 @@ describe('openspec CLI e2e basics', () => {
   describe('archive with no terminal to answer its prompts (#1479)', () => {
     // runCLI closes the child's stdin, which is exactly how an AI agent or a
     // CI script invokes the CLI.
+    const OUTLINE = '## Proposal\nDocument greeting behavior.\n\n## Requirements\n1. greeting: How the system greets.\n  a. Greeting: The system greets the user.\n';
+
     async function prepareChange(options: { tasksComplete?: boolean } = {}): Promise<string> {
       const base = await fs.mkdtemp(path.join(tmpdir(), 'openspec-archive-e2e-'));
       tempRoots.push(base);
       const changeDir = path.join(base, 'openspec', 'changes', 'add-greeting');
-      await fs.mkdir(path.join(changeDir, 'specs', 'greeting'), { recursive: true });
+      await fs.mkdir(changeDir, { recursive: true });
       await fs.mkdir(path.join(base, 'openspec', 'specs'), { recursive: true });
-      await fs.writeFile(
-        path.join(changeDir, 'proposal.md'),
-        '## Why\nThis change exists to document greeting behavior for the team, which is long enough.\n\n## What Changes\n- Add a greeting requirement.\n'
-      );
+      await fs.writeFile(path.join(changeDir, 'outline.md'), OUTLINE);
       await fs.writeFile(
         path.join(changeDir, 'tasks.md'),
         options.tasksComplete === false ? '- [ ] Task 1\n' : '- [x] Task 1\n'
-      );
-      await fs.writeFile(
-        path.join(changeDir, 'specs', 'greeting', 'spec.md'),
-        '## ADDED Requirements\n\n### Requirement: Greeting\nThe system SHALL greet the user.\n\n#### Scenario: Greets on request\n- **WHEN** the user says hello\n- **THEN** the system greets back\n'
       );
       return base;
     }
 
     it('reports the flag to pass instead of a closed-prompt error', async () => {
-      const projectDir = await prepareChange();
-      const result = await runCLI(['archive', 'add-greeting'], { cwd: projectDir });
-
-      const output = `${result.stdout}${result.stderr}`;
-      expect(result.exitCode).toBe(1);
-      expect(output).not.toContain('force closed the prompt');
-      expect(output).toContain('no answer could be read from stdin');
-      expect(output).toContain('openspec archive add-greeting --yes');
-
-      // The change is untouched: nothing was archived or merged.
-      expect(await fileExists(path.join(projectDir, 'openspec', 'changes', 'add-greeting', 'proposal.md'))).toBe(true);
-      expect(await fileExists(path.join(projectDir, 'openspec', 'specs', 'greeting', 'spec.md'))).toBe(false);
-    });
-
-    it('reports the incomplete-task prompt the same way', async () => {
       const projectDir = await prepareChange({ tasksComplete: false });
       const result = await runCLI(['archive', 'add-greeting'], { cwd: projectDir });
 
@@ -601,37 +510,32 @@ describe('openspec CLI e2e basics', () => {
       expect(result.exitCode).toBe(1);
       expect(output).not.toContain('force closed the prompt');
       expect(output).toContain('1 incomplete task(s) found');
-      expect(output).toContain('openspec archive add-greeting --yes');
+      expect(output).toContain('no answer could be read from stdin');
+      expect(output).toContain('openspec land add-greeting --yes');
+
+      // The change is untouched: nothing was landed.
+      expect(await fileExists(path.join(projectDir, 'openspec', 'changes', 'add-greeting', 'outline.md'))).toBe(true);
+      expect(await fileExists(path.join(projectDir, 'openspec', 'specs', 'greeting', 'spec.md'))).toBe(false);
     });
 
-    it('keeps the caller\'s own flags in the suggested rerun', async () => {
-      // Suggesting a bare --yes rerun here would merge the deltas that
-      // --skip-specs was passed to leave alone.
-      const projectDir = await prepareChange({ tasksComplete: false });
-      const result = await runCLI(['archive', 'add-greeting', '--skip-specs'], { cwd: projectDir });
-
-      const output = `${result.stdout}${result.stderr}`;
-      expect(result.exitCode).toBe(1);
-      expect(output).toContain('openspec archive add-greeting --skip-specs --yes');
-    });
-
-    it('reports the skip-validation prompt the same way', async () => {
+    it('lands without prompting when every task is done', async () => {
       const projectDir = await prepareChange();
-      const result = await runCLI(['archive', 'add-greeting', '--no-validate'], { cwd: projectDir });
+      const result = await runCLI(['archive', 'add-greeting'], { cwd: projectDir });
 
-      const output = `${result.stdout}${result.stderr}`;
-      expect(result.exitCode).toBe(1);
-      expect(output).not.toContain('force closed the prompt');
-      expect(output).toContain('Skipping validation requires confirmation');
-      expect(output).toContain('openspec archive add-greeting --no-validate --yes');
+      expect(result.exitCode, result.stderr).toBe(0);
+      expect(result.stderr).toContain('Note: "openspec archive" is now "openspec land".');
+      expect(await fileExists(path.join(projectDir, 'openspec', 'specs', 'greeting', 'spec.md'))).toBe(true);
+      expect(await fileExists(path.join(projectDir, 'openspec', 'changes', 'add-greeting'))).toBe(false);
     });
 
     it('archives normally once that flag is passed', async () => {
-      const projectDir = await prepareChange();
+      const projectDir = await prepareChange({ tasksComplete: false });
       const result = await runCLI(['archive', 'add-greeting', '--yes'], { cwd: projectDir });
 
       expect(result.exitCode).toBe(0);
-      expect(await fileExists(path.join(projectDir, 'openspec', 'specs', 'greeting', 'spec.md'))).toBe(true);
+      expect(await fs.readFile(path.join(projectDir, 'openspec', 'specs', 'greeting', 'spec.md'), 'utf-8')).toBe(
+        '# greeting\nHow the system greets.\n\n1. Greeting: The system greets the user.\n'
+      );
     });
 
     it('asks for a change name instead of exiting 0 without archiving', async () => {
@@ -641,78 +545,62 @@ describe('openspec CLI e2e basics', () => {
       const output = `${result.stdout}${result.stderr}`;
       expect(result.exitCode).toBe(1);
       expect(output).toContain('A change name is required');
-      expect(await fileExists(path.join(projectDir, 'openspec', 'changes', 'add-greeting', 'proposal.md'))).toBe(true);
+      expect(await fileExists(path.join(projectDir, 'openspec', 'changes', 'add-greeting', 'outline.md'))).toBe(true);
     });
+
+    async function prepareStoreChange(base: string, changeName: string): Promise<NodeJS.ProcessEnv> {
+      const env = {
+        XDG_DATA_HOME: path.join(base, 'data'),
+        XDG_CONFIG_HOME: path.join(base, 'config'),
+      };
+      const storeRoot = path.join(base, 'team-store');
+      createOpenSpecRoot(storeRoot);
+      await registerStore({
+        id: 'team-store',
+        localPath: storeRoot,
+        globalDataDir: getGlobalDataDir({ env }),
+      });
+
+      const changeDir = path.join(storeRoot, 'openspec', 'changes', changeName);
+      await fs.mkdir(changeDir, { recursive: true });
+      await fs.writeFile(path.join(changeDir, 'outline.md'), OUTLINE);
+      await fs.writeFile(path.join(changeDir, 'tasks.md'), '- [ ] Task 1\n');
+
+      await fs.mkdir(path.join(base, 'no-root-here'), { recursive: true });
+      return env;
+    }
 
     it('keeps --store in the suggested rerun for a store-rooted change', async () => {
       // The rerun has to name the same root the blocked run used, or pasting
-      // it archives from the wrong place - or from nowhere.
+      // it lands from the wrong place - or from nowhere.
       const base = await fs.mkdtemp(path.join(tmpdir(), 'openspec-archive-store-e2e-'));
       tempRoots.push(base);
-      const env = {
-        XDG_DATA_HOME: path.join(base, 'data'),
-        XDG_CONFIG_HOME: path.join(base, 'config'),
-      };
-      const storeRoot = path.join(base, 'team-store');
-      createOpenSpecRoot(storeRoot);
-      await registerStore({
-        id: 'team-store',
-        localPath: storeRoot,
-        globalDataDir: getGlobalDataDir({ env }),
-      });
-
-      const changeDir = path.join(storeRoot, 'openspec', 'changes', 'add-greeting');
-      await fs.mkdir(changeDir, { recursive: true });
-      await fs.writeFile(path.join(changeDir, 'tasks.md'), '- [ ] Task 1\n');
-
-      const scratch = path.join(base, 'no-root-here');
-      await fs.mkdir(scratch, { recursive: true });
+      const env = await prepareStoreChange(base, 'add-greeting');
 
       const result = await runCLI(['archive', 'add-greeting', '--store', 'team-store'], {
-        cwd: scratch,
+        cwd: path.join(base, 'no-root-here'),
         env,
       });
 
       const output = `${result.stdout}${result.stderr}`;
       expect(result.exitCode).toBe(1);
-      expect(output).toContain('openspec archive add-greeting --yes --store team-store');
+      expect(output).toContain('openspec land add-greeting --yes --store team-store');
     });
 
     it('keeps --store in front of the `--` for a dash-leading change name', async () => {
-      // `rerunCommand` has two branches and the other tests only ever cover
-      // one at a time, so dropping the store flag from just this one went
-      // unnoticed. Both halves have to be right at once: the store flag stays
-      // an option (in front of `--`) while the name stays an argument
-      // (behind it).
+      // The store flag stays an option (in front of `--`) while the name stays an argument (behind it).
       const base = await fs.mkdtemp(path.join(tmpdir(), 'openspec-archive-store-dash-e2e-'));
       tempRoots.push(base);
-      const env = {
-        XDG_DATA_HOME: path.join(base, 'data'),
-        XDG_CONFIG_HOME: path.join(base, 'config'),
-      };
-      const storeRoot = path.join(base, 'team-store');
-      createOpenSpecRoot(storeRoot);
-      await registerStore({
-        id: 'team-store',
-        localPath: storeRoot,
-        globalDataDir: getGlobalDataDir({ env }),
-      });
-
-      const changeDir = path.join(storeRoot, 'openspec', 'changes', '--force');
-      await fs.mkdir(changeDir, { recursive: true });
-      await fs.writeFile(path.join(changeDir, 'tasks.md'), '- [ ] Task 1\n');
-
-      const scratch = path.join(base, 'no-root-here');
-      await fs.mkdir(scratch, { recursive: true });
+      const env = await prepareStoreChange(base, '--force');
 
       const result = await runCLI(['archive', '--store', 'team-store', '--', '--force'], {
-        cwd: scratch,
+        cwd: path.join(base, 'no-root-here'),
         env,
       });
 
       const output = `${result.stdout}${result.stderr}`;
       expect(result.exitCode).toBe(1);
-      expect(output).toContain('openspec archive --yes --store team-store -- --force');
+      expect(output).toContain('openspec land --yes --store team-store -- --force');
     });
   });
 });

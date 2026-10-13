@@ -12,7 +12,7 @@ const execFileAsync = promisify(execFile);
 /**
  * Slice 1.3 journey: prove the standalone repo lifecycle end to end across
  * two simulated machines (separate XDG homes). Machine A sets up a store and
- * works a change through archive; machine B clones, registers, and continues.
+ * lands a change; machine B clones, registers, and continues.
  *
  * Git config is fully isolated so user gitconfig (signing, hooks, identity)
  * cannot leak in; identity comes from explicit env vars.
@@ -139,22 +139,15 @@ async function writeCompletedChangeArtifacts(
     'utf-8'
   );
 
-  await fs.mkdir(path.join(changeDir, 'specs', capability), { recursive: true });
   await fs.writeFile(
-    path.join(changeDir, 'specs', capability, 'spec.md'),
+    path.join(changeDir, 'outline.md'),
     [
-      `# ${capability} Spec Delta`,
+      '## Proposal',
+      `Add the ${capability} capability.`,
       '',
-      '## ADDED Requirements',
-      '',
-      `### Requirement: ${capability} SHALL work`,
-      '',
-      `The system SHALL support ${capability}.`,
-      '',
-      '#### Scenario: It works',
-      '',
-      '- **WHEN** the lifecycle runs',
-      '- **THEN** the capability exists',
+      '## Requirements',
+      `1. ${capability}: Lifecycle proof capability.`,
+      `  a. ${capability} works: The system supports ${capability}.`,
       '',
     ].join('\n'),
     'utf-8'
@@ -212,7 +205,7 @@ describe('standalone store lifecycle journey', () => {
       expect.arrayContaining([
         'openspec/config.yaml',
         'openspec/specs/.gitkeep',
-        'openspec/changes/archive/.gitkeep',
+        'openspec/changes/.gitkeep',
         '.openspec-store/store.yaml',
       ])
     );
@@ -229,7 +222,7 @@ describe('standalone store lifecycle journey', () => {
     ]);
     expect(committedFiles).toContain('.openspec-store/store.yaml');
     expect(committedFiles).toContain('openspec/specs/.gitkeep');
-    expect(committedFiles).toContain('openspec/changes/archive/.gitkeep');
+    expect(committedFiles).toContain('openspec/changes/.gitkeep');
 
     const status = await git(storeRoot, machineA, ['status', '--porcelain']);
     expect(status.trim()).toBe('');
@@ -263,7 +256,7 @@ describe('standalone store lifecycle journey', () => {
     );
   });
 
-  it('machine A: works a change through archive from the project repo', async () => {
+  it('machine A: lands a change from the project repo', async () => {
     const changeId = 'add-billing';
 
     const created = await runCLI(
@@ -321,24 +314,21 @@ describe('standalone store lifecycle journey', () => {
       { env: machineA, cwd: projectDir }
     );
     expect(shown.exitCode).toBe(0);
-    expect(shown.stdout).toContain('# Proposal');
+    expect(shown.stdout).toContain('## Proposal');
 
-    const archived = await runCLI(
-      ['archive', changeId, '--store', STORE_ID, '--yes', '--json'],
+    const landed = await runCLI(
+      ['land', changeId, '--store', STORE_ID, '--yes', '--json'],
       { env: machineA, cwd: projectDir }
     );
-    expect(archived.exitCode).toBe(0);
-    const archivePayload = JSON.parse(archived.stdout);
-    expect(archivePayload.archive.change).toBe(changeId);
-    expect(archivePayload.root.store_id).toBe(STORE_ID);
+    expect(landed.exitCode).toBe(0);
+    const landPayload = JSON.parse(landed.stdout);
+    expect(landPayload.landed).toBe(changeId);
+    expect(landPayload.specs).toEqual([{ name: 'billing', action: 'created' }]);
+    expect(landPayload.root.store_id).toBe(STORE_ID);
 
     const specPath = path.join(storeRoot, 'openspec', 'specs', 'billing', 'spec.md');
-    await expect(fs.readFile(specPath, 'utf-8')).resolves.toContain('billing SHALL work');
-
-    const archiveEntries = await fs.readdir(
-      path.join(storeRoot, 'openspec', 'changes', 'archive')
-    );
-    expect(archiveEntries.some((entry) => entry.endsWith(`-${changeId}`))).toBe(true);
+    await expect(fs.readFile(specPath, 'utf-8')).resolves.toContain('1. billing works:');
+    await expect(fs.access(changeDir)).rejects.toThrow();
   }, JOURNEY_TIMEOUT_MS);
 
   it('machine A: the project repo is byte-identical after the lifecycle', async () => {
@@ -392,10 +382,10 @@ describe('standalone store lifecycle journey', () => {
       { env: machineB, cwd: base }
     );
     expect(shownSpec.exitCode).toBe(0);
-    expect(shownSpec.stdout).toContain('billing SHALL work');
+    expect(shownSpec.stdout).toContain('1. billing works: The system supports billing.');
   }, JOURNEY_TIMEOUT_MS);
 
-  it('machine B: completes its own change through archive in the clone', async () => {
+  it('machine B: lands its own change in the clone', async () => {
     const changeId = 'add-invoicing';
 
     const created = await runCLI(
@@ -439,18 +429,18 @@ describe('standalone store lifecycle journey', () => {
     expect(validated.exitCode).toBe(0);
     expect(validated.stdout).toContain('is valid');
 
-    const archived = await runCLI(
-      ['archive', changeId, '--store', STORE_ID, '--yes', '--json'],
+    const landed = await runCLI(
+      ['land', changeId, '--store', STORE_ID, '--yes', '--json'],
       { env: machineB, cwd: base }
     );
-    expect(archived.exitCode).toBe(0);
-    expect(JSON.parse(archived.stdout).archive.change).toBe(changeId);
+    expect(landed.exitCode).toBe(0);
+    expect(JSON.parse(landed.stdout).landed).toBe(changeId);
 
     const specPath = path.join(cloneRoot, 'openspec', 'specs', 'invoicing', 'spec.md');
-    await expect(fs.readFile(specPath, 'utf-8')).resolves.toContain('invoicing SHALL work');
+    await expect(fs.readFile(specPath, 'utf-8')).resolves.toContain('1. invoicing works:');
 
     // Post-resolution failures keep the banner, and the hint keeps the store:
-    // with everything archived, instructions apply fails after the root
+    // with everything landed, instructions apply fails after the root
     // resolved successfully.
     const failedApply = await runCLI(
       ['instructions', 'apply', '--store', STORE_ID],

@@ -16,8 +16,8 @@ describe('ChangeCommand.show/validate', () => {
     tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-change-command-'));
     const changesDir = path.join(tempRoot, 'openspec', 'changes', 'sample-change');
     await fs.mkdir(changesDir, { recursive: true });
-    const proposal = `# Change: Sample Change\n\n## Why\nConsistency in tests.\n\n## What Changes\n- **auth:** Add requirement`;
-    await fs.writeFile(path.join(changesDir, 'proposal.md'), proposal, 'utf-8');
+    const outline = '## Proposal\nConsistency in tests.\n\n## Requirements\n1. auth: Sign-in.\n  a. Login: Users sign in.\n';
+    await fs.writeFile(path.join(changesDir, 'outline.md'), outline, 'utf-8');
     process.chdir(tempRoot);
     changeName = 'sample-change';
   });
@@ -27,7 +27,7 @@ describe('ChangeCommand.show/validate', () => {
     await fs.rm(tempRoot, { recursive: true, force: true });
   });
 
-  it('show --json prints JSON including deltas', async () => {
+  it('show --json prints the outline and the items it touches', async () => {
     const logs: string[] = [];
     const origLog = console.log;
     try {
@@ -37,10 +37,10 @@ describe('ChangeCommand.show/validate', () => {
 
       await cmd.show(changeName, { json: true });
 
-      const output = logs.join('\n');
-      const parsed = JSON.parse(output);
-      expect(parsed).toHaveProperty('deltas');
-      expect(Array.isArray(parsed.deltas)).toBe(true);
+      const parsed = JSON.parse(logs.join('\n'));
+      expect(parsed.id).toBe(changeName);
+      expect(parsed.outline).toContain('## Requirements');
+      expect(parsed.touches).toEqual(['auth › Login']);
     } finally {
       console.log = origLog;
     }
@@ -65,36 +65,12 @@ describe('ChangeCommand.show/validate', () => {
     }
   });
 
-  it('show --json --requirements-only returns minimal object with deltas (deprecated alias)', async () => {
-    const logs: string[] = [];
-    const origLog = console.log;
-    try {
-      console.log = (msg?: any, ...args: any[]) => {
-        logs.push([msg, ...args].filter(Boolean).join(' '));
-      };
-
-      await cmd.show(changeName, { json: true, requirementsOnly: true });
-
-      const output = logs.join('\n');
-      const parsed = JSON.parse(output);
-      expect(parsed).toHaveProperty('deltas');
-      expect(Array.isArray(parsed.deltas)).toBe(true);
-      if (parsed.deltas.length > 0) {
-        expect(parsed.deltas[0]).toHaveProperty('spec');
-        expect(parsed.deltas[0]).toHaveProperty('operation');
-        expect(parsed.deltas[0]).toHaveProperty('description');
-      }
-    } finally {
-      console.log = origLog;
-    }
-  });
-
-  describe('resolving a change that has no proposal.md', () => {
-    it('names the missing proposal and points at status', async () => {
+  describe('resolving a change that has no outline.md', () => {
+    it('names the missing outline and points at status', async () => {
       await fs.mkdir(path.join(tempRoot, 'openspec', 'changes', 'scaffolded'), { recursive: true });
 
       await expect(cmd.show('scaffolded', { json: false })).rejects.toThrow(
-        /Change "scaffolded" has no proposal\.md yet\..*openspec status --change scaffolded/s
+        /Change "scaffolded" has no outline\.md yet\..*openspec status --change scaffolded/s
       );
     });
 
@@ -103,35 +79,35 @@ describe('ChangeCommand.show/validate', () => {
 
       // Must stay the plain not-found error: `status --change notes.md` cannot work.
       await expect(cmd.show('notes.md', { json: false })).rejects.toThrow(/not found at/);
-      await expect(cmd.show('notes.md', { json: false })).rejects.not.toThrow(/has no proposal\.md yet/);
+      await expect(cmd.show('notes.md', { json: false })).rejects.not.toThrow(/has no outline\.md yet/);
     });
 
-    it('does not read a proposal outside changes/ via a traversing name', async () => {
-      // Reachable target: openspec/changes/../../proposal.md is tempRoot/proposal.md.
+    it('does not read an outline outside changes/ via a traversing name', async () => {
+      // Reachable target: openspec/changes/../../outline.md is tempRoot/outline.md.
       // Without containment this resolves and the file is printed verbatim.
-      await fs.writeFile(path.join(tempRoot, 'proposal.md'), '# Outside the changes directory', 'utf-8');
+      await fs.writeFile(path.join(tempRoot, 'outline.md'), '## Proposal\nOutside the changes directory', 'utf-8');
       const traversal = path.join('..', '..');
 
       await expect(cmd.show(traversal, { json: false })).rejects.toThrow(/not found at/);
-      await expect(cmd.show(traversal, { json: false })).rejects.not.toThrow(/has no proposal\.md yet/);
+      await expect(cmd.show(traversal, { json: false })).rejects.not.toThrow(/has no outline\.md yet/);
     });
 
     it.skipIf(process.platform === 'win32')(
-      'does not read a proposal symlink outside changes/',
+      'does not read an outline symlink outside changes/',
       async () => {
-        const outsideProposal = path.join(tempRoot, 'outside-proposal.md');
-        const linkedProposal = path.join(
+        const outsideOutline = path.join(tempRoot, 'outside-outline.md');
+        const linkedOutline = path.join(
           tempRoot,
           'openspec',
           'changes',
-          'linked-proposal',
-          'proposal.md'
+          'linked-outline',
+          'outline.md'
         );
-        await fs.writeFile(outsideProposal, '# Outside sentinel', 'utf-8');
-        await fs.mkdir(path.dirname(linkedProposal), { recursive: true });
-        await fs.symlink(outsideProposal, linkedProposal);
+        await fs.writeFile(outsideOutline, '## Proposal\nOutside sentinel', 'utf-8');
+        await fs.mkdir(path.dirname(linkedOutline), { recursive: true });
+        await fs.symlink(outsideOutline, linkedOutline);
 
-        await expect(cmd.show('linked-proposal', { json: false })).rejects.toThrow(
+        await expect(cmd.show('linked-outline', { json: false })).rejects.toThrow(
           /outside the allowed directory/u
         );
       }
@@ -143,8 +119,8 @@ describe('ChangeCommand.show/validate', () => {
         const sharedChange = path.join(tempRoot, 'shared-change');
         await fs.mkdir(sharedChange);
         await fs.writeFile(
-          path.join(sharedChange, 'proposal.md'),
-          '# Change: Shared safely\n\n## Why\n\nReuse a shared plan.\n\n## What Changes\n\n- Shared.\n',
+          path.join(sharedChange, 'outline.md'),
+          '## Proposal\nReuse a shared plan.\n',
           'utf-8'
         );
         await fs.symlink(
@@ -161,7 +137,7 @@ describe('ChangeCommand.show/validate', () => {
       await fs.mkdir(path.join(tempRoot, 'openspec', 'changes', 'sample-change', 'specs'), { recursive: true });
 
       await expect(cmd.show(nested, { json: false })).rejects.toThrow(/not found at/);
-      await expect(cmd.show(nested, { json: false })).rejects.not.toThrow(/has no proposal\.md yet/);
+      await expect(cmd.show(nested, { json: false })).rejects.not.toThrow(/has no outline\.md yet/);
     });
   });
 
@@ -177,9 +153,8 @@ describe('ChangeCommand.show/validate', () => {
 
       const output = logs.join('\n');
       const parsed = JSON.parse(output);
-      expect(parsed).toHaveProperty('valid');
-      expect(parsed).toHaveProperty('issues');
-      expect(Array.isArray(parsed.issues)).toBe(true);
+      expect(parsed.valid).toBe(true);
+      expect(parsed.issues).toEqual([]);
     } finally {
       console.log = origLog;
     }
@@ -187,63 +162,5 @@ describe('ChangeCommand.show/validate', () => {
 
   it('validate rejects a traversing change name', async () => {
     await expect(cmd.validate(path.join('..', '..', 'outside'))).rejects.toThrow(/not found at/u);
-  });
-});
-
-describe('ChangeCommand title from the packaged proposal template (#1138)', () => {
-  // The spec-driven template opens every proposal with the same `# Proposal`
-  // heading. That names the document, not the change, so it must not become
-  // the title of every change.
-  let cmd: ChangeCommand;
-  let tempRoot: string;
-  let originalCwd: string;
-
-  beforeAll(async () => {
-    cmd = new ChangeCommand();
-    originalCwd = process.cwd();
-    tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-change-template-title-'));
-    const proposals: Record<string, string> = {
-      'templated-change': '# Proposal\n\n## Why\nTemplate shape.\n\n## What Changes\n- **auth:** Add requirement\n',
-      'named-change': '# Proposal: Named Change\n\n## Why\nNamed.\n\n## What Changes\n- **auth:** Add requirement\n',
-    };
-    for (const [name, proposal] of Object.entries(proposals)) {
-      const dir = path.join(tempRoot, 'openspec', 'changes', name);
-      await fs.mkdir(dir, { recursive: true });
-      await fs.writeFile(path.join(dir, 'proposal.md'), proposal, 'utf-8');
-    }
-    process.chdir(tempRoot);
-  });
-
-  afterAll(async () => {
-    process.chdir(originalCwd);
-    await fs.rm(tempRoot, { recursive: true, force: true });
-  });
-
-  async function captureLog(fn: () => Promise<void>): Promise<string> {
-    const logs: string[] = [];
-    const origLog = console.log;
-    console.log = (msg?: any, ...args: any[]) => {
-      logs.push([msg, ...args].filter(Boolean).join(' '));
-    };
-    try {
-      await fn();
-    } finally {
-      console.log = origLog;
-    }
-    return logs.join('\n');
-  }
-
-  it('show --json falls back to the change id for a bare `# Proposal` title', async () => {
-    const parsed = JSON.parse(await captureLog(() => cmd.show('templated-change', { json: true })));
-    expect(parsed.title).toBe('templated-change');
-  });
-
-  it('list --json falls back to the change id and keeps authored titles', async () => {
-    const parsed = JSON.parse(await captureLog(() => cmd.list({ json: true })));
-    const titles = Object.fromEntries(parsed.map((c: { id: string; title: string }) => [c.id, c.title]));
-    expect(titles).toEqual({
-      'named-change': 'Proposal: Named Change',
-      'templated-change': 'templated-change',
-    });
   });
 });

@@ -127,14 +127,9 @@ describe('ordered and plus tasks through the CLI', () => {
     expect((await cli(['init', '--tools', 'claude'])).exitCode).toBe(0);
     expect((await cli(['new', 'change', 'add-thing'])).exitCode).toBe(0);
     const changeDir = path.join(project, 'openspec', 'changes', 'add-thing');
-    await fs.mkdir(path.join(changeDir, 'specs', 'billing'), { recursive: true });
     await fs.writeFile(
-      path.join(changeDir, 'proposal.md'),
-      '# Add thing\n\n## Why\nWe need billing documented so operators and customers share one contract for invoices.\n\n## What Changes\n- **billing**: adds a requirement\n'
-    );
-    await fs.writeFile(
-      path.join(changeDir, 'specs', 'billing', 'spec.md'),
-      '## ADDED Requirements\n### Requirement: Invoice Generation\nThe system SHALL generate an invoice for every completed billing period.\n\n#### Scenario: Period closes\n- **WHEN** a billing period closes\n- **THEN** an invoice is generated\n'
+      path.join(changeDir, 'outline.md'),
+      '## Proposal\nWe need billing documented so operators and customers share one contract for invoices.\n\n## Requirements\n1. billing: Invoices for completed billing periods.\n  a. Invoice generation: The system generates an invoice for every completed billing period.\n'
     );
     await fs.writeFile(path.join(changeDir, 'tasks.md'), tasks);
     return { cli };

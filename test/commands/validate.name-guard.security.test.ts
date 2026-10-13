@@ -51,18 +51,11 @@ describe('validate --type name guard', () => {
     await fs.writeFile(
       path.join(testDir, 'openspec', 'specs', 'platform', 'widgets', 'spec.md'),
       [
-        '# widgets',
-        '',
-        '## Purpose',
+        '# platform/widgets',
         'A nested capability used to prove nested ids still validate cleanly.',
         '',
-        '## Requirements',
-        '### Requirement: Widgets',
-        'The system SHALL provide widgets.',
-        '',
-        '#### Scenario: Basic',
-        '- **WHEN** asked',
-        '- **THEN** it responds',
+        '1. Widgets: The system provides widgets.',
+        '  a. Asked for a widget, it responds.',
         '',
       ].join('\n')
     );
@@ -71,6 +64,7 @@ describe('validate --type name guard', () => {
       cwd: testDir,
     });
     expect(result.exitCode).toBe(0);
+    expect(result.stderr).not.toContain('WARNING');
   });
 
   it('refuses a traversing change name', async () => {

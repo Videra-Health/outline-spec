@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import os from 'os';
 import path from 'path';
-import { getActiveChangeIds, getArchivedChangeIds } from '../../src/utils/item-discovery.js';
+import { getActiveChangeIds } from '../../src/utils/item-discovery.js';
 
 describe('item discovery', () => {
   let root: string;
@@ -44,7 +44,7 @@ describe('item discovery', () => {
       expect(await getActiveChangeIds(root)).toEqual(['no-proposal-schema']);
     });
 
-    it('excludes the archive directory and hidden directories', async () => {
+    it('excludes a legacy archive directory and hidden directories', async () => {
       await makeChange('real-change');
       await fs.mkdir(path.join(changesDir, 'archive', '2026-01-01-old'), { recursive: true });
       await fs.mkdir(path.join(changesDir, '.scratch'), { recursive: true });
@@ -60,26 +60,4 @@ describe('item discovery', () => {
     });
   });
 
-  describe('getArchivedChangeIds', () => {
-    it('resolves archived changes without requiring proposal.md', async () => {
-      const archiveDir = path.join(changesDir, 'archive');
-      await fs.mkdir(path.join(archiveDir, '2026-01-02-no-proposal'), { recursive: true });
-      await fs.mkdir(path.join(archiveDir, '2026-01-01-with-proposal'), { recursive: true });
-      await fs.writeFile(
-        path.join(archiveDir, '2026-01-01-with-proposal', 'proposal.md'),
-        '# Archived',
-        'utf-8'
-      );
-      await fs.mkdir(path.join(archiveDir, '.tmp'), { recursive: true });
-
-      expect(await getArchivedChangeIds(root)).toEqual([
-        '2026-01-01-with-proposal',
-        '2026-01-02-no-proposal',
-      ]);
-    });
-
-    it('returns an empty list when nothing has been archived', async () => {
-      expect(await getArchivedChangeIds(root)).toEqual([]);
-    });
-  });
 });

@@ -51,19 +51,9 @@ let pointerProject: string;
 let env: NodeJS.ProcessEnv;
 
 const SPEC = `# billing
-
-## Purpose
-
 Billing rules.
 
-## Requirements
-
-### Requirement: Charge a card
-The system SHALL charge a card.
-
-#### Scenario: card is charged
-- **WHEN** a payment is due
-- **THEN** the card is charged
+1. Charge a card: The system charges a card when a payment is due.
 `;
 
 beforeAll(async () => {
@@ -90,6 +80,7 @@ beforeAll(async () => {
   await fs.mkdir(specDir, { recursive: true });
   await fs.writeFile(path.join(specDir, 'spec.md'), SPEC);
 
+  // An archive folder left by an older project must not show up as a change.
   const archiveDir = path.join(storeRoot, 'openspec', 'changes', 'archive', '2026-08-27-store-history');
   await fs.mkdir(archiveDir, { recursive: true });
   await fs.writeFile(path.join(archiveDir, 'tasks.md'), '- [x] Shipped\n');
@@ -116,10 +107,7 @@ beforeAll(async () => {
       '- [x] Audit billing\n- [ ] Implement billing change\n'
     );
     if (changeName === 'billing-refactor') {
-      await fs.writeFile(
-        path.join(changeDir, '.openspec.yaml'),
-        `schema: ${SCHEMA_NAME}\nskip_specs: true\n`
-      );
+      await fs.writeFile(path.join(changeDir, '.openspec.yaml'), `schema: ${SCHEMA_NAME}\n`);
     }
     // billing-update deliberately inherits the store's schema from config.yaml.
   }
@@ -157,7 +145,6 @@ describe('openspec view root resolution', () => {
       const lines = result.stdout.split(/\r?\n/);
 
       for (const changeName of ['billing-update', 'billing-refactor']) {
-        const skipped = changeName === 'billing-refactor';
         const statusResult = await runCLI(
           ['status', '--change', changeName, '--json', ...storeArgs],
           options
@@ -167,15 +154,15 @@ describe('openspec view root resolution', () => {
         expect(status.schemaName).toBe(SCHEMA_NAME);
         expect(status.artifacts).toMatchObject([
           { id: 'proposal', status: 'done' },
-          { id: 'specs', status: skipped ? 'skipped' : 'ready' },
-          { id: 'design', status: skipped ? 'ready' : 'blocked' },
+          { id: 'specs', status: 'ready' },
+          { id: 'design', status: 'blocked' },
           { id: 'tasks', status: 'done' },
         ]);
 
         const changeLine = lines.findIndex((line) => line.includes(`◉ ${changeName}`));
         expect(changeLine).toBeGreaterThanOrEqual(0);
         expect.soft(lines[changeLine + 1]).toBe(
-          `    └─ [${SCHEMA_NAME}] proposal✓ ${skipped ? 'specs (skipped) design→' : 'specs→ design'} tasks✓`
+          `    └─ [${SCHEMA_NAME}] proposal✓ specs→ design tasks✓`
         );
       }
     },
@@ -183,9 +170,9 @@ describe('openspec view root resolution', () => {
   );
 
   it.each([{ flags: [] }, { flags: ['--store', STORE_ID] }])(
-    'lists archive entries from the selected store with flags $flags',
+    'lists changes from the selected store with flags $flags',
     async ({ flags }) => {
-      const result = await runCLI(['list', '--archived', '--json', ...flags], {
+      const result = await runCLI(['list', '--json', ...flags], {
         cwd: pointerProject,
         env,
         timeoutMs: TIMEOUT_MS,
@@ -193,15 +180,13 @@ describe('openspec view root resolution', () => {
 
       expect(result.exitCode, result.stderr).toBe(0);
       const output = JSON.parse(result.stdout);
-      expect(output.changes).toEqual([
-        expect.objectContaining({ name: '2026-08-27-store-history', archived: true, totalTasks: 1 }),
-      ]);
+      expect(output.changes.map((c: { name: string }) => c.name).sort()).toEqual(['billing-refactor', 'billing-update']);
       expect(realpathSync.native(output.root.path)).toBe(realpathSync.native(storeRoot));
     },
     TIMEOUT_MS
   );
 
-  it('browses archives when the selected store was registered through a directory alias', async () => {
+  it('browses changes when the selected store was registered through a directory alias', async () => {
     const aliasRoot = path.join(base, 'store-alias');
     await fs.symlink(storeRoot, aliasRoot, process.platform === 'win32' ? 'junction' : 'dir');
     const aliasEnv = {
@@ -214,15 +199,13 @@ describe('openspec view root resolution', () => {
     });
     expect(registered.exitCode, registered.stderr).toBe(0);
 
-    const listed = await runCLI(['list', '--archived', '--json', '--store', STORE_ID], {
+    const listed = await runCLI(['list', '--json', '--store', STORE_ID], {
       cwd: base, env: aliasEnv, timeoutMs: TIMEOUT_MS,
     });
     expect(listed.exitCode, listed.stderr).toBe(0);
     const output = JSON.parse(listed.stdout);
     expect(realpathSync.native(output.root.path)).toBe(realpathSync.native(storeRoot));
-    expect(output.changes).toEqual([
-      expect.objectContaining({ name: '2026-08-27-store-history', archived: true, totalTasks: 1 }),
-    ]);
+    expect(output.changes.map((c: { name: string }) => c.name).sort()).toEqual(['billing-refactor', 'billing-update']);
 
     const viewed = await runCLI(['view', '--store', STORE_ID], {
       cwd: base, env: aliasEnv, timeoutMs: TIMEOUT_MS,
