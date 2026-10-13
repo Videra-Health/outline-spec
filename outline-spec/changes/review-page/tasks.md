@@ -16,16 +16,16 @@
 
 ## 3. Template and command
 
-- [ ] 3.1 Write `schemas/outline/templates/review.html`: tabs, banner, outline diff styling for `<del>`/`<strong>`, Mermaid blocks, spec-changes rendering, light and dark; payload in `<script type="application/json" id="outline-spec-review">`.
+- [ ] 3.1 Load the `artifact-design` skill, then write `schemas/outline/templates/review.html` to artifact quality: deliberate typography, `:root` color tokens with light and dark themes, red/green diff colors that pass contrast in both, tabs, banner, Mermaid themed to match, spec-changes layout with live/after columns that stack at phone width; payload in `<script type="application/json" id="outline-spec-review">`.
 - [ ] 3.2 Add the `review` block to `schemas/outline/schema.yaml` with Outline, Diagrams, and Spec changes tabs.
-- [ ] 3.3 Add `outline-spec review <change>` with `--json`, `--for <workflow>`, `--url <link>`; temp path via `path.join(os.tmpdir(), 'outline-spec-review', <hash>-<basename>, '<change>.html')`; payload escaped against `</script>`. CLI e2e tests for render, `--for` gated off, `--url` recorded, unknown change, and a schema with no review block.
+- [ ] 3.3 Add `outline-spec review <change>` with `--json`, `--for <workflow>`, `--url <link>`, `--out <path>` (relative to cwd, parents created); default temp path via `path.join(os.tmpdir(), 'outline-spec-review', <hash>-<basename>, '<change>.html')`; payload escaped against `</script>`. CLI e2e tests for render, `--out`, `--for` gated off, `--url` recorded, unknown change, and a schema with no review block.
 - [ ] 3.4 Assert expected paths with `path.join` in tests so they pass on the Windows CI job; check the `windows-pwsh` job is green.
-- [ ] 3.5 Open the rendered page for this change in a browser and check each tab and the banner by eye.
+- [ ] 3.5 Render this change's page, publish it as a private artifact, and check each tab, the banner, and both themes by eye.
 - [ ] 3.6 Add `review` to `docs/cli.md` and a CHANGELOG entry.
 
 ## 4. Workflows
 
-- [ ] 4.1 In `src/core/templates/workflows/propose.ts`, after all artifacts exist: run `review --for propose --json`; if enabled and the agent can publish an HTML page, publish it privately (at `reviewUrl` when set), record with `--url`; otherwise give the path; say nothing when disabled.
+- [ ] 4.1 In `src/core/templates/workflows/propose.ts`, after all artifacts exist: run `review --for propose --out <a folder the page tool publishes from> --json`; if enabled and the agent can publish an HTML page, publish it privately (at `reviewUrl` when set) and open it, record with `--url`; otherwise give the path; say nothing when disabled.
 - [ ] 4.2 Same in `update-change.ts`, run only when the revision rewrote `outline.md`, with `--for update`.
 - [ ] 4.3 `pnpm generate:skills && pnpm regen:parity-hashes`; parity tests pass.
 

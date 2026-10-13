@@ -13,6 +13,7 @@ When a propose finishes or an update revises the outline, the developer gets one
     e. `--for <workflow>` renders only when `review-on` includes that workflow, and otherwise reports `enabled: false` and writes nothing.
     f. `--url <link>` records the page's published link in the change's `.outline-spec.yaml` without rendering.
     g. An unknown change name fails with the list of open changes, as `outline-spec status` does.
+    h. `--out <path>` writes the file to that path instead, resolved against the current directory with the platform's path rules and creating missing parent folders, so an agent can render into a folder its page tool publishes from.
   b. Tabs: The page SHALL show one tab per entry in the schema's review block, in order, the first tab open.
     a. A file tab renders the listed change files as Markdown, in the listed order, skipping any file the change does not have.
     b. A file tab whose files are all missing is left off the page.
@@ -40,9 +41,10 @@ When a propose finishes or an update revises the outline, the developer gets one
   g. Publishing from workflows: The propose and update workflows SHALL render the review page when `review-on` includes them and the agent can publish a page.
     a. Propose renders the page once every planning artifact exists.
     b. Update renders the page after a revision that changes `outline.md`, and skips it when only other artifacts changed.
-    c. The first publish records the page's link in the change's `.outline-spec.yaml`, and later publishes update the page at that link.
-    d. An agent that cannot publish pages gives the developer the file path instead.
-    e. When `review-on` excludes the workflow, the workflow does not render the page or mention it.
+    c. The agent publishes the page privately, as a page only the developer can see, and opens it for the developer.
+    d. The first publish records the page's link in the change's `.outline-spec.yaml`, and later publishes update the page at that link and open it again.
+    e. An agent that cannot publish pages gives the developer the file path instead.
+    f. When `review-on` excludes the workflow, the workflow does not render the page or mention it.
 2. config-loading:
   a. Use resilient field-by-field parsing (patch):
     k. Review-on field is valid: WHEN config contains `review-on: [propose]` THEN review-on field is included in returned config
