@@ -2,8 +2,8 @@
 
 ## 1. Schema and config
 
-- [ ] 1.1 Add an optional `review` block (`template`, `tabs[{ title, from? | view? }]`) to `SchemaYamlSchema` in `src/core/artifact-graph/types.ts`; unit-test valid, neither/both of `from`/`view`, and unknown view.
-- [ ] 1.2 Teach `outline-spec schema validate` to report bad tabs and a missing template file; test with a fixture schema.
+- [x] 1.1 Add an optional `review` block (`template`, `tabs[{ title, from? | view? }]`) to `SchemaYamlSchema` in `src/core/artifact-graph/types.ts`; unit-test valid, neither/both of `from`/`view`, and unknown view.
+- [x] 1.2 Teach `outline-spec schema validate` to report bad tabs and a missing template file; test with a fixture schema.
 - [ ] 1.3 Parse `review-on` and `review.tabs` field by field in `readProjectConfig`, warning on unknown workflows and invalid tabs; tests for config-loading details k–n.
 - [ ] 1.4 Add `reviewUrl` to `CHANGE_METADATA_KNOWN_KEYS` and the metadata schema; test read/write round-trip.
 - [ ] 1.5 Update `docs/configuration.md` and `docs/schema.md` for `review-on`, `review.tabs`, and the schema `review` block.

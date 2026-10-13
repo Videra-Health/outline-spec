@@ -266,4 +266,54 @@ artifacts:${artifacts}
       expect(() => parseSchema(yaml)).toThrow(/at most 1000 artifacts/);
     });
   });
+
+  describe('review block', () => {
+    const withReview = (review: string) => `
+name: s
+version: 1
+artifacts:
+  - id: outline
+    generates: outline.md
+    description: Outline
+    template: outline.md
+review:
+${review}`;
+
+    it('parses tabs and defaults the template to review.html', () => {
+      const schema = parseSchema(withReview(`  tabs:
+    - title: Outline
+      from: [outline.md]
+    - title: Spec changes
+      view: spec-changes
+`));
+      expect(schema.review).toEqual({
+        template: 'review.html',
+        tabs: [
+          { title: 'Outline', from: ['outline.md'] },
+          { title: 'Spec changes', view: 'spec-changes' },
+        ],
+      });
+    });
+
+    it('rejects a tab with neither from nor view', () => {
+      expect(() => parseSchema(withReview(`  tabs:
+    - title: Empty
+`))).toThrow(/Review tab 'Empty' needs exactly one of 'from' or 'view'/);
+    });
+
+    it('rejects a tab with both from and view', () => {
+      expect(() => parseSchema(withReview(`  tabs:
+    - title: Both
+      from: [outline.md]
+      view: spec-changes
+`))).toThrow(/Review tab 'Both' needs exactly one/);
+    });
+
+    it('rejects an unknown view', () => {
+      expect(() => parseSchema(withReview(`  tabs:
+    - title: Tasks
+      view: tasks
+`))).toThrow(/unknown view 'tasks'/);
+    });
+  });
 });

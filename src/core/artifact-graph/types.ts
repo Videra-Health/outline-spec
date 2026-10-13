@@ -45,6 +45,31 @@ export const ApplyPhaseSchema = z.object({
   instruction: z.string().optional(),
 });
 
+// Computed views a review tab can show instead of change files
+export const REVIEW_VIEWS = ['spec-changes'] as const;
+
+export const ReviewTabSchema = z
+  .object({
+    title: z.string().min(1, { error: 'Review tab title is required' }),
+    from: z.array(relativePathSchema('review tab file')).min(1).optional(),
+    view: z.string().optional(),
+  })
+  .superRefine((tab, ctx) => {
+    if ((tab.from === undefined) === (tab.view === undefined)) {
+      ctx.addIssue({ code: 'custom', message: `Review tab '${tab.title}' needs exactly one of 'from' or 'view'` });
+    } else if (tab.view !== undefined && !(REVIEW_VIEWS as readonly string[]).includes(tab.view)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Review tab '${tab.title}' has unknown view '${tab.view}' (views: ${REVIEW_VIEWS.join(', ')})`,
+      });
+    }
+  });
+
+export const ReviewBlockSchema = z.object({
+  template: relativePathSchema('review.template').default('review.html'),
+  tabs: z.array(ReviewTabSchema).min(1, { error: 'A review block needs at least one tab' }),
+});
+
 // Full schema YAML structure
 export const SchemaYamlSchema = z.object({
   name: z.string().min(1, { error: 'Schema name is required' }),
@@ -61,10 +86,14 @@ export const SchemaYamlSchema = z.object({
     }),
   // Optional apply phase configuration (for schema-aware apply instructions)
   apply: ApplyPhaseSchema.optional(),
+  // Optional review page: its template and tabs
+  review: ReviewBlockSchema.optional(),
 });
 
 // Derived TypeScript types
 export type Artifact = z.infer<typeof ArtifactSchema>;
+export type ReviewTab = z.infer<typeof ReviewTabSchema>;
+export type ReviewBlock = z.infer<typeof ReviewBlockSchema>;
 export type ApplyPhase = z.infer<typeof ApplyPhaseSchema>;
 export type SchemaYaml = z.infer<typeof SchemaYamlSchema>;
 

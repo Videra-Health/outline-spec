@@ -230,6 +230,28 @@ function validateSchema(
     }
   }
 
+  if (schema.review) {
+    const templatesDir = path.join(schemaDir, 'templates');
+    const reviewTemplatePath = path.join(templatesDir, schema.review.template);
+    if (!fs.existsSync(reviewTemplatePath)) {
+      issues.push({
+        level: 'error',
+        path: 'review.template',
+        message: `Review template '${schema.review.template}' not found in the schema templates directory`,
+      });
+    } else {
+      try {
+        FileSystemUtils.assertPathWithin(templatesDir, reviewTemplatePath);
+      } catch {
+        issues.push({
+          level: 'error',
+          path: 'review.template',
+          message: `Review template '${schema.review.template}' points outside the schema templates directory`,
+        });
+      }
+    }
+  }
+
   // Dependency graph validation is already done by parseSchema (it throws on
   // cycles, invalid references, and an unknown apply.requires id)
   if (verbose) {

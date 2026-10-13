@@ -226,6 +226,57 @@ artifacts:
       });
     });
 
+    describe('review block', () => {
+      const writeReviewSchema = (review: string, withTemplate: boolean) => {
+        const schemaDir = path.join(tempDir, 'outline-spec', 'schemas', 'review-schema');
+        fs.mkdirSync(path.join(schemaDir, 'templates'), { recursive: true });
+        fs.writeFileSync(
+          path.join(schemaDir, 'schema.yaml'),
+          `name: review-schema
+version: 1
+artifacts:
+  - id: outline
+    generates: outline.md
+    description: Outline
+    template: outline.md
+review:
+${review}`
+        );
+        fs.writeFileSync(path.join(schemaDir, 'templates', 'outline.md'), '# Outline');
+        if (withTemplate) fs.writeFileSync(path.join(schemaDir, 'templates', 'review.html'), '<html></html>');
+      };
+      const lastJson = () => JSON.parse(consoleLogSpy.mock.calls.at(-1)?.[0] as string);
+
+      it('passes with a valid review block and template', async () => {
+        writeReviewSchema('  tabs:\n    - title: Outline\n      from: [outline.md]\n', true);
+        await runSchemaCommand(['validate', 'review-schema', '--json']);
+        expect(lastJson()).toMatchObject({ valid: true, issues: [] });
+      });
+
+      it('reports a missing review template', async () => {
+        writeReviewSchema('  tabs:\n    - title: Outline\n      from: [outline.md]\n', false);
+        await runSchemaCommand(['validate', 'review-schema', '--json']);
+        expect(process.exitCode).toBe(1);
+        expect(lastJson()).toMatchObject({
+          valid: false,
+          issues: [{ path: 'review.template', message: expect.stringContaining("'review.html' not found") }],
+        });
+      });
+
+      it.each([
+        ['neither from nor view', '    - title: Bad\n', /needs exactly one of 'from' or 'view'/],
+        ['both from and view', '    - title: Bad\n      from: [outline.md]\n      view: spec-changes\n', /needs exactly one/],
+        ['an unknown view', '    - title: Bad\n      view: tasks\n', /unknown view 'tasks'/],
+      ])('reports a tab with %s', async (_name, tab, message) => {
+        writeReviewSchema(`  tabs:\n${tab}`, true);
+        await runSchemaCommand(['validate', 'review-schema', '--json']);
+        expect(process.exitCode).toBe(1);
+        const out = lastJson();
+        expect(out.valid).toBe(false);
+        expect(out.issues[0].message).toMatch(message);
+      });
+    });
+
     it('should detect circular dependencies', async () => {
       const { parseSchema, SchemaValidationError } = await import(
         '../../src/core/artifact-graph/schema.js'
