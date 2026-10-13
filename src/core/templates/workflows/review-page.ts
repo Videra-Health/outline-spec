@@ -4,7 +4,7 @@
 
 /** Renders, publishes, and records the change's review page; `workflow` is the `--for` value. */
 export function reviewPageStep(workflow: 'propose' | 'update'): string {
-  return `render the page the developer reads to check the change:
+  return `render the page the developer reads to check the change. Skip this step, and don't mention the page, when no developer is in the session: you are a subagent, or running headless or scripted (such as \`claude -p\` or the SDK), or in CI.
    \`\`\`bash
    outline-spec review "<name>" --for ${workflow} --out "<folder>/review-<name>.html" --json
    \`\`\`

@@ -141,7 +141,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 
 7. **Publish the review page**
 
-   Once every artifact in the required set exists, render the page the developer reads to check the change:
+   Once every artifact in the required set exists, render the page the developer reads to check the change. Skip this step, and don't mention the page, when no developer is in the session: you are a subagent, or running headless or scripted (such as `claude -p` or the SDK), or in CI.
    ```bash
    outline-spec review "<name>" --for propose --out "<folder>/review-<name>.html" --json
    ```

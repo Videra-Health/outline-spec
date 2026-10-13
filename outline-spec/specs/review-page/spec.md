@@ -34,10 +34,11 @@ A rendered page a developer reads to check a change before approving it.
   a. `review-on` lists the workflows that produce the page, from `propose` and `update`; it defaults to both, and `review-on: []` turns the page off.
   b. `review.tabs` replaces the schema's tabs, in the same form as the schema's review block.
   c. An unknown workflow in `review-on` or an invalid tab is warned about and ignored, and the rest of the config still loads (see `config-loading`).
-7. Publishing from workflows: The propose and update workflows SHALL render the review page when `review-on` includes them and the agent can publish a page.
+7. Publishing from workflows: The propose and update workflows SHALL render the review page when `review-on` includes them, the agent can publish a page, and a developer is in the session.
   a. Propose renders the page once every planning artifact exists.
   b. Update renders the page after a revision that changes `outline.md`, and skips it when only other artifacts changed.
   c. The agent publishes the page privately, as a page only the developer can see, and opens it for the developer.
   d. The first publish records the page's link in the change's `.outline-spec.yaml`, and later publishes update the page at that link and open it again.
   e. An agent that cannot publish pages gives the developer the file path instead.
   f. When `review-on` excludes the workflow, the workflow does not render the page or mention it.
+  g. When no developer is in the session, as for a subagent, a headless or scripted run, or CI, the workflow does not render, publish, or open the page, and does not mention it.
