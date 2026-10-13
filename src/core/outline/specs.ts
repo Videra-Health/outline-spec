@@ -20,7 +20,7 @@ export function specFile(specsDir: string, name: string): string {
 
 export function readLiveSpec(specsDir: string, name: string): Spec | null {
   const file = specFile(specsDir, name);
-  return existsSync(file) ? parseSpec(readFileSync(file, 'utf-8'), file) : null;
+  return existsSync(file) ? parseSpec(readFileSync(file, 'utf-8').replace(/\r\n/g, '\n'), file) : null;
 }
 
 /** Open changes: every directory under changes/ except `archive` (left by older projects) and dot dirs. */
@@ -44,7 +44,7 @@ export function hasChangeOutline(changesDir: string, change: string): boolean {
 export function readChangeEdits(changesDir: string, change: string): SpecEdit[] {
   const file = changeOutlinePath(changesDir, change);
   if (!existsSync(file)) throw new Error(`${change}: no ${CHANGE_OUTLINE}`);
-  return parseChange(readFileSync(file, 'utf-8'), path.join(change, CHANGE_OUTLINE));
+  return parseChange(readFileSync(file, 'utf-8').replace(/\r\n/g, '\n'), path.join(change, CHANGE_OUTLINE));
 }
 
 /** Every spec a change would write, or an error listing every problem. Nothing touches disk. */

@@ -106,8 +106,11 @@ export class LandCommand {
     json: boolean
   ): Promise<LandResult | null> {
     const { changesDir, specsDir } = root;
+    // A dash-leading name would read as an option, so it goes after `--`, behind any --store.
     const rerun = (name: string) =>
-      withStoreFlag(root, `openspec land ${quote(name)}${options.dryRun ? ' --dry-run' : ''} --yes`);
+      name.startsWith('-')
+        ? `${withStoreFlag(root, 'openspec land --yes')} -- ${quote(name)}`
+        : withStoreFlag(root, `openspec land ${quote(name)} --yes`);
 
     if (!changeName) {
       if (json) {
@@ -166,7 +169,7 @@ export class LandCommand {
         throw new LandBlockedError(
           'land_tasks_incomplete',
           `${incomplete} incomplete task(s) found for change '${changeName}'.`,
-          `Complete the tasks or rerun with ${rerun(changeName)} --json`
+          `Complete the tasks or rerun with ${rerun(changeName).replace('openspec land', 'openspec land --json')}`
         );
       } else {
         let proceed: boolean;

@@ -4,7 +4,12 @@ import { ValidationReport, ValidationIssue } from './types.js';
 import { kindAt, labelFor, labelValue, parseSpec, reqName, type Node } from '../outline/outline.js';
 import { CHANGE_OUTLINE, planEdits, readChangeEdits } from '../outline/specs.js';
 import { FileSystemUtils } from '../../utils/file-system.js';
-import { resolveSchemaForChange } from '../../utils/change-metadata.js';
+import {
+  METADATA_FILENAME,
+  formatUnknownChangeMetadataKeysMessage,
+  readUnknownChangeMetadataKeys,
+  resolveSchemaForChange,
+} from '../../utils/change-metadata.js';
 import { resolveTaskFilesForChange } from '../../utils/task-progress.js';
 import { findTaskNumberingIssues } from './task-numbering.js';
 import { findMissingTaskCheckboxIssues } from './task-checkboxes.js';
@@ -125,6 +130,10 @@ export class Validator {
           issues.push({ level: 'ERROR', path: CHANGE_OUTLINE, message: line });
         }
       }
+    }
+    const unknownKeys = readUnknownChangeMetadataKeys(changeDir);
+    if (unknownKeys.length > 0) {
+      issues.push({ level: 'WARNING', path: METADATA_FILENAME, message: formatUnknownChangeMetadataKeysMessage(unknownKeys) });
     }
     if (options.projectRoot) {
       issues.push(...await this.collectTaskFileIssues(changeDir, options.projectRoot));
