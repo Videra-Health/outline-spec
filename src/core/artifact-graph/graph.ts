@@ -20,7 +20,7 @@ export class ArtifactGraph {
   /**
    * Orders artifact ids by where the schema declares them.
    *
-   * The dependency graph leaves siblings tied - the outline schema's `design`
+   * The dependency graph leaves siblings tied - the outline schema's `diagrams`
    * and `tasks` both require only `outline`, so both become ready at the same
    * time. Breaking ties by declaration order
    * follows the sequence the schema author wrote, for built-in and custom

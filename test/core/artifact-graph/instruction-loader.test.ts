@@ -46,7 +46,7 @@ describe('instruction-loader', () => {
 
     // Artifacts inherit the template's opening line, so every packaged template
     // starts the document with an `# ` title instead of a section header.
-    // Without it every generated outline.md, design.md and tasks.md
+    // Without it every generated outline.md, diagrams.md and tasks.md
     // trips markdownlint MD041 (#1138).
     it.each(packagedArtifacts())(
       'opens the %s schema\'s %s template with a title',
@@ -61,7 +61,6 @@ describe('instruction-loader', () => {
     describe('outline titles', () => {
       const TITLES: Record<string, string> = {
         outline: '# Outline',
-        design: '# Design',
         diagrams: '# Diagrams',
         tasks: '# Tasks',
       };
@@ -269,8 +268,8 @@ describe('instruction-loader', () => {
       const context = loadChangeContext(tempDir, 'my-change');
       const instructions = generateInstructions(context, 'outline');
 
-      // outline unlocks design, diagrams, and tasks, in the schema's declared order
-      expect(instructions.unlocks).toEqual(['design', 'diagrams', 'tasks']);
+      // outline unlocks diagrams and tasks, in the schema's declared order
+      expect(instructions.unlocks).toEqual(['diagrams', 'tasks']);
     });
 
     it('should have empty dependencies for root artifact', () => {
@@ -403,9 +402,9 @@ rules:
 
         const context = loadChangeContext(tempDir, 'my-change');
 
-        // Check design artifact (no rules configured) has undefined rules
-        const designInstructions = generateInstructions(context, 'design', tempDir);
-        expect(designInstructions.rules).toBeUndefined();
+        // Check diagrams artifact (no rules configured) has undefined rules
+        const diagramsInstructions = generateInstructions(context, 'diagrams', tempDir);
+        expect(diagramsInstructions.rules).toBeUndefined();
       });
 
       it('should not inherit rules from the rule map prototype', () => {
@@ -573,7 +572,7 @@ rules:
           // Call multiple times
           generateInstructions(context, 'outline', freshTempDir);
           generateInstructions(context, 'tasks', freshTempDir);
-          generateInstructions(context, 'design', freshTempDir);
+          generateInstructions(context, 'diagrams', freshTempDir);
 
           // Warning should be shown only once (deduplication works)
           // Note: We may have gotten warnings from other tests, so check that
@@ -674,7 +673,6 @@ rules:
 
       // Create all files for the outline schema
       fs.writeFileSync(path.join(changeDir, 'outline.md'), '# Outline');
-      fs.writeFileSync(path.join(changeDir, 'design.md'), '# Design');
       fs.writeFileSync(path.join(changeDir, 'diagrams.md'), '# Diagrams');
       fs.writeFileSync(path.join(changeDir, 'tasks.md'), '# Tasks');
 
@@ -726,7 +724,7 @@ rules:
       const status = formatChangeStatus(context);
 
       const ids = status.artifacts.map(a => a.id);
-      expect(ids).toEqual(['outline', 'design', 'diagrams', 'tasks']);
+      expect(ids).toEqual(['outline', 'diagrams', 'tasks']);
     });
   });
 });

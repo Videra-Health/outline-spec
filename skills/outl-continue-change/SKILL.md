@@ -74,7 +74,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    ---
 
    **If artifacts are ready to create** (status shows artifacts with `status: "ready"`):
-   - Pick the FIRST artifact with `status: "ready"` from the status output. If its instruction says to create it only when conditions apply and they don't (the outline schema's `design.md`), tell the user and pick the next ready one
+   - Pick the FIRST artifact with `status: "ready"` from the status output. If its instruction says to create it only when conditions apply and they don't, tell the user and pick the next ready one
    - Get its instructions:
      ```bash
      outline-spec instructions <artifact-id> --change "<name>" --json

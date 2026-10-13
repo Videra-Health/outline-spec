@@ -93,7 +93,7 @@ When the user wants to propose a new change:
 function toArchiveEra(content: string): string {
   return content
     .replace(
-      'planning artifacts (an outline of spec edits, an optional design, and tasks) that guide implementation. Archiving a change applies its outline to the specs.',
+      'planning artifacts (an outline of spec edits, diagrams, and tasks) that guide implementation. Archiving a change applies its outline to the specs.',
       'planning artifacts (proposals, specs, designs, tasks) that guide implementation.'
     )
     .replace(
@@ -341,6 +341,23 @@ describe('GitHub Copilot Cloud Agent', () => {
       const agentPath = path.join(tempDir, COPILOT_CLOUD_FILES.agent);
       await fs.mkdir(path.dirname(agentPath), { recursive: true });
       await fs.writeFile(agentPath, toArchiveEra(generateCopilotAgentFile()));
+
+      const result = await writeCopilotCloudFiles(tempDir);
+
+      expect(result.agentWritten).toBe(true);
+      await expect(fs.readFile(agentPath, 'utf8')).resolves.toBe(generateCopilotAgentFile());
+    });
+
+    it('refreshes the agent written before the outline schema dropped design.md', async () => {
+      const agentPath = path.join(tempDir, COPILOT_CLOUD_FILES.agent);
+      await fs.mkdir(path.dirname(agentPath), { recursive: true });
+      await fs.writeFile(
+        agentPath,
+        generateCopilotAgentFile().replace(
+          'an outline of spec edits, diagrams, and tasks',
+          'an outline of spec edits, an optional design, and tasks'
+        )
+      );
 
       const result = await writeCopilotCloudFiles(tempDir);
 

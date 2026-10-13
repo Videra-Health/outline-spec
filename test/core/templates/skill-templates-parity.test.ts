@@ -71,43 +71,43 @@ function outlineTitles(): Record<string, string> {
 }
 
 const EXPECTED_FUNCTION_HASHES: Record<string, string> = {
-  getExploreSkillTemplate: '958b007af94f804a12a6a7b1a293d79b76cf6b01173a9bb654a728ed3011cb4e',
+  getExploreSkillTemplate: 'd11532e7056398a5cbd83657f8fcaf7a95b06f3616d9f8a4a85d4168a40a719f',
   getNewChangeSkillTemplate: '1d09ed572f8206233aea74d25aaa60632b01ad3586cfa38c591948ee479eec3b',
-  getContinueChangeSkillTemplate: '4416de238b4f74f9fffcfb7018aa2791ab4e254954bc231430887b58ee6e37fa',
-  getApplyChangeSkillTemplate: '83e9f795ed24a6d4639e145393becf273c5fa0d35a611eeea955cfd45791741e',
-  getFfChangeSkillTemplate: '1f9bb44870ba30a1c1ef1fd7a7543f7283e3078c99061fb92dacfecd283dfe8d',
-  getOnboardSkillTemplate: 'aa5cd2d977943a13b2bf3c7f0ee2ff6df614eeb9b8999e9433cb08708cf5fe18',
-  getOutlineSpecExploreCommandTemplate: '3668f773ac690ddcbcb230c6bb93413de58b4b74832324dbda7813247b88b65f',
+  getContinueChangeSkillTemplate: 'e0c8bc0bb410f9f6b5fe256bfb0fa19d09d5efd4f9a237a40fbecec0676885ce',
+  getApplyChangeSkillTemplate: '9cc604d44ee1ae1d7f8a679e2d43a2da09363430a16e864f1fc92c12570e1d79',
+  getFfChangeSkillTemplate: 'fe8297d5719a796d1627dc391a818f7cf59383754d822b6821d150430b7c6350',
+  getOnboardSkillTemplate: '3590ef0dd04bf7baa0ccda9c4e2a989a0abb7efd27b21667d6a29cdef7099c14',
+  getOutlineSpecExploreCommandTemplate: 'f3972ad279b66037f7db47a2537875313da3dfb34633f5e05adccfe3456da1c0',
   getOutlineSpecNewCommandTemplate: 'd9676a30bc81ac0576a987438724df10e0e8567acaafa4f211b852f361b1cd71',
-  getOutlineSpecContinueCommandTemplate: 'b0b9b55be689d12f1fbce6134e71ec1dc1aa792f2d8b76247053254b4cf1625c',
-  getOutlineSpecApplyCommandTemplate: 'b32b2c8ca2baeedeac8c1e177292a892fb9c1debc02de1139eeef43924679b16',
-  getOutlineSpecFfCommandTemplate: 'd21840652508b650c25db3b1f27e4e22d6f46c594aac59fc9c77d9801b748a31',
+  getOutlineSpecContinueCommandTemplate: '6c2b7c4c90c7715b20a5797f228a617f7ab7da21791c7fafe04ec6f8707ec4a0',
+  getOutlineSpecApplyCommandTemplate: 'd51dd279d606345026a3c16ad03442cc833d222f2008f60928aa35b7cb465aea',
+  getOutlineSpecFfCommandTemplate: 'abb74bdb6a56529cdf54b9e00d3d56833074dc958abc1d849b2ce125ec9c4d13',
   getSyncSpecsSkillTemplate: '870fffb95107f1c2cde6897d28924fc8e0cc0a57ade17ff1e01f547e7f3006fe',
   getOutlineSpecSyncCommandTemplate: 'a536213ee8e1143546b4ee0c3fc7f414ba07dc77f6334a9064afb897a435ee75',
-  getArchiveChangeSkillTemplate: 'b059b0bbb56f8ef3ee83b0dc6881731c33350cf9e67492bfcbef1b747e99d5d2',
-  getVerifyChangeSkillTemplate: '15dbf055dc3b00c7a483cab029b062fa2a5d3ed07055e1bbcc61021a8180d391',
-  getOutlineSpecArchiveCommandTemplate: '62b17cf261192322bc7444e0f31b5be7433562c76f30ad920e4be500c0938796',
-  getOutlineSpecOnboardCommandTemplate: 'e798072a5f07b780e38a786aaa9e5c0f1d8813ff823dfb79c7ffe195bbc5c72f',
-  getOutlineSpecVerifyCommandTemplate: 'd73ee0ac4aa03cb2b6cc7f4d77fdeac176dc593a2e9b70e8dfbeb9db6a59345c',
-  getOutlineSpecProposeSkillTemplate: '21271eedba126e201ab813367a429784ba475cd943f3e87987fef24dfcfbd0ff',
-  getOutlineSpecProposeCommandTemplate: '22a4bc7d93dbce6bac3a04fbd43dbfb3ce996895e99e56de348df3838166a215',
+  getArchiveChangeSkillTemplate: 'f159102f764bf1eda2716e3f9c6806dea13ead60c760cc425cc686c1b78f65f8',
+  getVerifyChangeSkillTemplate: '656f1317b387cd050d4e43a4e3bb9a6e36a4a396f270f655c77ae51d1ceb5ca7',
+  getOutlineSpecArchiveCommandTemplate: 'ae5a8da0ca3210a298b98c54b1e708150b56a9495be9c74a7e6a148c038c38f2',
+  getOutlineSpecOnboardCommandTemplate: '811031a3cf313ce1ca8c87c63854b6521ac00b7abb9387d29fd9185fee35a109',
+  getOutlineSpecVerifyCommandTemplate: '87c6fccf9336804db377003cae34f408a82261990cc35d9c93026d5ceb36e586',
+  getOutlineSpecProposeSkillTemplate: 'dc03b73da221643e395d6458b4d0de45efbb4fcbef23042df4bff8d491523df6',
+  getOutlineSpecProposeCommandTemplate: '91b321219763d72881527edf2bc915d4fc00e496a757b11187ba8e9c234f8bef',
   getFeedbackSkillTemplate: '84032cbc59ea51005dcf80a20978b4755ea636e6746bcbd1aa0cba06814c36db',
-  getUpdateChangeSkillTemplate: '7cf7ed545b6897155de1a6d27721fd42dbb05a169d684501eefb622efe2178d5',
-  getOutlineSpecUpdateCommandTemplate: '4b885dcc1b96d9a87096dd077c2e9af3aadc5ba634a48ae834cac569f616feb5',
+  getUpdateChangeSkillTemplate: '16c6345ce2911aa2051d7d3bb2f0270dfb0b53bd64c3fc697535f23d23fd4048',
+  getOutlineSpecUpdateCommandTemplate: 'aea754b22351db7d535dde88207dbc907fd1c6901b9bc074473dc260f452878d',
 };
 
 const EXPECTED_GENERATED_SKILL_CONTENT_HASHES: Record<string, string> = {
-  'outl-explore': '6ec4f5d5b5d5df59ec69e12cf3648644b1f6c746b62f662e38dc7ff9f2b2be05',
+  'outl-explore': '70b8f68492082ee8009992fd1ff3120d9201e3a16a5f9c631049f9ec737546fb',
   'outl-new-change': '29a6b32a4f7a751e7b50fd91e8131b19a8999e0d77148148c57e03afa672cd22',
-  'outl-continue-change': '352df13ba7f55d8fc5caf0883100cc8ecc548b5114b52164cf5da0165a5da1b1',
-  'outl-apply-change': '199695e3ac4778f824778c935330bad9ea28be43fa1d92bbe324b034a4960064',
-  'outl-ff-change': 'c36119a1b0ecb142c2d3015b8e36475fc960ad4abab7354443beeae6c950188b',
+  'outl-continue-change': '3e17c4d4209cf37ae989473b4563e171151f7b45c553d8f8fd93ec2f85aca3c9',
+  'outl-apply-change': '43d9849bbe23eeb1934cb2e51596bb5ef5cddf08ac662c03fdd13b7b185f3f37',
+  'outl-ff-change': 'ce0b39b589d08fca2862cc90ae458caf35cfd2a18f4db77ef8eec3f8fa902d36',
   'outl-sync-specs': 'f5cdb14fecd6cbc183e5362ac8a8feab3793951c13dc451473f5d0c4e05447ca',
-  'outl-archive-change': '8ecb83be6bbfbb0e6914cffe162a901faeed8e73f3c447b8ba440a08e1c1aa54',
-  'outl-verify-change': '46a41570ac8aa101fdffe8469fbf3b7b0a98ac83806dd966e2ee9fbca6d654f0',
-  'outl-onboard': 'fb0367db759333abf5effb9d9c3c0ca3ab83e12237bac4ce570271232ebc9bfc',
-  'outl-propose': '594de9fad9854e1cba870c7d6f497af2203d34bf1a2175f28b8377fae14347fd',
-  'outl-update-change': 'e2690b81163c80a0ac28115e8d360a6d343e2bbed367505cbebfa6a5abe1c25e',
+  'outl-archive-change': 'f80b3ef0474a88bf0e077214606077cdcff3cf1a8344d4ef62da960c139160ba',
+  'outl-verify-change': '43a37f3f05c16a8616b5e28e3d4560b54d5f14908c32f8bef21836e3ae0275b8',
+  'outl-onboard': 'd83f2e7123ea5cee856fd1c06fea60e00d96621c5dc8f8340d87401c5f8c1d82',
+  'outl-propose': '31075d06ac7d7a61947578ee10191bebe71029a550660daf2eae6af51502f6ee',
+  'outl-update-change': 'e015d237276df6603c3a3651aa965e99b99725c1847c46c515d09b592095d70d',
 };
 
 // Intentionally excludes getFeedbackSkillTemplate: this list only models templates
@@ -185,7 +185,7 @@ describe('skill templates split parity', () => {
 
       const saveAt = content.indexOf('After approval, save to the `resolvedOutputPath`');
       const implementationChoiceAt = content.indexOf('> "Tasks are saved. Ready to implement?"');
-      const implementationAt = content.indexOf('## Phase 9: Apply (Implementation)');
+      const implementationAt = content.indexOf('## Phase 8: Apply (Implementation)');
       expect(saveAt, variant).toBeGreaterThanOrEqual(0);
       expect(implementationChoiceAt, variant).toBeGreaterThan(saveAt);
       expect(implementationAt, variant).toBeGreaterThan(implementationChoiceAt);

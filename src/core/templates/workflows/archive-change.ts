@@ -76,7 +76,7 @@ since the outline was written (another change was archived first).
 - Always validate and dry-run before archiving, and show the dry-run result
 - Never edit live specs by hand; fix outline.md instead
 - Don't block on open tasks - inform and confirm
-- Archiving deletes the change folder; make sure anything worth keeping in it (design notes) is committed or moved first`;
+- Archiving deletes the change folder; make sure anything worth keeping in it is committed or moved first`;
 
 const INTRO = 'Archive a finished change: apply its outline.md to the live specs and delete the change folder.';
 

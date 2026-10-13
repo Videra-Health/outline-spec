@@ -24,6 +24,7 @@ beforeEach(() => {
   write('config.yaml', 'schema: outline\n');
   write('specs/ships/spec.md', SHIPS);
   write('changes/c1/outline.md', '## Proposal\nWhy.\n\n## Requirements\n1. ships:\n  a. Docking (patch): Ships dock at ~~stations~~ **ports**.\n');
+  write('changes/c1/diagrams.md', '# Diagrams\n');
   write('changes/c1/design.md', '# Design\n');
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
@@ -41,6 +42,8 @@ describe('outline-spec review', () => {
     const data = payload(html);
     expect(data.banner).toEqual({ valid: true, errors: [], overlaps: [] });
     expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Outline', 'Diagrams', 'Spec changes']);
+    // A leftover design.md is not shown.
+    expect(data.tabs[1].files.map((f: { name: string }) => f.name)).toEqual(['diagrams.md']);
     expect(data.tabs[2].specs[0].requirements[0]).toMatchObject({ name: 'Docking', kind: 'edited' });
     rmSync(path.dirname(out.path), { recursive: true, force: true });
   });

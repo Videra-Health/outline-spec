@@ -43,7 +43,7 @@ describe('artifact-workflow CLI commands', () => {
    */
   async function createTestChange(
     changeName: string,
-    artifacts: ('outline' | 'design' | 'diagrams' | 'tasks')[] = []
+    artifacts: ('outline' | 'diagrams' | 'tasks')[] = []
   ): Promise<string> {
     const changeDir = path.join(changesDir, changeName);
     await fs.mkdir(changeDir, { recursive: true });
@@ -52,10 +52,6 @@ describe('artifact-workflow CLI commands', () => {
       ? '## Proposal\nTest proposal content that is long enough.\n\n## Requirements\n1. test: A test spec.\n  a. Thing: The system does a thing.\n'
       : '## Proposal\nMinimal proposal.\n';
     await fs.writeFile(path.join(changeDir, 'outline.md'), outlineContent);
-
-    if (artifacts.includes('design')) {
-      await fs.writeFile(path.join(changeDir, 'design.md'), '# Design\n\nTechnical design.');
-    }
 
     if (artifacts.includes('diagrams')) {
       await fs.writeFile(path.join(changeDir, 'diagrams.md'), '# Diagrams\n\nA sequence diagram.');
@@ -77,7 +73,7 @@ describe('artifact-workflow CLI commands', () => {
       const result = await runCLI(['status', '--change', 'scaffolded-change'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('scaffolded-change');
-      expect(result.stdout).toContain('0/4 artifacts complete');
+      expect(result.stdout).toContain('0/3 artifacts complete');
     });
 
     it('shows status for a change with outline only', async () => {
@@ -88,20 +84,20 @@ describe('artifact-workflow CLI commands', () => {
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('minimal-change');
       expect(result.stdout).toContain('outline');
-      expect(result.stdout).toContain('1/4 artifacts complete');
+      expect(result.stdout).toContain('1/3 artifacts complete');
     });
 
-    it('shows status for a change with outline and design', async () => {
-      await createTestChange('partial-change', ['outline', 'design']);
+    it('shows status for a change with outline and diagrams', async () => {
+      await createTestChange('partial-change', ['outline', 'diagrams']);
 
       const result = await runCLI(['status', '--change', 'partial-change'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('2/4 artifacts complete');
+      expect(result.stdout).toContain('2/3 artifacts complete');
       expect(result.stdout).toContain('[x]');
     });
 
     it('outputs JSON when --json flag is used', async () => {
-      await createTestChange('json-change', ['outline', 'design']);
+      await createTestChange('json-change', ['outline', 'diagrams']);
 
       const result = await runCLI(['status', '--change', 'json-change', '--json'], {
         cwd: tempDir,
@@ -115,7 +111,7 @@ describe('artifact-workflow CLI commands', () => {
       expect(json.isPlanningComplete).toBe(false);
       expect(json.isComplete).toBe(false);
       expect(Array.isArray(json.artifacts)).toBe(true);
-      expect(json.artifacts).toHaveLength(4);
+      expect(json.artifacts).toHaveLength(3);
 
       const outlineArtifact = json.artifacts.find((a: any) => a.id === 'outline');
       expect(outlineArtifact.status).toBe('done');
@@ -139,7 +135,7 @@ describe('artifact-workflow CLI commands', () => {
       ]);
 
       const instructionsResult = await runCLI(
-        ['instructions', 'design', '--change', 'unknown-metadata-json', '--json'],
+        ['instructions', 'diagrams', '--change', 'unknown-metadata-json', '--json'],
         { cwd: tempDir }
       );
       expect(instructionsResult.exitCode).toBe(0);
@@ -149,7 +145,7 @@ describe('artifact-workflow CLI commands', () => {
       ]);
     });
 
-    it('recommends design before tasks for an outline-only change', async () => {
+    it('recommends diagrams before tasks for an outline-only change', async () => {
       await createTestChange('order-change');
 
       const result = await runCLI(['status', '--change', 'order-change', '--json'], {
@@ -158,8 +154,8 @@ describe('artifact-workflow CLI commands', () => {
       expect(result.exitCode).toBe(0);
 
       const json = JSON.parse(result.stdout);
-      expect(json.artifacts.map((a: any) => a.id)).toEqual(['outline', 'design', 'diagrams', 'tasks']);
-      expect(json.nextSteps[0]).toContain('outline-spec instructions design');
+      expect(json.artifacts.map((a: any) => a.id)).toEqual(['outline', 'diagrams', 'tasks']);
+      expect(json.nextSteps[0]).toContain('outline-spec instructions diagrams');
     });
 
     // #906: the text surface reported state and no verb, so someone resuming a
@@ -184,12 +180,12 @@ describe('artifact-workflow CLI commands', () => {
 
         expect(result.exitCode).toBe(0);
         expect(lastLine(result)).toBe(
-          'Next: outline-spec instructions design --change "resume-planning" --json'
+          'Next: outline-spec instructions diagrams --change "resume-planning" --json'
         );
       });
 
       it('names the apply command once planning is complete', async () => {
-        await createTestChange('resume-apply', ['outline', 'design', 'diagrams', 'tasks']);
+        await createTestChange('resume-apply', ['outline', 'diagrams', 'tasks']);
 
         const result = await runCLI(['status', '--change', 'resume-apply'], { cwd: tempDir });
 
@@ -204,7 +200,7 @@ describe('artifact-workflow CLI commands', () => {
 
       it('names artifacts from a custom schema, not outline ones', async () => {
         // The line is built from the resolved artifact id, so a project whose
-        // schema has no outline/design/tasks must still get a usable
+        // schema has no outline/diagrams/tasks must still get a usable
         // command rather than a hard-coded default-schema one.
         const schemaDir = path.join(tempDir, 'outline-spec', 'schemas', 'lean');
         await fs.mkdir(path.join(schemaDir, 'templates'), { recursive: true });
@@ -267,7 +263,7 @@ describe('artifact-workflow CLI commands', () => {
       });
 
       it('prints the same command the JSON nextSteps sentence names', async () => {
-        for (const artifacts of [[], ['outline', 'design', 'diagrams', 'tasks']] as const) {
+        for (const artifacts of [[], ['outline', 'diagrams', 'tasks']] as const) {
           const changeName = `parity-${artifacts.length}`;
           await createTestChange(changeName, [...artifacts]);
 
@@ -286,17 +282,17 @@ describe('artifact-workflow CLI commands', () => {
     });
 
     it('shows planning completion when all artifacts exist', async () => {
-      await createTestChange('complete-change', ['outline', 'design', 'diagrams', 'tasks']);
+      await createTestChange('complete-change', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(['status', '--change', 'complete-change'], { cwd: tempDir });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('4/4 artifacts complete');
+      expect(result.stdout).toContain('3/3 artifacts complete');
       expect(result.stdout).toContain('All planning artifacts complete!');
       expect(result.stdout).not.toContain('All artifacts complete!');
     });
 
     it('distinguishes planning completion from implementation task completion', async () => {
-      await createTestChange('planned-change', ['outline', 'design', 'diagrams', 'tasks']);
+      await createTestChange('planned-change', ['outline', 'diagrams', 'tasks']);
 
       const statusResult = await runCLI(['status', '--change', 'planned-change', '--json'], {
         cwd: tempDir,
@@ -416,14 +412,14 @@ describe('artifact-workflow CLI commands', () => {
     });
 
     it('accepts digit-leading change names that exist on disk (#1308)', async () => {
-      await createTestChange('2026-07-04-voice-copilot-v1', ['outline', 'design']);
+      await createTestChange('2026-07-04-voice-copilot-v1', ['outline', 'diagrams']);
 
       const result = await runCLI(['status', '--change', '2026-07-04-voice-copilot-v1'], {
         cwd: tempDir,
       });
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('2026-07-04-voice-copilot-v1');
-      expect(result.stdout).toContain('2/4 artifacts complete');
+      expect(result.stdout).toContain('2/3 artifacts complete');
     });
   });
 
@@ -558,15 +554,15 @@ rules:
       expect(result.stdout).toContain('<template>');
     });
 
-    it('shows instructions for design artifact', async () => {
+    it('shows instructions for diagrams artifact', async () => {
       await createTestChange('instr-change');
 
-      const result = await runCLI(['instructions', 'design', '--change', 'instr-change'], {
+      const result = await runCLI(['instructions', 'diagrams', '--change', 'instr-change'], {
         cwd: tempDir,
       });
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('<artifact id="design"');
-      expect(result.stdout).toContain('design.md');
+      expect(result.stdout).toContain('<artifact id="diagrams"');
+      expect(result.stdout).toContain('diagrams.md');
       expect(result.stdout).toContain('<template>');
     });
 
@@ -585,15 +581,15 @@ rules:
     it('outputs JSON for instructions', async () => {
       await createTestChange('json-instr', ['outline']);
 
-      const result = await runCLI(['instructions', 'design', '--change', 'json-instr', '--json'], {
+      const result = await runCLI(['instructions', 'diagrams', '--change', 'json-instr', '--json'], {
         cwd: tempDir,
       });
       expect(result.exitCode).toBe(0);
       expect(result.stderr).toBe('');
 
       const json = JSON.parse(result.stdout);
-      expect(json.artifactId).toBe('design');
-      expect(json.outputPath).toContain('design.md');
+      expect(json.artifactId).toBe('diagrams');
+      expect(json.outputPath).toContain('diagrams.md');
       expect(typeof json.template).toBe('string');
       expect(Array.isArray(json.dependencies)).toBe(true);
     });
@@ -624,11 +620,11 @@ rules:
       await createTestChange('2026-07-04-voice-copilot-v1', ['outline']);
 
       const result = await runCLI(
-        ['instructions', 'design', '--change', '2026-07-04-voice-copilot-v1'],
+        ['instructions', 'diagrams', '--change', '2026-07-04-voice-copilot-v1'],
         { cwd: tempDir }
       );
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('<artifact id="design"');
+      expect(result.stdout).toContain('<artifact id="diagrams"');
     });
   });
 
@@ -638,7 +634,7 @@ rules:
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('Schema: outline');
       expect(result.stdout).toContain('outline:');
-      expect(result.stdout).toContain('design:');
+      expect(result.stdout).toContain('diagrams:');
       expect(result.stdout).toContain('tasks:');
       expect(result.stdout).not.toContain('specs:');
     });
@@ -648,7 +644,7 @@ rules:
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('Schema: outline');
       expect(result.stdout).toContain('outline:');
-      expect(result.stdout).toContain('design:');
+      expect(result.stdout).toContain('diagrams:');
     });
 
     it('outputs JSON mapping of templates', async () => {
@@ -764,7 +760,7 @@ rules:
 
   describe('instructions apply command', () => {
     it('shows apply instructions for outline schema with tasks', async () => {
-      await createTestChange('apply-change', ['outline', 'design', 'tasks']);
+      await createTestChange('apply-change', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(['instructions', 'apply', '--change', 'apply-change'], {
         cwd: tempDir,
@@ -801,7 +797,7 @@ operations:
     });
 
     it('outputs JSON for apply instructions', async () => {
-      await createTestChange('json-apply', ['outline', 'design', 'tasks']);
+      await createTestChange('json-apply', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'json-apply', '--json'],
@@ -840,7 +836,7 @@ operations:
       - Archive guidance
 `
       );
-      await createTestChange('apply-inputs', ['outline', 'design', 'tasks']);
+      await createTestChange('apply-inputs', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-inputs', '--json'],
@@ -879,7 +875,7 @@ operations:
       - Keep summaries concise
 `
       );
-      await createTestChange('apply-text-inputs', ['outline', 'design', 'tasks']);
+      await createTestChange('apply-text-inputs', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-text-inputs'],
@@ -904,7 +900,7 @@ rules:
     - Artifact-only rule
 `
       );
-      await createTestChange('apply-no-inputs', ['outline', 'design', 'tasks']);
+      await createTestChange('apply-no-inputs', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-no-inputs', '--json'],
@@ -921,7 +917,7 @@ rules:
 
     it('reads a fresh apply config snapshot on every command invocation', async () => {
       const configPath = path.join(tempDir, 'outline-spec', 'config.yaml');
-      await createTestChange('apply-fresh-inputs', ['outline', 'design', 'tasks']);
+      await createTestChange('apply-fresh-inputs', ['outline', 'diagrams', 'tasks']);
       await fs.writeFile(
         configPath,
         `schema: outline
@@ -971,7 +967,7 @@ operations:
     guidance: invalid
 `
       );
-      await createTestChange('apply-one-warning', ['outline', 'design', 'tasks']);
+      await createTestChange('apply-one-warning', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-one-warning', '--json'],
@@ -1044,7 +1040,7 @@ apply:
     });
 
     it('shows schema instruction from apply block', async () => {
-      await createTestChange('instr-apply', ['outline', 'design', 'tasks']);
+      await createTestChange('instr-apply', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(['instructions', 'apply', '--change', 'instr-apply'], {
         cwd: tempDir,
@@ -1067,7 +1063,7 @@ operations:
       );
       const changeDir = await createTestChange('done-apply', [
         'outline',
-        'design',
+        'diagrams',
         'tasks',
       ]);
       // Overwrite tasks with all completed
@@ -1102,7 +1098,7 @@ operations:
 
     it('uses outline schema apply configuration', async () => {
       // Create an outline-style change with all artifacts
-      await createTestChange('apply-schema-test', ['outline', 'design', 'tasks']);
+      await createTestChange('apply-schema-test', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-schema-test', '--schema', 'outline'],
@@ -1114,7 +1110,7 @@ operations:
 
     it('outline schema uses apply block configuration', async () => {
       // Verify that outline schema uses its apply block (requires: [tasks])
-      await createTestChange('apply-config-test', ['outline', 'design', 'tasks']);
+      await createTestChange('apply-config-test', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'apply', '--change', 'apply-config-test', '--json'],
@@ -1239,7 +1235,7 @@ operations:
       - Archive guidance
 `
       );
-      await createTestChange('archive-inputs', ['outline', 'design', 'tasks']);
+      await createTestChange('archive-inputs', ['outline', 'diagrams', 'tasks']);
 
       const result = await runCLI(
         ['instructions', 'archive', '--change', 'archive-inputs', '--json'],
@@ -1340,7 +1336,7 @@ operations:
       const configPath = path.join(tempDir, 'outline-spec', 'config.yaml');
       const changeDir = await createTestChange('archive-read-only', [
         'outline',
-        'design',
+        'diagrams',
         'tasks',
       ]);
       const outlinePath = path.join(changeDir, 'outline.md');
@@ -1594,14 +1590,14 @@ rules:
         // Create a test change
         await createTestChange('non-matching-test');
 
-        // Get instructions for design (not outline)
+        // Get instructions for diagrams (not outline)
         const result = await runCLI(
-          ['instructions', 'design', '--change', 'non-matching-test'],
+          ['instructions', 'diagrams', '--change', 'non-matching-test'],
           { cwd: tempDir, timeoutMs: 30000 }
         );
         expect(result.exitCode).toBe(0);
 
-        // Verify rules are NOT injected for design
+        // Verify rules are NOT injected for diagrams
         expect(result.stdout).not.toContain('Include rollback plan');
       }, 60000);
     });
@@ -1622,7 +1618,7 @@ rules:
 
         // Instructions command should work
         const instrResult = await runCLI(
-          ['instructions', 'design', '--change', 'no-config-change'],
+          ['instructions', 'diagrams', '--change', 'no-config-change'],
           { cwd: tempDir, timeoutMs: 30000 }
         );
         expect(instrResult.exitCode).toBe(0);

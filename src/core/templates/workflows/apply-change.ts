@@ -72,7 +72,7 @@ ${PROJECT_ROOT_GUARD}
    \`\`\`
 
    This returns:
-   - \`contextFiles\`: artifact ID -> array of concrete file paths (varies by schema - for outline: outline, design if present, diagrams, tasks)
+   - \`contextFiles\`: artifact ID -> array of concrete file paths (varies by schema - for outline: outline, diagrams, tasks)
    - Progress (total, complete, remaining)
    - Task list with status, source path, and source line
    - Dynamic instruction based on current state
@@ -106,7 +106,7 @@ ${PROJECT_ROOT_GUARD}
 
    Read every file path listed under \`contextFiles\` from the apply instructions output.
    The files depend on the schema being used:
-   - **outline**: outline.md (the change's spec edits, by requirement name and label), design.md if present, diagrams.md, tasks.md
+   - **outline**: outline.md (the change's spec edits, by requirement name and label), diagrams.md, tasks.md
    - Other schemas: follow the contextFiles from CLI output
 
    Do not copy \`context\` or \`operationGuidance\` verbatim into implementation

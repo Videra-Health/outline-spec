@@ -57,7 +57,7 @@ I'll walk you through a complete change cycle—from idea to implementation—us
 1. Pick a small, real task in your codebase
 2. Explore the problem briefly
 3. Create a change (the container for our work)
-4. Build the artifacts: outline → design (if needed) → diagrams → tasks
+4. Build the artifacts: outline → diagrams → tasks
 5. Implement the tasks
 6. Archive the change into the specs
 
@@ -180,7 +180,7 @@ Now let's create a change to hold our work.
 ```
 ## Creating a Change
 
-A "change" in outline-spec is a container for all the thinking and planning around a piece of work. It lives at the `changeRoot` reported by `outline-spec status --change "<name>" --json` and holds your artifacts—outline, design, diagrams, tasks.
+A "change" in outline-spec is a container for all the thinking and planning around a piece of work. It lives at the `changeRoot` reported by `outline-spec status --change "<name>" --json` and holds your artifacts—outline, diagrams, tasks.
 
 Let me create one for our task.
 ```
@@ -198,7 +198,6 @@ The folder structure:
 ```
 <changeRoot>/
 ├── outline.md     ← What we're doing and the spec edits it makes
-├── design.md      ← How we'll build it (only if needed)
 ├── diagrams.md    ← Views that explain the change
 └── tasks.md       ← Implementation checklist
 ```
@@ -265,25 +264,12 @@ outline-spec validate "<name>"
 ```
 Outline saved and validated against the live specs. You can refine it as understanding evolves.
 
-Next up: design, if the change needs one.
+Next up: diagrams.
 ```
 
 ---
 
-## Phase 6: Design (optional)
-
-**EXPLAIN:**
-```
-## Design
-
-The design captures **how** we'll build it—technical decisions and tradeoffs. It's optional: only write one when the change needs decisions explained. Small changes usually skip it.
-```
-
-**DO:** Decide whether this change needs a design. If it does, draft design.md following `outline-spec instructions design --change "<name>" --json`, show it, and save it to the `resolvedOutputPath`. If not, say so and move on.
-
----
-
-## Phase 7: Diagrams
+## Phase 6: Diagrams
 
 **EXPLAIN:**
 ```
@@ -296,7 +282,7 @@ Diagrams show the change at a glance: a sequence diagram, call tree, state machi
 
 ---
 
-## Phase 8: Tasks
+## Phase 7: Tasks
 
 **EXPLAIN:**
 ```
@@ -307,7 +293,7 @@ Finally, we break the work into implementation tasks—checkboxes that drive the
 These should be small, clear, and in logical order. Each group carries the tests and documentation for its own work - the last group is only for integration checks.
 ```
 
-**DO:** Generate tasks based on the outline (and design, if any):
+**DO:** Generate tasks based on the outline:
 
 ```
 Here are the implementation tasks:
@@ -342,20 +328,20 @@ Then ask:
 
 ---
 
-## Phase 9: Apply (Implementation)
+## Phase 8: Apply (Implementation)
 
 **EXPLAIN:**
 ```
 ## Implementation
 
-Now we implement each task, checking them off as we go. I'll announce each one and occasionally note how the outline/design informed the approach.
+Now we implement each task, checking them off as we go. I'll announce each one and occasionally note how the outline informed the approach.
 ```
 
 **DO:** For each task:
 
 1. Announce: "Working on task N: [description]"
 2. Implement the change in the codebase
-3. Reference the outline/design naturally: "The outline says X, so I'm doing Y"
+3. Reference the outline naturally: "The outline says X, so I'm doing Y"
 4. Mark complete in tasks.md: `- [ ]` → `- [x]`
 5. Brief status: "✓ Task N complete"
 
@@ -376,7 +362,7 @@ The change is implemented! One more step—let's archive it.
 
 ---
 
-## Phase 10: Archive
+## Phase 9: Archive
 
 **EXPLAIN:**
 ```
@@ -401,7 +387,7 @@ Archived. The specs now describe the new behavior, the change folder is gone, an
 
 ---
 
-## Phase 11: Recap & Next Steps
+## Phase 10: Recap & Next Steps
 
 ```
 ## Congratulations!
@@ -411,7 +397,7 @@ You just completed a full outline-spec cycle:
 1. **Explore** - Thought through the problem
 2. **New** - Created a change container
 3. **Outline** - Captured WHY and the spec edits
-4. **Design** - Decided HOW (when needed)
+4. **Diagrams** - Showed the change at a glance
 5. **Tasks** - Broke it into steps
 6. **Apply** - Implemented the work
 7. **Archive** - Applied the outline to the specs

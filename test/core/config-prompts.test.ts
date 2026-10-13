@@ -9,7 +9,7 @@ describe('config prompts', () => {
     expect(config).toContain('constraints that should guide outline-spec artifacts and workflows');
     expect(config).toContain('constraints an agent cannot infer by reading the code');
     expect(config).toContain('Keep general project documentation and discoverable codebase facts out');
-    expect(config).toContain('Designs and tasks must cover Windows, macOS, and Linux');
+    expect(config).toContain('Tasks must cover Windows, macOS, and Linux');
     expect(config).toContain('Write all artifacts in Spanish');
     expect(config).toContain('Always state what is out of scope');
     expect(config).not.toContain('Always include a "Non-goals" section');

@@ -14,14 +14,19 @@ const bodies: Array<[string, string]> = [
 ];
 
 describe('verify-change templates', () => {
-  it('finds outline and design artifacts by output path, not by hardcoded artifact id', () => {
+  it('finds the outline artifact by output path, not by hardcoded artifact id', () => {
     for (const [label, body] of bodies) {
       expect(body, label).not.toContain('`contextFiles.outline`');
-      expect(body, label).not.toContain('`contextFiles.design`');
       expect(body, label).toContain('`artifactPaths.<id>.outputPath`');
       expect(body, label).toContain('is or ends in `outline.md`');
       expect(body, label).toContain('`contextFiles.<id>`');
-      expect(body, label).toContain('is or ends in `design.md`');
+    }
+  });
+
+  it('has no design adherence check', () => {
+    for (const [label, body] of bodies) {
+      expect(body, label).not.toContain('Design Adherence');
+      expect(body, label).not.toContain('design.md');
     }
   });
 
@@ -64,7 +69,7 @@ describe('verify-change templates', () => {
 
   it('requires usable evidence rather than just existing artifact paths', () => {
     for (const [label, body] of bodies) {
-      expect(body, label).toContain('cannot be read or contain no usable requirements, details, or design decisions');
+      expect(body, label).toContain('cannot be read or contain no usable requirements or details');
       expect(body, label).toContain('Continue checks supported by the remaining evidence');
       expect(body, label).toContain('a partially checked input set is not a fully verified check');
       expect(body, label).toContain('If implementation changes cannot be identified, mark **Code Pattern Consistency** as not verified');
@@ -114,7 +119,6 @@ describe('verify-change templates', () => {
       expect(body, label).toContain(
         'mark **Spec Coverage**, **Requirement Implementation Mapping**, and **Detail Coverage** as not verified'
       );
-      expect(body, label).toContain('mark **Design Adherence** as not verified');
       expect(body, label).toContain('**Code Pattern Consistency** still runs');
     }
   });

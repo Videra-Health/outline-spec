@@ -26,7 +26,7 @@ describe('status --all', () => {
 
   async function createTestChange(
     changeName: string,
-    artifacts: ('design' | 'tasks')[] = []
+    artifacts: ('diagrams' | 'tasks')[] = []
   ): Promise<string> {
     const changeDir = path.join(changesDir, changeName);
     await fs.mkdir(changeDir, { recursive: true });
@@ -34,8 +34,8 @@ describe('status --all', () => {
     // outline.md marks the change as active
     await fs.writeFile(path.join(changeDir, 'outline.md'), '## Proposal\nMinimal proposal.\n');
 
-    if (artifacts.includes('design')) {
-      await fs.writeFile(path.join(changeDir, 'design.md'), '# Design\n\nTechnical design.');
+    if (artifacts.includes('diagrams')) {
+      await fs.writeFile(path.join(changeDir, 'diagrams.md'), '# Diagrams\n\nA diagram.');
     }
 
     if (artifacts.includes('tasks')) {
@@ -47,9 +47,9 @@ describe('status --all', () => {
 
   it('reports every active change in alphabetical order', async () => {
     // Created out of order to prove the output sort is not readdir order
-    await createTestChange('zebra-change', ['design']);
+    await createTestChange('zebra-change', ['diagrams']);
     await createTestChange('alpha-change');
-    await createTestChange('mid-change', ['design', 'tasks']);
+    await createTestChange('mid-change', ['diagrams', 'tasks']);
 
     const result = await runCLI(['status', '--all', '--json'], { cwd: tempDir });
     expect(result.exitCode).toBe(0);
@@ -74,7 +74,7 @@ describe('status --all', () => {
   });
 
   it('hoists root to the envelope and carries a full ChangeStatus per change', async () => {
-    await createTestChange('json-change', ['design']);
+    await createTestChange('json-change', ['diagrams']);
 
     const result = await runCLI(['status', '--all', '--json'], { cwd: tempDir });
     expect(result.exitCode).toBe(0);
@@ -90,15 +90,15 @@ describe('status --all', () => {
     expect(entry.schemaName).toBe('outline');
     expect(entry.isComplete).toBe(false);
     expect(Array.isArray(entry.artifacts)).toBe(true);
-    expect(entry.artifacts).toHaveLength(4);
+    expect(entry.artifacts).toHaveLength(3);
     expect(Array.isArray(entry.nextSteps)).toBe(true);
     expect(entry.actionContext).toBeDefined();
     expect(entry.artifactPaths).toBeDefined();
     // root lives on the envelope only
     expect(entry.root).toBeUndefined();
 
-    const designArtifact = entry.artifacts.find((a: any) => a.id === 'design');
-    expect(designArtifact.status).toBe('done');
+    const diagramsArtifact = entry.artifacts.find((a: any) => a.id === 'diagrams');
+    expect(diagramsArtifact.status).toBe('done');
   });
 
   it('rejects --all combined with --change', async () => {
@@ -153,7 +153,7 @@ describe('status --all', () => {
   });
 
   it('keeps sweeping when one change fails to load', async () => {
-    await createTestChange('good-change', ['design']);
+    await createTestChange('good-change', ['diagrams']);
     const brokenDir = await createTestChange('broken-change');
     // An unknown schema in the metadata makes loadChangeContext throw
     await fs.writeFile(
@@ -179,24 +179,24 @@ describe('status --all', () => {
 
     const good = json.changes.find((c: any) => c.changeName === 'good-change');
     expect(good.schemaName).toBe('outline');
-    expect(good.artifacts).toHaveLength(4);
+    expect(good.artifacts).toHaveLength(3);
   });
 
   it('prints one text block per change with --all', async () => {
     await createTestChange('first-change');
-    await createTestChange('second-change', ['design']);
+    await createTestChange('second-change', ['diagrams']);
 
     const result = await runCLI(['status', '--all'], { cwd: tempDir });
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('Change: first-change');
     expect(result.stdout).toContain('Change: second-change');
-    expect(result.stdout).toContain('1/4 artifacts complete');
-    expect(result.stdout).toContain('2/4 artifacts complete');
+    expect(result.stdout).toContain('1/3 artifacts complete');
+    expect(result.stdout).toContain('2/3 artifacts complete');
   });
 
   it('gives every change in the sweep its own next-step line', async () => {
     await createTestChange('first-change');
-    await createTestChange('second-change', ['design']);
+    await createTestChange('second-change', ['diagrams']);
 
     const result = await runCLI(['status', '--all'], { cwd: tempDir });
 
@@ -204,15 +204,15 @@ describe('status --all', () => {
     // The point of the batch view is one screen saying what each change needs
     // next - a single shared line, or a line for only one change, would not.
     expect(result.stdout).toContain(
-      'Next: outline-spec instructions design --change "first-change" --json'
+      'Next: outline-spec instructions diagrams --change "first-change" --json'
     );
     expect(result.stdout).toContain(
-      'Next: outline-spec instructions diagrams --change "second-change" --json'
+      'Next: outline-spec instructions tasks --change "second-change" --json'
     );
   });
 
   it('prints no next-step line for a change that failed to load', async () => {
-    await createTestChange('good-change', ['design']);
+    await createTestChange('good-change', ['diagrams']);
     const brokenDir = await createTestChange('broken-change');
     await fs.writeFile(path.join(brokenDir, '.outline-spec.yaml'), 'schema: does-not-exist\n');
 
@@ -221,12 +221,12 @@ describe('status --all', () => {
     // A failed entry has no artifact statuses to reason about, so it must not
     // be given a next step alongside its diagnostic.
     expect(getOutput(result)).toContain('✗ broken-change');
-    expect(result.stdout).toContain('Next: outline-spec instructions diagrams --change "good-change"');
+    expect(result.stdout).toContain('Next: outline-spec instructions tasks --change "good-change"');
     expect(result.stdout).not.toContain('--change "broken-change"');
   });
 
   it('exits 1 in text mode when a change fails to load, still printing the others', async () => {
-    await createTestChange('good-change', ['design']);
+    await createTestChange('good-change', ['diagrams']);
     const brokenDir = await createTestChange('broken-change');
     await fs.writeFile(
       path.join(brokenDir, '.outline-spec.yaml'),
@@ -237,7 +237,7 @@ describe('status --all', () => {
     expect(result.exitCode).toBe(1);
     expect(result.stdout).toContain('✗ broken-change:');
     expect(result.stdout).toContain('Change: good-change');
-    expect(result.stdout).toContain('2/4 artifacts complete');
+    expect(result.stdout).toContain('2/3 artifacts complete');
   });
 
   describe('a namespace folder holding nested changes (#1846)', () => {

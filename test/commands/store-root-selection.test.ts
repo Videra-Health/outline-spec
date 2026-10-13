@@ -295,12 +295,12 @@ describe('store root selection for normal commands', () => {
       expect(batchJson.changes[0]).toEqual({ ...statusJson, root: undefined });
 
       const instructions = await runCLI(
-        ['instructions', 'design', '--change', 'store-change', '--store', 'team-context', '--json'],
+        ['instructions', 'diagrams', '--change', 'store-change', '--store', 'team-context', '--json'],
         { cwd: appRepo, env }
       );
       expect(instructions.exitCode).toBe(0);
       const instructionsJson = parseJson(instructions);
-      expect(instructionsJson.artifactId).toBe('design');
+      expect(instructionsJson.artifactId).toBe('diagrams');
       expect(instructionsJson.root.store_id).toBe('team-context');
       expect(path.isAbsolute(instructionsJson.changeDir)).toBe(true);
       expect(instructionsJson.changeDir).toContain(storeRoot);
@@ -442,11 +442,11 @@ operations:
       createChange(storeRoot, 'store-change');
 
       const result = await runCLI(
-        ['instructions', 'design', '--change', 'store-change', '--store', 'team-context'],
+        ['instructions', 'diagrams', '--change', 'store-change', '--store', 'team-context'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
-      expect(result.stdout.startsWith('<artifact id="design"')).toBe(true);
+      expect(result.stdout.startsWith('<artifact id="diagrams"')).toBe(true);
       expect(result.stderr).toContain('Using outline-spec root: team-context');
     });
 

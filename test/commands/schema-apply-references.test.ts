@@ -71,7 +71,7 @@ const output = (result: { stdout: string; stderr: string }) => result.stdout + r
 
 describe('schema apply references (CLI)', () => {
   it('control: a correct apply.requires validates and blocks apply on the missing artifact', async () => {
-    const p = await projectWithApply({ requires: ['design'] });
+    const p = await projectWithApply({ requires: ['diagrams'] });
     const validated = await p.cli(['schema', 'validate', 'myflow']);
     expect(validated.exitCode).toBe(0);
     expect(output(validated)).toMatch(/Schema 'myflow' is valid/);

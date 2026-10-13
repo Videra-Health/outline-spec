@@ -209,17 +209,17 @@ ${tracked ? '  tracks: checklist.md\n' : ''}`
     expect(instructions.instruction).toContain(tasksPath);
   });
 
-  it('returns existing outline and design paths even when their files contain no evidence', async () => {
+  it('returns existing outline and diagrams paths even when their files contain no evidence', async () => {
     writeTasks('- [x] Finished task\n');
     const outline = path.join(changeDir, 'outline.md');
-    const design = path.join(changeDir, 'design.md');
+    const diagrams = path.join(changeDir, 'diagrams.md');
     fs.writeFileSync(outline, '');
-    fs.writeFileSync(design, '');
+    fs.writeFileSync(diagrams, '');
 
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
 
     expect(instructions.contextFiles.outline).toEqual([fs.realpathSync.native(outline)]);
-    expect(instructions.contextFiles.design).toEqual([fs.realpathSync.native(design)]);
+    expect(instructions.contextFiles.diagrams).toEqual([fs.realpathSync.native(diagrams)]);
     expect(instructions.state).toBe('all_done');
   });
 

@@ -27,7 +27,7 @@ export function serializeConfig(config: Partial<ProjectConfig>): string {
     lines.push('# Keep general project documentation and discoverable codebase facts out.');
     lines.push('# Example:');
     lines.push('#   context: |');
-    lines.push('#     Designs and tasks must cover Windows, macOS, and Linux');
+    lines.push('#     Tasks must cover Windows, macOS, and Linux');
     lines.push('#     Write all artifacts in Spanish');
     lines.push('');
   }

@@ -69,7 +69,7 @@ describe('propose preamble', () => {
   // #788/#1260: an artifact missing from the preamble gets treated as optional.
   it('advertises every artifact the default schema defines (#788, #1260)', () => {
     const ids = defaultSchema.artifacts.map(artifact => artifact.id);
-    expect(ids).toEqual(['outline', 'design', 'diagrams', 'tasks']);
+    expect(ids).toEqual(['outline', 'diagrams', 'tasks']);
 
     for (const [label, body] of proposeBodies) {
       const preamble = artifactPreamble(body);
@@ -124,10 +124,9 @@ describe('default outline guidance', () => {
     expect(template).toContain('(patch):');
   });
 
-  it('makes design conditional', () => {
-    const design = defaultSchema.artifacts.find(artifact => artifact.id === 'design')!;
-    expect(design.instruction).toMatch(/only when/);
-    expect(design.requires).toEqual(['outline']);
+  it('has no design artifact', () => {
+    expect(defaultSchema.artifacts.map(artifact => artifact.id)).not.toContain('design');
+    expect(fs.existsSync(path.join(repoRoot, 'schemas', 'outline', 'templates', 'design.md'))).toBe(false);
   });
 });
 
@@ -521,7 +520,7 @@ describe('artifact loop guards (propose and ff)', () => {
     }
   });
 
-  // Only an artifact whose own instruction marks it conditional (design) may be skipped; outline never.
+  // Only an artifact whose own instruction marks it conditional may be skipped; outline never.
   it('permits skipping only artifacts their own instruction marks conditional', () => {
     for (const [label, body] of loopBodies) {
       expect(body, label).toContain(
@@ -568,7 +567,7 @@ describe('artifact loop guards (propose and ff)', () => {
     }
   });
 
-  // Without this the loop deadlocks: skipping design leaves tasks blocked
+  // Without this the loop deadlocks: skipping a conditional artifact leaves tasks blocked
   // forever, no artifact is ready, and the stop condition can never be met.
   it('authorizes writing a blocked artifact whose only blocker was skipped', () => {
     for (const [label, body] of loopBodies) {

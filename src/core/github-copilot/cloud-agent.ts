@@ -76,13 +76,19 @@ export function generateCopilotAgentFile(): string {
   return generateCopilotAgentFileBody(true);
 }
 
+// The artifact list before the outline schema dropped design.md, kept so those installs still read as managed.
+const DESIGN_ERA_ARTIFACTS = 'an outline of spec edits, an optional design, and tasks';
+
 // The outline-era agent file, derived from the archive-era one so installs of that version still read as managed.
-function generateCopilotAgentFileBody(includeManagedMarker = false): string {
+function generateCopilotAgentFileBody(
+  includeManagedMarker = false,
+  artifacts = 'an outline of spec edits, diagrams, and tasks'
+): string {
   let content = generateArchiveAgentFileBody(includeManagedMarker);
   content = replaceRequired(
     content,
     'planning artifacts (proposals, specs, designs, tasks) that guide implementation.',
-    'planning artifacts (an outline of spec edits, an optional design, and tasks) that guide implementation. Archiving a change applies its outline to the specs.',
+    `planning artifacts (${artifacts}) that guide implementation. Archiving a change applies its outline to the specs.`,
     'artifact list'
   );
   content = replaceRequired(
@@ -318,6 +324,8 @@ function getLegacyCopilotCloudFileContents(relPath: CopilotCloudFile): string[] 
 
   return [
     generateCopilotAgentFileBody(),
+    generateCopilotAgentFileBody(false, DESIGN_ERA_ARTIFACTS),
+    generateCopilotAgentFileBody(true, DESIGN_ERA_ARTIFACTS),
     generateArchiveAgentFileBody(),
     generateArchiveAgentFileBody(true),
     generatePreviousCopilotAgentFileBody(),

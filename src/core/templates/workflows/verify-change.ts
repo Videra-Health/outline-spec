@@ -6,7 +6,7 @@ import { optionalWorkflow } from '../optional-workflow.js';
 import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 import { PROJECT_ROOT_GUARD } from './project-root.js';
 
-const INTRO = 'Verify that an implementation matches the change artifacts (outline.md, tasks, design) and the live specs.';
+const INTRO = 'Verify that an implementation matches the change artifacts (outline.md, tasks) and the live specs.';
 
 // Skill and command share the steps; only the input line differs.
 function getVerifyInstructions(input: string): string {
@@ -69,17 +69,17 @@ ${input}
    Create a report structure with three dimensions:
    - **Completeness**: Track tasks and spec coverage
    - **Correctness**: Track requirement and detail implementation
-   - **Coherence**: Track design adherence and pattern consistency
+   - **Coherence**: Track pattern consistency
 
    Each dimension can have CRITICAL, WARNING, or SUGGESTION issues.
 
-   Verification is advisory. Respect intentional omissions such as an outline with no spec edits, optional design documents, and schemas without task tracking. Do not require or invent optional or intentionally omitted artifacts to obtain a clean report. \`Not verified\` describes a limit of this report, not a new archive prerequisite. Archive retains its own checks and user-confirmation behavior.
+   Verification is advisory. Respect intentional omissions such as an outline with no spec edits and schemas without task tracking. Do not require or invent optional or intentionally omitted artifacts to obtain a clean report. \`Not verified\` describes a limit of this report, not a new archive prerequisite. Archive retains its own checks and user-confirmation behavior.
 
    Mark checks the schema does not define, or artifacts the status reports as intentionally skipped, as **Not applicable**. The correctness checks of a change whose outline only removes or renames items are also **Not applicable** (see step 7). Exclude them from skipped-check counts and the archive-readiness assessment. Reserve **Not verified** for applicable checks whose evidence is missing or unusable.
 
    If only task evidence is available for applicable checks, verify task completion only and mark the remaining applicable checks, including **Code Pattern Consistency**, as not verified with the reason "Only task evidence available".
 
-   If artifacts cannot be read or contain no usable requirements, details, or design decisions, mark the affected checks as not verified with the specific reason. Continue checks supported by the remaining evidence, but a partially checked input set is not a fully verified check. Missing requirements affect Spec Coverage and Requirement Implementation Mapping; missing details affect Detail Coverage; missing design decisions affect Design Adherence.
+   If artifacts cannot be read or contain no usable requirements or details, mark the affected checks as not verified with the specific reason. Continue checks supported by the remaining evidence, but a partially checked input set is not a fully verified check. Missing requirements affect Spec Coverage and Requirement Implementation Mapping; missing details affect Detail Coverage.
 
 6. **Verify Completeness**
 
@@ -135,17 +135,8 @@ ${input}
 
 8. **Verify Coherence**
 
-   **Design Adherence**:
-   - If the schema defines no design artifact (no artifact with id \`design\`, and none whose \`artifactPaths.<id>.outputPath\` is or ends in \`design.md\`), report **Design Adherence** as not applicable.
-   - If the design artifact's \`contextFiles.<id>\` file exists:
-     - Extract key decisions (look for sections like "Decision:", "Approach:", "Architecture:")
-     - Verify implementation follows those decisions
-     - If contradiction detected:
-       - Add WARNING: "Design decision not followed: <decision>"
-       - Recommendation: "Update implementation or revise design.md to match reality"
-   - Otherwise, design.md is optional in the outline schema: if it is absent, report **Design Adherence** as not applicable. If it exists but is empty or unreadable, mark **Design Adherence** as not verified. With other supporting artifacts, **Code Pattern Consistency** still runs; the task-only case remains limited to task completion.
-
    **Code Pattern Consistency**:
+   - With other supporting artifacts, **Code Pattern Consistency** still runs; the task-only case remains limited to task completion.
    - If implementation changes cannot be identified, mark **Code Pattern Consistency** as not verified and explain the missing evidence.
    - Otherwise, review new code for consistency with project patterns
    - Check file naming, directory structure, coding style
@@ -179,7 +170,7 @@ ${input}
       - Each with specific, actionable recommendation
 
    2. **WARNING** (Should fix):
-      - Spec/design divergences
+      - Spec divergences
       - Uncovered details
       - Each with specific recommendation
 

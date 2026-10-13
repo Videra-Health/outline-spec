@@ -116,7 +116,7 @@ ${CONTINUE_SCOPE_NOTE}
    The files to edit are \`artifactPaths.<id>.existingOutputPaths\` - the concrete files that exist on disk, already glob-expanded for glob artifacts (e.g. a custom schema's \`docs/**/*.md\`). Do NOT write to \`resolvedOutputPath\`: for a glob artifact it is still the glob pattern, not a real file.
 
 3. **Understand the request**
-   - If the user asked for a specific revision ("the design now uses X"), that is the starting edit.
+   - If the user asked for a specific revision ("the plan now uses X"), that is the starting edit.
    - If they only said "update" / "make this coherent", treat it as a coherence review: read the existing artifacts and check them against each other for contradictions, gaps, and duplication.
 
 4. **Read and reconcile**

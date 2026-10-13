@@ -79,7 +79,7 @@ export function getExploreSkillTemplate(): SkillTemplate {
     description: 'Enter outline-spec explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements in a project that uses outline-spec. Use when the user wants to think through something before or during an outline-spec change. Also use when the user says "outline-spec explore".',
     instructions: `Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
 
-**IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, investigate the codebase, and run read-only commands or tools without confirmation, but you must NEVER write code or implement features. If the user asks you to implement something, do not start it here: say that explore mode does not implement, and ${IMPLEMENT_REQUEST_HANDOFF}. The work happens from that change, never from explore mode. You MAY create or update outline-spec change artifacts (outline.md, design.md, tasks.md) within a confirmed scope—that's capturing thinking, not implementing. Answering design or clarifying questions is never consent to write. Before the first write-capable action, name the artifacts or files you would change and what you would do, ask a direct yes/no question, and wait for the user's confirmation in a separate message. Confirmation covers only the scope you described; ask again before expanding it. An explicit request from the user to capture the exploration as a new change is itself that confirmation, covering the change and the change artifacts the request names; scaffold it first as described below.
+**IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, investigate the codebase, and run read-only commands or tools without confirmation, but you must NEVER write code or implement features. If the user asks you to implement something, do not start it here: say that explore mode does not implement, and ${IMPLEMENT_REQUEST_HANDOFF}. The work happens from that change, never from explore mode. You MAY create or update outline-spec change artifacts (outline.md, diagrams.md, tasks.md) within a confirmed scope—that's capturing thinking, not implementing. Answering design or clarifying questions is never consent to write. Before the first write-capable action, name the artifacts or files you would change and what you would do, ask a direct yes/no question, and wait for the user's confirmation in a separate message. Confirmation covers only the scope you described; ask again before expanding it. An explicit request from the user to capture the exploration as a new change is itself that confirmation, covering the change and the change artifacts the request names; scaffold it first as described below.
 
 **This is a stance, not a workflow.** There are no fixed steps, no required sequence, no mandatory outputs. You're a thinking partner helping the user explore.
 
@@ -208,7 +208,7 @@ If the user mentions a change or you detect one is relevant:
    - Read existing files from \`artifactPaths.<artifact>.existingOutputPaths\`.
 
 2. **Reference them naturally in conversation**
-   - "Your design mentions using Redis, but we just realized SQLite fits better..."
+   - "Your tasks plan on Redis, but we just realized SQLite fits better..."
    - "The outline scopes this to premium users, but we're now thinking everyone..."
 
 3. **Offer to capture when decisions are made**
@@ -220,13 +220,11 @@ If the user mentions a change or you detect one is relevant:
     | New requirement discovered | \`outline.md\` (new item, unmarked)       |
     | Requirement changed        | \`outline.md\` (\`(patch)\`, \`~~old~~ **new**\`) |
     | Requirement dropped        | \`outline.md\` (wholly struck)            |
-    | Design decision made       | \`design.md\`                             |
     | Scope changed              | \`outline.md\` (Proposal / Out of Scope)  |
     | New work identified        | \`tasks.md\`                              |
     | Assumption invalidated     | Relevant artifact                         |
 
    Example offers:
-   - "That's a design decision. Capture it in design.md?"
    - "This is a new requirement. Add it to the outline?"
    - "This changes scope. Update the outline's proposal?"
 
@@ -314,7 +312,7 @@ You: [reads change artifacts]
 
      [draws diagram, explores options, suggests paths]
 
-     Want to update the design to reflect this?
+     Want to update the diagrams to reflect this?
      Or add a spike task to investigate?
 \`\`\`
 
@@ -354,7 +352,7 @@ You: That changes everything.
 There's no required ending. Discovery might:
 
 - **Flow into a change**: "${DISCOVERY_END_HANDOFF}"
-- **Result in artifact updates**: "Updated design.md with these decisions"
+- **Result in artifact updates**: "Updated tasks.md with these decisions"
 - **Just provide clarity**: User has what they need, moves on
 - **Continue later**: "We can pick this up anytime"
 
@@ -403,7 +401,7 @@ export function getOutlineSpecExploreCommandTemplate(): CommandTemplate {
     tags: ['workflow', 'explore', 'experimental', 'thinking'],
     content: `Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
 
-**IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, investigate the codebase, and run read-only commands or tools without confirmation, but you must NEVER write code or implement features. If the user asks you to implement something, do not start it here: say that explore mode does not implement, and ${IMPLEMENT_REQUEST_HANDOFF}. The work happens from that change, never from explore mode. You MAY create or update outline-spec change artifacts (outline.md, design.md, tasks.md) within a confirmed scope—that's capturing thinking, not implementing. Answering design or clarifying questions is never consent to write. Before the first write-capable action, name the artifacts or files you would change and what you would do, ask a direct yes/no question, and wait for the user's confirmation in a separate message. Confirmation covers only the scope you described; ask again before expanding it. An explicit request from the user to capture the exploration as a new change is itself that confirmation, covering the change and the change artifacts the request names; scaffold it first as described below.
+**IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, investigate the codebase, and run read-only commands or tools without confirmation, but you must NEVER write code or implement features. If the user asks you to implement something, do not start it here: say that explore mode does not implement, and ${IMPLEMENT_REQUEST_HANDOFF}. The work happens from that change, never from explore mode. You MAY create or update outline-spec change artifacts (outline.md, diagrams.md, tasks.md) within a confirmed scope—that's capturing thinking, not implementing. Answering design or clarifying questions is never consent to write. Before the first write-capable action, name the artifacts or files you would change and what you would do, ask a direct yes/no question, and wait for the user's confirmation in a separate message. Confirmation covers only the scope you described; ask again before expanding it. An explicit request from the user to capture the exploration as a new change is itself that confirmation, covering the change and the change artifacts the request names; scaffold it first as described below.
 
 **This is a stance, not a workflow.** There are no fixed steps, no required sequence, no mandatory outputs. You're a thinking partner helping the user explore.
 
@@ -541,7 +539,7 @@ If the user mentions a change or you detect one is relevant:
    - Read existing files from \`artifactPaths.<artifact>.existingOutputPaths\`.
 
 2. **Reference them naturally in conversation**
-   - "Your design mentions using Redis, but we just realized SQLite fits better..."
+   - "Your tasks plan on Redis, but we just realized SQLite fits better..."
    - "The outline scopes this to premium users, but we're now thinking everyone..."
 
 3. **Offer to capture when decisions are made**
@@ -553,13 +551,11 @@ If the user mentions a change or you detect one is relevant:
     | New requirement discovered | \`outline.md\` (new item, unmarked)       |
     | Requirement changed        | \`outline.md\` (\`(patch)\`, \`~~old~~ **new**\`) |
     | Requirement dropped        | \`outline.md\` (wholly struck)            |
-    | Design decision made       | \`design.md\`                             |
     | Scope changed              | \`outline.md\` (Proposal / Out of Scope)  |
     | New work identified        | \`tasks.md\`                              |
     | Assumption invalidated     | Relevant artifact                         |
 
    Example offers:
-   - "That's a design decision. Capture it in design.md?"
    - "This is a new requirement. Add it to the outline?"
    - "This changes scope. Update the outline's proposal?"
 
@@ -583,7 +579,7 @@ If the user mentions a change or you detect one is relevant:
 There's no required ending. Discovery might:
 
 - **Flow into a change**: "${DISCOVERY_END_HANDOFF}"
-- **Result in artifact updates**: "Updated design.md with these decisions"
+- **Result in artifact updates**: "Updated tasks.md with these decisions"
 - **Just provide clarity**: User has what they need, moves on
 - **Continue later**: "We can pick this up anytime"
 
