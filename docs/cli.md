@@ -140,7 +140,7 @@ Shows a change or a spec.
 
 ### outline-spec validate [item]
 
-Checks that specs parse as outlines with a purpose and well-formed labels, and that changes archive cleanly against the live specs.
+Checks that specs parse as outlines with a purpose and well-formed labels, and that changes archive cleanly against the live specs and every Mermaid block in a change's Markdown files parses.
 
 | Flag | Effect |
 |---|---|

@@ -19,6 +19,7 @@ import { getSpecIds } from '../utils/item-discovery.js';
 import { getAvailableChanges } from './workflow/shared.js';
 import { nearestMatches } from '../utils/match.js';
 import { folderStyleNameProblem } from '../core/id.js';
+import { MERMAID_ISSUE } from '../core/validation/mermaid.js';
 
 type ItemType = 'change' | 'spec';
 
@@ -351,13 +352,18 @@ export class ValidateCommand {
     }
   }
 
-  private printNextSteps(type: ItemType, id: string, root: ResolvedOutlineSpecRoot, issues: Array<{ message: string }> = []): void {
+  private printNextSteps(type: ItemType, id: string, root: ResolvedOutlineSpecRoot, issues: Array<{ level?: string; message: string }> = []): void {
     const bullets: string[] = [];
     // A namespace folder has nothing to archive, so outline advice would point at the wrong directory (#1846).
     const nestedIssue = issues.some(i => i.message.includes(NESTED_CHANGE_ISSUE_MARKER));
     if (type === 'change' && nestedIssue) {
       bullets.push('- Move each nested change directly under outline-spec/changes/, folding the namespace into its name');
       bullets.push('- Only specs may be nested by domain; change directories are always flat');
+    } else if (type === 'change' && issues.some(i => i.message.startsWith(MERMAID_ISSUE))) {
+      bullets.push('- Fix each Mermaid block so it parses; a name that is a Mermaid keyword (loop, end, alt, opt, note) is a common cause');
+      if (issues.some(i => !i.message.startsWith(MERMAID_ISSUE) && i.level === 'ERROR')) {
+        bullets.push('- Edit outline.md so its "## Requirements" items match the live specs (struck text, labels, "(patch)")');
+      }
     } else if (type === 'change') {
       bullets.push('- Edit outline.md so its "## Requirements" items match the live specs (struck text, labels, "(patch)")');
       bullets.push(`- Preview the result: ${withStoreFlag(root, `outline-spec archive ${id} --dry-run`)}`);

@@ -14,7 +14,7 @@ A rendered page a developer reads to check a change before approving it.
   a. A file tab renders the listed change files as Markdown, in the listed order, skipping any file the change does not have.
   b. A file tab whose files are all missing is left off the page.
   c. In the outline, struck text shows as removed and bold text in an edit shows as added, so edits read as a diff.
-  d. Mermaid code blocks render as diagrams the developer can zoom and pan, with labels no smaller than 75% of their drawn size until the developer zooms out.
+  d. Mermaid code blocks render as diagrams fit to the tab's width; clicking one opens it in a lightbox the developer can zoom and pan, and Escape or a click outside closes it.
   e. A view tab shows a view the CLI computes; `spec-changes` is the one view.
 3. Spec changes view: The `spec-changes` view SHALL list every spec the change touches, and under each, every requirement it adds, edits, or removes.
   a. Each requirement is tagged added, edited, or removed, and each spec is tagged new or removed when the change creates or deletes it.

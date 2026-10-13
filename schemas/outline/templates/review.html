@@ -113,14 +113,19 @@ body {
 /* Designs: each runs in a sandboxed frame; the box pads below it so its resize grip stays outside the frame */
 .design { resize: vertical; overflow: hidden; height: 80vh; min-height: 12rem; padding-bottom: 0.75rem; background: var(--sunk); border: 1px solid var(--rule); border-radius: 6px; }
 .design iframe { display: block; width: 100%; height: 100%; border: 0; border-bottom: 1px solid var(--rule); background: #fff; }
-.diagram { position: relative; overflow: hidden; margin: 0 0 1rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; cursor: grab; touch-action: none; }
-.diagram.dragging { cursor: grabbing; }
-.diagram > pre { margin: 0; padding: 1rem; cursor: auto; }
-.diagram .stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
-.diagram .stage svg { display: block; max-width: none; }
-.diagram .zoom { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem; }
-.diagram .zoom button { min-width: 2rem; padding: 0.2rem 0.5rem; font: 500 var(--step--1)/1.4 var(--font-body); color: var(--fg); background: var(--sunk); border: 1px solid var(--rule); border-radius: 4px; cursor: pointer; }
-.diagram .zoom button:hover { border-color: var(--ink); }
+.diagram { overflow-x: auto; margin: 0 0 1rem; padding: 1rem; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; cursor: zoom-in; }
+.diagram:hover, .diagram:focus-visible { border-color: var(--ink); outline: none; }
+.diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.diagram > pre { margin: 0; cursor: auto; }
+.lightbox { width: 96vw; height: 92vh; max-width: none; max-height: none; padding: 0; overflow: hidden; color: var(--fg); background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
+.lightbox::backdrop { background: rgb(0 0 0 / 0.55); }
+.lightbox .view { position: absolute; inset: 0; overflow: hidden; cursor: grab; touch-action: none; }
+.lightbox .view.dragging { cursor: grabbing; }
+.lightbox .stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.lightbox .stage svg { display: block; max-width: none; }
+.lightbox .zoom { position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.25rem; }
+.lightbox .zoom button { min-width: 2.25rem; padding: 0.3rem 0.6rem; font: 500 var(--step-0)/1.2 var(--font-body); color: var(--fg); background: var(--sunk); border: 1px solid var(--rule); border-radius: 4px; cursor: pointer; }
+.lightbox .zoom button:hover { border-color: var(--ink); }
 
 /* Outline requirements: labeled items, with marks read as a diff */
 .outline { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: 0.3rem; }
@@ -436,17 +441,15 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     panels.append(el('p', { class: 'empty' }, 'This change has none of the files the review page shows.'));
   }
 
-  // Drag to pan; pinch, Ctrl/⌘-scroll, or the buttons to zoom; double-click to fit
-  function panZoom(d) {
-    const svg = d.querySelector('svg');
-    const stage = d.querySelector('.stage');
-    const box = svg.viewBox.baseVal;
-    const w = box && box.width ? box.width : svg.getBBox().width;
-    const h = box && box.height ? box.height : svg.getBBox().height;
-    svg.removeAttribute('style');
-    svg.setAttribute('width', w);
-    svg.setAttribute('height', h);
-    const z = d.zoom || (d.zoom = { s: 1, x: 0, y: 0, fitted: false });
+  // Lightbox: a clicked diagram opens full-window; drag to pan, scroll or the buttons to zoom, double-click to fit
+  const lightbox = (() => {
+    const view = el('div', { class: 'view' });
+    const stage = el('div', { class: 'stage' });
+    const bar = el('div', { class: 'zoom' });
+    const dialog = el('dialog', { class: 'lightbox', 'aria-label': 'Diagram' }, view, bar);
+    view.append(stage);
+    document.body.append(dialog);
+    const z = { s: 1, x: 0, y: 0, w: 0, h: 0 };
     const apply = () => { stage.style.transform = `translate(${z.x}px, ${z.y}px) scale(${z.s})`; };
     const zoomAt = (f, cx, cy) => {
       const s = Math.min(8, Math.max(0.1, z.s * f));
@@ -455,62 +458,81 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
       z.s = s;
       apply();
     };
-    // Fit to width, but no smaller than 75% so labels stay readable; pan for the rest.
     const fit = () => {
-      const cw = d.clientWidth;
-      if (!cw) return;
-      z.s = Math.max(0.75, Math.min(1.25, (cw - 32) / w));
-      z.x = Math.max(16, (cw - w * z.s) / 2);
-      z.y = 16;
-      d.style.height = `${Math.min(h * z.s + 32, innerHeight * 0.75)}px`;
-      z.fitted = true;
+      const cw = view.clientWidth, ch = view.clientHeight;
+      z.s = Math.min(3, (cw - 48) / z.w, (ch - 96) / z.h);
+      z.x = (cw - z.w * z.s) / 2;
+      z.y = Math.max(56, (ch - z.h * z.s) / 2);
       apply();
     };
-    const bar = el('div', { class: 'zoom' });
-    [['−', 'Zoom out', () => zoomAt(1 / 1.25, d.clientWidth / 2, d.clientHeight / 2)],
-     ['+', 'Zoom in', () => zoomAt(1.25, d.clientWidth / 2, d.clientHeight / 2)],
-     ['Fit', 'Fit to width', fit]].forEach(([label, title, fn]) => {
-      const b = el('button', { type: 'button', title, 'aria-label': title }, label);
-      b.addEventListener('click', fn);
-      b.addEventListener('pointerdown', (e) => e.stopPropagation());
-      bar.append(b);
-    });
-    d.append(bar);
-    d.fit = fit;
-    d.zoomAt = zoomAt;
-    if (z.fitted) { d.style.height || fit(); apply(); } else fit();
-    if (d.dataset.panZoom) return;
-    d.dataset.panZoom = '1';
+    const center = (f) => zoomAt(f, view.clientWidth / 2, view.clientHeight / 2);
+    [['−', 'Zoom out', () => center(1 / 1.25)], ['+', 'Zoom in', () => center(1.25)], ['Fit', 'Fit to window', fit], ['×', 'Close', () => dialog.close()]]
+      .forEach(([label, title, fn]) => {
+        const b = el('button', { type: 'button', title, 'aria-label': title }, label);
+        b.addEventListener('click', fn);
+        bar.append(b);
+      });
     let drag = null;
-    d.addEventListener('pointerdown', (e) => {
-      if (!d.zoom || e.button !== 0) return;
-      drag = { px: e.clientX, py: e.clientY, x: d.zoom.x, y: d.zoom.y };
-      d.setPointerCapture(e.pointerId);
-      d.classList.add('dragging');
+    view.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      drag = { px: e.clientX, py: e.clientY, x: z.x, y: z.y };
+      view.setPointerCapture(e.pointerId);
+      view.classList.add('dragging');
     });
-    d.addEventListener('pointermove', (e) => {
+    view.addEventListener('pointermove', (e) => {
       if (!drag) return;
-      d.zoom.x = drag.x + e.clientX - drag.px;
-      d.zoom.y = drag.y + e.clientY - drag.py;
-      d.querySelector('.stage').style.transform = `translate(${d.zoom.x}px, ${d.zoom.y}px) scale(${d.zoom.s})`;
+      z.x = drag.x + e.clientX - drag.px;
+      z.y = drag.y + e.clientY - drag.py;
+      apply();
     });
-    const end = () => { drag = null; d.classList.remove('dragging'); };
-    d.addEventListener('pointerup', end);
-    d.addEventListener('pointercancel', end);
-    d.addEventListener('wheel', (e) => {
-      if (!d.zoom || !(e.ctrlKey || e.metaKey)) return;
+    const end = () => { drag = null; view.classList.remove('dragging'); };
+    view.addEventListener('pointerup', end);
+    view.addEventListener('pointercancel', end);
+    view.addEventListener('wheel', (e) => {
       e.preventDefault();
-      const r = d.getBoundingClientRect();
-      d.zoomAt(Math.exp(-e.deltaY * 0.002), e.clientX - r.left, e.clientY - r.top);
+      const r = view.getBoundingClientRect();
+      zoomAt(Math.exp(-e.deltaY * 0.002), e.clientX - r.left, e.clientY - r.top);
     }, { passive: false });
-    d.addEventListener('dblclick', (e) => { if (!e.target.closest('.zoom')) d.fit(); });
-    // A diagram drawn in a hidden tab has no width yet; fit it once it shows.
-    new ResizeObserver(() => { if (d.clientWidth && d.zoom && !d.zoom.fitted) d.fit(); }).observe(d);
+    view.addEventListener('dblclick', fit);
+    // A click on the backdrop lands on the dialog itself, outside its box.
+    dialog.addEventListener('click', (e) => {
+      if (e.target !== dialog) return;
+      const r = dialog.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close();
+    });
+    dialog.addEventListener('close', () => stage.replaceChildren());
+    return {
+      open(svg) {
+        const copy = svg.cloneNode(true);
+        const box = svg.viewBox.baseVal;
+        z.w = box && box.width ? box.width : svg.getBBox().width;
+        z.h = box && box.height ? box.height : svg.getBBox().height;
+        copy.removeAttribute('style');
+        copy.setAttribute('width', z.w);
+        copy.setAttribute('height', z.h);
+        stage.replaceChildren(copy);
+        dialog.showModal();
+        fit();
+      },
+      close: () => dialog.open && dialog.close(),
+    };
+  })();
+
+  function openable(d) {
+    if (d.dataset.openable) return;
+    d.dataset.openable = '1';
+    Object.assign(d, { tabIndex: 0, title: 'Click to zoom and pan' });
+    d.setAttribute('role', 'button');
+    d.setAttribute('aria-label', 'Open diagram to zoom and pan');
+    const open = () => { const svg = d.querySelector('svg'); if (svg) lightbox.open(svg); };
+    d.addEventListener('click', open);
+    d.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
   }
 
   // Mermaid, themed from the page tokens and redrawn when the theme flips
   async function drawDiagrams() {
     if (!diagrams.length) return;
+    lightbox.close();
     if (typeof window.mermaid === 'undefined') {
       diagrams.forEach((d) => { d.innerHTML = `<pre>${escapeHtml(d.dataset.source)}</pre>`; });
       return;
@@ -534,11 +556,9 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     for (const [i, d] of diagrams.entries()) {
       try {
         const { svg } = await mermaid.render(`diagram-${i}-${Date.now()}`, d.dataset.source);
-        d.innerHTML = `<div class="stage">${svg}</div>`;
-        panZoom(d);
+        d.innerHTML = svg;
+        openable(d);
       } catch (e) {
-        d.zoom = null;
-        d.style.height = '';
         d.innerHTML = `<pre>${escapeHtml(d.dataset.source)}</pre>`;
       }
     }

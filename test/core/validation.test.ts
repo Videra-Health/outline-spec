@@ -150,6 +150,17 @@ describe('validateChange', () => {
     ]);
   });
 
+  it('reports a Mermaid block that does not parse, by file and line', async () => {
+    write('changes/c1/outline.md', '## Proposal\nx\n');
+    write('changes/c1/diagrams.md', [
+      '# Diagrams', '',
+      '```mermaid', 'stateDiagram-v2', '  [*] --> A', '  A --> B : t ≥ T−5', '```', '',
+      '```mermaid', 'sequenceDiagram', '  participant Loop as tick', '  participant C', '  Loop->>C: a', '  C-->>Loop: b', '```',
+    ].join('\n'));
+    const issues = (await validate()).issues.filter((i) => i.level === 'ERROR');
+    expect(issues).toEqual([{ level: 'ERROR', path: 'diagrams.md:9', message: expect.stringMatching(/^Mermaid diagram does not parse: Parse error on line 5/) }]);
+  }, 30_000);
+
   it('notes an outline that edits no specs', async () => {
     write('changes/c1/outline.md', '## Proposal\nTooling only.\n');
     expect(await validate()).toMatchObject({ valid: true, issues: [{ level: 'INFO' }] });

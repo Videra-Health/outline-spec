@@ -52,3 +52,6 @@ Define `outline-spec validate` behavior for validating changes and specs with ac
   d. Disabling prompts via flags or environment: WHEN `outline-spec validate` is executed with `--no-interactive` or with environment `OPEN_SPEC_INTERACTIVE=0` THEN the CLI SHALL not display interactive prompts AND SHALL print non-interactive hints or chosen outputs as appropriate
 12. Parser SHALL handle cross-platform line endings: The markdown parser SHALL correctly identify sections regardless of line ending format (LF, CRLF, CR).
   a. Required sections parsed with CRLF line endings: GIVEN a change proposal markdown saved with CRLF line endings AND the document contains `## Why` and `## What Changes` WHEN running `outline-spec validate <change-id>` THEN validation SHALL recognize the sections and NOT raise parsing errors
+13. Mermaid diagrams: Change validation SHALL report, as an error, each Mermaid code block in the change's Markdown files that Mermaid cannot parse, naming the file, the block's first line number, and Mermaid's parse message.
+  a. Parsing uses the same Mermaid version the review page draws with, so a block that validates also draws.
+  b. A change with no Mermaid blocks validates without loading Mermaid.

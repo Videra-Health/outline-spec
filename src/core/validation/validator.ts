@@ -15,6 +15,7 @@ import {
 import { resolveTaskFilesForChange } from '../../utils/task-progress.js';
 import { findTaskNumberingIssues } from './task-numbering.js';
 import { findMissingTaskCheckboxIssues } from './task-checkboxes.js';
+import { findMermaidIssues } from './mermaid.js';
 import { getPackageSchemasDir, getSchemaDir } from '../artifact-graph/index.js';
 
 // `(see \`spec\` Item, Column)`: Item is a requirement name or an item path as `show --item` takes it.
@@ -193,6 +194,7 @@ export class Validator {
     if (unknownKeys.length > 0) {
       issues.push({ level: 'WARNING', path: METADATA_FILENAME, message: formatUnknownChangeMetadataKeysMessage(unknownKeys) });
     }
+    issues.push(...await findMermaidIssues(changeDir));
     if (options.projectRoot) {
       issues.push(...await this.collectTaskFileIssues(changeDir, options.projectRoot));
     }
