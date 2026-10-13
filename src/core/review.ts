@@ -56,6 +56,8 @@ export interface ReviewFile {
   name: string;
   kind: 'markdown' | 'html';
   markdown: string;
+  /** For `outline.md`, the 0-based lines of items a patch adds, whose label its live requirement lacks. */
+  newItems?: number[];
 }
 
 export type ReviewPageTab =
@@ -296,6 +298,43 @@ export function buildSpecChanges(changesDir: string, specsDir: string, change: s
 }
 
 const HTML_EXTENSIONS = ['.html', '.htm'];
+const OUTLINE_LINE = /^( *)([0-9]+|[a-z]+)\. (.*)$/;
+
+/** Lines of an outline's Requirements whose item a patch adds; a new item's details are new too. */
+export function newItemLines(markdown: string, specsDir: string): number[] {
+  const lines = markdown.split('\n');
+  const out: number[] = [];
+  let inReqs = false;
+  let spec: Spec | null = null;
+  // Live node at each depth from 1 (the requirement) down; null once an ancestor is new or unknown
+  const liveAt: Array<Node | null | undefined> = [];
+  lines.forEach((line, i) => {
+    if (/^## /.test(line)) inReqs = /^## Requirements\s*$/.test(line);
+    const m = inReqs ? OUTLINE_LINE.exec(line) : null;
+    if (!m) return;
+    const depth = m[1].length / 2;
+    const text = m[3];
+    if (depth === 0) {
+      spec = marksOf(text) === 'none' ? readLiveSpec(specsDir, text.split(':')[0]) : null;
+      return;
+    }
+    if (depth === 1) {
+      const name = /^(.*?) \(patch\):/.exec(text)?.[1];
+      liveAt[1] = name && spec ? spec.items.find((n) => reqName(n.text) === sides(name).old) : undefined;
+      return;
+    }
+    const parent = liveAt[depth - 1];
+    liveAt.length = depth;
+    if (parent === undefined || marksOf(text) === 'removed') {
+      liveAt[depth] = undefined;
+      return;
+    }
+    const live = parent ? parent.children.find((n) => n.label === m[2]) : undefined;
+    liveAt[depth] = live ?? null;
+    if (!live) out.push(i);
+  });
+  return out;
+}
 
 /** An entry's files as change-relative `/` paths: a glob's matches by name, or the plain file if present. */
 function tabFileNames(changeDir: string, entry: string): string[] {
@@ -319,11 +358,16 @@ export function buildTabs(changesDir: string, specsDir: string, change: string, 
     }
     const files = (tab.from ?? [])
       .flatMap((entry) => tabFileNames(changeDir, entry))
-      .map((name): ReviewFile => ({
-        name,
-        kind: HTML_EXTENSIONS.includes(path.extname(name).toLowerCase()) ? 'html' : 'markdown',
-        markdown: readFileSync(path.join(changeDir, name), 'utf-8').replace(/\r\n/g, '\n'),
-      }));
+      .map((name): ReviewFile => {
+        const markdown = readFileSync(path.join(changeDir, name), 'utf-8').replace(/\r\n/g, '\n');
+        const newItems = name === 'outline.md' ? newItemLines(markdown, specsDir) : [];
+        return {
+          name,
+          kind: HTML_EXTENSIONS.includes(path.extname(name).toLowerCase()) ? 'html' : 'markdown',
+          markdown,
+          ...(newItems.length ? { newItems } : {}),
+        };
+      });
     if (files.length) out.push({ title: tab.title, kind: 'markdown', files });
   }
   return out;

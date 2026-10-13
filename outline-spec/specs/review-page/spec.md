@@ -16,6 +16,7 @@ A rendered page a developer reads to check a change before approving it.
   c. In the outline, struck text shows as removed and bold text in an edit shows as added, so edits read as a diff.
   d. Mermaid code blocks render as diagrams fit to the tab's width; clicking one opens it in a lightbox the developer can zoom and pan, and Escape or a click outside closes it.
   e. A view tab shows a view the CLI computes; `spec-changes` is the one view.
+  g. In the outline, the label of each item a patch adds, one its live requirement doesn't have, shows as added, and so do the labels of that item's details.
 3. Spec changes view: The `spec-changes` view SHALL list every spec the change touches, and under each, every requirement it adds, edits, or removes.
   a. Each requirement is tagged added, edited, or removed, and each spec is tagged new or removed when the change creates or deletes it.
   b. An edited requirement shows one diff: each changed line with its removed words struck and its added words bold, matched line by line so a word is only ever compared with the line it replaced.

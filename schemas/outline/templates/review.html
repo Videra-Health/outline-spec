@@ -137,6 +137,7 @@ body { overflow-x: clip; }
 .outline .outline { margin: 0.3rem 0 0; padding-left: 1.4rem; }
 .outline li { display: grid; grid-template-columns: 2.1rem minmax(0, 1fr); align-items: baseline; }
 .outline .label { font: 500 var(--step--1)/1 var(--font-mono); color: var(--muted); }
+.outline .label.new { justify-self: start; color: var(--add-fg); background: var(--add-bg); border-radius: 2px; padding: 0.15em 0.2em; }
 .outline li > .outline, .outline li > .table-wrap { grid-column: 2; }
 .outline.depth-0 > li > .item-text { font-weight: 500; }
 del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration: line-through; text-decoration-thickness: 1px; border-radius: 2px; padding: 0 0.1em; }
@@ -263,7 +264,8 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
       el('thead', {}, el('tr', {}, head.map((h) => el('th', { html: outlineInline(h) })))),
       el('tbody', {}, rows.map((r) => el('tr', {}, r.map((c) => el('td', { html: outlineInline(c) })))))));
   }
-  function renderOutline(text) {
+  // `first` is the file line `text` starts on, so `isNew` can look items up by file line
+  function renderOutline(text, first = 0, isNew = () => false) {
     const root = el('ol', { class: 'outline depth-0' });
     const items = []; // latest item at each depth
     const sublist = (li, depth) => {
@@ -285,7 +287,7 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
       const m = ITEM.exec(line);
       if (!m) continue;
       const depth = Math.min(Math.floor(m[1].length / 2), items.length);
-      const li = el('li', {}, el('span', { class: 'label' }, `${m[2]}.`), el('span', { class: 'item-text', html: outlineInline(m[3] || '') }));
+      const li = el('li', {}, el('span', { class: isNew(first + i) ? 'label new' : 'label' }, `${m[2]}.`), el('span', { class: 'item-text', html: outlineInline(m[3] || '') }));
       (depth === 0 ? root : sublist(items[depth - 1], depth)).append(li);
       items[depth] = li;
       items.length = depth + 1;
@@ -301,7 +303,7 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     full.addEventListener('click', () => box.requestFullscreen?.());
     return el('div', { class: 'file' }, el('div', { class: 'design-head' }, el('span', { class: 'file-name' }, name), full), box);
   }
-  function renderMarkdown(name, text) {
+  function renderMarkdown(name, text, newItems) {
     const wrap = el('div', { class: 'md' });
     const req = name === 'outline.md' ? /^## Requirements\s*$/m.exec(text) : null;
     if (!req) { wrap.innerHTML = block(text); return finishMarkdown(wrap); }
@@ -310,7 +312,8 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     const next = /^## /m.exec(rest);
     const items = next ? rest.slice(0, next.index) : rest;
     wrap.innerHTML = block(before) + block('## Requirements');
-    wrap.append(renderOutline(items));
+    const added = new Set(newItems || []);
+    wrap.append(renderOutline(items, text.slice(0, req.index).split('\n').length - 1, (n) => added.has(n)));
     if (next) wrap.insertAdjacentHTML('beforeend', block(rest.slice(next.index)));
     return finishMarkdown(wrap);
   }
@@ -467,7 +470,7 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     else panel.append(el('div', { class: 'files' }, tab.files.map((f) =>
       f.kind === 'html'
         ? renderDesign(f.name, f.markdown)
-        : el('div', { class: 'file' }, tab.files.length > 1 ? el('span', { class: 'file-name' }, f.name) : null, renderMarkdown(f.name, f.markdown)))));
+        : el('div', { class: 'file' }, tab.files.length > 1 ? el('span', { class: 'file-name' }, f.name) : null, renderMarkdown(f.name, f.markdown, f.newItems)))));
     btn.addEventListener('click', () => select(i, true));
     btn.addEventListener('keydown', (e) => {
       const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;

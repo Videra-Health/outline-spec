@@ -162,6 +162,16 @@ describe('buildSpecChanges', () => {
 });
 
 describe('buildTabs', () => {
+  it('lists the lines of items a patch adds, and their details', () => {
+    change(
+      'c1',
+      '1. ships:\n  a. Hulls (patch):\n    a. A hull has ~~100~~ **120** armor.\n    b. Hulls are welded.\n      a. By robots.\n  b. Fuel: Ships burn fuel.\n    a. Slowly.\n2. docks: Stations have docks.\n  a. Berths: A dock has berths.\n'
+    );
+    const [tab] = buildTabs(changesDir(), specsDir(), 'c1', [{ title: 'Outline', from: ['outline.md'] }]);
+    const [file] = (tab as { files: Array<{ markdown: string; newItems?: number[] }> }).files;
+    expect(file.newItems!.map((n) => file.markdown.split('\n')[n].trim())).toEqual(['b. Hulls are welded.', 'a. By robots.']);
+  });
+
   it('renders files in the listed order and skips missing ones', () => {
     write('changes/c1/design.md', '# Design');
     write('changes/c1/diagrams.md', '# Diagrams');

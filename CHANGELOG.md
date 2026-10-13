@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **New items in the outline.** The Outline tab marks the label of each item a patch adds, and its details' labels, as added.
 - **Review diffs.** The spec-changes view shows an edited requirement as one diff instead of live and after-archive columns. Tables render as tables, and each changed cell shows its old value struck and its new value bold, compared only within its row and column. Runs of unchanged lines and rows fold behind a control, and table edits sit behind a toggle. In the Outline tab, an edit's bold text now renders bold next to punctuation, as in `space**, its**`. The payload's `segments` field is replaced by `lines`.
 - **Designs.** The `outline` schema adds an optional `designs` artifact: self-contained HTML pages in `designs/`, written only when a change adds or changes something a person sees. The review page shows them in a Designs tab, each running in a sandboxed frame the full width and height of the window, with a Full screen button; a change without designs has no Designs tab. Review tab `from` entries accept globs, and `update` republishes the page when a design changes.
 - **Optional artifacts.** A schema artifact with `optional: true` doesn't block dependents or planning completion while missing, is left out of the `status` count and next step, and shows as `(optional)` in `status` and `view`. Status JSON marks it `optional: true`.
