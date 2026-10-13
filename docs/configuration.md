@@ -8,7 +8,7 @@
 schema: outline
 
 context: |
-  Designs and tasks must cover Windows, macOS, and Linux
+  Tasks must cover Windows, macOS, and Linux
   Write all artifacts in Spanish
 
 rules:
@@ -39,7 +39,7 @@ review:
 |---|---|
 | `schema` | The workflow schema for new changes: `outline` or a custom schema's name. |
 | `context` | Free text added to every artifact's instructions and to apply and archive. Up to 50 KB. |
-| `rules` | Extra rules for one artifact, keyed by artifact id (`outline`, `design`, `diagrams`, `tasks`, or a custom schema's ids). |
+| `rules` | Extra rules for one artifact, keyed by artifact id (`outline`, `diagrams`, `tasks`, or a custom schema's ids). |
 | `operations` | Advisory guidance for `apply` and `archive`. |
 | `store` | A store id to use as the root when this `outline-spec/` folder has no `specs/` or `changes/` ([Stores](stores.md)). |
 | `review-on` | The workflows that render the review page: `propose`, `update`, or both (the default). `review-on: []` turns the page off. |

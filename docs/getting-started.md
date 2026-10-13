@@ -47,7 +47,7 @@ In your AI tool:
 /outl:propose add a dark mode toggle to settings
 ```
 
-The agent creates `outline-spec/changes/add-dark-mode/` with `outline.md` (the proposal and spec edits), `diagrams.md`, `tasks.md`, and `design.md` if the change needs one. Read `outline.md`. On a new project the specs are empty, so the outline creates a spec:
+The agent creates `outline-spec/changes/add-dark-mode/` with `outline.md` (the proposal and spec edits), `diagrams.md`, and `tasks.md`. Read `outline.md`. On a new project the specs are empty, so the outline creates a spec:
 
 ```
 ## Requirements

@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- **Review page.** `outline-spec review <change>` renders one HTML page to check a change before approving it: a validation and overlap banner, then tabs for the outline, the diagrams and design, and the spec changes, with live and after-archive text side by side and changed words marked. `propose` and `update` publish it when the agent can publish a page, and record its link with `--url`. A schema's `review` block sets the template and tabs; `review-on` and `review.tabs` in `config.yaml` turn it off or swap the tabs.
+- **Review page.** `outline-spec review <change>` renders one HTML page to check a change before approving it: a validation and overlap banner, then tabs for the outline, the diagrams, and the spec changes, with live and after-archive text side by side and changed words marked. `propose` and `update` publish it when the agent can publish a page, and record its link with `--url`. A schema's `review` block sets the template and tabs; `review-on` and `review.tabs` in `config.yaml` turn it off or swap the tabs.
+- **No design artifact.** The built-in `outline` schema has three artifacts: `outline`, `diagrams`, and `tasks`. `design.md` and its template are gone, and no workflow writes, reads, or verifies it. A change folder that already has a `design.md` keeps the file, but no workflow reads it and the review page doesn't show it.
 
 ## 0.4.0
 

@@ -19,7 +19,7 @@ Commit the installed files with the rest of your project.
 
 | Workflow | Skill | What it does |
 |---|---|---|
-| `propose` | `outl-propose` | Creates a change and writes `outline.md`, `design.md` when needed, `diagrams.md`, and `tasks.md` in one step. |
+| `propose` | `outl-propose` | Creates a change and writes `outline.md`, `diagrams.md`, and `tasks.md` in one step. |
 | `explore` | `outl-explore` | A thinking partner for an idea or a problem. It reads code and specs and never writes code. It captures the discussion only when you ask, or say yes when it offers: it runs `outline-spec new change` and writes the artifacts you name. |
 | `apply` | `outl-apply-change` | Implements a change's tasks and checks each off in the tracked file identified by `sourcePath` and one-based `line`. A schema can track tasks across multiple files. |
 | `update` | `outl-update-change` | Revises a change's artifacts and keeps them consistent with each other. Never edits code. |

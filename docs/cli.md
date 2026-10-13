@@ -71,7 +71,7 @@ Shows which artifacts of a change are done, ready, or blocked.
 
 ### outline-spec instructions [artifact]
 
-Prints what the agent needs for its next step: how to write an artifact (`outline`, `design`, `diagrams`, `tasks`), or the reserved forms `apply` and `archive`.
+Prints what the agent needs for its next step: how to write an artifact (`outline`, `diagrams`, `tasks`), or the reserved forms `apply` and `archive`.
 
 | Flag | Effect |
 |---|---|
@@ -111,7 +111,7 @@ Lists what each open change touches (`spec › requirement › label`; for table
 
 ### outline-spec review <change>
 
-Renders the change's review page to one HTML file and prints its path: a banner for `validate` and overlapping changes, then tabs for the outline, the diagrams and design, and the spec changes (each requirement added, edited, or removed, live text beside the text after archive). The file goes to `<temp>/outline-spec-review/<project>/<change>.html` and is overwritten on each run. Tabs come from the schema's [review block](schema.md#review) or `review.tabs` in `config.yaml`. Flags: `--json` (`path`, `change`, `reviewUrl`, `enabled`), `--for <propose|update>` (render only when `review-on` includes it, otherwise `enabled: false`), `--out <path>` (write there instead, relative to the current directory), `--url <link>` (record the published link in `.outline-spec.yaml` without rendering), `--store <id>`.
+Renders the change's review page to one HTML file and prints its path: a banner for `validate` and overlapping changes, then tabs for the outline, the diagrams, and the spec changes (each requirement added, edited, or removed, live text beside the text after archive). The file goes to `<temp>/outline-spec-review/<project>/<change>.html` and is overwritten on each run. Tabs come from the schema's [review block](schema.md#review) or `review.tabs` in `config.yaml`. Flags: `--json` (`path`, `change`, `reviewUrl`, `enabled`), `--for <propose|update>` (render only when `review-on` includes it, otherwise `enabled: false`), `--out <path>` (write there instead, relative to the current directory), `--url <link>` (record the published link in `.outline-spec.yaml` without rendering), `--store <id>`.
 
 ### outline-spec relabel <spec>
 

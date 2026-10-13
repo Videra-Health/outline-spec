@@ -9,7 +9,7 @@ context: |
   - Write outline-spec proposals and specs in user-facing product behavior language
   - Requirements should describe the experience, observable behavior, and product contract
   - Avoid implementation-negative rules when a positive user outcome can express the same rule
-  - Put internal mechanisms in design.md or tasks.md unless the mechanism is itself part of the user-facing contract
+  - Put internal mechanisms in tasks.md unless the mechanism is itself part of the user-facing contract
 
   Cross-platform requirements:
   - This tool runs on macOS, Linux, AND Windows
@@ -28,8 +28,6 @@ rules:
   tasks:
     - Add Windows CI verification as a task when changes involve file paths
     - Include cross-platform testing considerations
-  design:
-    - Document any platform-specific behavior or limitations
     - Prefer Node.js path module over string manipulation for paths
     - Use existing constants and lists - don't invent detection mechanisms
     - Prefer explicit lookups over pattern matching or regex

@@ -1,15 +1,14 @@
 # The outline schema
 
-`outline` is the built-in workflow schema. A change has four artifacts, written in this order:
+`outline` is the built-in workflow schema. A change has three artifacts, written in this order:
 
 | Artifact | File | Requires |
 |---|---|---|
 | `outline` | `outline.md` | nothing |
-| `design` | `design.md` | `outline` |
 | `diagrams` | `diagrams.md` | `outline` |
 | `tasks` | `tasks.md` | `outline` |
 
-`design` is optional: its instruction tells the agent to skip it unless the change needs technical decisions explained. `diagrams` holds the views that explain the change (sequence diagrams, call trees, state machines, data shapes, and so on); its template lists the candidate views and when each fits. Apply needs only `tasks`, so `diagrams` never blocks it, and tracks progress in `tasks.md`.
+`diagrams` holds the views that explain the change (sequence diagrams, call trees, state machines, data shapes, and so on); its template lists the candidate views and when each fits. Apply needs only `tasks`, so `diagrams` never blocks it, and tracks progress in `tasks.md`.
 
 The templates are in [`schemas/outline/templates/`](../schemas/outline/templates/). To change any of this for a project, fork the schema ([Configuration](configuration.md#custom-schemas)).
 
@@ -79,7 +78,7 @@ Tables:
 
 A spec describes observable behavior, not implementation: no internal
 function names, library choices, or step-by-step plans. Those belong in
-design.md or tasks.md.
+tasks.md.
 
 Under `## Out of Scope`, list only what a reader might wrongly assume is
 included, a few words per item, as a flat numbered list. Omit the section
@@ -90,35 +89,6 @@ archives cleanly against the live specs.
 
 When the workflow finishes and you summarize it to the user, include the full
 contents of outline.md verbatim in that reply, not a paraphrase or a link.
-```
-
-## design
-
-Technical design for changes that need decisions explained.
-
-### Instructions
-
-The instruction sent to the agent when it writes this artifact.
-
-```md
-Create design.md only when the change needs technical decisions explained:
-- Cross-cutting change (multiple services/modules) or a new architectural pattern
-- New external dependency or significant data model changes
-- Security, performance, or migration complexity
-- Ambiguity that benefits from technical decisions before coding
-
-Otherwise skip it; the outline and tasks are enough.
-
-Sections:
-- **Context**: Only the current state and constraints needed to explain the approach.
-- **Decisions**: Key technical choices with rationale (why X over Y?).
-- **Risks / Trade-offs**: Known limitations. Format: [Risk] → Mitigation
-- **Open Questions**: Unknowns that can safely be answered later without
-  changing the outline, the approach, or the task breakdown. Omit if none.
-
-If a question would change the outline or the tasks, ask the user now
-instead of deferring it. Reference outline.md for what changes; design
-covers how.
 ```
 
 ## diagrams
@@ -144,9 +114,6 @@ The instruction sent to the agent when it writes this artifact.
 ```md
 Create the task list that breaks down the implementation work.
 
-If design.md exists and has Open Questions that would change what gets
-built, resolve them with the user first.
-
 **Follow the template for tracked tasks.** The apply phase parses checkbox
 format to track progress. A box holding only `x` counts as done; every other
 marker reads as unfinished. A line with no checkbox is not tracked.
@@ -161,7 +128,7 @@ Guidelines:
 - The last task archives the change: `outline-spec archive <change>`, which applies
   outline.md to the live specs and deletes the change folder.
 
-Reference outline.md for what to build and design.md (if present) for how.
+Reference outline.md for what to build.
 ```
 
 ## apply
@@ -188,7 +155,7 @@ review:
     - title: Outline
       from: [outline.md]
     - title: Diagrams
-      from: [diagrams.md, design.md]
+      from: [diagrams.md]
     - title: Spec changes
       view: spec-changes
 ```
