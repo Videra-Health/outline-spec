@@ -65,23 +65,6 @@ async function markCodexTarget(skillsDir: string): Promise<void> {
   await fs.writeFile(path.join(skillsDir, '.outline-spec-target'), 'codex\n');
 }
 
-async function createLegacyCodexPrompt(): Promise<string> {
-  const prompt = path.join(process.env.CODEX_HOME!, 'prompts', 'outline-spec-explore.md');
-  await fs.mkdir(path.dirname(prompt), { recursive: true });
-  await fs.writeFile(prompt, 'legacy prompt');
-  return prompt;
-}
-
-function failCodexSkillWrites(): void {
-  const originalWriteFile = FileSystemUtils.writeFile.bind(FileSystemUtils);
-  vi.spyOn(FileSystemUtils, 'writeFile').mockImplementation(async (filePath, content) => {
-    if (filePath.includes(`${path.sep}.agents${path.sep}`) && filePath.endsWith('SKILL.md')) {
-      throw new Error('EACCES: permission denied');
-    }
-    return originalWriteFile(filePath, content);
-  });
-}
-
 describe('UpdateCommand', () => {
   let testDir: string;
   let updateCommand: UpdateCommand;
