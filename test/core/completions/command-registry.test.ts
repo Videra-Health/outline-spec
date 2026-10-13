@@ -169,7 +169,6 @@ describe('command completion registry', () => {
       'context',
       'doctor',
       'instructions',
-      'land',
       'list',
       'migrate-specs',
       'new change',

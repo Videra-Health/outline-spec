@@ -41,9 +41,9 @@ export function getOutlineSpecProposeSkillTemplate(): SkillTemplate {
 I'll create a change with the artifacts your schema defines. With the default outline schema that is:
 - outline.md (the proposal and its spec edits, as a labeled outline)
 - design.md (how - only when the change needs technical decisions explained)
-- tasks.md (implementation steps, ending with landing the change)
+- tasks.md (implementation steps, ending with archiving the change)
 
-outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. \`outline-spec land <change>\` applies the outline to the live specs when the work is done.
+outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done.
 
 When the user is ready to implement, they must start the apply workflow explicitly.
 
@@ -149,7 +149,7 @@ ${PROJECT_ROOT_GUARD}
       - Dependencies are enablers, not gates: if a required artifact is still \`blocked\` only because you skipped a conditional dependency, write it anyway
       - Stop when every artifact in the required set is \`done\` or was deliberately skipped
 
-   c. **Check the outline lands**: after writing outline.md, run \`outline-spec validate "<name>"\`. It checks that the outline lands cleanly against the live specs; fix outline.md until it passes.
+   c. **Check the outline archives cleanly**: after writing outline.md, run \`outline-spec validate "<name>"\`. It checks that the outline archives cleanly against the live specs; fix outline.md until it passes.
 
    d. **If an artifact requires user input** (unclear context):
       - Ask the user to clarify
@@ -186,7 +186,7 @@ After completing all artifacts, summarize:
 - Ask about ambiguities that would materially change scope, externally observable behavior, compatibility, or acceptance criteria; for minor details, make reasonable assumptions and record them
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next
-- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and land with \`outline-spec land\``,
+- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec archive\``,
     license: 'MIT',
     compatibility: 'Requires outline-spec CLI.',
     metadata: { author: 'outline-spec', version: '1.0' },
@@ -206,9 +206,9 @@ export function getOutlineSpecProposeCommandTemplate(): CommandTemplate {
 I'll create a change with the artifacts your schema defines. With the default outline schema that is:
 - outline.md (the proposal and its spec edits, as a labeled outline)
 - design.md (how - only when the change needs technical decisions explained)
-- tasks.md (implementation steps, ending with landing the change)
+- tasks.md (implementation steps, ending with archiving the change)
 
-outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. \`outline-spec land <change>\` applies the outline to the live specs when the work is done.
+outline.md holds the change's spec edits, addressed by spec folder name, requirement name, and label. New items are unmarked; edits to existing items are marked \`~~old~~ **new**\`; a removed item is wholly struck with its live text. Labels never shift. Archiving the change applies the outline to the live specs when the work is done.
 
 When the user is ready to implement, they must start the apply workflow explicitly.
 
@@ -314,7 +314,7 @@ ${PROJECT_ROOT_GUARD}
       - Dependencies are enablers, not gates: if a required artifact is still \`blocked\` only because you skipped a conditional dependency, write it anyway
       - Stop when every artifact in the required set is \`done\` or was deliberately skipped
 
-   c. **Check the outline lands**: after writing outline.md, run \`outline-spec validate "<name>"\`. It checks that the outline lands cleanly against the live specs; fix outline.md until it passes.
+   c. **Check the outline archives cleanly**: after writing outline.md, run \`outline-spec validate "<name>"\`. It checks that the outline archives cleanly against the live specs; fix outline.md until it passes.
 
    d. **If an artifact requires user input** (unclear context):
       - Ask the user to clarify
@@ -351,6 +351,6 @@ After completing all artifacts, summarize:
 - Ask about ambiguities that would materially change scope, externally observable behavior, compatibility, or acceptance criteria; for minor details, make reasonable assumptions and record them
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next
-- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and land with \`outline-spec land\``
+- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec archive\``
   };
 }

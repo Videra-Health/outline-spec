@@ -40,16 +40,16 @@ beforeEach(() => {
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-describe('outline-spec land', () => {
+describe('outline-spec archive', () => {
   it('applies edits, creates and deletes specs, and removes the change', async () => {
     change(
       'c1',
       '1. outfitting:\n  a. Catalog (patch):\n    d. Salvage Plate: 2 / 0 / 0.\n2. docking: Ships dock at stations.\n  a. Clamps: Docking takes 2 s.\n3. ~~hull: Ships have a hull.~~\n'
     );
-    const r = await cli('land', 'c1', '--json');
+    const r = await cli('archive', 'c1', '--json');
     expect(r.exitCode).toBe(0);
     expect(JSON.parse(r.stdout)).toMatchObject({
-      landed: 'c1',
+      archived: 'c1',
       specs: [
         { name: 'outfitting', action: 'updated' },
         { name: 'docking', action: 'created' },
@@ -64,7 +64,7 @@ describe('outline-spec land', () => {
 
   it('writes nothing when any edit fails, and lists every problem', async () => {
     change('c1', '1. docking: Ships dock.\n  a. Clamps: 2 s.\n2. outfitting:\n  a. Catalog (patch):\n    y. ~~A.~~\n    z. ~~B.~~\n');
-    const r = await cli('land', 'c1', '--yes');
+    const r = await cli('archive', 'c1', '--yes');
     expect(r.exitCode).not.toBe(0);
     expect(r.stderr + r.stdout).toMatch(/Catalog › y: no such item[\s\S]*Catalog › z: no such item/);
     expect(existsSync(file('specs/docking'))).toBe(false);
@@ -74,14 +74,14 @@ describe('outline-spec land', () => {
 
   it('reports a failure as one JSON document', async () => {
     change('c1', '1. outfitting:\n  a. Nope (patch):\n');
-    const r = await cli('land', 'c1', '--json');
+    const r = await cli('archive', 'c1', '--json');
     expect(r.exitCode).toBe(1);
-    expect(JSON.parse(r.stdout)).toMatchObject({ landed: null, specs: [], status: [{ code: 'land_conflicts' }] });
+    expect(JSON.parse(r.stdout)).toMatchObject({ archived: null, specs: [], status: [{ code: 'archive_conflicts' }] });
   });
 
   it('prints the result on --dry-run and writes nothing', async () => {
     change('c1', '1. outfitting:\n  a. Catalog (patch): The catalog is ~~these~~ **all of the** items.\n');
-    const r = await cli('land', 'c1', '--dry-run');
+    const r = await cli('archive', 'c1', '--dry-run');
     expect(r.exitCode).toBe(0);
     expect(r.stdout).toContain('--- outline-spec/specs/outfitting/spec.md (updated)');
     expect(r.stdout).toContain('2. Catalog: The catalog is all of the items.');
@@ -91,9 +91,9 @@ describe('outline-spec land', () => {
 
   it('includes spec text in --dry-run --json', async () => {
     change('c1', '1. docking: Ships dock.\n  a. Clamps: 2 s.\n');
-    const r = await cli('land', 'c1', '--dry-run', '--json');
+    const r = await cli('archive', 'c1', '--dry-run', '--json');
     expect(JSON.parse(r.stdout)).toMatchObject({
-      landed: 'c1',
+      archived: 'c1',
       dryRun: true,
       specs: [{ name: 'docking', action: 'created', text: '# docking\nShips dock.\n\n1. Clamps: 2 s.\n' }],
     });
@@ -101,61 +101,48 @@ describe('outline-spec land', () => {
 
   it('blocks --json on incomplete tasks unless --yes', async () => {
     change('c1', '1. docking: Ships dock.\n  a. Clamps: 2 s.\n', '- [ ] 1.1 Not yet\n');
-    const blocked = await cli('land', 'c1', '--json');
+    const blocked = await cli('archive', 'c1', '--json');
     expect(blocked.exitCode).toBe(1);
-    expect(JSON.parse(blocked.stdout).status[0]).toMatchObject({ code: 'land_tasks_incomplete' });
+    expect(JSON.parse(blocked.stdout).status[0]).toMatchObject({ code: 'archive_tasks_incomplete' });
     expect(existsSync(file('changes/c1'))).toBe(true);
 
-    const forced = await cli('land', 'c1', '--json', '--yes');
+    const forced = await cli('archive', 'c1', '--json', '--yes');
     expect(forced.exitCode).toBe(0);
     expect(existsSync(file('changes/c1'))).toBe(false);
   });
 
-  it('asks before landing incomplete tasks, and stops when no answer can be read', async () => {
+  it('asks before archiving incomplete tasks, and stops when no answer can be read', async () => {
     change('c1', '1. docking: Ships dock.\n  a. Clamps: 2 s.\n', '- [ ] 1.1 Not yet\n');
-    const r = await runCLI(['land', 'c1'], { cwd: root, input: 'n\n' });
+    const r = await runCLI(['archive', 'c1'], { cwd: root, input: 'n\n' });
     expect(r.stdout).toContain('1 incomplete task(s) found');
     expect(existsSync(file('changes/c1'))).toBe(true);
   });
 
   it('requires a change name in --json', async () => {
-    const r = await cli('land', '--json');
-    expect(JSON.parse(r.stdout).status[0]).toMatchObject({ code: 'land_change_name_required' });
+    const r = await cli('archive', '--json');
+    expect(JSON.parse(r.stdout).status[0]).toMatchObject({ code: 'archive_change_name_required' });
   });
 
   it('names the available changes when one is missing', async () => {
     change('c1', '');
-    const r = await cli('land', 'nope', '--json');
-    expect(JSON.parse(r.stdout).status[0]).toMatchObject({ code: 'land_change_not_found', message: expect.stringContaining('c1') });
+    const r = await cli('archive', 'nope', '--json');
+    expect(JSON.parse(r.stdout).status[0]).toMatchObject({ code: 'archive_change_not_found', message: expect.stringContaining('c1') });
   });
 
-  it('lands a change that edits no specs', async () => {
+  it('archives a change that edits no specs', async () => {
     change('c1', '');
-    const r = await cli('land', 'c1', '--json');
-    expect(JSON.parse(r.stdout)).toMatchObject({ landed: 'c1', specs: [] });
+    const r = await cli('archive', 'c1', '--json');
+    expect(JSON.parse(r.stdout)).toMatchObject({ archived: 'c1', specs: [] });
     expect(existsSync(file('changes/c1'))).toBe(false);
   });
 });
 
-describe('outline-spec archive', () => {
-  it('lands the change and notes the rename on stderr only', async () => {
-    change('c1', '1. docking: Ships dock.\n  a. Clamps: 2 s.\n');
-    const r = await cli('archive', 'c1', '--json');
-    expect(r.exitCode).toBe(0);
-    expect(r.stderr).toContain('"outline-spec archive" is now "outline-spec land"');
-    expect(JSON.parse(r.stdout)).toMatchObject({ landed: 'c1' });
-    expect(existsSync(file('specs/docking/spec.md'))).toBe(true);
-  });
-});
-
-describe('outline-spec instructions land', () => {
-  it('serves land inputs under both names', async () => {
+describe('outline-spec instructions archive', () => {
+  it('serves archive inputs from operations.archive', async () => {
     change('c1', '');
-    write('config.yaml', 'schema: outline\noperations:\n  archive:\n    guidance:\n      - Say what landed\n');
-    for (const name of ['land', 'archive']) {
-      const r = await cli('instructions', name, '--change', 'c1', '--json');
-      expect(JSON.parse(r.stdout)).toMatchObject({ changeName: 'c1', operationGuidance: ['Say what landed'] });
-    }
+    write('config.yaml', 'schema: outline\noperations:\n  archive:\n    guidance:\n      - Say what was archived\n');
+    const r = await cli('instructions', 'archive', '--change', 'c1', '--json');
+    expect(JSON.parse(r.stdout)).toMatchObject({ changeName: 'c1', operationGuidance: ['Say what was archived'] });
   });
 });
 
@@ -232,7 +219,7 @@ describe('outline-spec migrate-specs', () => {
 });
 
 describe('validate on outlines', () => {
-  it('passes clean specs and changes and fails a change that would not land', async () => {
+  it('passes clean specs and changes and fails a change that would not archive cleanly', async () => {
     change('good', '1. outfitting:\n  a. Catalog (patch):\n    d. Salvage Plate: 2 / 0 / 0.\n');
     change('bad', '1. outfitting:\n  a. Catalog (patch):\n    b. ~~Nothing here.~~\n');
     const r = await cli('validate', '--all', '--json');

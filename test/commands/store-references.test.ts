@@ -236,7 +236,7 @@ describe('store references in instructions (3.1)', () => {
     expect(fetchResult.exitCode).toBe(0);
     expect(fetchResult.stdout).toContain('Usage-based invoicing.');
 
-    // The design lands in the app repo's own root, citing the store spec.
+    // The design is written to the app repo's own root, citing the store spec.
     const changeDir = path.join(appRepo, 'outline-spec', 'changes', 'billing-rework');
     fs.writeFileSync(
       path.join(changeDir, 'outline.md'),

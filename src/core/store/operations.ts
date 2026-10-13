@@ -700,7 +700,7 @@ export async function setupPreparedStore(
       ...(backend.remote ? { observed: backend.remote } : {}),
     });
   } catch (error) {
-    // Once the initial commit landed in a (possibly user-owned) repository,
+    // Once the initial commit exists in a (possibly user-owned) repository,
     // the files are durable state; deleting them would orphan the commit.
     // The only remaining failure is the registry write, which is retryable.
     if (committed) {
@@ -793,7 +793,7 @@ export async function registerExistingStore(
 
   if (metadata && explicitId !== undefined && metadata.id !== explicitId) {
     // The fix must account for whether the metadata id is already registered,
-    // so following it never lands on the already-registered error.
+    // so following it never hits the already-registered error.
     const currentRegistry = await readStoreRegistryState();
     const registeredElsewhere =
       currentRegistry?.stores?.[metadata.id] !== undefined &&

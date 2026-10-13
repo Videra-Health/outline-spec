@@ -89,7 +89,7 @@ export function registerWorksetCommand(program: Command): void {
     .join(', ');
 
   // One handler owns missing AND unknown subcommands: known
-  // subcommands dispatch above; everything else lands in this action
+  // subcommands dispatch above; everything else reaches this action
   // (allowExcessArguments routes the unknown operand here), keeping
   // the one-JSON-document contract for `--json` probes.
   workset.allowExcessArguments(true);

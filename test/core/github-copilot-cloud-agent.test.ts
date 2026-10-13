@@ -92,17 +92,16 @@ When the user wants to propose a new change:
 // Reverses the outline-era wording to rebuild the archive-era agent file earlier releases wrote.
 function toArchiveEra(content: string): string {
   return content
-    .replace('checking status, and landing completed work.', 'checking status, and archiving completed work.')
     .replace(
-      'planning artifacts (an outline of spec edits, an optional design, and tasks) that guide implementation. Landing a change applies its outline to the specs.',
+      'planning artifacts (an outline of spec edits, an optional design, and tasks) that guide implementation. Archiving a change applies its outline to the specs.',
       'planning artifacts (proposals, specs, designs, tasks) that guide implementation.'
     )
     .replace(
-      "| `outline-spec land <change> [--dry-run] --json [--yes]` | Apply a finished change's outline.md to the specs and delete the change; use `--yes` only after confirming all tasks are complete |",
+      "| `outline-spec archive <change> [--dry-run] --json [--yes]` | Apply a finished change's outline.md to the specs and delete the change; use `--yes` only after confirming all tasks are complete |",
       '| `outline-spec archive <change> --json [--yes]` | Archive a completed change; use `--yes` only after confirming all tasks are complete |'
     )
     .replace(
-      '- Before landing, ensure all tasks are completed, validate the change, and run `outline-spec land <change> --dry-run`',
+      '- Before archiving, ensure all tasks are completed, validate the change, and run `outline-spec archive <change> --dry-run`',
       '- When archiving, ensure all tasks are completed and validated first'
     );
 }
@@ -201,8 +200,8 @@ describe('GitHub Copilot Cloud Agent', () => {
       expect(content).toContain('outline-spec new change <name>');
       expect(content).toContain('outline-spec status --change <name> --json');
       expect(content).toContain('outline-spec instructions [artifact] --change <name> --json');
-      expect(content).toContain('outline-spec land <change> [--dry-run] --json [--yes]');
-      expect(content).not.toContain('outline-spec archive');
+      expect(content).toContain('outline-spec archive <change> [--dry-run] --json [--yes]');
+      expect(content).not.toContain('Archive a completed change');
       expect(content).toContain('use `--yes` only after confirming all tasks are complete');
       expect(content).toContain('run `outline-spec --version`');
       expect(content).not.toContain('pre-installed in the development environment');

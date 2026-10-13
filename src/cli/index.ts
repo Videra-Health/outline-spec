@@ -4,7 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync, promises as fs } from 'fs';
 import { AI_TOOLS, TOOL_ID_ALIASES } from '../core/config.js';
-import type { LandOptions } from '../core/land.js';
+import type { ArchiveOptions } from '../core/archive.js';
 import { registerSpecCommand } from './commands/spec.js';
 import { registerConfigCommand } from './commands/config.js';
 import { registerSchemaCommand } from './commands/schema.js';
@@ -343,7 +343,7 @@ changeCmd
   .command('show [change-name]')
   .description("Show a change's outline.md")
   .option('--json', 'Output as JSON')
-  .option('--diff', 'Show the spec text the change would land')
+  .option('--diff', 'Show the spec text archiving the change would produce')
   .option('--no-interactive', 'Disable interactive prompts')
   .action(async (changeName?: string, options?: { json?: boolean; diff?: boolean; noInteractive?: boolean }) => {
     try {
@@ -391,7 +391,7 @@ changeCmd
     }
   });
 
-function addLandOptions(command: Command): Command {
+function addArchiveOptions(command: Command): Command {
   return command
     .option('-y, --yes', 'Skip confirmation prompts')
     .option('--dry-run', 'Print the resulting spec text and write nothing')
@@ -400,29 +400,18 @@ function addLandOptions(command: Command): Command {
     .addOption(hiddenStorePathOption());
 }
 
-async function runLand(changeName: string | undefined, options: LandOptions): Promise<void> {
+addArchiveOptions(
+  program
+    .command('archive [change-name]')
+    .description("Apply a change's outline to the specs and remove the change")
+).action(async (changeName: string | undefined, options: ArchiveOptions) => {
   try {
-    const { LandCommand } = await import('../core/land.js');
-    await new LandCommand().execute(changeName, options);
+    const { ArchiveCommand } = await import('../core/archive.js');
+    await new ArchiveCommand().execute(changeName, options);
   } catch (error) {
     await failWithError(error);
     process.exit(1);
   }
-}
-
-addLandOptions(
-  program
-    .command('land [change-name]')
-    .description("Apply a change's outline to the specs and remove the change")
-).action(runLand);
-
-addLandOptions(
-  program
-    .command('archive [change-name]')
-    .description('Renamed to "land"; kept as an alias')
-).action(async (changeName: string | undefined, options: LandOptions) => {
-  console.error('Note: "outline-spec archive" is now "outline-spec land".');
-  await runLand(changeName, options);
 });
 
 program
@@ -529,7 +518,7 @@ program
   .option('--json', 'Output as JSON')
   .option('--type <type>', 'Specify item type when ambiguous: change|spec')
   .option('--no-interactive', 'Disable interactive prompts')
-  .option('--diff', 'Show the spec text the change would land (change)')
+  .option('--diff', 'Show the spec text archiving the change would produce (change)')
   .option('--item <path>', 'Show one item, e.g. "Catalog" or "Catalog.n.ii" (spec)')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   // Explicit registration required: allowUnknownOption would otherwise
@@ -663,7 +652,7 @@ program
 // Instructions command
 program
   .command('instructions [artifact]')
-  .description('Output enriched instructions for artifacts, apply, or land')
+  .description('Output enriched instructions for artifacts, apply, or archive')
   .option('--change <id>', 'Change name')
   .option('--schema <name>', 'Schema override (auto-detected from config.yaml)')
   .option('--json', 'Output as JSON')
@@ -671,13 +660,13 @@ program
   .addOption(hiddenStorePathOption())
   .action(async (artifactId: string | undefined, options: InstructionsOptions) => {
     try {
-      const { applyInstructionsCommand, landInstructionsCommand, instructionsCommand } =
+      const { applyInstructionsCommand, archiveInstructionsCommand, instructionsCommand } =
         await import('../commands/workflow/instructions.js');
       // Workflow instruction surfaces are reserved command branches, not artifacts.
       if (artifactId === 'apply') {
         await applyInstructionsCommand(options);
-      } else if (artifactId === 'land' || artifactId === 'archive') {
-        await landInstructionsCommand(options);
+      } else if (artifactId === 'archive') {
+        await archiveInstructionsCommand(options);
       } else {
         await instructionsCommand(artifactId, options);
       }

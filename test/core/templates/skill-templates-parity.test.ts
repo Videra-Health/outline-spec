@@ -8,7 +8,6 @@ import {
   getApplyInstructions,
   getApplyChangeSkillTemplate,
   getArchiveChangeSkillTemplate,
-  getLandChangeSkillTemplate,
   getContinueChangeSkillTemplate,
   getExploreSkillTemplate,
   getFeedbackSkillTemplate,
@@ -17,7 +16,6 @@ import {
   getOnboardSkillTemplate,
   getOutlineSpecApplyCommandTemplate,
   getOutlineSpecArchiveCommandTemplate,
-  getOutlineSpecLandCommandTemplate,
   getOutlineSpecContinueCommandTemplate,
   getOutlineSpecExploreCommandTemplate,
   getOutlineSpecFfCommandTemplate,
@@ -71,43 +69,40 @@ function outlineTitles(): Record<string, string> {
 }
 
 const EXPECTED_FUNCTION_HASHES: Record<string, string> = {
-  getExploreSkillTemplate: '0d32a6e69b23202c4daebb5fbeb6ce104ec4ecacb1b46a0c1f3904cc456ac986',
-  getNewChangeSkillTemplate: '5201f308bf3259ffc5874dc7a89dcf266a2fe81fc05fb8b5c36d50442f825a7e',
-  getContinueChangeSkillTemplate: 'f1008c60afa23929cbd5b8c2a6f8754d0adbb10a07d017a54629bd8fc01e69df',
-  getApplyChangeSkillTemplate: '9e825c5e88261f0178a9483ec4fffbb6cbf90a9ba0eb7438c4801f5c629361ea',
-  getFfChangeSkillTemplate: 'e53c547407c51723df0d4cfd3991e598bb784a9ffcb5a1e274e68d4ddd18eacf',
-  getLandChangeSkillTemplate: '74d615dc2cc4e61faabe798daab628f837a16f6826eb94a8f39444ef10aa2944',
-  getOnboardSkillTemplate: '8c3ef7d5dcb714e7e7f8d49c22a611dee4ee0764e26f5f31eee664e82519f448',
-  getOutlineSpecExploreCommandTemplate: 'b50f19209d9bcc564dbb2a994cf2143f88007b3cd14a47ed514b42d9c3be8e57',
-  getOutlineSpecNewCommandTemplate: '417e9427fdfc8043efe42b3421e5a28e66ff14324414582963d064ffc948d9bd',
-  getOutlineSpecContinueCommandTemplate: '70a4f83d9992b66437cda8e8fc3c20dd8a661d42edd517035fd6e0e541731d9d',
-  getOutlineSpecApplyCommandTemplate: '3b52c558a7416d428de36b41b5a927c14acf08beb6a17f46b97deaa4ce6c942b',
-  getOutlineSpecFfCommandTemplate: 'cfe9ea8443f072d984076266e6044aa6101ec74a34eae6f1c4bb9a7dc1429de1',
-  getArchiveChangeSkillTemplate: '6d42d0338103502cb876bb6983eeb5b1a601caf7b992567bbf5cb4e504b04f71',
-  getOutlineSpecLandCommandTemplate: '20f5b722c4bc92da0e0fc42d2da801b5ea33f37a7eebb6b463fa3a5999b40183',
-  getVerifyChangeSkillTemplate: '86808aade05351cd01ce67da8457c53833e317cbcc957a32bdfae6e2edd1b77d',
-  getOutlineSpecArchiveCommandTemplate: 'a0a4a65acc2a7d76cfc2a040cf757f49b8f56235e51764bb7f574d2bceda4c10',
-  getOutlineSpecOnboardCommandTemplate: '567ae3a247bd6b86b307103f13b1b12b705cdc5eaa2fe4b3f8bbbcc17cd56db3',
-  getOutlineSpecVerifyCommandTemplate: '46f033ea37e6e5c3f559091d123debeed95002d17861f925c0e4fd36801e9c8b',
-  getOutlineSpecProposeSkillTemplate: '8bf0bfb294db67d00ce473329f910a687504fea7fcc2c0e2ac9ccba4ca73489e',
-  getOutlineSpecProposeCommandTemplate: '845f887b7b0f08fdc2bcb351ddd81c57bc3f2f1902ce547b3d63302f11d213c6',
+  getExploreSkillTemplate: 'f9696e2e2107829e30bf45a04044de729ab52008330b86f2d3b0e469fe163ddc',
+  getNewChangeSkillTemplate: '070802e152e69c8ff0129cb40856c7b5649c13a1dcad0d96f36dfd792577c4d1',
+  getContinueChangeSkillTemplate: '5df176f125c0c9c1e5bb8c6f18f0740b9984a427a98e50b4633b3323b6b97325',
+  getApplyChangeSkillTemplate: '9b0e1b801af0742725a24f5cbc57b8686899d1ec8e93197b8ddfaffea2a5df88',
+  getFfChangeSkillTemplate: '5c88191a0147be9b41b5b28a96173982ae4cb432e76fb1eb3a7130e409870783',
+  getOnboardSkillTemplate: '0514b7dbd29729aff42d22dd721dc957e93affe490afc43de6b68ed620056008',
+  getOutlineSpecExploreCommandTemplate: '0bbccd71d402f97d8e01dae1c8f48198d0d8793648f6caf9630d3e133fc57f2a',
+  getOutlineSpecNewCommandTemplate: 'c2c8406e0feb2ba0f74c80a85d55402480d1904a2a9ea114cb121cdb99534843',
+  getOutlineSpecContinueCommandTemplate: 'f5f090dc5af976a91d2c2c793cfbea9c46d0a434e1de5eda91efb401b9de84f2',
+  getOutlineSpecApplyCommandTemplate: '8c105ae8263699b75f512c12a70596b054c07e45f4a98cd9fea850a73c4562d1',
+  getOutlineSpecFfCommandTemplate: '09fcb8c053ea76b21f470bbd1f5e02000d5eaf77e7e4df9ff44372c5fc710bc3',
+  getArchiveChangeSkillTemplate: 'ea61fb25e5efdeb946ec64206fc982c2f979aff3d219712024b2d50fc6a607f8',
+  getVerifyChangeSkillTemplate: '073d2a777c5c82e711dc678884c75eeab3b23fed337392054f3567d155f3ebcc',
+  getOutlineSpecArchiveCommandTemplate: 'fe6b4b948e5a3f42a0468c3d4be67b2d017124ee65b3e685a05ad93885462653',
+  getOutlineSpecOnboardCommandTemplate: '4553d6f2570ca7824a5b823988cba9ad74ac2a70cfb5448b1aeb3c14fcb16160',
+  getOutlineSpecVerifyCommandTemplate: '37b1fbf93ebbb0ed2b7a6e645e00f4c2419eb4066aab1c105a8ef1de3c7acd9f',
+  getOutlineSpecProposeSkillTemplate: '624c600faea79ec3adebe1e5e85fabc4ed270c589d8725b536d1d4bca631c377',
+  getOutlineSpecProposeCommandTemplate: 'e586e18473cf97f36404d127e9c7e3df8bd52a151350a127504c867f66b4c23a',
   getFeedbackSkillTemplate: '84032cbc59ea51005dcf80a20978b4755ea636e6746bcbd1aa0cba06814c36db',
-  getUpdateChangeSkillTemplate: 'edb502eaf6275de66cde7ceae493797488e3f99214f08426beed616f5c6d2125',
-  getOutlineSpecUpdateCommandTemplate: '099ea990e90869a90ccd20c06ab2cf9e5c3364e5869de33b61e4e02b5c8f089a',
+  getUpdateChangeSkillTemplate: '886638e8827015eba62f4c7d5e3a8d221405ee0bb083ba3a6ecf099da8157675',
+  getOutlineSpecUpdateCommandTemplate: 'a483acbebc98190f61f19d056f6874b4c8285c3735b5ef849c7c6bf20402fad7',
 };
 
 const EXPECTED_GENERATED_SKILL_CONTENT_HASHES: Record<string, string> = {
-  'outline-spec-explore': '2d892a5782ebede2d0a7ac9d5e1651a1f4710ae2c343ddaa038afd55c3fb9556',
-  'outline-spec-new-change': 'e7f603fbff536ee0308aa2bc366e85cad5cdc501e8ac80e96ef9c1c059354d84',
-  'outline-spec-continue-change': 'da12c38dbbf5f60e7f5866ae9794306c35d53356d5261831436a49ba1adedcd4',
-  'outline-spec-apply-change': '8d2ed6ab29ccaf4436cacdec35a99fb51ee9dfd25e516f04588b197c0a513210',
-  'outline-spec-ff-change': '3f335833e3008620c27f3d2f8b27278dce0868fca30478a56fb841008f518ddf',
-  'outline-spec-land-change': '0393a9618e1c1a325dc3d3666f8dd2dbaf9d5539e6e9569a0f6eb0143bd671fc',
-  'outline-spec-archive-change': '4472b463b34be116ef2dacc485b9900ea2de391af37a90e427a481088031f5a6',
-  'outline-spec-verify-change': '0a9ee99f6e85b8fddb27925e28978b82ea952e170a0d67589ba6af68290c1bd7',
-  'outline-spec-onboard': '209784301bd6b960f693ac859134440333039672c999e5485ab61dea9dc83c17',
-  'outline-spec-propose': '5e07b13709772072a5af5a15ca9718b7301cbb64cd76751cf4211e597d272e88',
-  'outline-spec-update-change': 'e54ada95eb2fcb0931dca0ce5a4c01429eda34587417de0d750fca991e035219',
+  'outline-spec-explore': 'ff199bd58c2f5c07738ba0db9bbaf210801c5253e08c7bf5b703888d59b3c423',
+  'outline-spec-new-change': '8a837a8c602c6a7fd61cea41a062ee3fb39d8c3263bed3c2f642cbb3f4d0a373',
+  'outline-spec-continue-change': '22b031edafb2c84d603e533f1df0227b6e2943c9cbff53d369f28a221fb4cafd',
+  'outline-spec-apply-change': '15fd42c3c8394d124fdcb3b6a0a25c527d2d01632b414b4167b4fab14f69334f',
+  'outline-spec-ff-change': '5bc2908ec3c0dd1de3ececa39dce223f50ade095d1b9988cec2466eeaae4cfa5',
+  'outline-spec-archive-change': '8bdbe7012359cec61eb63eb938a1582ed2464aec4e30f952aedf4ee63794b15b',
+  'outline-spec-verify-change': '9869cd762cc67bf4e69569d18ecd4c41de5220bff942c7b1c32cf5739774cb79',
+  'outline-spec-onboard': '9717ab081d352ba8426d362e8c6d8384d638d434fa7012763a82495ab6ea2a54',
+  'outline-spec-propose': '70b579a61f934b33b1943eada44568729992f6494cf0e21f22fef3eb402cac6c',
+  'outline-spec-update-change': '63da7bcfd5bf761be56e483403c778c3e101dfe10f892728a11a40aaa16b05ad',
 };
 
 // Intentionally excludes getFeedbackSkillTemplate: this list only models templates
@@ -118,7 +113,6 @@ const GENERATED_SKILL_FACTORIES: Array<[string, () => SkillTemplate]> = [
   ['outline-spec-continue-change', getContinueChangeSkillTemplate],
   ['outline-spec-apply-change', getApplyChangeSkillTemplate],
   ['outline-spec-ff-change', getFfChangeSkillTemplate],
-  ['outline-spec-land-change', getLandChangeSkillTemplate],
   ['outline-spec-archive-change', getArchiveChangeSkillTemplate],
   ['outline-spec-verify-change', getVerifyChangeSkillTemplate],
   ['outline-spec-onboard', getOnboardSkillTemplate],
@@ -199,7 +193,6 @@ describe('skill templates split parity', () => {
       getContinueChangeSkillTemplate,
       getApplyChangeSkillTemplate,
       getFfChangeSkillTemplate,
-      getLandChangeSkillTemplate,
       getOnboardSkillTemplate,
       getOutlineSpecExploreCommandTemplate,
       getOutlineSpecNewCommandTemplate,
@@ -210,7 +203,6 @@ describe('skill templates split parity', () => {
       getVerifyChangeSkillTemplate,
       getOutlineSpecArchiveCommandTemplate,
       getOutlineSpecOnboardCommandTemplate,
-      getOutlineSpecLandCommandTemplate,
       getOutlineSpecVerifyCommandTemplate,
       getOutlineSpecProposeSkillTemplate,
       getOutlineSpecProposeCommandTemplate,
@@ -310,7 +302,7 @@ describe('skill templates split parity', () => {
           line =>
             line.endsWith(
               '[Specific task] — verify: [test, command, observable behavior, or delivered artifact]'
-            ) || / Verify .+ with \[.+\]$/.test(line) || line.includes('`outline-spec land <name>`')
+            ) || / Verify .+ with \[.+\]$/.test(line) || line.includes('`outline-spec archive <name>`')
         ),
         label
       ).toBe(true);
@@ -346,7 +338,6 @@ describe('skill templates split parity', () => {
   it('generates no workspace-planning residue in any workflow template (4.1)', () => {
     const allSkills: Array<[string, () => SkillTemplate]> = [
       ['outline-spec-apply-change', getApplyChangeSkillTemplate],
-      ['outline-spec-land-change', getLandChangeSkillTemplate],
       ['outline-spec-archive-change', getArchiveChangeSkillTemplate],
           ['outline-spec-verify-change', getVerifyChangeSkillTemplate],
     ];
@@ -358,7 +349,7 @@ describe('skill templates split parity', () => {
     }
   });
 
-  it('does not suggest landing when only planning is complete', () => {
+  it('does not suggest archiving when only planning is complete', () => {
     const variants: Array<[string, string]> = [
       [
         'skill',
@@ -370,10 +361,10 @@ describe('skill templates split parity', () => {
     for (const [variant, content] of variants) {
       expect(content, variant).toContain('Planning is complete!');
       expect(content, variant).toContain(
-        'Once implementation and any tracked work are complete, land it'
+        'Once implementation and any tracked work are complete, archive it'
       );
       expect(content, variant).not.toContain('All artifacts created!');
-      expect(content, variant).not.toContain('or land it');
+      expect(content, variant).not.toContain('or archive it');
     }
   });
 
@@ -425,32 +416,22 @@ describe('skill templates split parity', () => {
     }
   });
 
-  it('generates land and archive skills that both run outline-spec land', () => {
-    const byDir = new Map(getSkillTemplates().map(({ dirName, template }) => [dirName, template.instructions]));
-    const byId = new Map(getCommandContents().map((entry) => [entry.id, entry.body]));
-    for (const text of [byDir.get('outline-spec-land-change'), byDir.get('outline-spec-archive-change'), byId.get('land'), byId.get('archive')]) {
-      expect(text).toContain('outline-spec land "<name>" --yes');
-    }
-  });
-
-  it('validates, dry-runs, then lands, and fixes outline.md on a mismatch', () => {
+  it('validates, dry-runs, then archives, and fixes outline.md on a mismatch', () => {
     const variants: Array<[string, string]> = [
-      ['land skill', getLandChangeSkillTemplate().instructions],
-      ['land command', getOutlineSpecLandCommandTemplate().content],
       ['archive skill', getArchiveChangeSkillTemplate().instructions],
       ['archive command', getOutlineSpecArchiveCommandTemplate().content],
     ];
 
     for (const [variant, content] of variants) {
       const validate = content.indexOf('outline-spec validate "<name>"');
-      const dryRun = content.indexOf('outline-spec land "<name>" --dry-run');
-      const land = content.indexOf('outline-spec land "<name>" --yes');
+      const dryRun = content.indexOf('outline-spec archive "<name>" --dry-run');
+      const archive = content.indexOf('outline-spec archive "<name>" --yes');
       expect(validate, variant).toBeGreaterThanOrEqual(0);
       expect(dryRun, variant).toBeGreaterThan(validate);
-      expect(land, variant).toBeGreaterThan(dryRun);
-      // The advisory lookup must degrade instead of blocking a land.
-      expect(content, variant).toContain('outline-spec instructions land --change "<name>" --json');
-      expect(content, variant).toContain('it never blocks landing');
+      expect(archive, variant).toBeGreaterThan(dryRun);
+      // The advisory lookup must degrade instead of blocking an archive.
+      expect(content, variant).toContain('outline-spec instructions archive --change "<name>" --json');
+      expect(content, variant).toContain('it never blocks archiving');
       expect(content, variant).toContain('Update outline.md so it strikes the live text exactly');
       expect(content, variant).toContain('Never hand-edit the live specs');
       expect(content, variant).not.toMatch(/delta|scenario/i);
@@ -462,7 +443,7 @@ describe('skill templates split parity', () => {
   // call, so the bare command aborts (#1479). A golden hash proves the
   // generated file matches its source, never that the source is right, so
   // pin the flag itself.
-  it('passes --yes or --dry-run wherever it tells an agent to run outline-spec land (#1479)', () => {
+  it('passes --yes or --dry-run wherever it tells an agent to run outline-spec archive (#1479)', () => {
     // Sweep the whole corpus, not just the one template that has such an
     // invocation today: the point is to catch the next one.
     const corpus: Array<[string, string]> = [
@@ -490,7 +471,7 @@ describe('skill templates split parity', () => {
           .replace(/^\$[ \t]+/, '');
         const tokens = bare.split(/\s+/).filter(Boolean);
         if (tokens[0] !== 'outline-spec') return false;
-        const archiveAt = tokens.indexOf('land');
+        const archiveAt = tokens.indexOf('archive');
         if (archiveAt < 1) return false;
         // Anything between `outline-spec` and `archive` has to be a global flag or
         // one's value, or this is a different subcommand that merely mentions
@@ -567,11 +548,11 @@ describe('apply skill/command shared instruction core', () => {
     expect(getOutlineSpecApplyCommandTemplate().content).toBe(core);
   });
 
-  it('keeps task completion distinct from land readiness (#1790)', () => {
+  it('keeps task completion distinct from archive readiness (#1790)', () => {
     const core = getApplyInstructions();
     expect(core).toContain('All tracked tasks are complete');
-    expect(core).toMatch(/Review or verify the change as appropriate\s+before landing/);
-    expect(core).not.toContain('All tasks complete! You can land');
+    expect(core).toMatch(/Review or verify the change as appropriate\s+before archiving/);
+    expect(core).not.toContain('All tasks complete! You can archive');
   });
 });
 

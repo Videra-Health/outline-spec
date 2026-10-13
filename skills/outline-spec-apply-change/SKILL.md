@@ -11,9 +11,9 @@ metadata:
 
 Implement tasks from an outline-spec change.
 
-**Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `land` (and its old name `archive`), `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
+**Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
 
-**Project check:** These steps expect a project that already uses outline-spec. Before the first step that writes anything (`new change`, `land`, or authoring an artifact file), confirm the project has a root: run `outline-spec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `outline-spec/` directory here, and a write such as `outline-spec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
+**Project check:** These steps expect a project that already uses outline-spec. Before the first step that writes anything (`new change`, `archive`, or authoring an artifact file), confirm the project has a root: run `outline-spec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `outline-spec/` directory here, and a write such as `outline-spec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
 
 One `"root": null` is not about setup: when a `status` error message starts with `Declared in` or `Invalid store declaration in` and names this project's `outline-spec/config.yaml` (or `config.yml`), the project does use outline-spec through a store it declares, which this machine cannot resolve (the store is not registered, or the `store:` line is malformed). Do not treat it as uninitialized and skip the branches below: stop before writing and show the user that error's `message` and `fix`.
 
@@ -65,7 +65,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    - If `state: "blocked"`: show the message and pause implementation.
      - If `missingArtifacts` is non-empty: suggest using `/outline-spec-continue-change` to create them.
      - Otherwise, follow the CLI instruction to create or repair the schema-configured tracking file from existing planning artifacts. Do not assume another artifact is ready or start implementation while blocked.
-   - If `state: "all_done"`: report that all tracked tasks are complete and suggest review or verification as appropriate before landing
+   - If `state: "all_done"`: report that all tracked tasks are complete and suggest review or verification as appropriate before archiving
    - Otherwise: proceed to implementation
 
    Treat `context` as a required prompt-level input. Read and consider it, and
@@ -124,7 +124,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    Display:
    - Tasks completed this session
    - Overall progress: "N/M tasks complete"
-   - If all done: report that tracked tasks are complete and suggest review or verification as appropriate before landing
+   - If all done: report that tracked tasks are complete and suggest review or verification as appropriate before archiving
    - If paused: explain why and wait for guidance
 
 **Output During Implementation**
@@ -156,7 +156,7 @@ Working on task 4/7: <task description>
 ...
 
 All tracked tasks are complete. Review or verify the change as appropriate
-before landing. You can land this change with `/outline-spec-land-change`.
+before archiving. You can archive this change with `/outline-spec-archive-change`.
 ```
 
 **Output On Pause (Issue Encountered)**
@@ -190,7 +190,7 @@ What would you like to do?
 - When a task needs work beyond what outline.md describes, surface the added scope and pause - never silently narrow, defer, or simplify away specified behavior
 - Only mark a task `- [x]` when its specified behavior is fully implemented, not when it is partially done or deferred
 - Use contextFiles from CLI output, don't assume specific file names
-- Never edit live specs in `outline-spec/specs/`; spec changes go in outline.md and land with the change
+- Never edit live specs in `outline-spec/specs/`; spec changes go in outline.md and reach the live specs when the change is archived
 - Use each task's sourcePath and line to update its exact checkbox
 - Do not use context or operation guidance as proof that a task is complete
 - Apply relevant project context; report conflicts with controlling workflow inputs

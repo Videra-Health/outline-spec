@@ -300,13 +300,12 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      // Core profile: propose, explore, apply, update, land, archive
+      // Core profile: propose, explore, apply, update, archive
       const coreSkillNames = [
         'outline-spec-propose',
         'outline-spec-explore',
         'outline-spec-apply-change',
         'outline-spec-update-change',
-        'outline-spec-land-change',
         'outline-spec-archive-change',
       ];
 
@@ -334,41 +333,18 @@ describe('InitCommand', () => {
       }
     });
 
-    it('should install the land workflow required by archive in a custom profile', async () => {
-      saveGlobalConfig({
-        featureFlags: {},
-        profile: 'custom',
-        delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'archive'],
-      });
-
-      const initCommand = new InitCommand({ tools: 'claude' });
-      await initCommand.execute(testDir);
-
-      await expect(
-        fs.access(path.join(testDir, '.claude', 'skills', 'outline-spec-archive-change', 'SKILL.md'))
-      ).resolves.toBeUndefined();
-      await expect(
-        fs.access(path.join(testDir, '.claude', 'skills', 'outline-spec-land-change', 'SKILL.md'))
-      ).resolves.toBeUndefined();
-      await expect(
-        fs.access(path.join(testDir, '.claude', 'commands', 'outline-spec', 'land.md'))
-      ).resolves.toBeUndefined();
-    });
-
     it('should create core profile commands for Claude Code by default', async () => {
       const initCommand = new InitCommand({ tools: 'claude' });
 
       await initCommand.execute(testDir);
 
-      // Core profile: propose, explore, apply, update, land, archive
+      // Core profile: propose, explore, apply, update, archive
       const coreCommandNames = [
         'outline-spec/propose.md',
         'outline-spec/explore.md',
         'outline-spec/apply.md',
         'outline-spec/update.md',
-        'outline-spec/land.md',
-        'outline-spec/archive.md',
+                'outline-spec/archive.md',
       ];
 
       for (const cmdName of coreCommandNames) {
@@ -493,10 +469,9 @@ describe('InitCommand', () => {
           'outline-spec-explore',
           'outline-spec-apply-change',
           'outline-spec-update-change',
-          'outline-spec-land-change',
           'outline-spec-archive-change',
         ].map((name) => path.join(testDir, '.claude', 'skills', name, 'SKILL.md')),
-        ...['propose', 'explore', 'apply', 'update', 'land', 'archive'].map((name) =>
+        ...['propose', 'explore', 'apply', 'update', 'archive'].map((name) =>
           path.join(testDir, '.claude', 'commands', 'outline-spec', `${name}.md`)
         ),
       ];
@@ -569,21 +544,21 @@ describe('InitCommand', () => {
         expect(content).toContain('Keep the selected `--store <id>` on both commands');
       }
 
-      const landFiles = [
-        path.join(testDir, '.claude', 'skills', 'outline-spec-land-change', 'SKILL.md'),
-        path.join(testDir, '.claude', 'commands', 'outline-spec', 'land.md'),
+      const archiveFiles = [
+        path.join(testDir, '.claude', 'skills', 'outline-spec-archive-change', 'SKILL.md'),
+        path.join(testDir, '.claude', 'commands', 'outline-spec', 'archive.md'),
       ];
 
-      // Land validates and previews before it writes anything.
-      for (const file of landFiles) {
+      // Archive validates and previews before it writes anything.
+      for (const file of archiveFiles) {
         const content = await fs.readFile(file, 'utf-8');
         const validation = content.indexOf('outline-spec validate "<name>"');
-        const dryRun = content.indexOf('outline-spec land "<name>" --dry-run');
-        const land = content.indexOf('outline-spec land "<name>" --yes');
+        const dryRun = content.indexOf('outline-spec archive "<name>" --dry-run');
+        const archive = content.indexOf('outline-spec archive "<name>" --yes');
 
         expect(validation).toBeGreaterThanOrEqual(0);
         expect(dryRun).toBeGreaterThan(validation);
-        expect(land).toBeGreaterThan(dryRun);
+        expect(archive).toBeGreaterThan(dryRun);
       }
     });
 
@@ -616,13 +591,13 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      // Core profile skills land under .zcode/skills
+      // Core profile skills go under .zcode/skills
       const exploreSkill = path.join(testDir, '.zcode', 'skills', 'outline-spec-explore', 'SKILL.md');
       const proposeSkill = path.join(testDir, '.zcode', 'skills', 'outline-spec-propose', 'SKILL.md');
       expect(await fileExists(exploreSkill)).toBe(true);
       expect(await fileExists(proposeSkill)).toBe(true);
 
-      // Core profile commands land under .zcode/commands/outline-spec
+      // Core profile commands go under .zcode/commands/outline-spec
       const exploreCmd = path.join(testDir, '.zcode', 'commands', 'outline-spec', 'explore.md');
       const proposeCmd = path.join(testDir, '.zcode', 'commands', 'outline-spec', 'propose.md');
       expect(await fileExists(exploreCmd)).toBe(true);
@@ -656,7 +631,7 @@ describe('InitCommand', () => {
 
         if (delivery !== 'commands') {
           const skillContent = await fs.readFile(skillFile, 'utf-8');
-          expect(skillContent).toContain(delivery === 'skills' ? 'the outline-spec-land-change skill' : '/outline-spec-land');
+          expect(skillContent).toContain(delivery === 'skills' ? 'the outline-spec-archive-change skill' : '/outline-spec-archive');
           expect(skillContent).not.toContain('/outline-spec:');
           if (delivery === 'skills') {
             expect(skillContent).not.toMatch(/\/outline-spec-[a-z]+-change|\/outline-spec-(?:explore|onboard|propose)\b/);
@@ -666,7 +641,7 @@ describe('InitCommand', () => {
         if (delivery !== 'skills') {
           const commandContent = await fs.readFile(commandFile, 'utf-8');
           expect(commandContent).toMatch(/^---\ndescription: /);
-          expect(commandContent).toContain('/outline-spec-land');
+          expect(commandContent).toContain('/outline-spec-archive');
           expect(commandContent).not.toContain('/outline-spec:');
         }
 
@@ -943,7 +918,7 @@ describe('InitCommand', () => {
         path.join(skillsRoot, 'outline-spec-apply-change', 'SKILL.md'),
         'utf-8',
       );
-      expect(applyBody).toMatch(/the outline-spec-land-change skill/);
+      expect(applyBody).toMatch(/the outline-spec-archive-change skill/);
 
       const rovoLogCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
       expect(rovoLogCalls.some((entry) => entry.includes('Created: Rovo Dev CLI'))).toBe(true);
@@ -995,7 +970,7 @@ describe('InitCommand', () => {
         path.join(skillsRoot, 'outline-spec-apply-change', 'SKILL.md'),
         'utf-8',
       );
-      expect(applyBody).toMatch(/\/outline-spec-land-change/);
+      expect(applyBody).toMatch(/\/outline-spec-archive-change/);
 
       const dshLogCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
       expect(dshLogCalls.some((entry) => entry.includes('Created: DeepSeek Harness'))).toBe(true);
@@ -1076,7 +1051,6 @@ describe('InitCommand', () => {
         'outline-spec-apply-change',
         'outline-spec-archive-change',
         'outline-spec-explore',
-        'outline-spec-land-change',
         'outline-spec-propose',
         'outline-spec-update-change',
       ];
@@ -1087,7 +1061,7 @@ describe('InitCommand', () => {
         expect(content).not.toMatch(COMMAND_REF);
       }
       const applyContent = await fs.readFile(path.join(skillsDir, 'outline-spec-apply-change', 'SKILL.md'), 'utf-8');
-      expect(applyContent).toContain('/outline-spec-land-change');
+      expect(applyContent).toContain('/outline-spec-archive-change');
 
       const commandsDir = path.join(testDir, '.grok', 'commands');
       expect(await directoryExists(commandsDir)).toBe(false);
@@ -1702,7 +1676,7 @@ describe('InitCommand', () => {
           const commandFiles = await fs.readdir(commandsDir);
           expect(commandFiles.sort()).toEqual([
             'outline-spec-apply.md', 'outline-spec-archive.md', 'outline-spec-explore.md',
-            'outline-spec-land.md', 'outline-spec-propose.md', 'outline-spec-update.md',
+            'outline-spec-propose.md', 'outline-spec-update.md',
           ]);
           for (const filename of commandFiles) {
             const content = await fs.readFile(path.join(commandsDir, filename), 'utf-8');
@@ -1727,7 +1701,7 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       const commandsDir = path.join(testDir, `.${toolId}`, 'commands', 'outline-spec');
-      const commandIds = ['apply', 'archive', 'explore', 'land', 'propose', 'update'];
+      const commandIds = ['apply', 'archive', 'explore', 'propose', 'update'];
       expect((await fs.readdir(commandsDir)).sort()).toEqual(commandIds.map((id) => `${id}.toml`));
       for (const commandId of commandIds) {
         const content = parseToml(await fs.readFile(path.join(commandsDir, `${commandId}.toml`), 'utf-8'));
@@ -2022,8 +1996,8 @@ describe('InitCommand - profile and detection features', () => {
     );
     expect(await fileExists(skillFile)).toBe(true);
     const skillContent = await fs.readFile(skillFile, 'utf-8');
-    expect(skillContent).toContain('/outline-spec-land-change');
-    expect(skillContent).not.toContain('$outline-spec-land-change');
+    expect(skillContent).toContain('/outline-spec-archive-change');
+    expect(skillContent).not.toContain('$outline-spec-archive-change');
     expect(await fs.readFile(
       path.join(testDir, '.agents', 'skills', '.outline-spec-target'),
       'utf-8'
@@ -2574,7 +2548,7 @@ describe('InitCommand - profile and detection features', () => {
     const cursorCommand = await read('.cursor', 'commands', 'outline-spec-apply.md');
     // A body cross-reference, not the frontmatter name, which already
     // carried the hyphen form before this behaviour existed.
-    expect(cursorCommand).toContain('/outline-spec-land');
+    expect(cursorCommand).toContain('/outline-spec-archive');
     expect(cursorCommand).not.toContain('/outline-spec:');
 
     const cursorSkill = await read('.cursor', 'skills', 'outline-spec-apply-change', 'SKILL.md');
@@ -2582,7 +2556,7 @@ describe('InitCommand - profile and detection features', () => {
 
     // Claude's namespaced commands are unchanged
     const claudeCommand = await read('.claude', 'commands', 'outline-spec', 'apply.md');
-    expect(claudeCommand).toContain('/outline-spec:land');
+    expect(claudeCommand).toContain('/outline-spec:archive');
     expect(claudeCommand).not.toMatch(HYPHEN_COMMAND_REF);
 
     const claudeSkill = await read('.claude', 'skills', 'outline-spec-apply-change', 'SKILL.md');

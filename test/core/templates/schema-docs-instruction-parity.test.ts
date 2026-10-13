@@ -42,7 +42,7 @@ describe('outline schema docs', () => {
 
   it('keeps the tasks guidance on docs/schema.md', () => {
     const doc = fs.readFileSync(DOC_PATH, 'utf-8').replace(/\r\n?/g, '\n');
-    expect(doc).toContain('Each group lands the tests and docs its own work calls for');
+    expect(doc).toContain('Each group includes the tests and docs its own work calls for');
     expect(doc).toContain('Each task states how to verify it');
   });
 });

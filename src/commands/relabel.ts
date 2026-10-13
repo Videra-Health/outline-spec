@@ -15,7 +15,7 @@ export async function relabelCommand(name: string, options: RelabelOptions): Pro
   const problem = specNameProblem(name);
   if (problem) throw new Error(problem);
   const busy = changesEditing(root.changesDir, name);
-  if (busy.length) throw new Error(`${name} has pending edits in ${busy.join(', ')}; land them first`);
+  if (busy.length) throw new Error(`${name} has pending edits in ${busy.join(', ')}; archive them first`);
   const spec = readLiveSpec(root.specsDir, name);
   if (!spec) throw new Error(`No spec '${name}'`);
   const after = writeSpec({ ...spec, items: relabel(spec.items) });

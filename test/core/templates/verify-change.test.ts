@@ -74,22 +74,22 @@ describe('verify-change templates', () => {
   it('does not mistake apply readiness for verification or execute apply instructions', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('Treat apply `state` and `instruction` as context, not a verification verdict');
-      expect(body, label).toContain('Do not implement tasks or land the change during verification');
+      expect(body, label).toContain('Do not implement tasks or archive the change during verification');
     }
   });
 
-  it('preserves optional artifacts and the existing land workflow', () => {
+  it('preserves optional artifacts and the existing archive workflow', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('Verification is advisory');
       expect(body, label).toContain('an outline with no spec edits');
       expect(body, label).toContain('schemas without task tracking');
       expect(body, label).toContain('Do not require or invent optional or intentionally omitted artifacts');
       expect(body, label).toContain('Mark checks the schema does not define, or artifacts the status reports as intentionally skipped, as **Not applicable**');
-      expect(body, label).toContain('Exclude them from skipped-check counts and the land-readiness assessment');
+      expect(body, label).toContain('Exclude them from skipped-check counts and the archive-readiness assessment');
       expect(body, label).toContain('If `taskTrackingConfigured` is false, report **Task Completion** as not applicable');
       expect(body, label).toContain('If `taskTrackingConfigured` is true and `tasks` is empty, mark **Task Completion** as not verified');
-      expect(body, label).toContain('`Not verified` describes a limit of this report, not a new land prerequisite');
-      expect(body, label).toContain('Land retains its own checks and user-confirmation behavior');
+      expect(body, label).toContain('`Not verified` describes a limit of this report, not a new archive prerequisite');
+      expect(body, label).toContain('Archive retains its own checks and user-confirmation behavior');
     }
   });
 
@@ -119,7 +119,7 @@ describe('verify-change templates', () => {
     }
   });
 
-  it('never reports a skipped check as passing or ready to land', () => {
+  it('never reports a skipped check as passing or ready to archive', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('`Not verified (<reason>)` for every skipped check');
       expect(body, label).toContain('Never score a skipped check as passing');
@@ -133,14 +133,14 @@ describe('verify-change templates', () => {
     }
   });
 
-  it('checks code against outline.md marks and the landed specs', () => {
+  it('checks code against outline.md marks and the resulting specs', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('`~~old~~ **new**`');
       expect(body, label).toContain('outline-spec show "<spec>" --type spec');
       expect(body, label).toContain('outline-spec validate "<name>"');
-      expect(body, label).toContain('outline-spec land "<name>" --dry-run');
+      expect(body, label).toContain('outline-spec archive "<name>" --dry-run');
       expect(body, label).toContain('Never report a removed item as "Requirement not found"');
-      for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven', 'skip_specs', '/outline-spec:archive']) {
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven', 'skip_specs']) {
         expect(body, label).not.toContain(stale);
       }
     }

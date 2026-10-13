@@ -215,7 +215,7 @@ describe('migration', () => {
   });
 
   it('prints the @ propose reference when migrating an amazon-q-only project', async () => {
-    // Amazon Q's generated files land in its prompt library, invoked as
+    // Amazon Q's generated files go in its prompt library, invoked as
     // @outline-spec-propose. It registers no slash command, so the upgrade message
     // must advertise neither the colon nor the plain hyphen form.
     await writeManagedCommand(projectDir, 'apply', 'amazon-q');

@@ -37,7 +37,7 @@ const DEFAULT_ATTACH_FLAG = '--add-dir';
  * ('workspace-file') tools while the CLI-agent ('attach-dirs') open flow
  * is reworked. The agents (Claude Code, codex) launch in a single primary
  * cwd rather than a true combined multi-root view, which makes "where does
- * my change land?" ambiguous. Default off; set
+ * my edit go?" ambiguous. Default off; set
  * OUTLINE_SPEC_ENABLE_CLI_AGENT_OPENERS=1 to restore them (internal rollback seam).
  */
 export function isCliAgentOpenersEnabled(): boolean {

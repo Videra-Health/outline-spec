@@ -110,11 +110,11 @@ describe('declared store fallback (3.2)', () => {
     });
     expect(show.exitCode).toBe(0);
 
-    const land = await runCLI(['land', 'billing-rework', '--yes', '--json'], {
+    const archived = await runCLI(['archive', 'billing-rework', '--yes', '--json'], {
       cwd: pointerRepo,
       env,
     });
-    expect(land.exitCode).toBe(0);
+    expect(archived.exitCode).toBe(0);
     expect(fs.existsSync(changeDir)).toBe(false);
     expect(fs.existsSync(path.join(storeRoot, 'outline-spec', 'specs', 'billing', 'spec.md'))).toBe(true);
 

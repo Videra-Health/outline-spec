@@ -86,12 +86,12 @@ describe('validateChange', () => {
     expect((await validate()).issues).toEqual([{ level: 'ERROR', path: 'outline.md', message: 'Change has no outline.md' }]);
   });
 
-  it('accepts an outline that lands cleanly', async () => {
+  it('accepts an outline that archives cleanly', async () => {
     write('changes/c1/outline.md', '## Requirements\n1. radar:\n  a. Radar (patch):\n    a. A ~~circle~~ **disc**.\n');
     expect(await validate()).toMatchObject({ valid: true, issues: [] });
   });
 
-  it('reports every landing problem as its own error', async () => {
+  it('reports every archive problem as its own error', async () => {
     write('changes/c1/outline.md', '## Requirements\n1. radar:\n  a. Radar (patch):\n    a. A ~~square~~ **disc**.\n  b. Radar: Again.\n');
     expect((await validate()).issues.map((i) => i.message)).toEqual([
       "radar › Radar › a: struck text doesn't match the live item",

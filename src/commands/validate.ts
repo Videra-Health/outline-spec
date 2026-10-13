@@ -353,14 +353,14 @@ export class ValidateCommand {
 
   private printNextSteps(type: ItemType, id: string, root: ResolvedOutlineSpecRoot, issues: Array<{ message: string }> = []): void {
     const bullets: string[] = [];
-    // A namespace folder has nothing to land, so outline advice would point at the wrong directory (#1846).
+    // A namespace folder has nothing to archive, so outline advice would point at the wrong directory (#1846).
     const nestedIssue = issues.some(i => i.message.includes(NESTED_CHANGE_ISSUE_MARKER));
     if (type === 'change' && nestedIssue) {
       bullets.push('- Move each nested change directly under outline-spec/changes/, folding the namespace into its name');
       bullets.push('- Only specs may be nested by domain; change directories are always flat');
     } else if (type === 'change') {
       bullets.push('- Edit outline.md so its "## Requirements" items match the live specs (struck text, labels, "(patch)")');
-      bullets.push(`- Preview the result: ${withStoreFlag(root, `outline-spec land ${id} --dry-run`)}`);
+      bullets.push(`- Preview the result: ${withStoreFlag(root, `outline-spec archive ${id} --dry-run`)}`);
     } else {
       bullets.push('- A spec is "# <name>", a purpose line, then numbered requirements with a./i./1. details');
       bullets.push('- Convert old-format specs with: outline-spec migrate-specs');

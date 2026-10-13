@@ -102,7 +102,7 @@ describe('spec inventory vocabulary (#1689)', () => {
 
   // Reading the inventory back by raw path defeats the fix under a store: the
   // ids `list --specs --store <id>` returns are not present under the local
-  // `outline-spec/specs/`, so the read either fails or silently lands on a
+  // `outline-spec/specs/`, so the read either fails or silently reads a
   // same-named local capability - the wrong-object failure #1689 is about.
   // `outline-spec show` resolves against the same root the listing came from.
   it('reads a listed capability with the store-aware command', () => {

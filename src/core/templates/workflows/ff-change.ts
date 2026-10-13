@@ -104,7 +104,7 @@ ${PROJECT_ROOT_GUARD}
       - Dependencies are enablers, not gates: if a required artifact is still \`blocked\` only because you skipped a conditional dependency, write it anyway
       - Stop when every artifact in the required set is \`done\` or was deliberately skipped
 
-   c. **Check the outline lands**: after writing outline.md, run \`outline-spec validate "<name>"\`. It checks that the outline lands cleanly against the live specs; fix outline.md until it passes.
+   c. **Check the outline archives cleanly**: after writing outline.md, run \`outline-spec validate "<name>"\`. It checks that the outline archives cleanly against the live specs; fix outline.md until it passes.
 
    d. **If an artifact requires user input** (critically unclear context):
       - Ask the user to clarify
@@ -138,7 +138,7 @@ After completing all artifacts, summarize:
 - Create every artifact the apply phase transitively depends on, not just the ids listed in \`apply.requires\`
 - Always read dependency artifacts before creating a new one - re-read from disk, not from conversation memory (files may have changed since you last saw them)
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
-- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and land with \`outline-spec land\`
+- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec archive\`
 - If a change with that name already exists, suggest continuing that change instead
 - Verify each artifact file exists after writing before proceeding to next`,
     license: 'MIT',
@@ -224,7 +224,7 @@ ${PROJECT_ROOT_GUARD}
       - Dependencies are enablers, not gates: if a required artifact is still \`blocked\` only because you skipped a conditional dependency, write it anyway
       - Stop when every artifact in the required set is \`done\` or was deliberately skipped
 
-   c. **Check the outline lands**: after writing outline.md, run \`outline-spec validate "<name>"\`. It checks that the outline lands cleanly against the live specs; fix outline.md until it passes.
+   c. **Check the outline archives cleanly**: after writing outline.md, run \`outline-spec validate "<name>"\`. It checks that the outline archives cleanly against the live specs; fix outline.md until it passes.
 
    d. **If an artifact requires user input** (critically unclear context):
       - Ask the user to clarify
@@ -258,7 +258,7 @@ After completing all artifacts, summarize:
 - Create every artifact the apply phase transitively depends on, not just the ids listed in \`apply.requires\`
 - Always read dependency artifacts before creating a new one - re-read from disk, not from conversation memory (files may have changed since you last saw them)
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
-- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and land with \`outline-spec land\`
+- Never edit the live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs with \`outline-spec archive\`
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next`
   };

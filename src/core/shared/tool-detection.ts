@@ -45,7 +45,6 @@ export const COMMAND_IDS = [
   'apply',
   'update',
   'ff',
-  'land',
   'archive',
   'verify',
   'onboard',

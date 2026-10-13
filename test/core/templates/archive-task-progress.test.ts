@@ -15,7 +15,7 @@ import { runCLI } from '../../helpers/run-cli.js';
 // entry points resolve them against an installed set. Building from the raw
 // template leaves `[[outline-spec:if-workflow ...]]` in the text, which skill
 // generation rejects.
-const WORKFLOWS = ['land', 'archive'];
+const WORKFLOWS = ['archive'];
 const skill = (workflowId: string): string =>
   generateSkillContent(
     getSkillTemplates(WORKFLOWS).find((entry) => entry.workflowId === workflowId)!.template,
@@ -25,13 +25,11 @@ const command = (id: string): string =>
   getCommandTemplates(WORKFLOWS).find((entry) => entry.id === id)!.template.content;
 
 const surfaces = [
-  ['land skill', skill('land')],
-  ['land command', command('land')],
   ['archive skill', skill('archive')],
   ['archive command', command('archive')],
 ] as const;
 
-describe('land task discovery uses schema-resolved CLI progress', () => {
+describe('archive task discovery uses schema-resolved CLI progress', () => {
   let root: string;
   let callerRoot: string;
   let env: NodeJS.ProcessEnv;
@@ -44,7 +42,7 @@ describe('land task discovery uses schema-resolved CLI progress', () => {
   }
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-land-task-guidance-'));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-archive-task-guidance-'));
     env = {
       XDG_DATA_HOME: path.join(root, 'data'),
       XDG_CONFIG_HOME: path.join(root, 'config'),

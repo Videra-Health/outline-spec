@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import * as os from 'node:os';
 import { generateApplyInstructions } from '../../src/commands/workflow/instructions.js';
 
-// Apply never blocks on the outline, but it says when outline.md would not land, as validate does.
+// Apply never blocks on the outline, but it says when outline.md would not archive cleanly, as validate does.
 describe('generateApplyInstructions warnings', () => {
   let tempDir: string;
   let changeDir: string;
@@ -22,14 +22,14 @@ describe('generateApplyInstructions warnings', () => {
 
   afterEach(() => fs.rmSync(tempDir, { recursive: true, force: true }));
 
-  it('warns when outline.md would not land', async () => {
+  it('warns when outline.md would not archive cleanly', async () => {
     outline('1. demo:\n  a. Missing (patch):\n');
     const instructions = await generateApplyInstructions(tempDir, 'my-change');
     expect(instructions.state).toBe('ready');
     expect(instructions.warnings).toEqual([expect.stringContaining('demo › Missing: no such requirement to patch')]);
   });
 
-  it('stays quiet when outline.md lands cleanly', async () => {
+  it('stays quiet when outline.md archives cleanly', async () => {
     outline('1. demo:\n  a. Demo (patch): It ~~demos~~ **shows**.\n');
     expect((await generateApplyInstructions(tempDir, 'my-change')).warnings).toBeUndefined();
   });

@@ -134,7 +134,7 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
       COMMON_FLAGS.noInteractive,
       {
         name: 'diff',
-        description: 'Show the spec text the change would land (change-specific)',
+        description: 'Show the spec text archiving the change would produce (change-specific)',
       },
       {
         name: 'item',
@@ -145,31 +145,8 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
     ],
   },
   {
-    name: 'land',
-    description: "Apply a change's outline to the specs and remove the change",
-    acceptsPositional: true,
-    positionalType: 'change-id',
-    positionals: [{ name: 'change-name', type: 'change-id', optional: true }],
-    flags: [
-      {
-        name: 'yes',
-        short: 'y',
-        description: 'Skip confirmation prompts',
-      },
-      {
-        name: 'dry-run',
-        description: 'Print the resulting spec text and write nothing',
-      },
-      {
-        name: 'json',
-        description: 'Output as JSON (non-interactive)',
-      },
-      COMMON_FLAGS.store,
-    ],
-  },
-  {
     name: 'archive',
-    description: 'Renamed to "land"; kept as an alias',
+    description: "Apply a change's outline to the specs and remove the change",
     acceptsPositional: true,
     positionalType: 'change-id',
     positionals: [{ name: 'change-name', type: 'change-id', optional: true }],
@@ -257,7 +234,7 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
   },
   {
     name: 'instructions',
-    description: 'Output enriched instructions for artifacts, apply, or land',
+    description: 'Output enriched instructions for artifacts, apply, or archive',
     acceptsPositional: true,
     positionals: [{ name: 'artifact', optional: true }],
     flags: [
@@ -545,7 +522,7 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
           COMMON_FLAGS.json,
           {
             name: 'diff',
-            description: 'Show the spec text the change would land',
+            description: 'Show the spec text archiving the change would produce',
           },
           COMMON_FLAGS.noInteractive,
         ],

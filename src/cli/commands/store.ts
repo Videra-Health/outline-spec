@@ -101,7 +101,7 @@ export function registerStoreCommand(program: Command): void {
     .join(', ');
   // One group action owns missing AND unknown subcommands. Known
   // subcommands dispatch above; everything else — including a bare
-  // `store --json` with no operand — lands here, so the handler owns the
+  // `store --json` with no operand — ends up here, so the handler owns the
   // entire message and exit path (same text for human and --json). The
   // permissive flags route unknown operands/options here instead of
   // letting Commander emit a raw error before the action runs. We detect

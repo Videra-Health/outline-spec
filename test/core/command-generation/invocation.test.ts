@@ -20,7 +20,7 @@ import { ALL_WORKFLOWS } from '../../../src/core/profiles.js';
  * `/outline-spec-<id>`.
  *
  * This list is a tripwire, not the source of truth: production classifies a
- * tool from its own `getFilePath`. A new adapter that lands on the wrong side
+ * tool from its own `getFilePath`. A new adapter that ends up on the wrong side
  * of the split fails here, which is the point.
  */
 const NAMESPACED_TOOLS = ['claude', 'codebuddy', 'crush', 'easycode', 'gemini', 'lingma', 'qoder', 'zcode'];

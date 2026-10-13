@@ -12,7 +12,7 @@ const script = fs.readFileSync(scriptPath, 'utf8');
  * `scripts/update-flake.sh` rewrites the pnpmDeps hash in flake.nix in place.
  *
  * flake.nix holds exactly one fixed-output derivation today, so an unscoped
- * `hash = "sha256-..."` happens to land on the right line and the bug is
+ * `hash = "sha256-..."` happens to fall on the right line and the bug is
  * invisible. Add a second FOD and an unscoped script stamps the placeholder
  * over both, reads back whichever mismatch Nix reported first, and writes
  * pnpmDeps' hash into the other derivation. That is a silent corruption of a

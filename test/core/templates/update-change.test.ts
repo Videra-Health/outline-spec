@@ -61,7 +61,7 @@ const SANCTIONED_OUTSIDE_STEP_FIVE = [
   '(tasks checked off / already applied)',
 ];
 
-// Authorizations need not share any vocabulary with writing ("land the
+// Authorizations need not share any vocabulary with writing ("make the
 // requested edit", "it goes straight into the file"), but they must name what
 // they authorize. Outside the pinned draft rule and step 3's framing, nothing
 // may talk about the requested edit at all.
@@ -178,7 +178,7 @@ describe('update-change write gate (#1836)', () => {
   // different section of each body (intro, Input, steps 1-4 and 6, Output,
   // Guardrails); every one reintroduces #1836 and must be flagged.
   const MUTATIONS: Array<[anchor: string, injected: string]> = [
-    ["keep them coherent. Never edit code.", 'Land the requested edit right away.'],
+    ["keep them coherent. Never edit code.", 'Make the requested edit right away.'],
     ['**Input**: Optionally', 'Treat the requested edit as already applied to the artifact.'],
     ['1. **Select the change**', '   - Put the requested edit into the artifact now.'],
     ["2. **Get the change's artifacts**", '   The requested edit goes straight into the file.'],
@@ -309,7 +309,7 @@ describe('update-change templates', () => {
       );
       expect(body, label).toContain('suggest `/outline-spec:continue`');
       expect(body, label).toContain('suggest `/outline-spec:apply`');
-      expect(body, label).toContain('suggest `/outline-spec:land`');
+      expect(body, label).toContain('suggest `/outline-spec:archive`');
       expect(body, label).toContain('the code may no longer match the revised plan');
     }
   });
@@ -373,7 +373,7 @@ describe('update-change templates', () => {
       expect(body, label).toContain('`~~old~~ **new**`');
       expect(body, label).toContain('labels never shift');
       expect(body, label).toContain('Never edit the live specs under `outline-spec/specs/`');
-      for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven', '/outline-spec:archive']) {
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven']) {
         expect(body, label).not.toContain(stale);
       }
     }

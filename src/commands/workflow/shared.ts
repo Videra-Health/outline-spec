@@ -71,11 +71,11 @@ export interface ApplyInstructions {
   operationGuidance?: string[];
 }
 
-export interface LandInstructions {
+export interface ArchiveInstructions {
   changeName: string;
   /** Current project background from the selected root. */
   context?: string;
-  /** Current advisory guidance for land. */
+  /** Current advisory guidance for archive. */
   operationGuidance?: string[];
 }
 
@@ -203,7 +203,7 @@ export async function validateChangeExists(
   hints: { newChangeHint?: string } = {}
 ): Promise<string> {
   // Hints must stay pasteable: callers with a selected store pass a
-  // store-carrying hint so following it lands in the same root.
+  // store-carrying hint so following it stays in the same root.
   const newChangeHint = hints.newChangeHint ?? 'outline-spec new change <name>';
 
   if (!changeName) {

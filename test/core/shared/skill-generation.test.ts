@@ -8,9 +8,9 @@ import {
 
 describe('skill-generation', () => {
   describe('getSkillTemplates', () => {
-    it('should return all 12 skill templates', () => {
+    it('should return all 10 skill templates', () => {
       const templates = getSkillTemplates();
-      expect(templates).toHaveLength(11);
+      expect(templates).toHaveLength(10);
     });
 
     it('should have unique directory names', () => {
@@ -30,7 +30,7 @@ describe('skill-generation', () => {
       expect(dirNames).toContain('outline-spec-apply-change');
       expect(dirNames).toContain('outline-spec-update-change');
       expect(dirNames).toContain('outline-spec-ff-change');
-      expect(dirNames).toContain('outline-spec-land-change');
+      expect(dirNames).toContain('outline-spec-archive-change');
       expect(dirNames).toContain('outline-spec-archive-change');
       expect(dirNames).toContain('outline-spec-verify-change');
       expect(dirNames).toContain('outline-spec-onboard');
@@ -88,9 +88,9 @@ describe('skill-generation', () => {
   });
 
   describe('getCommandTemplates', () => {
-    it('should return all 12 command templates', () => {
+    it('should return all 10 command templates', () => {
       const templates = getCommandTemplates();
-      expect(templates).toHaveLength(11);
+      expect(templates).toHaveLength(10);
     });
 
     it('should have unique IDs', () => {
@@ -110,7 +110,6 @@ describe('skill-generation', () => {
       expect(ids).toContain('apply');
       expect(ids).toContain('update');
       expect(ids).toContain('ff');
-      expect(ids).toContain('land');
       expect(ids).toContain('archive');
       expect(ids).toContain('verify');
       expect(ids).toContain('onboard');
@@ -142,9 +141,9 @@ describe('skill-generation', () => {
   });
 
   describe('getCommandContents', () => {
-    it('should return all 12 command contents', () => {
+    it('should return all 10 command contents', () => {
       const contents = getCommandContents();
-      expect(contents).toHaveLength(11);
+      expect(contents).toHaveLength(10);
     });
 
     it('should have valid content structure', () => {

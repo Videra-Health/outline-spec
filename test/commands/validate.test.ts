@@ -61,10 +61,10 @@ describe('top-level validate command', () => {
     const result = await runCLI(['validate', 'plain-empty', '--type', 'change'], { cwd: testDir });
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toContain('Change has no outline.md');
-    expect(result.stderr).toContain('outline-spec land plain-empty --dry-run');
+    expect(result.stderr).toContain('outline-spec archive plain-empty --dry-run');
   });
 
-  it('reports every place an outline does not land on the live specs', async () => {
+  it('reports every place an outline does not archive cleanly against the live specs', async () => {
     const chDir = path.join(changesDir, 'conflicting');
     await fs.mkdir(chDir, { recursive: true });
     await fs.writeFile(

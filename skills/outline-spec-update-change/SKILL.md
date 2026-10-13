@@ -11,9 +11,9 @@ metadata:
 
 Revise a change's existing planning artifacts and keep them coherent. Never edit code.
 
-**Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `land` (and its old name `archive`), `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
+**Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
 
-**Project check:** These steps expect a project that already uses outline-spec. Before the first step that writes anything (`new change`, `land`, or authoring an artifact file), confirm the project has a root: run `outline-spec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `outline-spec/` directory here, and a write such as `outline-spec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
+**Project check:** These steps expect a project that already uses outline-spec. Before the first step that writes anything (`new change`, `archive`, or authoring an artifact file), confirm the project has a root: run `outline-spec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `outline-spec/` directory here, and a write such as `outline-spec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
 
 One `"root": null` is not about setup: when a `status` error message starts with `Declared in` or `Invalid store declaration in` and names this project's `outline-spec/config.yaml` (or `config.yml`), the project does use outline-spec through a store it declares, which this machine cannot resolve (the store is not registered, or the `store:` line is malformed). Do not treat it as uninitialized and skip the branches below: stop before writing and show the user that error's `message` and `fix`.
 
@@ -75,7 +75,7 @@ This workflow revises artifacts that already exist; `/outline-spec-continue-chan
      3. Include the new file in step 5's proposed revisions and create it only after the user confirms.
      4. After confirmation, immediately before creation, refresh status and instructions. Verify the artifact is still in scope, not skipped, and partially populated; repeat the concrete-path checks above.
      5. Use a create operation that fails if the target already exists. If `instruction` delegates creation to another skill or command, invoke it only if it can honor the confirmed path and these guardrails; otherwise stop. If any check fails or the confirmed draft is no longer valid, stop and reconcile with the user rather than replacing existing content or choosing a different path.
-   - An artifact that holds the change's spec edits (an outline under `## Requirements`) follows the outline rules in any revision: new items unmarked and labeled after the last label at their level; changes to existing items marked `~~old~~ **new**`; removed items wholly struck with their live text; labels never shift. Check struck text against the live spec (`outline-spec show "<spec>" --type spec`) and that the outline still lands with `outline-spec validate "<name>"`.
+   - An artifact that holds the change's spec edits (an outline under `## Requirements`) follows the outline rules in any revision: new items unmarked and labeled after the last label at their level; changes to existing items marked `~~old~~ **new**`; removed items wholly struck with their live text; labels never shift. Check struck text against the live spec (`outline-spec show "<spec>" --type spec`) and that the outline still archives cleanly with `outline-spec validate "<name>"`.
    - If the change is already coherent, say so and propose no revisions.
 
 5. **Confirm and apply, one artifact at a time**
@@ -90,7 +90,7 @@ This workflow revises artifacts that already exist; `/outline-spec-continue-chan
 6. **Point to the next step (guidance only - NEVER act on it)**
    - Artifacts with empty `existingOutputPaths` and status `ready` or `blocked` -> suggest `/outline-spec-continue-change` to create them.
    - Change already implemented (tasks checked off / already applied) -> the code may no longer match the revised plan; suggest `/outline-spec-apply-change` to carry the revision into code.
-   - Everything done and implemented -> suggest `/outline-spec-land-change`.
+   - Everything done and implemented -> suggest `/outline-spec-archive-change`.
 
 **Output**
 
@@ -105,6 +105,6 @@ After each invocation, show:
 - Use the artifact ids and paths reported by `outline-spec status`; never branch on hardcoded artifact names.
 - Edit only the concrete files in `existingOutputPaths`; never write to a glob `resolvedOutputPath`.
 - Do not advance the build frontier: if an artifact has empty `existingOutputPaths` and status `ready` or `blocked`, that is `/outline-spec-continue-change`'s job. Leave `skipped` artifacts untouched. The only new-file scope is a confirmed concrete path under a glob artifact whose `existingOutputPaths` is non-empty.
-- Never edit the live specs under `outline-spec/specs/`; the outline reaches them only when the change lands.
+- Never edit the live specs under `outline-spec/specs/`; the outline reaches them only when the change is archived.
 - Confirm every edit with the user before writing.
 - If the request changes the change's *intent* rather than refining it, recommend starting fresh with `/outline-spec-new-change` (the "Update vs. Start Fresh" heuristic).

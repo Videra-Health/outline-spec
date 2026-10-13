@@ -28,7 +28,7 @@ describe('getOnboardingCommands', () => {
   });
 
   it('returns nothing when no onboarding workflow is installed', () => {
-    expect(getOnboardingCommands(['archive', 'land'])).toEqual([]);
+    expect(getOnboardingCommands(['archive'])).toEqual([]);
     expect(getOnboardingCommands([])).toEqual([]);
   });
 

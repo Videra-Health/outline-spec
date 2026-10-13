@@ -107,9 +107,4 @@ describe('generated files never name an uninstalled workflow', () => {
 
     expect([...named].sort()).toEqual([...ALL_WORKFLOWS].sort());
   });
-
-  // The archive skill only points at the land flow, so selecting it pulls land in.
-  it('injects land for a custom profile that selects archive', () => {
-    expect(getProfileWorkflows('custom', ['archive'])).toContain('land');
-  });
 });

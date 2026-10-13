@@ -46,7 +46,7 @@ export class ZshInstaller {
 
   /**
    * Oh My Zsh exports its root as $ZSH; honor a custom location, or the
-   * completion lands in a ~/.oh-my-zsh tree that nothing ever loads.
+   * completion ends up in a ~/.oh-my-zsh tree that nothing ever loads.
    */
   private ohMyZshRoot(): string {
     return process.env.ZSH || path.join(this.homeDir, '.oh-my-zsh');

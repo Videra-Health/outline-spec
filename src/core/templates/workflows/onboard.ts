@@ -30,7 +30,7 @@ const COMMAND_REFERENCE_ROWS = [
   onlyWithWorkflow('propose', ' | `/outline-spec:propose` | Create a change and generate all artifacts |'),
   onlyWithWorkflow('explore', ' | `/outline-spec:explore` | Think through problems before/during work  |'),
   onlyWithWorkflow('apply', ' | `/outline-spec:apply`   | Implement tasks from a change              |'),
-  onlyWithWorkflow('land', ' | `/outline-spec:land`    | Apply a finished change to the specs       |'),
+  onlyWithWorkflow('archive', ' | `/outline-spec:archive` | Apply a finished change to the specs       |'),
   onlyWithWorkflow('new', ' | `/outline-spec:new`     | Start a new change, one artifact at a time |'),
   onlyWithWorkflow('continue', ' | `/outline-spec:continue` | Continue working on an existing change    |'),
   onlyWithWorkflow('ff', ' | `/outline-spec:ff`      | Fast-forward: create all artifacts at once |'),
@@ -41,7 +41,7 @@ const QUICK_REFERENCE_ROWS = [
   onlyWithWorkflow('propose', ' | `/outline-spec:propose <name>`  | Create a change and generate all artifacts |'),
   onlyWithWorkflow('explore', ' | `/outline-spec:explore`         | Think through problems (no code changes)   |'),
   onlyWithWorkflow('apply', ' | `/outline-spec:apply <name>`    | Implement tasks                            |'),
-  onlyWithWorkflow('land', ' | `/outline-spec:land <name>`     | Land when done                             |'),
+  onlyWithWorkflow('archive', ' | `/outline-spec:archive <name>`  | Archive when done                          |'),
   onlyWithWorkflow('new', ' | `/outline-spec:new <name>`      | Start a new change, step by step           |'),
   onlyWithWorkflow('continue', ' | `/outline-spec:continue <name>` | Continue an existing change                |'),
   onlyWithWorkflow('ff', ' | `/outline-spec:ff <name>`       | Fast-forward: all artifacts at once        |'),
@@ -123,7 +123,7 @@ I'll walk you through a complete change cycle—from idea to implementation—us
 3. Create a change (the container for our work)
 4. Build the artifacts: outline → design (if needed) → tasks
 5. Implement the tasks
-6. Land the change into the specs
+6. Archive the change into the specs
 
 **Time:** ~15-20 minutes
 
@@ -285,7 +285,7 @@ A change never edits those files directly. Its outline.md states the proposal in
 - A removed item is wholly struck, with its live text.
 - Labels never shift: a removed item leaves a gap.
 
-When the work is done, \`outline-spec land\` applies these edits to the live specs.
+When the work is done, \`outline-spec archive\` applies these edits to the live specs.
 \`\`\`
 
 **DO:** Read the specs this task touches (\`outline-spec list --specs\`, then \`outline-spec show "<spec>" --type spec\`), and get the artifact instructions:
@@ -320,7 +320,7 @@ Every line here is an edit the change makes to a live spec. Does this capture th
 
 **PAUSE** - Wait for user approval/feedback.
 
-After approval, write it to the \`resolvedOutputPath\` from the instructions JSON, then check it lands cleanly:
+After approval, write it to the \`resolvedOutputPath\` from the instructions JSON, then check it archives cleanly:
 \`\`\`bash
 outline-spec validate "<name>"
 \`\`\`
@@ -374,7 +374,7 @@ Here are the implementation tasks:
 ## 2. Integration Verification
 
 - [ ] 2.1 Verify [broader integration or system behavior] with [end-to-end test or observable result]
-- [ ] 2.2 Land the change with \`outline-spec land <name>\`
+- [ ] 2.2 Archive the change with \`outline-spec archive <name>\`
 
 ---
 
@@ -421,32 +421,32 @@ All tasks done:
 - [x] Task 2
 - [x] ...
 
-The change is implemented! One more step—let's land it.
+The change is implemented! One more step—let's archive it.
 \`\`\`
 
 ---
 
-## Phase 10: Land
+## Phase 10: Archive
 
 **EXPLAIN:**
 \`\`\`
-## Landing
+## Archiving
 
-Landing applies the change's outline.md to the live specs and deletes the change folder; git history keeps the record. (\`archive\` is the old name for this step.)
+Archiving applies the change's outline.md to the live specs and deletes the change folder; git history keeps the record.
 \`\`\`
 
-**DO:** Validate, preview, then land (\`--yes\` answers the confirmation prompt, which you cannot answer from a tool call):
+**DO:** Validate, preview, then archive (\`--yes\` answers the confirmation prompt, which you cannot answer from a tool call):
 \`\`\`bash
 outline-spec validate "<name>"
-outline-spec land "<name>" --dry-run
-outline-spec land "<name>" --yes
+outline-spec archive "<name>" --dry-run
+outline-spec archive "<name>" --yes
 \`\`\`
 
-Show the dry-run result before landing. If validate or land reports a mismatch, fix outline.md so its struck text and labels match the live spec—never hand-edit \`outline-spec/specs/\`.
+Show the dry-run result before archiving. If validate or archive reports a mismatch, fix outline.md so its struck text and labels match the live spec—never hand-edit \`outline-spec/specs/\`.
 
 **SHOW:**
 \`\`\`
-Landed. The specs now describe the new behavior, the change folder is gone, and the code is in your codebase. Commit to keep the record.
+Archived. The specs now describe the new behavior, the change folder is gone, and the code is in your codebase. Commit to keep the record.
 \`\`\`
 
 ---
@@ -464,7 +464,7 @@ You just completed a full outline-spec cycle:
 4. **Design** - Decided HOW (when needed)
 5. **Tasks** - Broke it into steps
 6. **Apply** - Implemented the work
-7. **Land** - Applied the outline to the specs
+7. **Archive** - Applied the outline to the specs
 
 This same rhythm works for any size change—a small fix or a major feature.
 
@@ -526,7 +526,7 @@ Exit gracefully.
 
 ## Guardrails
 
-- **Follow the EXPLAIN → DO → SHOW → PAUSE pattern** at key transitions (after explore, after outline draft, after tasks, after landing)
+- **Follow the EXPLAIN → DO → SHOW → PAUSE pattern** at key transitions (after explore, after outline draft, after tasks, after archiving)
 - **Keep narration light** during implementation—teach without lecturing
 - **Don't skip phases** even if the change is small—the goal is teaching the workflow
 - **Pause for acknowledgment** at marked points, but don't over-pause

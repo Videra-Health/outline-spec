@@ -79,13 +79,13 @@ describe('propose preamble', () => {
     }
   });
 
-  it('describes the outline model and landing', () => {
+  it('describes the outline model and archiving', () => {
     for (const [label, body] of proposeBodies) {
       const preamble = artifactPreamble(body);
       expect(preamble, label).toContain('outline.md');
       expect(preamble, label).toContain('~~old~~ **new**');
       expect(preamble, label).toContain('Labels never shift');
-      expect(preamble, label).toContain('outline-spec land <change>');
+      expect(preamble, label).toContain('Archiving the change applies the outline');
     }
   });
 
@@ -111,7 +111,7 @@ describe('default outline guidance', () => {
     const instruction = outline().instruction!;
     expect(instruction).toContain('(patch)');
     expect(instruction).toContain('Never relabel');
-    expect(instruction).toContain('outline-spec land <change>');
+    expect(instruction).toContain('outline-spec archive <change>');
     expect(instruction).toContain('outline-spec list --specs');
   });
 
@@ -140,18 +140,18 @@ describe('default task guidance', () => {
 
   // #1952: a trailing testing group lets failures cascade back through every group.
   it('keeps tests and documentation inside the group that does the work (#1952)', () => {
-    expect(tasks().instruction).toMatch(/Each group lands the tests and docs its own work calls for/);
+    expect(tasks().instruction).toMatch(/Each group includes the tests and docs its own work calls for/);
   });
 
-  it('ends with landing the change', () => {
-    expect(tasks().instruction).toContain('outline-spec land <change>');
+  it('ends with archiving the change', () => {
+    expect(tasks().instruction).toContain('outline-spec archive <change>');
     const template = fs.readFileSync(
       path.join(repoRoot, 'schemas', 'outline', 'templates', 'tasks.md'),
       'utf-8'
     );
     const tracked = parseTaskLines(template);
     expect(tracked.length).toBeGreaterThan(0);
-    expect(template.trim().split('\n').pop()).toContain('outline-spec land');
+    expect(template.trim().split('\n').pop()).toContain('outline-spec archive');
   });
 });
 

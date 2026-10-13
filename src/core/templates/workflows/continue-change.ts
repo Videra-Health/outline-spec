@@ -10,7 +10,7 @@ import { STORE_SELECTION_GUIDANCE } from './store-selection.js';
 import { PROJECT_ROOT_GUARD } from './project-root.js';
 
 /**
- * The planning-complete handoff. Neither `apply` nor `land` is guaranteed
+ * The planning-complete handoff. Neither `apply` nor `archive` is guaranteed
  * to be installed, so each half is resolved at generation time (see
  * optional-workflow.ts).
  */
@@ -19,9 +19,9 @@ const PLANNING_COMPLETE_HANDOFF = optionalWorkflow(
   'You can now implement this change with `/outline-spec:apply`.',
   'You can now implement this change - `outline-spec instructions apply --change "<name>" --json` returns the tasks and how to work them.'
 ) + ' ' + optionalWorkflow(
-  'land',
-  'Once implementation and any tracked work are complete, land it with `/outline-spec:land`.',
-  'Once implementation and any tracked work are complete, land it with `outline-spec land "<name>"`.'
+  'archive',
+  'Once implementation and any tracked work are complete, archive it with `/outline-spec:archive`.',
+  'Once implementation and any tracked work are complete, archive it with `outline-spec archive "<name>"`.'
 );
 
 /**
@@ -85,7 +85,7 @@ ${PROJECT_ROOT_GUARD}
    **If all planning artifacts are complete (\`isPlanningComplete: true\`, or legacy \`isComplete: true\`)**:
    - Congratulate the user
    - Show final status including the schema used
-   - Suggest: "Planning is complete! You can now implement this change. Once implementation and any tracked work are complete, land it."
+   - Suggest: "Planning is complete! You can now implement this change. Once implementation and any tracked work are complete, archive it."
    - STOP
 
    ---
@@ -109,7 +109,7 @@ ${PROJECT_ROOT_GUARD}
      - Otherwise use \`template\` as the structure - fill in its sections
      - Apply \`context\` and \`rules\` as constraints when writing - but do NOT copy them into the file
      - Write to the \`resolvedOutputPath\` specified in instructions. If it is a glob pattern, choose the concrete file path using the schema instruction and the change's context
-     - After writing outline.md, run \`outline-spec validate "<name>"\` and fix the outline until it lands cleanly against the live specs
+     - After writing outline.md, run \`outline-spec validate "<name>"\` and fix the outline until it archives cleanly against the live specs
    - Show what was created and what's now unlocked
    - STOP after creating ONE artifact
 
@@ -233,7 +233,7 @@ ${PROJECT_ROOT_GUARD}
      - Otherwise use \`template\` as the structure - fill in its sections
      - Apply \`context\` and \`rules\` as constraints when writing - but do NOT copy them into the file
      - Write to the \`resolvedOutputPath\` specified in instructions. If it is a glob pattern, choose the concrete file path using the schema instruction and the change's context
-     - After writing outline.md, run \`outline-spec validate "<name>"\` and fix the outline until it lands cleanly against the live specs
+     - After writing outline.md, run \`outline-spec validate "<name>"\` and fix the outline until it archives cleanly against the live specs
    - Show what was created and what's now unlocked
    - STOP after creating ONE artifact
 

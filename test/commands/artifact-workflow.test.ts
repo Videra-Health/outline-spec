@@ -1078,7 +1078,7 @@ operations:
       expect(result.exitCode).toBe(0);
       expect(result.stdout).toContain('complete ✓');
       expect(result.stdout).toContain('All tracked tasks are complete');
-      expect(result.stdout).toContain('as appropriate before landing');
+      expect(result.stdout).toContain('as appropriate before archiving');
       expect(result.stdout).not.toContain('ready to be archived');
       expect(result.stdout).toContain('### Project Context (required instruction input)');
       expect(result.stdout).toContain('### Operation Guidance (advisory)');
@@ -1217,7 +1217,7 @@ artifacts:
     });
   });
 
-  describe('instructions land command (archive alias)', () => {
+  describe('instructions archive command (archive alias)', () => {
     it('returns current archive context, guidance, and the root envelope in JSON', async () => {
       await fs.writeFile(
         path.join(tempDir, 'outline-spec', 'config.yaml'),
@@ -1258,7 +1258,7 @@ operations:
       expect(result.stdout).not.toContain('Perform the archive');
     });
 
-    it('renders required context and advisory land guidance as separate text sections', async () => {
+    it('renders required context and advisory archive guidance as separate text sections', async () => {
       await fs.writeFile(
         path.join(tempDir, 'outline-spec', 'config.yaml'),
         `schema: outline
@@ -1272,12 +1272,12 @@ operations:
       await createTestChange('archive-text-inputs');
 
       const result = await runCLI(
-        ['instructions', 'land', '--change', 'archive-text-inputs'],
+        ['instructions', 'archive', '--change', 'archive-text-inputs'],
         { cwd: tempDir }
       );
 
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('## Land Inputs: archive-text-inputs');
+      expect(result.stdout).toContain('## Archive Inputs: archive-text-inputs');
       expect(result.stdout).toContain('### Project Context (required instruction input)');
       expect(result.stdout).toContain('Archive background');
       expect(result.stdout).toContain('### Operation Guidance (advisory)');

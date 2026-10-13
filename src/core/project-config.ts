@@ -6,8 +6,7 @@ import { z } from 'zod';
 import { getStoreMetadataPath } from './store/foundation.js';
 import { removedSchemaHint } from './artifact-graph/resolver.js';
 
-// `archive` is the old name for `land`, still read so existing configs keep their guidance.
-export const OPERATION_IDS = ['apply', 'land', 'archive'] as const;
+export const OPERATION_IDS = ['apply', 'archive'] as const;
 export type OperationId = (typeof OPERATION_IDS)[number];
 
 export interface OperationConfig {
@@ -60,7 +59,6 @@ export const ProjectConfigSchema = z.object({
   operations: z
     .object({
       apply: OperationConfigSchema.optional(),
-      land: OperationConfigSchema.optional(),
       archive: OperationConfigSchema.optional(),
     })
     .optional()
@@ -115,8 +113,7 @@ export function loadOperationInputs(
       ? projectConfig.context
       : undefined;
   const operations = projectConfig?.operations;
-  const guidance =
-    operations?.[operationId]?.guidance ?? (operationId === 'land' ? operations?.archive?.guidance : undefined);
+  const guidance = operations?.[operationId]?.guidance;
   const operationGuidance = guidance && guidance.length > 0 ? guidance : undefined;
 
   return {
@@ -584,7 +581,7 @@ export interface StorePointerRead {
  * resolution (which must not re-emit the resilient parser's field
  * warnings) and by `outline-spec init`'s pointer guard. Unlike
  * `readProjectConfig`, a malformed value is REPORTED, not dropped —
- * a dropped pointer would silently flip where work lands.
+ * a dropped pointer would silently flip where work is written.
  */
 export function readStorePointer(projectRoot: string): StorePointerRead {
   const configPath = resolveConfigFilePath(projectRoot);

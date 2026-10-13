@@ -20,11 +20,11 @@ const BLOCKED_STATE_HANDOFF = optionalWorkflow(
   'suggest completing the missing artifacts. Run `outline-spec status --change "<name>" --json`, select the next `ready` artifact (not `skipped` or `blocked`), and use `outline-spec instructions "<artifact-id>" --change "<name>" --json` for its rules and template. Keep the selected `--store <id>` on both commands.'
 );
 
-/** The land handoff shown once every task is done. */
-const LAND_HANDOFF = optionalWorkflow(
-  'land',
-  'You can land this change with `/outline-spec:land`.',
-  'You can land this change by running `outline-spec land "<name>"`.'
+/** The archive handoff shown once every task is done. */
+const ARCHIVE_HANDOFF = optionalWorkflow(
+  'archive',
+  'You can archive this change with `/outline-spec:archive`.',
+  'You can archive this change by running `outline-spec archive "<name>"`.'
 );
 
 /**
@@ -84,7 +84,7 @@ ${PROJECT_ROOT_GUARD}
    - If \`state: "blocked"\`: show the message and pause implementation.
      - If \`missingArtifacts\` is non-empty: ${BLOCKED_STATE_HANDOFF}
      - Otherwise, follow the CLI instruction to create or repair the schema-configured tracking file from existing planning artifacts. Do not assume another artifact is ready or start implementation while blocked.
-   - If \`state: "all_done"\`: report that all tracked tasks are complete and suggest review or verification as appropriate before landing
+   - If \`state: "all_done"\`: report that all tracked tasks are complete and suggest review or verification as appropriate before archiving
    - Otherwise: proceed to implementation
 
    Treat \`context\` as a required prompt-level input. Read and consider it, and
@@ -143,7 +143,7 @@ ${PROJECT_ROOT_GUARD}
    Display:
    - Tasks completed this session
    - Overall progress: "N/M tasks complete"
-   - If all done: report that tracked tasks are complete and suggest review or verification as appropriate before landing
+   - If all done: report that tracked tasks are complete and suggest review or verification as appropriate before archiving
    - If paused: explain why and wait for guidance
 
 **Output During Implementation**
@@ -175,7 +175,7 @@ Working on task 4/7: <task description>
 ...
 
 All tracked tasks are complete. Review or verify the change as appropriate
-before landing. ${LAND_HANDOFF}
+before archiving. ${ARCHIVE_HANDOFF}
 \`\`\`
 
 **Output On Pause (Issue Encountered)**
@@ -209,7 +209,7 @@ What would you like to do?
 - When a task needs work beyond what outline.md describes, surface the added scope and pause - never silently narrow, defer, or simplify away specified behavior
 - Only mark a task \`- [x]\` when its specified behavior is fully implemented, not when it is partially done or deferred
 - Use contextFiles from CLI output, don't assume specific file names
-- Never edit live specs in \`outline-spec/specs/\`; spec changes go in outline.md and land with the change
+- Never edit live specs in \`outline-spec/specs/\`; spec changes go in outline.md and reach the live specs when the change is archived
 - Use each task's sourcePath and line to update its exact checkbox
 - Do not use context or operation guidance as proof that a task is complete
 - Apply relevant project context; report conflicts with controlling workflow inputs

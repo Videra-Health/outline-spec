@@ -83,7 +83,7 @@ describe('store git probe resource-failure classification', () => {
 
   it('classifies a timed-out or overflowing probe as a resource failure', () => {
     // `child_process` reports a timeout kill either as ETIMEDOUT or, once the
-    // kill lands, as killed + the signal it sent.
+    // kill takes effect, as killed + the signal it sent.
     expect(isProbeResourceFailure(Object.assign(new Error('spawn'), { code: 'ETIMEDOUT' }))).toBe(
       true
     );

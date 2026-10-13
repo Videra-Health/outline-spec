@@ -43,7 +43,7 @@ const CONTINUE_FRONTIER = optionalWorkflow(
 );
 
 /**
- * `apply` and `land` are in the `core` profile but not guaranteed in a
+ * `apply` and `archive` are in the `core` profile but not guaranteed in a
  * custom one, so their handoffs are resolved the same way.
  */
 const APPLY_REVISION_HANDOFF = optionalWorkflow(
@@ -58,10 +58,10 @@ const APPLY_GUARDRAIL = optionalWorkflow(
   'stop and say that the revised plan now implies code changes; implementing them is a separate step'
 );
 
-const LAND_HANDOFF = optionalWorkflow(
-  'land',
-  'suggest `/outline-spec:land`',
-  'suggest landing with `outline-spec land "<name>"`'
+const ARCHIVE_HANDOFF = optionalWorkflow(
+  'archive',
+  'suggest `/outline-spec:archive`',
+  'suggest archiving with `outline-spec archive "<name>"`'
 );
 
 const INTENT_CHANGE_GUARDRAIL = optionalWorkflow(
@@ -129,7 +129,7 @@ ${CONTINUE_SCOPE_NOTE}
      3. Include the new file in step 5's proposed revisions and create it only after the user confirms.
      4. After confirmation, immediately before creation, refresh status and instructions. Verify the artifact is still in scope, not skipped, and partially populated; repeat the concrete-path checks above.
      5. Use a create operation that fails if the target already exists. If \`instruction\` delegates creation to another skill or command, invoke it only if it can honor the confirmed path and these guardrails; otherwise stop. If any check fails or the confirmed draft is no longer valid, stop and reconcile with the user rather than replacing existing content or choosing a different path.
-   - An artifact that holds the change's spec edits (an outline under \`## Requirements\`) follows the outline rules in any revision: new items unmarked and labeled after the last label at their level; changes to existing items marked \`~~old~~ **new**\`; removed items wholly struck with their live text; labels never shift. Check struck text against the live spec (\`outline-spec show "<spec>" --type spec\`) and that the outline still lands with \`outline-spec validate "<name>"\`.
+   - An artifact that holds the change's spec edits (an outline under \`## Requirements\`) follows the outline rules in any revision: new items unmarked and labeled after the last label at their level; changes to existing items marked \`~~old~~ **new**\`; removed items wholly struck with their live text; labels never shift. Check struck text against the live spec (\`outline-spec show "<spec>" --type spec\`) and that the outline still archives cleanly with \`outline-spec validate "<name>"\`.
    - If the change is already coherent, say so and propose no revisions.
 
 5. **Confirm and apply, one artifact at a time**
@@ -144,7 +144,7 @@ ${CONTINUE_SCOPE_NOTE}
 6. **Point to the next step (guidance only - NEVER act on it)**
    - Artifacts with empty \`existingOutputPaths\` and status \`ready\` or \`blocked\` -> ${CONTINUE_NEXT_STEP}.
    - Change already implemented (tasks checked off / already applied) -> the code may no longer match the revised plan; ${APPLY_REVISION_HANDOFF}.
-   - Everything done and implemented -> ${LAND_HANDOFF}.
+   - Everything done and implemented -> ${ARCHIVE_HANDOFF}.
 
 **Output**
 
@@ -159,7 +159,7 @@ After each invocation, show:
 - Use the artifact ids and paths reported by \`outline-spec status\`; never branch on hardcoded artifact names.
 - Edit only the concrete files in \`existingOutputPaths\`; never write to a glob \`resolvedOutputPath\`.
 - Do not advance the build frontier: if an artifact has empty \`existingOutputPaths\` and status \`ready\` or \`blocked\`, ${CONTINUE_FRONTIER}. Leave \`skipped\` artifacts untouched. The only new-file scope is a confirmed concrete path under a glob artifact whose \`existingOutputPaths\` is non-empty.
-- Never edit the live specs under \`outline-spec/specs/\`; the outline reaches them only when the change lands.
+- Never edit the live specs under \`outline-spec/specs/\`; the outline reaches them only when the change is archived.
 - Confirm every edit with the user before writing.
 - If the request changes the change's *intent* rather than refining it, ${INTENT_CHANGE_GUARDRAIL}.`;
 }

@@ -99,7 +99,7 @@ export function prefersReducedMotion(
   try {
     if (platform === 'darwin') {
       // The key only exists once the user has toggled Reduce Motion; when it
-      // is unset `defaults` exits non-zero and lands in the catch below.
+      // is unset `defaults` exits non-zero and falls into the catch below.
       const out = execFileSync(
         'defaults',
         ['read', 'com.apple.universalaccess', 'reduceMotion'],

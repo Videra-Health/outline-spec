@@ -43,7 +43,7 @@ export class ChangeCommand {
     return path.join(this.rootPath ?? process.cwd(), 'outline-spec', 'specs');
   }
 
-  /** Prints a change's outline.md; --diff adds the spec text each touched spec would have once landed. */
+  /** Prints a change's outline.md; --diff adds the spec text each touched spec would have once archived. */
   async show(
     changeName?: string,
     options?: { json?: boolean; diff?: boolean; noInteractive?: boolean; rootOutput?: RootOutput }
@@ -89,22 +89,22 @@ export class ChangeCommand {
     }
 
     let edits: ReturnType<typeof readChangeEdits> = [];
-    let landed: Array<{ name: string; action: string; text?: string }> | undefined;
-    let landError: string | undefined;
+    let archived: Array<{ name: string; action: string; text?: string }> | undefined;
+    let archiveError: string | undefined;
     try {
       edits = readChangeEdits(changesPath, changeName);
     } catch (error) {
-      landError = (error as Error).message;
+      archiveError = (error as Error).message;
     }
-    if (options?.diff && !landError) {
+    if (options?.diff && !archiveError) {
       try {
         const plan = planEdits(this.getSpecsPath(), edits);
-        landed = describePlan(this.getSpecsPath(), plan).map((s) => {
+        archived = describePlan(this.getSpecsPath(), plan).map((s) => {
           const spec = plan.get(s.name);
           return { ...s, ...(spec ? { text: writeSpec(spec) } : {}) };
         });
       } catch (error) {
-        landError = (error as Error).message;
+        archiveError = (error as Error).message;
         process.exitCode = 1;
       }
     }
@@ -114,8 +114,8 @@ export class ChangeCommand {
         id: changeName,
         outline,
         touches: edits.flatMap(touches),
-        ...(landed ? { landed } : {}),
-        ...(landError ? { landError: landError.split('\n') } : {}),
+        ...(archived ? { archived } : {}),
+        ...(archiveError ? { archiveError: archiveError.split('\n') } : {}),
         ...(options.rootOutput ? { root: options.rootOutput } : {}),
       };
       console.log(JSON.stringify(output, null, 2));
@@ -124,15 +124,15 @@ export class ChangeCommand {
 
     console.log(outline);
     if (!options?.diff) return;
-    if (landError) {
-      console.error(`Cannot land "${changeName}":\n${landError}`);
+    if (archiveError) {
+      console.error(`Cannot archive "${changeName}":\n${archiveError}`);
       return;
     }
-    if (!landed || landed.length === 0) {
+    if (!archived || archived.length === 0) {
       console.log(`"${changeName}" edits no specs.`);
       return;
     }
-    for (const s of landed) {
+    for (const s of archived) {
       console.log(s.text !== undefined ? `\n--- outline-spec/specs/${s.name}/spec.md (${s.action})\n${s.text.trimEnd()}` : `\n--- outline-spec/specs/${s.name}/spec.md (deleted)`);
     }
   }
@@ -232,7 +232,7 @@ export class ChangeCommand {
       if (!report.valid) {
         console.error('Next steps:');
         console.error('  - Edit outline.md so its "## Requirements" items match the live specs');
-        console.error(`  - Preview the result: outline-spec land ${changeName} --dry-run`);
+        console.error(`  - Preview the result: outline-spec archive ${changeName} --dry-run`);
       }
     }
     if (!report.valid) process.exitCode = 1;

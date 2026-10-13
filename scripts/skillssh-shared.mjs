@@ -22,7 +22,7 @@ export function stripVolatileFrontmatter(content) {
  * Remove existing skill subdirectories (clears any renamed/removed skills)
  * while preserving top-level files like README.md. Refuses to run if the tree
  * contains a symlink: deleting one would only unlink it, and a symlinked skill
- * directory would otherwise let later writes land outside the repo.
+ * directory would otherwise let later writes escape the repo.
  */
 export function cleanSkillSubdirectories(outDir) {
   mkdirSync(outDir, { recursive: true });

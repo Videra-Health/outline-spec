@@ -22,7 +22,7 @@ const COMMAND_IMPLEMENTATIONS: Record<string, string[]> = {
   update: ['core/update.js'],
   list: ['core/list.js'],
   view: ['core/view.js'],
-  land: ['core/land.js'],
+  archive: ['core/archive.js'],
   pending: ['commands/pending.js'],
   relabel: ['commands/relabel.js'],
   'migrate-specs': ['commands/migrate-specs.js'],

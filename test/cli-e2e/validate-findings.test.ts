@@ -12,7 +12,7 @@ describe('validation report CLI contract', () => {
     projectDir = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-findings-e2e-'));
     await fs.mkdir(path.join(projectDir, 'outline-spec', 'specs'), { recursive: true });
     await fs.writeFile(path.join(projectDir, 'outline-spec', 'config.yaml'), 'schema: outline\n');
-    // "unfinished" patches a requirement no spec has, so it fails to land.
+    // "unfinished" patches a requirement no spec has, so it fails to archive.
     for (const [id, requirement] of [['done', 'Work: It works.'], ['unfinished', 'Missing (patch):']]) {
       const dir = path.join(projectDir, 'outline-spec', 'changes', id);
       await fs.mkdir(dir, { recursive: true });

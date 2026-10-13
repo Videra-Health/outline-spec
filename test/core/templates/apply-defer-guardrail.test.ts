@@ -28,10 +28,10 @@ describe('apply instructions surface deferred scope (#1529)', () => {
     );
   });
 
-  it('describes the outline model and lands rather than archives', () => {
+  it('describes the outline model, not deltas or sync', () => {
     expect(instructions).toContain('outline.md');
     expect(instructions).toContain('Never edit live specs');
-    for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven', '/outline-spec:archive']) {
+    for (const stale of ['delta', 'Scenario', 'SHALL', '/outline-spec:sync', 'spec-driven']) {
       expect(instructions).not.toContain(stale);
     }
   });

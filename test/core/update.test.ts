@@ -1025,12 +1025,11 @@ metadata:
 
       await updateCommand.execute(testDir);
 
-      // Verify core profile skill files were created/updated (propose, explore, apply, update, land, archive)
+      // Verify core profile skill files were created/updated (propose, explore, apply, update, archive)
       const coreSkillNames = [
         'outline-spec-explore',
         'outline-spec-apply-change',
         'outline-spec-update-change',
-        'outline-spec-land-change',
         'outline-spec-archive-change',
         'outline-spec-propose',
       ];
@@ -1103,7 +1102,7 @@ metadata:
       await new UpdateCommand({ force: true }).execute(testDir);
 
       const command = await fs.readFile(commandFile, 'utf-8');
-      expect(command).toContain('/outline-spec-land');
+      expect(command).toContain('/outline-spec-archive');
       expect(command).not.toContain('/outline-spec:');
 
       const skill = await fs.readFile(skillFile, 'utf-8');
@@ -1123,14 +1122,14 @@ metadata:
         path.join(testDir, '.claude', 'commands', 'outline-spec', 'apply.md'),
         'utf-8'
       );
-      expect(claudeCommand).toContain('/outline-spec:land');
-      expect(claudeCommand).not.toContain('/outline-spec-land');
+      expect(claudeCommand).toContain('/outline-spec:archive');
+      expect(claudeCommand).not.toContain('/outline-spec-archive');
 
       const qwenCommand = await fs.readFile(
         path.join(testDir, '.qwen', 'commands', 'outline-spec-apply.md'),
         'utf-8'
       );
-      expect(qwenCommand).toContain('/outline-spec-land');
+      expect(qwenCommand).toContain('/outline-spec-archive');
       expect(qwenCommand).not.toContain('/outline-spec:');
 
       const qwenSkill = await fs.readFile(
@@ -1180,7 +1179,7 @@ metadata:
         expect(refreshed).not.toMatch(HYPHEN_COMMAND_REF);
       }
       // The prompt body cross-references other prompts; those move too.
-      expect(await fs.readFile(promptFile, 'utf-8')).toContain('@outline-spec-land');
+      expect(await fs.readFile(promptFile, 'utf-8')).toContain('@outline-spec-archive');
     });
 
     it('should update outline-spec commands for configured Claude tool', async () => {
@@ -1256,8 +1255,8 @@ metadata:
 
       await updateCommand.execute(testDir);
 
-      // Verify core profile commands were created (propose, explore, apply, update, land, archive)
-      const coreCommandIds = ['explore', 'apply', 'update', 'land', 'archive', 'propose'];
+      // Verify core profile commands were created (propose, explore, apply, update, archive)
+      const coreCommandIds = ['explore', 'apply', 'update', 'archive', 'propose'];
       const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
       for (const cmdId of coreCommandIds) {
         const cmdFile = path.join(commandsDir, `${cmdId}.md`);
@@ -1320,14 +1319,14 @@ metadata:
 
         const commandContent = await fs.readFile(path.join(commandsDir, 'outline-spec-apply.md'), 'utf-8');
         expect(commandContent).toMatch(/^---\ndescription: /);
-        expect(commandContent).toContain('/outline-spec-land');
+        expect(commandContent).toContain('/outline-spec-archive');
         expect(commandContent).not.toContain('/outline-spec:');
         expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'outline-spec-propose.md'))).toBe(true);
 
         expect(await FileSystemUtils.fileExists(skillFile)).toBe(delivery === 'both');
         if (delivery === 'both') {
           const skillContent = await fs.readFile(skillFile, 'utf-8');
-          expect(skillContent).toContain('/outline-spec-land');
+          expect(skillContent).toContain('/outline-spec-archive');
           expect(skillContent).not.toContain('/outline-spec:');
         }
 
@@ -1341,7 +1340,7 @@ metadata:
       setMockConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
       const commandsDir = path.join(testDir, '.claude', 'commands', 'outline-spec');
       await fs.mkdir(commandsDir, { recursive: true });
-      const coreCommandIds = ['explore', 'apply', 'update', 'land', 'archive', 'propose'];
+      const coreCommandIds = ['explore', 'apply', 'update', 'archive', 'propose'];
       for (const cmdId of coreCommandIds) {
         await fs.writeFile(path.join(commandsDir, `${cmdId}.md`), 'old command content');
       }
@@ -1524,7 +1523,6 @@ metadata:
         'explore',
         'apply',
         'update',
-        'land',
         'archive',
         'propose',
       ];
@@ -1718,7 +1716,7 @@ metadata:
 
     it('should not carry a user file into a skill directory a deselected workflow deletes', async () => {
       // outline-spec-new-change is outside the core profile, so the skill
-      // directory it would land in is one outline-spec prunes.
+      // directory it would go in is one outline-spec prunes.
       const legacySkill = path.join(testDir, '.windsurf', 'skills', 'outline-spec-new-change');
       await fs.mkdir(legacySkill, { recursive: true });
       await fs.writeFile(path.join(legacySkill, 'SKILL.md'), 'stale');
@@ -2676,70 +2674,12 @@ metadata:
       )).toBe(false);
     });
 
-    it.each(['skills', 'commands', 'both'] as const)(
-      'should repair an archive profile missing land with %s delivery',
-      async (delivery) => {
-        setMockConfig({
-          featureFlags: {},
-          profile: 'custom',
-          delivery,
-          workflows: ['propose', 'explore', 'apply', 'archive'],
-        });
-
-        const archiveSkill = path.join(
-          testDir,
-          '.claude',
-          'skills',
-          'outline-spec-archive-change',
-          'SKILL.md'
-        );
-        const archiveCommand = path.join(
-          testDir,
-          '.claude',
-          'commands',
-          'outline-spec',
-          'archive.md'
-        );
-        if (delivery !== 'commands') {
-          await fs.mkdir(path.dirname(archiveSkill), { recursive: true });
-          await fs.writeFile(archiveSkill, 'old archive skill');
-        }
-        if (delivery !== 'skills') {
-          await fs.mkdir(path.dirname(archiveCommand), { recursive: true });
-          await fs.writeFile(archiveCommand, 'old archive command');
-        }
-
-        const consoleSpy = vi.spyOn(console, 'log');
-
-        await updateCommand.execute(testDir);
-
-        const calls = consoleSpy.mock.calls.map(call =>
-          call.map(arg => String(arg)).join(' ')
-        );
-        expect(calls.some(call =>
-          call.includes('Your custom profile is missing 1 core workflow: update')
-        )).toBe(true);
-        expect(calls.some(call =>
-          call.includes('outline-spec config profile core')
-        )).toBe(true);
-
-        expect(await FileSystemUtils.fileExists(
-          path.join(testDir, '.claude', 'skills', 'outline-spec-land-change', 'SKILL.md')
-        )).toBe(delivery !== 'commands');
-        expect(await FileSystemUtils.fileExists(
-          path.join(testDir, '.claude', 'commands', 'outline-spec', 'land.md')
-        )).toBe(delivery !== 'skills');
-
-        consoleSpy.mockRestore();
-      }
-    );
-
     it('should list a single missing core workflow when custom profile lacks only update', async () => {
       setMockConfig({
         featureFlags: {},
         profile: 'custom',
         delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'land', 'archive'],
+        workflows: ['propose', 'explore', 'apply', 'archive'],
       });
 
       const initCommand = new InitCommand({ tools: 'claude' });
@@ -2767,7 +2707,7 @@ metadata:
         featureFlags: {},
         profile: 'custom',
         delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'update', 'land', 'archive', 'verify'],
+        workflows: ['propose', 'explore', 'apply', 'update', 'archive', 'verify'],
       });
 
       const initCommand = new InitCommand({ tools: 'claude' });
@@ -2795,7 +2735,7 @@ metadata:
 
       const consoleSpy = vi.spyOn(console, 'log');
 
-      // The up-to-date path is where a user chasing a missing command lands:
+      // The up-to-date path is where a user chasing a missing command ends up:
       // troubleshooting tells them to run `outline-spec update` first.
       await updateCommand.execute(testDir);
 
@@ -2816,7 +2756,7 @@ metadata:
         featureFlags: {},
         profile: 'custom',
         delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'land', 'archive'],
+        workflows: ['propose', 'explore', 'apply', 'archive'],
       });
 
       const initCommand = new InitCommand({ tools: 'claude' });
@@ -2948,7 +2888,7 @@ metadata:
         expect(await FileSystemUtils.fileExists(skillFile)).toBe(delivery === 'skills');
         if (delivery === 'skills') {
           const skillContent = await fs.readFile(skillFile, 'utf-8');
-          expect(skillContent).toContain('the outline-spec-land-change skill');
+          expect(skillContent).toContain('the outline-spec-archive-change skill');
           expect(skillContent).not.toMatch(/\/outline-spec-[a-z]+-change|\/outline-spec-(?:explore|onboard|propose)\b/);
           expect(skillContent).not.toMatch(HYPHEN_COMMAND_REF);
         }
@@ -3115,7 +3055,6 @@ metadata:
         'outline-spec-archive-change',
         'outline-spec-custom',
         'outline-spec-explore',
-        'outline-spec-land-change',
         'outline-spec-propose',
         'outline-spec-update-change',
       ]);
@@ -3307,7 +3246,7 @@ content
     });
 
     it('should remove workflows outside profile during update sync', async () => {
-      // Set core profile (propose, explore, apply, update, land, archive)
+      // Set core profile (propose, explore, apply, update, archive)
       setMockConfig({
         featureFlags: {},
         profile: 'core',

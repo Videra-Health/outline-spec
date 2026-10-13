@@ -1,6 +1,6 @@
 ---
 name: outline-spec-verify-change
-description: Verify implementation matches outline-spec change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before landing. Also use when the user says "outline-spec verify".
+description: Verify implementation matches outline-spec change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving. Also use when the user says "outline-spec verify".
 allowed-tools: Bash(outline-spec:*)
 license: MIT
 compatibility: Requires outline-spec CLI.
@@ -11,9 +11,9 @@ metadata:
 
 Verify that an implementation matches the change artifacts (outline.md, tasks, design) and the live specs.
 
-**Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `land` (and its old name `archive`), `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
+**Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
 
-**Project check:** These steps expect a project that already uses outline-spec. Before the first step that writes anything (`new change`, `land`, or authoring an artifact file), confirm the project has a root: run `outline-spec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `outline-spec/` directory here, and a write such as `outline-spec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
+**Project check:** These steps expect a project that already uses outline-spec. Before the first step that writes anything (`new change`, `archive`, or authoring an artifact file), confirm the project has a root: run `outline-spec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `outline-spec/` directory here, and a write such as `outline-spec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
 
 One `"root": null` is not about setup: when a `status` error message starts with `Declared in` or `Invalid store declaration in` and names this project's `outline-spec/config.yaml` (or `config.yml`), the project does use outline-spec through a store it declares, which this machine cannot resolve (the store is not registered, or the `store:` line is malformed). Do not treat it as uninitialized and skip the branches below: stop before writing and show the user that error's `message` and `fix`.
 
@@ -58,7 +58,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 
    This returns the change directory, `contextFiles` (artifact ID -> array of concrete file paths), `taskTrackingConfigured`, and top-level `tasks` and `progress` aggregated from every concrete file matched by the schema's `apply.tracks` configuration that could be read. Read all available artifacts from `contextFiles`.
 
-   Treat apply `state` and `instruction` as context, not a verification verdict. Do not implement tasks or land the change during verification.
+   Treat apply `state` and `instruction` as context, not a verification verdict. Do not implement tasks or archive the change during verification.
 
 4. **Load the spec edits and the live specs**
 
@@ -70,7 +70,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    - **Removed**: an item wholly in `~~ ~~`; that behavior should be gone
    - **Renamed**: `~~Old~~ **New** (patch):`; the name changes, the behavior stays
 
-   For each spec the outline touches, read the live spec with `outline-spec show "<spec>" --type spec` for the unchanged surrounding requirements. Run `outline-spec validate "<name>"` to confirm the outline still lands cleanly, and `outline-spec land "<name>" --dry-run` to see the resulting spec text — that landed text is what the code must satisfy. Never edit live specs; a mismatch is fixed in outline.md.
+   For each spec the outline touches, read the live spec with `outline-spec show "<spec>" --type spec` for the unchanged surrounding requirements. Run `outline-spec validate "<name>"` to confirm the outline still archives cleanly, and `outline-spec archive "<name>" --dry-run` to see the resulting spec text — that resulting text is what the code must satisfy. Never edit live specs; a mismatch is fixed in outline.md.
 
 5. **Initialize verification report structure**
 
@@ -81,9 +81,9 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 
    Each dimension can have CRITICAL, WARNING, or SUGGESTION issues.
 
-   Verification is advisory. Respect intentional omissions such as an outline with no spec edits, optional design documents, and schemas without task tracking. Do not require or invent optional or intentionally omitted artifacts to obtain a clean report. `Not verified` describes a limit of this report, not a new land prerequisite. Land retains its own checks and user-confirmation behavior.
+   Verification is advisory. Respect intentional omissions such as an outline with no spec edits, optional design documents, and schemas without task tracking. Do not require or invent optional or intentionally omitted artifacts to obtain a clean report. `Not verified` describes a limit of this report, not a new archive prerequisite. Archive retains its own checks and user-confirmation behavior.
 
-   Mark checks the schema does not define, or artifacts the status reports as intentionally skipped, as **Not applicable**. The correctness checks of a change whose outline only removes or renames items are also **Not applicable** (see step 7). Exclude them from skipped-check counts and the land-readiness assessment. Reserve **Not verified** for applicable checks whose evidence is missing or unusable.
+   Mark checks the schema does not define, or artifacts the status reports as intentionally skipped, as **Not applicable**. The correctness checks of a change whose outline only removes or renames items are also **Not applicable** (see step 7). Exclude them from skipped-check counts and the archive-readiness assessment. Reserve **Not verified** for applicable checks whose evidence is missing or unusable.
 
    If only task evidence is available for applicable checks, verify task completion only and mark the remaining applicable checks, including **Code Pattern Consistency**, as not verified with the reason "Only task evidence available".
 
@@ -100,11 +100,11 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    - If `progress.remaining` is greater than 0:
      - Add CRITICAL issue for each listed incomplete task. If the remaining count exceeds the listed incomplete tasks, also report the incomplete checkboxes without descriptions and recommend adding descriptions and completing them. Do not infer completion from the listed tasks alone.
      - Recommendation: "Complete task: <description>" or "Mark as done if already implemented"
-     - Ignore the final landing task (`outline-spec land`); it runs after verification.
+     - Ignore the final archive task (`outline-spec archive`); it runs after verification.
 
    **Spec Coverage**:
    - If the schema defines no outline artifact, report the spec-dependent checks as not applicable. If outline.md exists but its `## Requirements` is empty, report them as not applicable (the change edits no specs).
-   - If outline.md is absent or unreadable, or `outline-spec validate` reports it no longer lands, mark **Spec Coverage**, **Requirement Implementation Mapping**, and **Detail Coverage** as not verified; do not treat any of them as clean. Recommend fixing outline.md against the live spec.
+   - If outline.md is absent or unreadable, or `outline-spec validate` reports it no longer archives cleanly, mark **Spec Coverage**, **Requirement Implementation Mapping**, and **Detail Coverage** as not verified; do not treat any of them as clean. Recommend fixing outline.md against the live spec.
    - For each new or edited requirement and detail:
      - Search codebase for keywords related to it
      - Assess if implementation likely exists
@@ -124,7 +124,7 @@ In both branches, never create the root as a side effect: do not run `outline-sp
    If the outline only removes or renames items, report **Requirement Implementation Mapping** and **Detail Coverage** as **Not applicable**; the checks under Spec Coverage are the evidence.
 
    **Requirement Implementation Mapping**:
-   - For each new or edited requirement (check the landed text, not the struck words):
+   - For each new or edited requirement (check the resulting text, not the struck words):
      - Search codebase for implementation evidence
      - If found, note file paths and line ranges
      - Assess if implementation matches requirement intent
@@ -179,11 +179,11 @@ In both branches, never create the root as a side effect: do not run `outline-sp
 
    **Issues by Priority**:
 
-   1. **CRITICAL** (Must fix before landing):
+   1. **CRITICAL** (Must fix before archiving):
       - Incomplete tasks
       - Missing requirement implementations
       - Removed requirements still implemented
-      - An outline that no longer lands against the live specs
+      - An outline that no longer archives cleanly against the live specs
       - Each with specific, actionable recommendation
 
    2. **WARNING** (Should fix):
@@ -197,10 +197,10 @@ In both branches, never create the root as a side effect: do not run `outline-sp
       - Each with specific recommendation
 
    **Final Assessment**:
-   - If CRITICAL issues: "X critical issue(s) found. Fix before landing." If any check was skipped, also name every skipped check and its reason.
-   - If no CRITICAL issues, one or more warnings, and no checks were skipped: "No critical issues. Y warning(s) to consider. Ready to land (with noted improvements)."
-   - If only suggestions and no checks were skipped: "No critical issues or warnings. Z suggestion(s) to consider. Ready to land (with noted improvements)."
-   - If no issues and no checks were skipped: "All checks passed. Ready to land with `/outline-spec-land-change`."
+   - If CRITICAL issues: "X critical issue(s) found. Fix before archiving." If any check was skipped, also name every skipped check and its reason.
+   - If no CRITICAL issues, one or more warnings, and no checks were skipped: "No critical issues. Y warning(s) to consider. Ready to archive (with noted improvements)."
+   - If only suggestions and no checks were skipped: "No critical issues or warnings. Z suggestion(s) to consider. Ready to archive (with noted improvements)."
+   - If no issues and no checks were skipped: "All checks passed. Ready to archive with `/outline-spec-archive-change`."
    - If any check was skipped and there are no CRITICAL issues: do not claim readiness. Say "No critical issues found in the checks that ran. <check(s)> not verified: <reason>." Include the warning count when nonzero.
    - Include the suggestion count when nonzero in every final assessment.
 

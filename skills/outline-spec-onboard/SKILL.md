@@ -11,9 +11,9 @@ metadata:
 
 Guide the user through their first complete outline-spec workflow cycle. This is a teaching experience—you'll do real work in their codebase while explaining each step.
 
-**Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `land` (and its old name `archive`), `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
+**Store selection:** If the user names a store (a store is a standalone outline-spec repo registered on this machine) or the work lives in one, run `outline-spec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `outline-spec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `outline-spec/` root.
 
-**Project check:** These steps expect a project that already uses outline-spec. Before the first step that writes anything (`new change`, `land`, or authoring an artifact file), confirm the project has a root: run `outline-spec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `outline-spec/` directory here, and a write such as `outline-spec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
+**Project check:** These steps expect a project that already uses outline-spec. Before the first step that writes anything (`new change`, `archive`, or authoring an artifact file), confirm the project has a root: run `outline-spec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `outline-spec/` directory here, and a write such as `outline-spec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
 
 One `"root": null` is not about setup: when a `status` error message starts with `Declared in` or `Invalid store declaration in` and names this project's `outline-spec/config.yaml` (or `config.yml`), the project does use outline-spec through a store it declares, which this machine cannot resolve (the store is not registered, or the `store:` line is malformed). Do not treat it as uninitialized and skip the branches below: stop before writing and show the user that error's `message` and `fix`.
 
@@ -59,7 +59,7 @@ I'll walk you through a complete change cycle—from idea to implementation—us
 3. Create a change (the container for our work)
 4. Build the artifacts: outline → design (if needed) → tasks
 5. Implement the tasks
-6. Land the change into the specs
+6. Archive the change into the specs
 
 **Time:** ~15-20 minutes
 
@@ -221,7 +221,7 @@ A change never edits those files directly. Its outline.md states the proposal in
 - A removed item is wholly struck, with its live text.
 - Labels never shift: a removed item leaves a gap.
 
-When the work is done, `outline-spec land` applies these edits to the live specs.
+When the work is done, `outline-spec archive` applies these edits to the live specs.
 ```
 
 **DO:** Read the specs this task touches (`outline-spec list --specs`, then `outline-spec show "<spec>" --type spec`), and get the artifact instructions:
@@ -256,7 +256,7 @@ Every line here is an edit the change makes to a live spec. Does this capture th
 
 **PAUSE** - Wait for user approval/feedback.
 
-After approval, write it to the `resolvedOutputPath` from the instructions JSON, then check it lands cleanly:
+After approval, write it to the `resolvedOutputPath` from the instructions JSON, then check it archives cleanly:
 ```bash
 outline-spec validate "<name>"
 ```
@@ -310,7 +310,7 @@ Here are the implementation tasks:
 ## 2. Integration Verification
 
 - [ ] 2.1 Verify [broader integration or system behavior] with [end-to-end test or observable result]
-- [ ] 2.2 Land the change with `outline-spec land <name>`
+- [ ] 2.2 Archive the change with `outline-spec archive <name>`
 
 ---
 
@@ -357,32 +357,32 @@ All tasks done:
 - [x] Task 2
 - [x] ...
 
-The change is implemented! One more step—let's land it.
+The change is implemented! One more step—let's archive it.
 ```
 
 ---
 
-## Phase 10: Land
+## Phase 10: Archive
 
 **EXPLAIN:**
 ```
-## Landing
+## Archiving
 
-Landing applies the change's outline.md to the live specs and deletes the change folder; git history keeps the record. (`archive` is the old name for this step.)
+Archiving applies the change's outline.md to the live specs and deletes the change folder; git history keeps the record.
 ```
 
-**DO:** Validate, preview, then land (`--yes` answers the confirmation prompt, which you cannot answer from a tool call):
+**DO:** Validate, preview, then archive (`--yes` answers the confirmation prompt, which you cannot answer from a tool call):
 ```bash
 outline-spec validate "<name>"
-outline-spec land "<name>" --dry-run
-outline-spec land "<name>" --yes
+outline-spec archive "<name>" --dry-run
+outline-spec archive "<name>" --yes
 ```
 
-Show the dry-run result before landing. If validate or land reports a mismatch, fix outline.md so its struck text and labels match the live spec—never hand-edit `outline-spec/specs/`.
+Show the dry-run result before archiving. If validate or archive reports a mismatch, fix outline.md so its struck text and labels match the live spec—never hand-edit `outline-spec/specs/`.
 
 **SHOW:**
 ```
-Landed. The specs now describe the new behavior, the change folder is gone, and the code is in your codebase. Commit to keep the record.
+Archived. The specs now describe the new behavior, the change folder is gone, and the code is in your codebase. Commit to keep the record.
 ```
 
 ---
@@ -400,7 +400,7 @@ You just completed a full outline-spec cycle:
 4. **Design** - Decided HOW (when needed)
 5. **Tasks** - Broke it into steps
 6. **Apply** - Implemented the work
-7. **Land** - Applied the outline to the specs
+7. **Archive** - Applied the outline to the specs
 
 This same rhythm works for any size change—a small fix or a major feature.
 
@@ -415,7 +415,7 @@ This same rhythm works for any size change—a small fix or a major feature.
  | `/outline-spec-propose` | Create a change and generate all artifacts |
  | `/outline-spec-explore` | Think through problems before/during work  |
  | `/outline-spec-apply-change`   | Implement tasks from a change              |
- | `/outline-spec-land-change`    | Apply a finished change to the specs       |
+ | `/outline-spec-archive-change` | Apply a finished change to the specs       |
  | `/outline-spec-new-change`     | Start a new change, one artifact at a time |
  | `/outline-spec-continue-change` | Continue working on an existing change    |
  | `/outline-spec-ff-change`      | Fast-forward: create all artifacts at once |
@@ -462,7 +462,7 @@ If the user says they just want to see the commands or skip the tutorial:
  | `/outline-spec-propose <name>`  | Create a change and generate all artifacts |
  | `/outline-spec-explore`         | Think through problems (no code changes)   |
  | `/outline-spec-apply-change <name>`    | Implement tasks                            |
- | `/outline-spec-land-change <name>`     | Land when done                             |
+ | `/outline-spec-archive-change <name>`  | Archive when done                          |
  | `/outline-spec-new-change <name>`      | Start a new change, step by step           |
  | `/outline-spec-continue-change <name>` | Continue an existing change                |
  | `/outline-spec-ff-change <name>`       | Fast-forward: all artifacts at once        |
@@ -477,7 +477,7 @@ Exit gracefully.
 
 ## Guardrails
 
-- **Follow the EXPLAIN → DO → SHOW → PAUSE pattern** at key transitions (after explore, after outline draft, after tasks, after landing)
+- **Follow the EXPLAIN → DO → SHOW → PAUSE pattern** at key transitions (after explore, after outline draft, after tasks, after archiving)
 - **Keep narration light** during implementation—teach without lecturing
 - **Don't skip phases** even if the change is small—the goal is teaching the workflow
 - **Pause for acknowledgment** at marked points, but don't over-pause

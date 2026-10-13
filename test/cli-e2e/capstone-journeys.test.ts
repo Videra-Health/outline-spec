@@ -79,7 +79,7 @@ describe('capstone persona journeys (6.1)', () => {
     expect(cited.exitCode).toBe(0);
     expect(cited.stdout).toContain('All invoices are immutable after issue.');
 
-    // Low-level design lands in the app repo's own root, not the store.
+    // Low-level design is written to the app repo's own root, not the store.
     const created = await runCLI(
       ['new', 'change', 'implement-invoice-immutability', '--json'],
       { cwd: appRepo, env }
@@ -152,17 +152,17 @@ describe('capstone persona journeys (6.1)', () => {
       '## Proposal\nRate-limit the API.\n\n## Requirements\n1. api: The public API.\n  a. Rate limits: The API rejects requests over the limit.\n'
     );
 
-    // Everything written landed inside the store's change dir.
+    // Everything written ended up inside the store's change dir.
     const writtenArtifacts = fs.readdirSync(changeDir).sort();
     expect(writtenArtifacts).toEqual(['.outline-spec.yaml', 'design.md', 'outline.md', 'tasks.md']);
 
-    // Land completes the lifecycle, still without --store.
-    const landed = await runCLI(['land', 'add-rate-limits', '--yes', '--json'], {
+    // Archive completes the lifecycle, still without --store.
+    const archived = await runCLI(['archive', 'add-rate-limits', '--yes', '--json'], {
       cwd: codeRepo,
       env,
     });
-    expect(landed.exitCode).toBe(0);
-    expect(JSON.parse(landed.stdout).specs).toEqual([{ name: 'api', action: 'created' }]);
+    expect(archived.exitCode).toBe(0);
+    expect(JSON.parse(archived.stdout).specs).toEqual([{ name: 'api', action: 'created' }]);
     expect(fs.existsSync(changeDir)).toBe(false);
     expect(fs.existsSync(path.join(storeRoot, 'outline-spec', 'specs', 'api', 'spec.md'))).toBe(true);
 

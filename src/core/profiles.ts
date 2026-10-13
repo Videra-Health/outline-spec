@@ -11,7 +11,7 @@ import type { Profile } from './global-config.js';
  * Core workflows included in the 'core' profile.
  * These provide the streamlined experience for new users.
  */
-export const CORE_WORKFLOWS = ['propose', 'explore', 'apply', 'update', 'land', 'archive'] as const;
+export const CORE_WORKFLOWS = ['propose', 'explore', 'apply', 'update', 'archive'] as const;
 
 /**
  * All available workflows in the system.
@@ -24,7 +24,6 @@ export const ALL_WORKFLOWS = [
   'apply',
   'update',
   'ff',
-  'land',
   'archive',
   'verify',
   'onboard',
@@ -43,20 +42,14 @@ export type CoreWorkflowId = (typeof CORE_WORKFLOWS)[number];
  * Resolves which workflows should be active for a given profile configuration.
  *
  * - 'core' profile always returns CORE_WORKFLOWS
- * - 'custom' profile returns the provided customWorkflows (minus retired ones) and required dependencies
+ * - 'custom' profile returns the provided customWorkflows minus retired ones
  */
 export function getProfileWorkflows(
   profile: Profile,
   customWorkflows?: string[]
 ): readonly string[] {
   if (profile === 'custom') {
-    const workflows = (customWorkflows ?? []).filter((w) => !RETIRED_WORKFLOWS.has(w));
-    // `archive` only points at the land flow, so it needs `land` installed.
-    const archiveIndex = workflows.indexOf('archive');
-    if (archiveIndex !== -1 && !workflows.includes('land')) {
-      return [...workflows.slice(0, archiveIndex), 'land', ...workflows.slice(archiveIndex)];
-    }
-    return workflows;
+    return (customWorkflows ?? []).filter((w) => !RETIRED_WORKFLOWS.has(w));
   }
   return CORE_WORKFLOWS;
 }

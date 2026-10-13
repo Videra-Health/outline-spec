@@ -23,7 +23,7 @@ import {
   type SpecPlan,
 } from './outline/specs.js';
 
-export interface LandOptions {
+export interface ArchiveOptions {
   yes?: boolean;
   dryRun?: boolean;
   json?: boolean;
@@ -31,41 +31,41 @@ export interface LandOptions {
   storePath?: string;
 }
 
-interface LandDiagnostic {
+interface ArchiveDiagnostic {
   severity: 'error';
   code: string;
   message: string;
   fix?: string;
 }
 
-export interface LandResult {
-  landed: string;
+export interface ArchiveResult {
+  archived: string;
   dryRun?: boolean;
   specs: Array<{ name: string; action: SpecAction; text?: string }>;
 }
 
-/** A point land can't get past on its own; carries a diagnostic for --json and a Fix: line. */
-export class LandBlockedError extends Error {
-  readonly diagnostic: LandDiagnostic;
+/** A point archive can't get past on its own; carries a diagnostic for --json and a Fix: line. */
+export class ArchiveBlockedError extends Error {
+  readonly diagnostic: ArchiveDiagnostic;
 
   constructor(code: string, message: string, fix?: string) {
     super(message);
-    this.name = 'LandBlockedError';
+    this.name = 'ArchiveBlockedError';
     this.diagnostic = { severity: 'error', code, message, ...(fix ? { fix } : {}) };
   }
 }
 
-function toDiagnostic(error: unknown): LandDiagnostic {
-  if (error instanceof LandBlockedError) return error.diagnostic;
+function toDiagnostic(error: unknown): ArchiveDiagnostic {
+  if (error instanceof ArchiveBlockedError) return error.diagnostic;
   if (isRootSelectionError(error)) return error.diagnostic;
-  return { severity: 'error', code: 'land_error', message: error instanceof Error ? error.message : String(error) };
+  return { severity: 'error', code: 'archive_error', message: error instanceof Error ? error.message : String(error) };
 }
 
 // Names are folder-style, so quoting only matters for the rare name a shell would split.
 const quote = (name: string) => (/^[A-Za-z0-9._/-]+$/.test(name) ? name : `"${name}"`);
 
-export class LandCommand {
-  async execute(changeName?: string, options: LandOptions = {}): Promise<void> {
+export class ArchiveCommand {
+  async execute(changeName?: string, options: ArchiveOptions = {}): Promise<void> {
     const json = !!options.json;
     let root: ResolvedOutlineSpecRoot;
     try {
@@ -92,32 +92,32 @@ export class LandCommand {
     await this.run(changeName, options, root, false);
   }
 
-  private printJsonFailure(root: ResolvedOutlineSpecRoot | undefined, diagnostic: LandDiagnostic): void {
+  private printJsonFailure(root: ResolvedOutlineSpecRoot | undefined, diagnostic: ArchiveDiagnostic): void {
     console.log(
-      JSON.stringify({ landed: null, specs: [], ...(root ? { root: toRootOutput(root) } : {}), status: [diagnostic] }, null, 2)
+      JSON.stringify({ archived: null, specs: [], ...(root ? { root: toRootOutput(root) } : {}), status: [diagnostic] }, null, 2)
     );
     process.exitCode = 1;
   }
 
   private async run(
     changeName: string | undefined,
-    options: LandOptions,
+    options: ArchiveOptions,
     root: ResolvedOutlineSpecRoot,
     json: boolean
-  ): Promise<LandResult | null> {
+  ): Promise<ArchiveResult | null> {
     const { changesDir, specsDir } = root;
     // A dash-leading name would read as an option, so it goes after `--`, behind any --store.
     const rerun = (name: string) =>
       name.startsWith('-')
-        ? `${withStoreFlag(root, 'outline-spec land --yes')} -- ${quote(name)}`
-        : withStoreFlag(root, `outline-spec land ${quote(name)} --yes`);
+        ? `${withStoreFlag(root, 'outline-spec archive --yes')} -- ${quote(name)}`
+        : withStoreFlag(root, `outline-spec archive ${quote(name)} --yes`);
 
     if (!changeName) {
       if (json) {
-        throw new LandBlockedError(
-          'land_change_name_required',
-          'A change name is required: land --json is non-interactive.',
-          withStoreFlag(root, 'outline-spec land <change-name> --json')
+        throw new ArchiveBlockedError(
+          'archive_change_name_required',
+          'A change name is required: archive --json is non-interactive.',
+          withStoreFlag(root, 'outline-spec archive <change-name> --json')
         );
       }
       const selected = await this.selectChange(root);
@@ -129,14 +129,14 @@ export class LandCommand {
     }
 
     const nameProblem = folderStyleNameProblem(changeName, 'Change name');
-    if (nameProblem) throw new LandBlockedError('land_change_name_invalid', nameProblem);
+    if (nameProblem) throw new ArchiveBlockedError('archive_change_name_invalid', nameProblem);
 
     const changeDir = path.join(changesDir, changeName);
     const stat = await fs.lstat(changeDir).catch(() => null);
     if (!stat?.isDirectory() || changeName === 'archive') {
       const available = listChanges(changesDir);
-      throw new LandBlockedError(
-        'land_change_not_found',
+      throw new ArchiveBlockedError(
+        'archive_change_not_found',
         available.length > 0
           ? `Change '${changeName}' not found. Available changes: ${available.join(', ')}`
           : `Change '${changeName}' not found. No active changes exist in this root.`
@@ -145,16 +145,16 @@ export class LandCommand {
 
     const nested = await findNestedChangesIn(changesDir, changeName);
     if (nested) {
-      throw new LandBlockedError('land_change_is_namespace_folder', `Cannot land '${changeName}': ${describeNestedChange(nested)}`);
+      throw new ArchiveBlockedError('archive_change_is_namespace_folder', `Cannot archive '${changeName}': ${describeNestedChange(nested)}`);
     }
 
     let plan: SpecPlan;
     try {
       plan = planChange(specsDir, changesDir, changeName);
     } catch (error) {
-      throw new LandBlockedError(
-        'land_conflicts',
-        `Cannot land '${changeName}'; nothing was written:\n${(error as Error).message}`,
+      throw new ArchiveBlockedError(
+        'archive_conflicts',
+        `Cannot archive '${changeName}'; nothing was written:\n${(error as Error).message}`,
         `Fix outline.md in outline-spec/changes/${changeName}/ so it matches the live specs, then rerun.`
       );
     }
@@ -166,10 +166,10 @@ export class LandCommand {
       if (options.yes) {
         if (!json) console.log(`Warning: ${incomplete} incomplete task(s) found. Continuing due to --yes flag.`);
       } else if (json) {
-        throw new LandBlockedError(
-          'land_tasks_incomplete',
+        throw new ArchiveBlockedError(
+          'archive_tasks_incomplete',
           `${incomplete} incomplete task(s) found for change '${changeName}'.`,
-          `Complete the tasks or rerun with ${rerun(changeName).replace('outline-spec land', 'outline-spec land --json')}`
+          `Complete the tasks or rerun with ${rerun(changeName).replace('outline-spec archive', 'outline-spec archive --json')}`
         );
       } else {
         let proceed: boolean;
@@ -177,14 +177,14 @@ export class LandCommand {
           proceed = await confirmPrompt({ message: `Warning: ${incomplete} incomplete task(s) found. Continue?`, default: false });
         } catch (error) {
           if (!isNonInteractivePromptError(error)) throw error;
-          throw new LandBlockedError(
-            'land_tasks_incomplete',
+          throw new ArchiveBlockedError(
+            'archive_tasks_incomplete',
             `${incomplete} incomplete task(s) found for change '${changeName}', and no answer could be read from stdin.`,
             `Complete the tasks or rerun with ${rerun(changeName)}`
           );
         }
         if (!proceed) {
-          console.log('Land cancelled.');
+          console.log('Archive cancelled.');
           return null;
         }
       }
@@ -203,7 +203,7 @@ export class LandCommand {
         }
         console.log(`\nDry run: nothing written. '${changeName}' would ${specs.length ? `edit ${specs.length} spec(s)` : 'edit no specs'}.`);
       }
-      return { landed: changeName, dryRun: true, specs: withText };
+      return { archived: changeName, dryRun: true, specs: withText };
     }
 
     writeAtomically(specsDir, plan);
@@ -211,9 +211,9 @@ export class LandCommand {
 
     if (!json) {
       for (const s of specs) console.log(`  ${s.action} ${s.name}`);
-      console.log(`Landed '${changeName}'${specs.length ? '' : ' (no spec edits)'}.`);
+      console.log(`Archived '${changeName}'${specs.length ? '' : ' (no spec edits)'}.`);
     }
-    return { landed: changeName, specs };
+    return { archived: changeName, specs };
   }
 
   private async selectChange(root: ResolvedOutlineSpecRoot): Promise<string | null> {
@@ -224,10 +224,10 @@ export class LandCommand {
     }
     // @inquirer's select writes cursor escapes even into a pipe, so it needs a real terminal.
     if (!process.stdin.isTTY || !process.stdout.isTTY) {
-      throw new LandBlockedError(
-        'land_change_name_required',
+      throw new ArchiveBlockedError(
+        'archive_change_name_required',
         'A change name is required: no terminal is available to choose one from a list.',
-        withStoreFlag(root, 'outline-spec land <change-name>')
+        withStoreFlag(root, 'outline-spec archive <change-name>')
       );
     }
     const width = Math.max(...names.map((n) => n.length));
@@ -239,13 +239,13 @@ export class LandCommand {
     );
     const { select } = await import('@inquirer/prompts');
     try {
-      return await select({ message: 'Select a change to land', choices });
+      return await select({ message: 'Select a change to archive', choices });
     } catch (error) {
       if (isNonInteractivePromptError(error)) {
-        throw new LandBlockedError(
-          'land_change_name_required',
+        throw new ArchiveBlockedError(
+          'archive_change_name_required',
           'A change name is required: no answer could be read from stdin.',
-          withStoreFlag(root, 'outline-spec land <change-name>')
+          withStoreFlag(root, 'outline-spec archive <change-name>')
         );
       }
       return null;

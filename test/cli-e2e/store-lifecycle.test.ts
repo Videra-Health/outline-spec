@@ -12,7 +12,7 @@ const execFileAsync = promisify(execFile);
 /**
  * Slice 1.3 journey: prove the standalone repo lifecycle end to end across
  * two simulated machines (separate XDG homes). Machine A sets up a store and
- * lands a change; machine B clones, registers, and continues.
+ * archives a change; machine B clones, registers, and continues.
  *
  * Git config is fully isolated so user gitconfig (signing, hooks, identity)
  * cannot leak in; identity comes from explicit env vars.
@@ -224,7 +224,7 @@ describe('standalone store lifecycle journey', () => {
     );
   });
 
-  it('machine A: lands a change from the project repo', async () => {
+  it('machine A: archives a change from the project repo', async () => {
     const changeId = 'add-billing';
 
     const created = await runCLI(
@@ -284,15 +284,15 @@ describe('standalone store lifecycle journey', () => {
     expect(shown.exitCode).toBe(0);
     expect(shown.stdout).toContain('## Proposal');
 
-    const landed = await runCLI(
-      ['land', changeId, '--store', STORE_ID, '--yes', '--json'],
+    const archived = await runCLI(
+      ['archive', changeId, '--store', STORE_ID, '--yes', '--json'],
       { env: machineA, cwd: projectDir }
     );
-    expect(landed.exitCode).toBe(0);
-    const landPayload = JSON.parse(landed.stdout);
-    expect(landPayload.landed).toBe(changeId);
-    expect(landPayload.specs).toEqual([{ name: 'billing', action: 'created' }]);
-    expect(landPayload.root.store_id).toBe(STORE_ID);
+    expect(archived.exitCode).toBe(0);
+    const archivePayload = JSON.parse(archived.stdout);
+    expect(archivePayload.archived).toBe(changeId);
+    expect(archivePayload.specs).toEqual([{ name: 'billing', action: 'created' }]);
+    expect(archivePayload.root.store_id).toBe(STORE_ID);
 
     const specPath = path.join(storeRoot, 'outline-spec', 'specs', 'billing', 'spec.md');
     await expect(fs.readFile(specPath, 'utf-8')).resolves.toContain('1. billing works:');
@@ -353,7 +353,7 @@ describe('standalone store lifecycle journey', () => {
     expect(shownSpec.stdout).toContain('1. billing works: The system supports billing.');
   }, JOURNEY_TIMEOUT_MS);
 
-  it('machine B: lands its own change in the clone', async () => {
+  it('machine B: archives its own change in the clone', async () => {
     const changeId = 'add-invoicing';
 
     const created = await runCLI(
@@ -397,18 +397,18 @@ describe('standalone store lifecycle journey', () => {
     expect(validated.exitCode).toBe(0);
     expect(validated.stdout).toContain('is valid');
 
-    const landed = await runCLI(
-      ['land', changeId, '--store', STORE_ID, '--yes', '--json'],
+    const archived = await runCLI(
+      ['archive', changeId, '--store', STORE_ID, '--yes', '--json'],
       { env: machineB, cwd: base }
     );
-    expect(landed.exitCode).toBe(0);
-    expect(JSON.parse(landed.stdout).landed).toBe(changeId);
+    expect(archived.exitCode).toBe(0);
+    expect(JSON.parse(archived.stdout).archived).toBe(changeId);
 
     const specPath = path.join(cloneRoot, 'outline-spec', 'specs', 'invoicing', 'spec.md');
     await expect(fs.readFile(specPath, 'utf-8')).resolves.toContain('1. invoicing works:');
 
     // Post-resolution failures keep the banner, and the hint keeps the store:
-    // with everything landed, instructions apply fails after the root
+    // with everything archived, instructions apply fails after the root
     // resolved successfully.
     const failedApply = await runCLI(
       ['instructions', 'apply', '--store', STORE_ID],

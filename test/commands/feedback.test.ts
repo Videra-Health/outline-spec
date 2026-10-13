@@ -432,7 +432,7 @@ describe('FeedbackCommand', () => {
         expect.any(Object)
       );
 
-      // The feedback still lands as an issue, and the user is told the label
+      // The feedback is still filed as an issue, and the user is told the label
       // was not applied
       expect(consoleLogSpy).toHaveBeenCalledWith(
         expect.stringContaining('Feedback submitted successfully')

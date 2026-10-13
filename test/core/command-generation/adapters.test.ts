@@ -1361,7 +1361,7 @@ describe('command-generation/adapters', () => {
     it('generates registered commands with hyphenated workflow references', () => {
       const content: CommandContent = {
         ...sampleContent,
-        body: 'Use /outline-spec:propose, /outline-spec:update, and /outline-spec:land. Keep /outline-spec:unknown.',
+        body: 'Use /outline-spec:propose, /outline-spec:update, and /outline-spec:archive. Keep /outline-spec:unknown.',
       };
       const adapter = CommandAdapterRegistry.get('codeassistant');
       expect(adapter).toBe(codeassistantAdapter);
@@ -1369,7 +1369,7 @@ describe('command-generation/adapters', () => {
 
       expect(generated.path).toBe(path.join('.codeassistant', 'commands', 'outline-spec-explore.md'));
       expect(generated.fileContent).toContain(
-        'Use /outline-spec-propose, /outline-spec-update, and /outline-spec-land. Keep /outline-spec:unknown.'
+        'Use /outline-spec-propose, /outline-spec-update, and /outline-spec-archive. Keep /outline-spec:unknown.'
       );
       expect(content.body).toContain('/outline-spec:propose');
     });

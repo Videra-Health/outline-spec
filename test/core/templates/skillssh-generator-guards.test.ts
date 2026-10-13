@@ -17,7 +17,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanSkillSubdirectories, prepareSkillDirectory } from '../../../scripts/skillssh-shared.mjs';
 
 // Guards for scripts/generate-skillssh.mjs: cleanup must never follow a
-// symlink, and writes must only ever land in a real directory inside skills/.
+// symlink, and writes must only ever go to a real directory inside skills/.
 describe('skills.sh generator guards', () => {
   let outDir: string;
   let outsideDir: string;

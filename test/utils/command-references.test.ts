@@ -97,7 +97,6 @@ Finally /outline-spec-apply to implement`;
       'apply',
       'update',
       'ff',
-      'land',
       'archive',
       'verify',
       'explore',
@@ -143,7 +142,7 @@ describe('transformToSkillReferences', () => {
       ['apply', '/outline-spec-apply-change'],
       ['update', '/outline-spec-update-change'],
       ['ff', '/outline-spec-ff-change'],
-      ['land', '/outline-spec-land-change'],
+      ['archive', '/outline-spec-archive-change'],
       ['archive', '/outline-spec-archive-change'],
       ['verify', '/outline-spec-verify-change'],
       ['onboard', '/outline-spec-onboard'],
@@ -346,7 +345,7 @@ describe('apply skill template generates valid per-target invocations', () => {
   it('authors invocation references as transformable /outline-spec:* tokens', () => {
     expect(skill).toContain('/outline-spec:apply add-auth');
     expect(skill).toContain('suggest using `/outline-spec:continue`');
-    expect(skill).toContain('land this change with `/outline-spec:land`');
+    expect(skill).toContain('archive this change with `/outline-spec:archive`');
     // No bare, non-transformable skill-name prose remains.
     expect(skill).not.toContain('suggest using outline-spec-continue-change');
   });
@@ -381,19 +380,19 @@ describe('apply skill template generates valid per-target invocations', () => {
   });
 
   const cases = [
-    { tool: 'default (skills.sh)', transform: transformToSkillReferences, cont: '/outline-spec-continue-change', arch: '/outline-spec-land-change', apply: '/outline-spec-apply-change' },
-    { tool: 'codex', transform: getSkillReferenceTransformer('codex'), cont: '$outline-spec-continue-change', arch: '$outline-spec-land-change', apply: '$outline-spec-apply-change' },
-    { tool: 'kimi', transform: getSkillReferenceTransformer('kimi'), cont: '/skill:outline-spec-continue-change', arch: '/skill:outline-spec-land-change', apply: '/skill:outline-spec-apply-change' },
+    { tool: 'default (skills.sh)', transform: transformToSkillReferences, cont: '/outline-spec-continue-change', arch: '/outline-spec-archive-change', apply: '/outline-spec-apply-change' },
+    { tool: 'codex', transform: getSkillReferenceTransformer('codex'), cont: '$outline-spec-continue-change', arch: '$outline-spec-archive-change', apply: '$outline-spec-apply-change' },
+    { tool: 'kimi', transform: getSkillReferenceTransformer('kimi'), cont: '/skill:outline-spec-continue-change', arch: '/skill:outline-spec-archive-change', apply: '/skill:outline-spec-apply-change' },
   ];
 
   for (const { tool, transform, cont, arch, apply } of cases) {
-    it(`emits ${tool} skill invocations for continue, apply, and land`, () => {
+    it(`emits ${tool} skill invocations for continue, apply, and archive`, () => {
       const out = transform(skill);
       expect(out).toContain(cont);
       expect(out).toContain(arch);
       expect(out).toContain(`${apply} add-auth`);
       // No canonical token survives the rewrite.
-      expect(out).not.toMatch(/\/outline-spec:(continue|apply|land)/);
+      expect(out).not.toMatch(/\/outline-spec:(continue|apply|archive)/);
     });
   }
 });

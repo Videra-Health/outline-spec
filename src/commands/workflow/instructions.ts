@@ -47,7 +47,7 @@ import {
   validateSchemaExists,
   type TaskItem,
   type ApplyInstructions,
-  type LandInstructions,
+  type ArchiveInstructions,
 } from './shared.js';
 import { parseTaskLines, type ParsedTask } from '../../utils/task-progress.js';
 import { hasChangeOutline, planChange } from '../../core/outline/specs.js';
@@ -72,7 +72,7 @@ export interface ApplyInstructionsOptions {
   json?: boolean;
 }
 
-export type LandInstructionsOptions = ApplyInstructionsOptions;
+export type ArchiveInstructionsOptions = ApplyInstructionsOptions;
 
 // -----------------------------------------------------------------------------
 // Artifact Instructions Command
@@ -444,7 +444,7 @@ function collectMissingPrerequisites(input: {
   );
 }
 
-/** Apply warns, without blocking, when the change's outline.md would not land on the live specs. */
+/** Apply warns, without blocking, when the change's outline.md would not archive cleanly against the live specs. */
 function collectApplyWarnings(input: {
   state: ApplyInstructions['state'];
   changeDir: string;
@@ -458,7 +458,7 @@ function collectApplyWarnings(input: {
     planChange(path.join(path.dirname(changesDir), 'specs'), changesDir, changeName);
     return [];
   } catch (error) {
-    return [`outline.md would not land on the live specs (\`outline-spec validate ${changeName}\`):\n${(error as Error).message}`];
+    return [`outline.md would not archive cleanly against the live specs (\`outline-spec validate ${changeName}\`):\n${(error as Error).message}`];
   }
 }
 
@@ -603,7 +603,7 @@ export async function generateApplyInstructions(
     total > 0
   ) {
     state = 'all_done';
-    instruction = 'All tracked tasks are complete.\nReview or verify the change as appropriate before landing.';
+    instruction = 'All tracked tasks are complete.\nReview or verify the change as appropriate before archiving.';
   } else if (!tracksFile) {
     // No tracking file configured in schema - ready to apply
     state = 'ready';
@@ -769,25 +769,25 @@ export function printApplyInstructionsText(instructions: ApplyInstructions): voi
   printOperationInputsText(instructions);
 }
 
-export function generateLandInstructions(
+export function generateArchiveInstructions(
   changeName: string,
   projectConfig: ProjectConfig | null
-): LandInstructions {
+): ArchiveInstructions {
   return {
     changeName,
-    ...loadOperationInputs(projectConfig, 'land'),
+    ...loadOperationInputs(projectConfig, 'archive'),
   };
 }
 
-export async function landInstructionsCommand(
-  options: LandInstructionsOptions
+export async function archiveInstructionsCommand(
+  options: ArchiveInstructionsOptions
 ): Promise<void> {
   const root = await resolveRootForCommand(options, { json: options.json });
   if (!root) {
     return;
   }
 
-  const spinner = options.json ? undefined : ora('Loading land inputs...').start();
+  const spinner = options.json ? undefined : ora('Loading archive inputs...').start();
 
   try {
     const changeName = await validateChangeExists(
@@ -797,7 +797,7 @@ export async function landInstructionsCommand(
       { newChangeHint: withStoreFlag(root, 'outline-spec new change <name>') }
     );
     const projectConfig = readProjectConfig(root.path);
-    const instructions = generateLandInstructions(changeName, projectConfig);
+    const instructions = generateArchiveInstructions(changeName, projectConfig);
 
     spinner?.stop();
 
@@ -806,15 +806,15 @@ export async function landInstructionsCommand(
       return;
     }
 
-    printLandInstructionsText(instructions);
+    printArchiveInstructionsText(instructions);
   } catch (error) {
     spinner?.stop();
     throw error;
   }
 }
 
-export function printLandInstructionsText(instructions: LandInstructions): void {
-  console.log(`## Land Inputs: ${instructions.changeName}`);
+export function printArchiveInstructionsText(instructions: ArchiveInstructions): void {
+  console.log(`## Archive Inputs: ${instructions.changeName}`);
   console.log();
   printOperationInputsText(instructions);
 }

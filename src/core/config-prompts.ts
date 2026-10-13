@@ -45,16 +45,16 @@ export function serializeConfig(config: Partial<ProjectConfig>): string {
 
   // Operation guidance section with comments
   lines.push('# Per-operation guidance (optional)');
-  lines.push('# Add advisory guidance for how apply and land work should be conducted.');
+  lines.push('# Add advisory guidance for how apply and archive work should be conducted.');
   lines.push('# This is separate from artifact rules above.');
   lines.push('# Example:');
   lines.push('#   operations:');
   lines.push('#     apply:');
   lines.push('#       guidance:');
   lines.push('#         - Keep test summaries concise');
-  lines.push('#     land:');
+  lines.push('#     archive:');
   lines.push('#       guidance:');
-  lines.push('#         - Summarize the landed spec edits before finishing');
+  lines.push('#         - Summarize the archived spec edits before finishing');
 
   return lines.join('\n') + '\n';
 }

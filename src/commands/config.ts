@@ -209,13 +209,9 @@ export const WORKFLOW_PROMPT_META: Record<string, WorkflowPromptMeta> = {
     name: 'Fast-forward',
     description: 'Run a faster implementation workflow',
   },
-  land: {
-    name: 'Land change',
-    description: "Apply a finished change's outline to the specs and delete it",
-  },
   archive: {
     name: 'Archive change',
-    description: 'Old name for land; routes to the land flow',
+    description: "Apply a finished change's outline to the specs and delete it",
   },
   verify: {
     name: 'Verify change',

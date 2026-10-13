@@ -25,7 +25,6 @@ const NATURAL_VERB_BY_WORKFLOW: Record<string, string> = {
   apply: 'apply',
   update: 'update change',
   ff: 'ff',
-  land: 'land',
   archive: 'archive',
   verify: 'verify',
   onboard: 'onboard',
@@ -43,9 +42,8 @@ const NATURAL_VERB_BY_WORKFLOW: Record<string, string> = {
  * in its description.
  */
 const DELIBERATE_CLI_PHRASE_CLAIMS: Record<string, string> = {
-  'outline-spec land':
-    'the land workflow runs this CLI command, but validates and shows a dry run first and fixes outline.md on a mismatch; an agent asked to land should take the checked path',
-  'outline-spec archive': 'same as land; archive is its old name and the CLI alias',
+  'outline-spec archive':
+    'the archive workflow runs this CLI command, but validates and shows a dry run first and fixes outline.md on a mismatch; an agent asked to archive should take the checked path',
   'outline-spec new change':
     'the new-change workflow runs this exact CLI command as its first step, then continues with the artifacts',
   'outline-spec update change':

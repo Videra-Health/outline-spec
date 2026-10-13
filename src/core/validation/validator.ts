@@ -104,7 +104,7 @@ export class Validator {
   }
 
   /**
-   * Checks a change: its outline.md lands cleanly against the live specs.
+   * Checks a change: its outline.md archives cleanly against the live specs.
    * When `projectRoot` is given, its tracked task files are linted too.
    */
   async validateChange(

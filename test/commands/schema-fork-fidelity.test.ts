@@ -531,7 +531,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     ].join('\n');
     fs.writeFileSync(existing, originalContent);
 
-    // Simulate the concurrent edit landing DURING the staging copy (after the
+    // Simulate the concurrent edit arriving DURING the staging copy (after the
     // destination fingerprint was captured, before the destructive move).
     const concurrentContent = originalContent.replace(
       'description: Original',
@@ -567,7 +567,7 @@ describe('schema fork fidelity (PR #1130)', () => {
 
   it('keeps the backup when it is modified during the install window', async () => {
     // Second window: after the original is moved aside to the backup, a
-    // concurrent write lands in the backup before it is discarded. The fork must
+    // concurrent write goes into the backup before it is discarded. The fork must
     // re-fingerprint the backup before deleting it and, on mismatch, keep it and
     // surface its location rather than silently deleting changed content.
     const destDir = path.join(tempDir, 'outline-spec', 'schemas', 'keep-me');
@@ -585,7 +585,7 @@ describe('schema fork fidelity (PR #1130)', () => {
     // The fork itself succeeds (the install path was untouched by the race).
     const errOutput = consoleErrorSpy.mock.calls.map((c) => String(c[0])).join('\n');
     expect(process.exitCode).toBeFalsy();
-    // The install landed the fork at the destination.
+    // The install put the fork at the destination.
     expect(fs.readFileSync(existing, 'utf-8')).toMatch(/^name: keep-me$/m);
 
     // The changed backup was NOT deleted, and its location is surfaced.

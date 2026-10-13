@@ -44,7 +44,7 @@ describe('core/completion-tip atomic write', () => {
       const configPath = getGlobalConfigPath();
 
       // Pinned: under a hardened umask the old default-mode write would also
-      // land on 0600 and the mode assertion below would prove nothing.
+      // end up at 0600 and the mode assertion below would prove nothing.
       const previousUmask = process.umask(0o022);
       try {
         await maybeShowCompletionTip();

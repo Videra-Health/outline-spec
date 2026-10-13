@@ -107,7 +107,6 @@ const WORKFLOW_TO_SKILL_DIR: Record<string, string> = {
   'apply': 'outline-spec-apply-change',
   'update': 'outline-spec-update-change',
   'ff': 'outline-spec-ff-change',
-  'land': 'outline-spec-land-change',
   'archive': 'outline-spec-archive-change',
   'verify': 'outline-spec-verify-change',
   'onboard': 'outline-spec-onboard',

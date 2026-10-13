@@ -20,7 +20,7 @@ Billing needs work.
   a. Billing: The system creates bills.
 `;
 
-// A new requirement with no sentence: the outline can't land.
+// A new requirement with no sentence: the outline can't be archived.
 const INVALID_OUTLINE = `## Proposal
 Billing needs work.
 
@@ -379,18 +379,18 @@ operations:
       expect(json.root.store_id).toBe('team-context');
     });
 
-    it('lands a change into the store specs with JSON output', async () => {
+    it('archives a change into the store specs with JSON output', async () => {
       createChange(storeRoot, 'store-change');
 
       const result = await runCLI(
-        ['land', 'store-change', '--store', 'team-context', '--json', '--yes'],
+        ['archive', 'store-change', '--store', 'team-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
       expect(result.stdout.trim().startsWith('{')).toBe(true);
 
       const json = parseJson(result);
-      expect(json.landed).toBe('store-change');
+      expect(json.archived).toBe('store-change');
       expect(json.specs).toEqual([{ name: 'billing', action: 'created' }]);
       expect(json.root.store_id).toBe('team-context');
 
@@ -404,18 +404,6 @@ operations:
         fs.readFileSync(path.join(storeRoot, 'outline-spec', 'specs', 'billing', 'spec.md'), 'utf-8')
       ).toBe(outlineSpec('billing', 'Bills customers.', 'Billing: The system creates bills.'));
       expectNoLocalOutlineSpec();
-    });
-
-    it('accepts archive as an alias of land with a rename note on stderr', async () => {
-      createChange(storeRoot, 'store-change');
-
-      const result = await runCLI(
-        ['archive', 'store-change', '--store', 'team-context', '--json', '--yes'],
-        { cwd: appRepo, env }
-      );
-      expect(result.exitCode).toBe(0);
-      expect(result.stderr).toContain('"outline-spec archive" is now "outline-spec land"');
-      expect(parseJson(result).landed).toBe('store-change');
     });
   });
 
@@ -849,23 +837,23 @@ operations:
     });
   });
 
-  describe('land --json is non-interactive', () => {
+  describe('archive --json is non-interactive', () => {
     it('fails without a change name instead of opening a picker', async () => {
       createChange(storeRoot, 'store-change');
 
-      const result = await runCLI(['land', '--store', 'team-context', '--json'], {
+      const result = await runCLI(['archive', '--store', 'team-context', '--json'], {
         cwd: appRepo,
         env,
       });
       expect(result.exitCode).toBe(1);
       expect(result.stdout.trim().startsWith('{')).toBe(true);
       const json = parseJson(result);
-      expect(json.landed).toBeNull();
-      expect(json.status[0].code).toBe('land_change_name_required');
+      expect(json.archived).toBeNull();
+      expect(json.status[0].code).toBe('archive_change_name_required');
     });
 
     it('reports no active changes for a selected empty store without init guidance', async () => {
-      const blankStoreRoot = path.join(tempDir, 'stores', 'land-blank-context');
+      const blankStoreRoot = path.join(tempDir, 'stores', 'archive-blank-context');
       fs.mkdirSync(path.join(blankStoreRoot, 'outline-spec'), { recursive: true });
       fs.writeFileSync(
         path.join(blankStoreRoot, 'outline-spec', 'config.yaml'),
@@ -873,7 +861,7 @@ operations:
       );
       await writeStoreMetadataState(blankStoreRoot, {
         version: 1,
-        id: 'land-blank-context',
+        id: 'archive-blank-context',
       });
       const registered = await runCLI(
         ['store', 'register', blankStoreRoot, '--json'],
@@ -882,15 +870,15 @@ operations:
       expect(registered.exitCode).toBe(0);
 
       const result = await runCLI(
-        ['land', 'missing-change', '--store', 'land-blank-context', '--json', '--yes'],
+        ['archive', 'missing-change', '--store', 'archive-blank-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
 
       expect(result.exitCode).toBe(1);
       const json = parseJson(result);
-      expect(json.landed).toBeNull();
+      expect(json.archived).toBeNull();
       expect(json.status[0]).toEqual(expect.objectContaining({
-        code: 'land_change_not_found',
+        code: 'archive_change_not_found',
         message: "Change 'missing-change' not found. No active changes exist in this root.",
       }));
     });
@@ -899,15 +887,15 @@ operations:
       createChange(storeRoot, 'bad-change', { outline: INVALID_OUTLINE });
 
       const result = await runCLI(
-        ['land', 'bad-change', '--store', 'team-context', '--json', '--yes'],
+        ['archive', 'bad-change', '--store', 'team-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(1);
       expect(result.stdout.trim().startsWith('{')).toBe(true);
       const json = parseJson(result);
-      expect(json.landed).toBeNull();
-      expect(json.status[0].code).toBe('land_conflicts');
-      // The change was not landed.
+      expect(json.archived).toBeNull();
+      expect(json.status[0].code).toBe('archive_conflicts');
+      // The change was not archived.
       expect(
         fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'bad-change'))
       ).toBe(true);
@@ -917,17 +905,17 @@ operations:
       createChange(storeRoot, 'wip-yes-change', { tasksDone: false });
 
       const result = await runCLI(
-        ['land', 'wip-yes-change', '--store', 'team-context', '--json', '--yes'],
+        ['archive', 'wip-yes-change', '--store', 'team-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
       // The human-mode task status and --yes warning must not precede the JSON payload.
       expect(result.stdout.trim().startsWith('{')).toBe(true);
-      expect(parseJson(result).landed).toBe('wip-yes-change');
+      expect(parseJson(result).archived).toBe('wip-yes-change');
     });
 
-    it('writes no spec when any spec in the change fails to land', async () => {
-      // 'aaa-good' is a new spec that lands cleanly; 'zzz-bad' patches a
+    it('writes no spec when any spec in the change fails to archive', async () => {
+      // 'aaa-good' is a new spec that archives cleanly; 'zzz-bad' patches a
       // requirement its live spec lacks, so the whole change must write nothing.
       createChange(storeRoot, 'two-spec-change', {
         outline: `## Requirements
@@ -941,13 +929,13 @@ operations:
       writeSpec(storeRoot, 'zzz-bad', badTargetContent);
 
       const result = await runCLI(
-        ['land', 'two-spec-change', '--store', 'team-context', '--json', '--yes'],
+        ['archive', 'two-spec-change', '--store', 'team-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(1);
       const json = parseJson(result);
-      expect(json.landed).toBeNull();
-      expect(json.status[0].code).toBe('land_conflicts');
+      expect(json.archived).toBeNull();
+      expect(json.status[0].code).toBe('archive_conflicts');
 
       // "Nothing was written" must be true: the good spec was not created
       // and the bad target is byte-identical.
@@ -966,14 +954,14 @@ operations:
       createChange(storeRoot, 'modified-change', { outline: PATCH_MISSING_SPEC_OUTLINE });
 
       const result = await runCLI(
-        ['land', 'modified-change', '--store', 'team-context', '--json', '--yes'],
+        ['archive', 'modified-change', '--store', 'team-context', '--json', '--yes'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(1);
       expect(result.stdout.trim().startsWith('{')).toBe(true);
       const json = parseJson(result);
-      expect(json.landed).toBeNull();
-      expect(json.status[0].code).toBe('land_conflicts');
+      expect(json.archived).toBeNull();
+      expect(json.status[0].code).toBe('archive_conflicts');
       expect(
         fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'modified-change'))
       ).toBe(true);
@@ -983,12 +971,12 @@ operations:
       createChange(storeRoot, 'wip-change', { tasksDone: false });
 
       const result = await runCLI(
-        ['land', 'wip-change', '--store', 'team-context', '--json'],
+        ['archive', 'wip-change', '--store', 'team-context', '--json'],
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(1);
       const json = parseJson(result);
-      expect(json.status[0].code).toBe('land_tasks_incomplete');
+      expect(json.status[0].code).toBe('archive_tasks_incomplete');
       expect(
         fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'wip-change'))
       ).toBe(true);

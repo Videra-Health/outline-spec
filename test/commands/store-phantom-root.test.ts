@@ -12,7 +12,7 @@ import { createOutlineSpecRoot } from '../helpers/outline-spec-fixtures.js';
  * `changes`, the store folder is itself `~/outline-spec/specs` or
  * `~/outline-spec/changes`, which gave `$HOME` a planning shape. `$HOME` then
  * became the nearest root for every command under the home tree: the global
- * `defaultStore` was never consulted and new changes landed outside the store.
+ * `defaultStore` was never consulted and new changes were created outside the store.
  */
 describe('a store named specs or changes at ~/outline-spec/<id>', () => {
   let tempDir: string;
@@ -98,7 +98,7 @@ describe('a store named specs or changes at ~/outline-spec/<id>', () => {
   );
 
   it.each(['specs', 'changes'])(
-    'new change lands in the store named %s, not under $HOME/outline-spec',
+    'new change is created in the store named %s, not under $HOME/outline-spec',
     async (id) => {
       const storeRoot = await setupDefaultStore(id);
 

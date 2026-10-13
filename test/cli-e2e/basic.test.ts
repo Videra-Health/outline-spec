@@ -480,19 +480,19 @@ describe('outline-spec CLI e2e basics', () => {
       expect(output).not.toContain('force closed the prompt');
       expect(output).toContain('1 incomplete task(s) found');
       expect(output).toContain('no answer could be read from stdin');
-      expect(output).toContain('outline-spec land add-greeting --yes');
+      expect(output).toContain('outline-spec archive add-greeting --yes');
 
-      // The change is untouched: nothing was landed.
+      // The change is untouched: nothing was archived.
       expect(await fileExists(path.join(projectDir, 'outline-spec', 'changes', 'add-greeting', 'outline.md'))).toBe(true);
       expect(await fileExists(path.join(projectDir, 'outline-spec', 'specs', 'greeting', 'spec.md'))).toBe(false);
     });
 
-    it('lands without prompting when every task is done', async () => {
+    it('archives without prompting when every task is done', async () => {
       const projectDir = await prepareChange();
       const result = await runCLI(['archive', 'add-greeting'], { cwd: projectDir });
 
       expect(result.exitCode, result.stderr).toBe(0);
-      expect(result.stderr).toContain('Note: "outline-spec archive" is now "outline-spec land".');
+      expect(result.stderr).not.toContain('Note:');
       expect(await fileExists(path.join(projectDir, 'outline-spec', 'specs', 'greeting', 'spec.md'))).toBe(true);
       expect(await fileExists(path.join(projectDir, 'outline-spec', 'changes', 'add-greeting'))).toBe(false);
     });
@@ -541,7 +541,7 @@ describe('outline-spec CLI e2e basics', () => {
 
     it('keeps --store in the suggested rerun for a store-rooted change', async () => {
       // The rerun has to name the same root the blocked run used, or pasting
-      // it lands from the wrong place - or from nowhere.
+      // it archives from the wrong place - or from nowhere.
       const base = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-archive-store-e2e-'));
       tempRoots.push(base);
       const env = await prepareStoreChange(base, 'add-greeting');
@@ -553,7 +553,7 @@ describe('outline-spec CLI e2e basics', () => {
 
       const output = `${result.stdout}${result.stderr}`;
       expect(result.exitCode).toBe(1);
-      expect(output).toContain('outline-spec land add-greeting --yes --store team-store');
+      expect(output).toContain('outline-spec archive add-greeting --yes --store team-store');
     });
 
     it('keeps --store in front of the `--` for a dash-leading change name', async () => {
@@ -569,7 +569,7 @@ describe('outline-spec CLI e2e basics', () => {
 
       const output = `${result.stdout}${result.stderr}`;
       expect(result.exitCode).toBe(1);
-      expect(output).toContain('outline-spec land --yes --store team-store -- --force');
+      expect(output).toContain('outline-spec archive --yes --store team-store -- --force');
     });
   });
 });

@@ -607,7 +607,7 @@ describe('explore templates describe the outline model', () => {
       expect(body, label).toContain("outline.md holds the change's spec edits");
       expect(body, label).toContain('`~~old~~ **new**`');
       expect(body, label).toContain('Labels never shift');
-      expect(body, label).toContain('`outline-spec land <change>`');
+      expect(body, label).toContain('`outline-spec archive <change>`');
       expect(body, label).toContain('never edit `outline-spec/specs/` directly');
     }
   });
