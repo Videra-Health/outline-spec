@@ -222,9 +222,11 @@ export function touches(edit: SpecEdit): string[] {
       walk(n.children, `${prefix}${n.label}.`);
     });
   for (const req of edit.node.children) {
-    const line = splitReq(sides(req.text).old || sides(req.text).new);
-    const name = sides(line.name).old;
-    if (!line.patch || marksOf(line.sentence) !== "none" || marksOf(line.name) !== "none") out.push(`${edit.spec} › ${name}`);
+    // Read marks from the raw line; a wholly struck or bold line is a removal or addition.
+    const whole = marksOf(req.text) === "removed" || marksOf(req.text) === "added";
+    const line = splitReq(whole ? sides(req.text).old || sides(req.text).new : req.text);
+    const name = sides(line.name).old || sides(line.name).new;
+    if (whole || !line.patch || marksOf(line.sentence) !== "none" || marksOf(line.name) !== "none") out.push(`${edit.spec} › ${name}`);
     walk(req.children, `${edit.spec} › ${name} › `);
   }
   return out;

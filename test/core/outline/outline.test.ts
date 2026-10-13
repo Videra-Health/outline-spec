@@ -102,3 +102,10 @@ it("lists what a change touches", () =>
     "outfitting › Catalog › e",
     "outfitting › New thing",
   ]));
+
+it("lists renamed, re-sentenced, and removed requirements as touched", () =>
+  expect(touches(change("  a. ~~Makers~~ **Brands** (patch):\n  b. Catalog (patch): The catalog is ~~these~~ **all** items.\n  c. ~~Stacking: Kits stack.~~"))).toEqual([
+    "outfitting › Makers",
+    "outfitting › Catalog",
+    "outfitting › Stacking",
+  ]));
