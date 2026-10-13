@@ -20,6 +20,10 @@ Define how `outline-spec/config.yaml` is discovered, parsed, validated, and expo
   h. Rules field has non-array value for artifact: WHEN config contains `rules: { proposal: "not an array", specs: ["Valid"] }` THEN warning is logged for proposal, but specs rules are still included in returned config
   i. Rules array contains non-string elements: WHEN config contains `rules: { proposal: ["Valid rule", 123, ""] }` THEN only "Valid rule" is included, warning logged about invalid elements
   j. Mix of valid and invalid fields: WHEN config contains valid schema, invalid context type, valid rules THEN config is returned with schema and rules fields, warning logged about context
+  k. Review-on field is valid: WHEN config contains `review-on: [propose]` THEN review-on field is included in returned config
+  l. Review-on field has an unknown workflow: WHEN config contains `review-on: [propose, deploy]` THEN warning is logged about `deploy` and review-on is included as `[propose]`
+  m. Review field has valid tabs: WHEN config contains `review: { tabs: [{ title: Outline, from: [outline.md] }] }` THEN review field is included in returned config
+  n. Review tab is invalid: WHEN a tab in `review.tabs` has neither `from` nor `view` THEN warning is logged and that tab is dropped, and the remaining tabs are included
 4. Enforce context size limit: The system SHALL reject context fields exceeding 50KB and log a warning.
   a. Context within size limit: WHEN config contains context of 1KB THEN context is included in returned config
   b. Context at size limit: WHEN config contains context of exactly 50KB THEN context is included in returned config
