@@ -80,7 +80,7 @@ artifacts:
     description: Diagrams describing the change
     template: diagrams.md
     instruction: |
-      Use diagrams to describe the proposed change. Each section in the template is a candidate visualization to explain the change. Some visualizations are applicable for certain changes, while others are not. Pick the smallest number of views that makes the point. Put each view right after the one-line text it supports. Before each visualization include a small muted text with the label of the visualization. (e.g. <sub>GraphQL Contract</sub>) After writing, run `outline-spec validate <change>` and fix every Mermaid block it reports until it passes.
+      Use diagrams to describe the proposed change. Each section in the template is a candidate visualization to explain the change. Some visualizations are applicable for certain changes, while others are not. Pick the smallest number of views that makes the point. Put each view right after the one-line text it supports. Before each visualization include a small muted title naming its subject and kind (e.g. <sub>Invitation State Machine</sub>, <sub>Review GraphQL Contract</sub>), not the kind alone. After writing, run `outline-spec validate <change>` and fix every Mermaid block it reports until it passes.
     requires:
       - outline
 
