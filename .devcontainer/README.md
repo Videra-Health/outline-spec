@@ -1,6 +1,6 @@
 # Dev Container Setup
 
-This directory contains the VS Code dev container configuration for OpenSpec development.
+This directory contains the VS Code dev container configuration for outline-spec development.
 
 ## What's Included
 

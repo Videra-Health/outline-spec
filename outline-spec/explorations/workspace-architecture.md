@@ -735,9 +735,9 @@ schema: spec-driven
 created: 2026-04-12
 initiative: add-3ds
 links:
-  - project: github.com/fission/web-client
+  - project: github.com/acme/web-client
     change: add-3ds-checkout
-  - project: github.com/fission/ios-client
+  - project: github.com/acme/ios-client
     change: add-3ds-checkout
 ```
 
@@ -753,8 +753,8 @@ For small single-repo work, a repo-local change may still be "good enough" as bo
 
 Cross-repo links must use **stable project identifiers**, not filesystem paths.
 
-- **Canonical form:** A normalized `host/org/repo` tuple (e.g., `github.com/fission/web-client`).
-- **Authoring shorthand:** The CLI accepts `org/repo` (e.g., `fission/web-client`) and infers the host from the current repo's remote.
+- **Canonical form:** A normalized `host/org/repo` tuple (e.g., `github.com/acme/web-client`).
+- **Authoring shorthand:** The CLI accepts `org/repo` (e.g., `acme/web-client`) and infers the host from the current repo's remote.
 - **Relative paths are never the durable identifier.** They may exist only as cached local resolution results.
 
 ### Decision: Offline-First Resolution
@@ -775,7 +775,7 @@ Spec-level cross-repo references are **documentation-only pointers**:
 ```yaml
 # web-client/outline-spec/specs/checkout/spec.md frontmatter
 references:
-  - project: github.com/fission/contracts-service
+  - project: github.com/acme/contracts-service
     spec: checkout-contract
 ```
 

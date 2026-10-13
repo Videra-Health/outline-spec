@@ -52,7 +52,7 @@ export function registerSchemaCommand(program: Command): void {
     .description('Create a new project-local schema')
     .option('--json', 'Output as JSON')
     .option('--description <text>', 'Schema description')
-    .option('--artifacts <list>', 'Comma-separated artifact IDs (proposal,specs,design,tasks)')
+    .option('--artifacts <list>', 'Comma-separated artifact IDs (e.g. outline,design,tasks)')
     .option('--default', 'Set as project default schema')
     .option('--no-default', 'Do not prompt to set as default')
     .option('--force', 'Overwrite existing schema')

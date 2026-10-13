@@ -37,8 +37,7 @@ export function serializeConfig(config: Partial<ProjectConfig>): string {
   lines.push('# Add custom rules for specific artifacts.');
   lines.push('# Example:');
   lines.push('#   rules:');
-  lines.push('#     proposal:');
-  lines.push('#       - Keep proposals under 500 words');
+  lines.push('#     outline:');
   lines.push('#       - Always state what is out of scope');
   lines.push('#     tasks:');
   lines.push('#       - Break tasks into chunks of max 2 hours');
@@ -46,7 +45,7 @@ export function serializeConfig(config: Partial<ProjectConfig>): string {
 
   // Operation guidance section with comments
   lines.push('# Per-operation guidance (optional)');
-  lines.push('# Add advisory guidance for how apply and archive work should be conducted.');
+  lines.push('# Add advisory guidance for how apply and land work should be conducted.');
   lines.push('# This is separate from artifact rules above.');
   lines.push('# Example:');
   lines.push('#   operations:');
