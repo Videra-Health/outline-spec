@@ -57,15 +57,14 @@ Title: Error handling in artifact workflow needs improvement
 
 Body:
 I was working on creating a new change and encountered an issue with
-the artifact workflow. When I tried to continue after creating the
-proposal, the system didn't clearly indicate that I needed to complete
-the specs first.
+the artifact workflow. When I tried to continue, the system didn't
+clearly indicate that I needed to complete the outline first.
 
 Suggestion: Add clearer error messages that explain dependency chains
-in the artifact workflow. Something like "Cannot create design.md
-because specs are not complete (0/2 done)."
+in the artifact workflow. Something like "Cannot create tasks.md
+because outline.md is not complete."
 
-Context: Using the spec-driven schema with <path>/my-project
+Context: Using the outline schema with <path>/my-project
 \`\`\`
 
 **Anonymization Examples**

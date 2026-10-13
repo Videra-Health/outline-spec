@@ -83,7 +83,6 @@ ${PROJECT_ROOT_GUARD}
         - \`rules\`: Artifact-specific rules (constraints for you - do NOT include in output)
         - \`template\`: The structure to use for your output file
         - \`instruction\`: Schema-specific guidance for this artifact type
-        - \`skipped\`/\`warning\`: present when the change declares skip_specs and this artifact must NOT be created - stop and pick another artifact
         - \`resolvedOutputPath\`: Resolved path or pattern to write the artifact
         - \`dependencies\`: Completed artifacts to read for context
       - Read any completed dependency files for context - always re-read them from disk, even if you saw them earlier in the conversation (the user may have edited them)
@@ -98,15 +97,16 @@ ${PROJECT_ROOT_GUARD}
 
    b. **Continue until every artifact in the required set exists (not just \`apply.requires\`)**
       - After creating each artifact, re-run \`openspec status --change "<name>" --json\`
-      - The required set is \`applyRequires\` plus every artifact reachable from those by following the \`requires\` edges in \`status --json\` - walk them transitively (spec-driven closes over proposal, specs, design, tasks). Leave artifacts outside that set alone
-      - \`status\` is file-existence only, so an \`applyRequires\` artifact reading \`done\` does NOT mean its dependencies exist - writing \`tasks.md\` early marks \`tasks\` done while \`specs\` was never written. Use each artifact's \`requires\` edges, not its \`status\`, to build the required set: a \`done\` artifact still lists what it depends on
-      - An artifact already reading \`status: "skipped"\` is satisfied: the change declares \`skip_specs\` in \`.openspec.yaml\`, so its files must NOT exist. Never try to create one
+      - The required set is \`applyRequires\` plus every artifact reachable from those by following the \`requires\` edges in \`status --json\` - walk them transitively (the outline schema closes over outline and tasks). Leave artifacts outside that set alone
+      - \`status\` is file-existence only, so an \`applyRequires\` artifact reading \`done\` does NOT mean its dependencies exist - writing \`tasks.md\` early marks \`tasks\` done while \`outline.md\` was never written. Use each artifact's \`requires\` edges, not its \`status\`, to build the required set: a \`done\` artifact still lists what it depends on
       - Create every artifact in the required set that is missing, then re-check - creating one can unblock others
-      - Skip one only when \`status\` already reports it \`skipped\`, or when its own \`instruction\` says it is conditional: run \`openspec instructions <artifact-id> --change "<name>" --json\` and skip only if its \`instruction\` field marks it optional (e.g. "create only if..."). Spec-driven's \`design.md\` qualifies; \`specs\` qualifies only via the \`skipped\` status above, never by your own judgment. Tell the user, and do not reconsider it
+      - Skip one only when its own \`instruction\` says it is conditional: run \`openspec instructions <artifact-id> --change "<name>" --json\` and skip only if its \`instruction\` field marks it optional (e.g. "create only when..."). The outline schema's \`design.md\` qualifies; \`outline.md\` never does. Tell the user, and do not reconsider it
       - Dependencies are enablers, not gates: if a required artifact is still \`blocked\` only because you skipped a conditional dependency, write it anyway
-      - Stop when every artifact in the required set is \`done\`, \`skipped\`, or was deliberately skipped
+      - Stop when every artifact in the required set is \`done\` or was deliberately skipped
 
-   c. **If an artifact requires user input** (critically unclear context):
+   c. **Check the outline lands**: after writing outline.md, run \`openspec validate "<name>"\`. It checks that the outline lands cleanly against the live specs; fix outline.md until it passes.
+
+   d. **If an artifact requires user input** (critically unclear context):
       - Ask the user to clarify
       - Then continue with creation
 
@@ -138,6 +138,7 @@ After completing all artifacts, summarize:
 - Create every artifact the apply phase transitively depends on, not just the ids listed in \`apply.requires\`
 - Always read dependency artifacts before creating a new one - re-read from disk, not from conversation memory (files may have changed since you last saw them)
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
+- Never edit the live specs in \`openspec/specs/\`; spec changes go in outline.md and land with \`openspec land\`
 - If a change with that name already exists, suggest continuing that change instead
 - Verify each artifact file exists after writing before proceeding to next`,
     license: 'MIT',
@@ -202,7 +203,6 @@ ${PROJECT_ROOT_GUARD}
         - \`rules\`: Artifact-specific rules (constraints for you - do NOT include in output)
         - \`template\`: The structure to use for your output file
         - \`instruction\`: Schema-specific guidance for this artifact type
-        - \`skipped\`/\`warning\`: present when the change declares skip_specs and this artifact must NOT be created - stop and pick another artifact
         - \`resolvedOutputPath\`: Resolved path or pattern to write the artifact
         - \`dependencies\`: Completed artifacts to read for context
       - Read any completed dependency files for context - always re-read them from disk, even if you saw them earlier in the conversation (the user may have edited them)
@@ -217,15 +217,16 @@ ${PROJECT_ROOT_GUARD}
 
    b. **Continue until every artifact in the required set exists (not just \`apply.requires\`)**
       - After creating each artifact, re-run \`openspec status --change "<name>" --json\`
-      - The required set is \`applyRequires\` plus every artifact reachable from those by following the \`requires\` edges in \`status --json\` - walk them transitively (spec-driven closes over proposal, specs, design, tasks). Leave artifacts outside that set alone
-      - \`status\` is file-existence only, so an \`applyRequires\` artifact reading \`done\` does NOT mean its dependencies exist - writing \`tasks.md\` early marks \`tasks\` done while \`specs\` was never written. Use each artifact's \`requires\` edges, not its \`status\`, to build the required set: a \`done\` artifact still lists what it depends on
-      - An artifact already reading \`status: "skipped"\` is satisfied: the change declares \`skip_specs\` in \`.openspec.yaml\`, so its files must NOT exist. Never try to create one
+      - The required set is \`applyRequires\` plus every artifact reachable from those by following the \`requires\` edges in \`status --json\` - walk them transitively (the outline schema closes over outline and tasks). Leave artifacts outside that set alone
+      - \`status\` is file-existence only, so an \`applyRequires\` artifact reading \`done\` does NOT mean its dependencies exist - writing \`tasks.md\` early marks \`tasks\` done while \`outline.md\` was never written. Use each artifact's \`requires\` edges, not its \`status\`, to build the required set: a \`done\` artifact still lists what it depends on
       - Create every artifact in the required set that is missing, then re-check - creating one can unblock others
-      - Skip one only when \`status\` already reports it \`skipped\`, or when its own \`instruction\` says it is conditional: run \`openspec instructions <artifact-id> --change "<name>" --json\` and skip only if its \`instruction\` field marks it optional (e.g. "create only if..."). Spec-driven's \`design.md\` qualifies; \`specs\` qualifies only via the \`skipped\` status above, never by your own judgment. Tell the user, and do not reconsider it
+      - Skip one only when its own \`instruction\` says it is conditional: run \`openspec instructions <artifact-id> --change "<name>" --json\` and skip only if its \`instruction\` field marks it optional (e.g. "create only when..."). The outline schema's \`design.md\` qualifies; \`outline.md\` never does. Tell the user, and do not reconsider it
       - Dependencies are enablers, not gates: if a required artifact is still \`blocked\` only because you skipped a conditional dependency, write it anyway
-      - Stop when every artifact in the required set is \`done\`, \`skipped\`, or was deliberately skipped
+      - Stop when every artifact in the required set is \`done\` or was deliberately skipped
 
-   c. **If an artifact requires user input** (critically unclear context):
+   c. **Check the outline lands**: after writing outline.md, run \`openspec validate "<name>"\`. It checks that the outline lands cleanly against the live specs; fix outline.md until it passes.
+
+   d. **If an artifact requires user input** (critically unclear context):
       - Ask the user to clarify
       - Then continue with creation
 
@@ -257,6 +258,7 @@ After completing all artifacts, summarize:
 - Create every artifact the apply phase transitively depends on, not just the ids listed in \`apply.requires\`
 - Always read dependency artifacts before creating a new one - re-read from disk, not from conversation memory (files may have changed since you last saw them)
 - If context is critically unclear, ask the user - but prefer making reasonable decisions to keep momentum
+- Never edit the live specs in \`openspec/specs/\`; spec changes go in outline.md and land with \`openspec land\`
 - If a change with that name already exists, ask if user wants to continue it or create a new one
 - Verify each artifact file exists after writing before proceeding to next`
   };

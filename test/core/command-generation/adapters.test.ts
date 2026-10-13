@@ -1361,7 +1361,7 @@ describe('command-generation/adapters', () => {
     it('generates registered commands with hyphenated workflow references', () => {
       const content: CommandContent = {
         ...sampleContent,
-        body: 'Use /opsx:propose, /opsx:update, and /opsx:bulk-archive. Keep /opsx:unknown.',
+        body: 'Use /opsx:propose, /opsx:update, and /opsx:land. Keep /opsx:unknown.',
       };
       const adapter = CommandAdapterRegistry.get('codeassistant');
       expect(adapter).toBe(codeassistantAdapter);
@@ -1369,7 +1369,7 @@ describe('command-generation/adapters', () => {
 
       expect(generated.path).toBe(path.join('.codeassistant', 'commands', 'opsx-explore.md'));
       expect(generated.fileContent).toContain(
-        'Use /opsx-propose, /opsx-update, and /opsx-bulk-archive. Keep /opsx:unknown.'
+        'Use /opsx-propose, /opsx-update, and /opsx-land. Keep /opsx:unknown.'
       );
       expect(content.body).toContain('/opsx:propose');
     });

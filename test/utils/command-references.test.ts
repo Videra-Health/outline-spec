@@ -97,9 +97,8 @@ Finally /opsx-apply to implement`;
       'apply',
       'update',
       'ff',
-      'sync',
+      'land',
       'archive',
-      'bulk-archive',
       'verify',
       'explore',
       'onboard',
@@ -144,9 +143,8 @@ describe('transformToSkillReferences', () => {
       ['apply', '/openspec-apply-change'],
       ['update', '/openspec-update-change'],
       ['ff', '/openspec-ff-change'],
-      ['sync', '/openspec-sync-specs'],
+      ['land', '/openspec-land-change'],
       ['archive', '/openspec-archive-change'],
-      ['bulk-archive', '/openspec-bulk-archive-change'],
       ['verify', '/openspec-verify-change'],
       ['onboard', '/openspec-onboard'],
       ['propose', '/openspec-propose'],
@@ -207,9 +205,9 @@ Then /openspec-apply-change to implement`;
       expect(transformToSkillReferences(input)).toBe(input);
     });
 
-    it('should transform longest matching command (bulk-archive vs archive)', () => {
+    it('should leave retired commands untransformed', () => {
       const input = '/opsx:bulk-archive and /opsx:archive';
-      const expected = '/openspec-bulk-archive-change and /openspec-archive-change';
+      const expected = '/opsx:bulk-archive and /openspec-archive-change';
       expect(transformToSkillReferences(input)).toBe(expected);
     });
   });
@@ -348,7 +346,7 @@ describe('apply skill template generates valid per-target invocations', () => {
   it('authors invocation references as transformable /opsx:* tokens', () => {
     expect(skill).toContain('/opsx:apply add-auth');
     expect(skill).toContain('suggest using `/opsx:continue`');
-    expect(skill).toContain('archive this change with `/opsx:archive`');
+    expect(skill).toContain('land this change with `/opsx:land`');
     // No bare, non-transformable skill-name prose remains.
     expect(skill).not.toContain('suggest using openspec-continue-change');
   });
@@ -383,19 +381,19 @@ describe('apply skill template generates valid per-target invocations', () => {
   });
 
   const cases = [
-    { tool: 'default (skills.sh)', transform: transformToSkillReferences, cont: '/openspec-continue-change', arch: '/openspec-archive-change', apply: '/openspec-apply-change' },
-    { tool: 'codex', transform: getSkillReferenceTransformer('codex'), cont: '$openspec-continue-change', arch: '$openspec-archive-change', apply: '$openspec-apply-change' },
-    { tool: 'kimi', transform: getSkillReferenceTransformer('kimi'), cont: '/skill:openspec-continue-change', arch: '/skill:openspec-archive-change', apply: '/skill:openspec-apply-change' },
+    { tool: 'default (skills.sh)', transform: transformToSkillReferences, cont: '/openspec-continue-change', arch: '/openspec-land-change', apply: '/openspec-apply-change' },
+    { tool: 'codex', transform: getSkillReferenceTransformer('codex'), cont: '$openspec-continue-change', arch: '$openspec-land-change', apply: '$openspec-apply-change' },
+    { tool: 'kimi', transform: getSkillReferenceTransformer('kimi'), cont: '/skill:openspec-continue-change', arch: '/skill:openspec-land-change', apply: '/skill:openspec-apply-change' },
   ];
 
   for (const { tool, transform, cont, arch, apply } of cases) {
-    it(`emits ${tool} skill invocations for continue, apply, and archive`, () => {
+    it(`emits ${tool} skill invocations for continue, apply, and land`, () => {
       const out = transform(skill);
       expect(out).toContain(cont);
       expect(out).toContain(arch);
       expect(out).toContain(`${apply} add-auth`);
       // No canonical token survives the rewrite.
-      expect(out).not.toMatch(/\/opsx:(continue|apply|archive)/);
+      expect(out).not.toMatch(/\/opsx:(continue|apply|land)/);
     });
   }
 });

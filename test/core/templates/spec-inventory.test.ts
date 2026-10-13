@@ -20,7 +20,7 @@ import { loadSchema } from '../../../src/core/artifact-graph/schema.js';
 // was taught, gets the in-flight change list, and reports the step complete
 // against the wrong object.
 const SPEC_INVENTORY = 'openspec list --specs';
-const SPEC_READ = 'openspec show "<spec-id>" --type spec --json --no-scenarios';
+const SPEC_READ = 'openspec show "<spec>" --type spec';
 
 // Assertions about the guidance attached to the command are scoped to a window
 // after it rather than to the whole body, so an unrelated occurrence elsewhere
@@ -28,13 +28,13 @@ const SPEC_READ = 'openspec show "<spec-id>" --type spec --json --no-scenarios';
 const PASSAGE_WINDOW = 700;
 
 const repoRoot = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '../../..');
-const defaultSchema = loadSchema(path.join(repoRoot, 'schemas', 'spec-driven', 'schema.yaml'));
+const defaultSchema = loadSchema(path.join(repoRoot, 'schemas', 'outline', 'schema.yaml'));
 
 function instructionFor(artifactId: string): string {
   const artifact = defaultSchema.artifacts.find(entry => entry.id === artifactId);
-  expect(artifact, `spec-driven has no "${artifactId}" artifact`).toBeDefined();
+  expect(artifact, `outline has no "${artifactId}" artifact`).toBeDefined();
   const instruction = artifact?.instruction;
-  expect(instruction, `spec-driven "${artifactId}" has no instruction`).toBeDefined();
+  expect(instruction, `outline "${artifactId}" has no instruction`).toBeDefined();
   return instruction as string;
 }
 
@@ -72,15 +72,8 @@ describe('spec inventory vocabulary (#1689)', () => {
     }
   });
 
-  it('names the spec inventory where the proposal picks capabilities', () => {
-    // "Research existing specs before filling this in" named no command, which
-    // is how the Capabilities section ends up inventing a near-duplicate
-    // capability instead of reusing the existing one.
-    expect(instructionFor('proposal')).toContain(SPEC_INVENTORY);
-  });
-
-  it('names the spec inventory where a delta must match an existing path', () => {
-    expect(instructionFor('specs')).toContain(SPEC_INVENTORY);
+  it('names the spec inventory where the outline picks specs to edit', () => {
+    expect(instructionFor('outline')).toContain(SPEC_INVENTORY);
   });
 
   // A bare `openspec list --specs` reads the local inventory, so under a
@@ -89,8 +82,7 @@ describe('spec inventory vocabulary (#1689)', () => {
   it('carries the store qualifier everywhere it names the command', () => {
     const sites: Array<[string, string]> = [
       ...exploreBodies,
-      ['proposal instruction', instructionFor('proposal')],
-      ['specs instruction', instructionFor('specs')],
+      ['outline instruction', instructionFor('outline')],
     ];
 
     for (const [label, body] of sites) {
@@ -116,15 +108,13 @@ describe('spec inventory vocabulary (#1689)', () => {
   it('reads a listed capability with the store-aware command', () => {
     const sites: Array<[string, string]> = [
       ...exploreBodies,
-      ['proposal instruction', instructionFor('proposal')],
+      ['outline instruction', instructionFor('outline')],
     ];
 
     for (const [label, body] of sites) {
       const start = body.indexOf(SPEC_INVENTORY);
       const passage = body.slice(start, start + PASSAGE_WINDOW);
-      // Pin the complete low-context read. Each flag is load-bearing: --type
-      // disambiguates a same-named change, JSON makes the result structured,
-      // and --no-scenarios avoids pulling every scenario into context.
+      // --type disambiguates a same-named change.
       expect(passage, `${label} does not name the complete store-aware read`).toContain(
         SPEC_READ
       );
@@ -135,22 +125,15 @@ describe('spec inventory vocabulary (#1689)', () => {
       const readStart = passage.indexOf(SPEC_READ);
       const readContext = passage.slice(readStart, readStart + 350);
       expect(readContext, `${label} does not apply the store rule to the read`).toMatch(
-        /(?:same `--store` rule|Append `--store "<id>"` to\s+both commands only for a registered standalone store)/
+        /(?:same `--store` rule|append `--store "<id>"` to\s+both only for a registered standalone store)/
       );
     }
   });
 
   it('reads full relevant specs before deciding coverage or changes', () => {
-    const sites: Array<[string, string]> = [
-      ...exploreBodies,
-      ['proposal instruction', instructionFor('proposal')],
-    ];
-
-    for (const [label, body] of sites) {
-      const normalized = body.replace(/\s+/g, ' ');
-      expect(normalized, label).toContain('The filtered read is only an overview.');
-      expect(normalized, label).toContain(
-        'Before deciding what is already covered or what should change, read each relevant spec in full, including scenarios, with `openspec show "<spec-id>" --type spec` (same `--store` rule).'
+    for (const [label, body] of exploreBodies) {
+      expect(body.replace(/\s+/g, ' '), label).toContain(
+        'Before deciding what is already covered or what should change, read each relevant spec in full.'
       );
     }
   });

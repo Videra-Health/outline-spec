@@ -21,11 +21,12 @@ import {
   LEGACY_CONFIG_FILES,
   LEGACY_GLOBAL_SLASH_COMMAND_PATHS,
   LEGACY_SLASH_COMMAND_PATHS,
+  removeRetiredWorkflowFiles,
 } from '../../src/core/legacy-cleanup.js';
 import { OPENSPEC_MARKERS } from '../../src/core/config.js';
 import { CommandAdapterRegistry } from '../../src/core/command-generation/registry.js';
 import { resolveCommandSurfaceCapability } from '../../src/core/command-surface.js';
-import { ALL_WORKFLOWS } from '../../src/core/profiles.js';
+import { ALL_WORKFLOWS, RETIRED_WORKFLOWS } from '../../src/core/profiles.js';
 
 describe('legacy-cleanup', () => {
   let testDir: string;
@@ -1206,7 +1207,7 @@ ${OPENSPEC_MARKERS.end}`);
       expect(LEGACY_SLASH_COMMAND_PATHS['kilocode']).toEqual({
         type: 'files',
         pattern: [
-          ...ALL_WORKFLOWS.map(workflow => `.kilocode/workflows/opsx-${workflow}.md`),
+          ...[...ALL_WORKFLOWS, ...RETIRED_WORKFLOWS.keys()].map(workflow => `.kilocode/workflows/opsx-${workflow}.md`),
           '.kilocode/workflows/openspec-proposal.md',
           '.kilocode/workflows/openspec-apply.md',
           '.kilocode/workflows/openspec-archive.md',
@@ -1568,6 +1569,27 @@ ${OPENSPEC_MARKERS.end}`);
       const result = omitToolLegacyArtifacts(detection, ['codex']);
       expect(result.slashCommandFiles).toEqual([]);
       expect(result.hasLegacyArtifacts).toBe(false);
+    });
+  });
+
+  describe('removeRetiredWorkflowFiles', () => {
+    it('removes the sync and bulk-archive skills and commands but keeps current ones', async () => {
+      const skillsDir = path.join(testDir, '.claude', 'skills');
+      for (const dir of ['openspec-sync-specs', 'openspec-bulk-archive-change', 'openspec-land-change']) {
+        await fs.mkdir(path.join(skillsDir, dir), { recursive: true });
+        await fs.writeFile(path.join(skillsDir, dir, 'SKILL.md'), 'x');
+      }
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'opsx');
+      await fs.mkdir(commandsDir, { recursive: true });
+      for (const file of ['sync.md', 'bulk-archive.md', 'land.md']) {
+        await fs.writeFile(path.join(commandsDir, file), 'x');
+      }
+
+      const removed = await removeRetiredWorkflowFiles(testDir, 'claude', { root: testDir, dir: skillsDir });
+
+      expect(removed).toBe(4);
+      expect((await fs.readdir(skillsDir)).sort()).toEqual(['openspec-land-change']);
+      expect(await fs.readdir(commandsDir)).toEqual(['land.md']);
     });
   });
 });

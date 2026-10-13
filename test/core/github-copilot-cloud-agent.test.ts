@@ -89,6 +89,24 @@ When the user wants to propose a new change:
 - When archiving, ensure all tasks are completed and validated first
 `;
 
+// Reverses the outline-era wording to rebuild the archive-era agent file earlier releases wrote.
+function toArchiveEra(content: string): string {
+  return content
+    .replace('checking status, and landing completed work.', 'checking status, and archiving completed work.')
+    .replace(
+      'planning artifacts (an outline of spec edits, an optional design, and tasks) that guide implementation. Landing a change applies its outline to the specs.',
+      'planning artifacts (proposals, specs, designs, tasks) that guide implementation.'
+    )
+    .replace(
+      "| `openspec land <change> [--dry-run] --json [--yes]` | Apply a finished change's outline.md to the specs and delete the change; use `--yes` only after confirming all tasks are complete |",
+      '| `openspec archive <change> --json [--yes]` | Archive a completed change; use `--yes` only after confirming all tasks are complete |'
+    )
+    .replace(
+      '- Before landing, ensure all tasks are completed, validate the change, and run `openspec land <change> --dry-run`',
+      '- When archiving, ensure all tasks are completed and validated first'
+    );
+}
+
 describe('GitHub Copilot Cloud Agent', () => {
   let tempDir: string;
 
@@ -183,7 +201,8 @@ describe('GitHub Copilot Cloud Agent', () => {
       expect(content).toContain('openspec new change <name>');
       expect(content).toContain('openspec status --change <name> --json');
       expect(content).toContain('openspec instructions [artifact] --change <name> --json');
-      expect(content).toContain('openspec archive <change> --json [--yes]');
+      expect(content).toContain('openspec land <change> [--dry-run] --json [--yes]');
+      expect(content).not.toContain('openspec archive');
       expect(content).toContain('use `--yes` only after confirming all tasks are complete');
       expect(content).toContain('run `openspec --version`');
       expect(content).not.toContain('pre-installed in the development environment');
@@ -319,9 +338,20 @@ describe('GitHub Copilot Cloud Agent', () => {
       await expect(fs.readFile(agentPath, 'utf8')).resolves.toBe(generateCopilotAgentFile());
     });
 
+    it('refreshes the archive-era generated agent', async () => {
+      const agentPath = path.join(tempDir, COPILOT_CLOUD_FILES.agent);
+      await fs.mkdir(path.dirname(agentPath), { recursive: true });
+      await fs.writeFile(agentPath, toArchiveEra(generateCopilotAgentFile()));
+
+      const result = await writeCopilotCloudFiles(tempDir);
+
+      expect(result.agentWritten).toBe(true);
+      await expect(fs.readFile(agentPath, 'utf8')).resolves.toBe(generateCopilotAgentFile());
+    });
+
     it('refreshes the previous marker-bearing generated agent', async () => {
       const agentPath = path.join(tempDir, COPILOT_CLOUD_FILES.agent);
-      const previousAgent = generateCopilotAgentFile()
+      const previousAgent = toArchiveEra(generateCopilotAgentFile())
         .replace(
           'You are a specialized agent for managing OpenSpec workflows. Before using the `openspec` CLI, run `openspec --version`. If it is unavailable, install it with `npm install -g @fission-ai/openspec`.',
           'You are a specialized agent for managing OpenSpec workflows. You have access to the `openspec` CLI through shell commands, pre-installed in the development environment via `copilot-setup-steps.yml`.'
@@ -555,7 +585,7 @@ describe('GitHub Copilot Cloud Agent', () => {
   });
 
   describe('cloud opt-in', () => {
-    const CONFIG_WITH_COMMENTS = `schema: spec-driven
+    const CONFIG_WITH_COMMENTS = `schema: outline
 
 # Project context (optional)
 context: |
@@ -598,7 +628,7 @@ context: |
         expect(written).toContain('# Project context (optional)');
         expect(written).toContain('Tech stack: TypeScript');
         expect(parse(written)).toMatchObject({
-          schema: 'spec-driven',
+          schema: 'outline',
           githubCopilot: { cloudAgent: true },
         });
         // Round-trips through the reader.
@@ -671,7 +701,7 @@ context: |
           'githubCopilot: null',
           'githubCopilot:\n  - a\n  - b',
         ]) {
-          await writeConfig(`schema: spec-driven\n# keep me\n${bad}\n`);
+          await writeConfig(`schema: outline\n# keep me\n${bad}\n`);
           await expect(persistCopilotCloudOptIn(tempDir, true)).resolves.toBeUndefined();
           expect(readCopilotCloudOptIn(tempDir)).toBe(true);
           const written = await fs.readFile(
@@ -679,7 +709,7 @@ context: |
             'utf8'
           );
           expect(written).toContain('# keep me');
-          expect(written).toContain('schema: spec-driven');
+          expect(written).toContain('schema: outline');
         }
       });
     });

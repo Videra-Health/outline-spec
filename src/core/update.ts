@@ -33,6 +33,7 @@ import {
 import {
   detectLegacyArtifacts,
   cleanupLegacyArtifacts,
+  removeRetiredWorkflowFiles,
   formatDeferredGlobalPromptSummary,
   formatCleanupSummary,
   formatDetectionSummary,
@@ -318,6 +319,7 @@ export class UpdateCommand {
     let removedSkillCount = 0;
     let removedDeselectedCommandCount = 0;
     let removedDeselectedSkillCount = 0;
+    let removedRetiredCount = 0;
 
     for (const toolId of toolsToUpdate) {
       const tool = AI_TOOLS.find((t) => t.value === toolId);
@@ -408,6 +410,12 @@ export class UpdateCommand {
           removedCommandCount += await this.removeCommandFiles(resolvedProjectPath, toolId);
         }
 
+        removedRetiredCount += await removeRetiredWorkflowFiles(
+          resolvedProjectPath,
+          toolId,
+          writesSkills ? { root: skillsRoot, dir: skillsDir } : undefined
+        );
+
         spinner.succeed(`Updated ${tool.name}`);
         updatedTools.push(tool.name);
         updatedToolIds.push(tool.value);
@@ -463,6 +471,9 @@ export class UpdateCommand {
     }
     if (removedDeselectedCommandCount > 0) {
       console.log(chalk.dim(`Removed: ${removedDeselectedCommandCount} command files (deselected workflows)`));
+    }
+    if (removedRetiredCount > 0) {
+      console.log(chalk.dim(`Removed: ${removedRetiredCount} files for retired workflows (sync, bulk-archive)`));
     }
     if (removedDeselectedSkillCount > 0) {
       console.log(chalk.dim(`Removed: ${removedDeselectedSkillCount} skill directories (deselected workflows)`));

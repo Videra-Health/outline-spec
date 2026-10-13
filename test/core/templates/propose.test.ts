@@ -54,7 +54,7 @@ const loopBodies: Array<[string, string]> = [
 ];
 
 const repoRoot = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '../../..');
-const defaultSchema = loadSchema(path.join(repoRoot, 'schemas', 'spec-driven', 'schema.yaml'));
+const defaultSchema = loadSchema(path.join(repoRoot, 'schemas', 'outline', 'schema.yaml'));
 
 /** The opening list that tells the agent which artifacts propose will produce. */
 function artifactPreamble(body: string): string {
@@ -66,12 +66,10 @@ function artifactPreamble(body: string): string {
 }
 
 describe('propose preamble', () => {
-  // #788/#1260: the preamble advertised proposal/design/tasks only, so agents
-  // treated specs as optional and produced changes with no spec at all.
-  // Derived from the schema so a new artifact cannot go unadvertised.
+  // #788/#1260: an artifact missing from the preamble gets treated as optional.
   it('advertises every artifact the default schema defines (#788, #1260)', () => {
     const ids = defaultSchema.artifacts.map(artifact => artifact.id);
-    expect(ids).toContain('specs');
+    expect(ids).toEqual(['outline', 'design', 'tasks']);
 
     for (const [label, body] of proposeBodies) {
       const preamble = artifactPreamble(body);
@@ -80,129 +78,80 @@ describe('propose preamble', () => {
       }
     }
   });
+
+  it('describes the outline model and landing', () => {
+    for (const [label, body] of proposeBodies) {
+      const preamble = artifactPreamble(body);
+      expect(preamble, label).toContain('outline.md');
+      expect(preamble, label).toContain('~~old~~ **new**');
+      expect(preamble, label).toContain('Labels never shift');
+      expect(preamble, label).toContain('openspec land <change>');
+    }
+  });
+
+  it('never teaches delta specs, scenarios, or sync', () => {
+    for (const [label, body] of loopBodies) {
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/opsx:sync', 'skip_specs', 'spec-driven', 'proposal.md']) {
+        expect(body, `${label} mentions ${stale}`).not.toContain(stale);
+      }
+    }
+  });
+
+  it('validates the outline after writing it', () => {
+    for (const [label, body] of loopBodies) {
+      expect(body, label).toContain('openspec validate "<name>"');
+    }
+  });
 });
 
-describe('default proposal guidance', () => {
-  it('frames new capabilities as durable behavior boundaries (#1965)', () => {
-    const proposal = defaultSchema.artifacts.find(artifact => artifact.id === 'proposal');
-    expect(proposal).toBeDefined();
-    expect(proposal!.instruction).toContain(
-      'Name each capability for a durable system behavior'
-    );
-    expect(proposal!.instruction).toContain(
-      'not the work in this change'
-    );
-    expect(proposal!.instruction).toContain('own related requirements as the system evolves');
-    expect(proposal!.instruction).toContain('avoid broad catch-all capabilities');
+describe('default outline guidance', () => {
+  const outline = () => defaultSchema.artifacts.find(artifact => artifact.id === 'outline')!;
 
+  it('teaches change marks and stable labels', () => {
+    const instruction = outline().instruction!;
+    expect(instruction).toContain('(patch)');
+    expect(instruction).toContain('Never relabel');
+    expect(instruction).toContain('openspec land <change>');
+    expect(instruction).toContain('openspec list --specs');
+  });
+
+  it('ships the outline template', () => {
     const template = fs.readFileSync(
-      path.join(repoRoot, 'schemas', 'spec-driven', 'templates', 'proposal.md'),
+      path.join(repoRoot, 'schemas', 'outline', 'templates', 'outline.md'),
       'utf-8'
     );
-    expect(template).toMatch(
-      /Name each capability for a cohesive system\s+behavior that can own related requirements as the system evolves/
-    );
-    expect(template).toMatch(/Do not name\s+implementation tasks or proposal sections/);
-    expect(template).toContain('Avoid broad catch-all names');
+    expect(template).toContain('## Requirements');
+    expect(template).toContain('(patch):');
+  });
 
-    const reference = fs.readFileSync(
-      path.join(repoRoot, 'docs-lab', 'reference', 'schemas', 'spec-driven', 'index.md'),
-      'utf-8'
-    );
-    expect(reference).toMatch(
-      /Name each capability for a cohesive system\s+behavior that can own related requirements as the system evolves/
-    );
-    expect(reference).toMatch(/Do not name\s+implementation tasks or proposal sections/);
-    expect(reference).toContain('Avoid broad catch-all names');
+  it('makes design conditional', () => {
+    const design = defaultSchema.artifacts.find(artifact => artifact.id === 'design')!;
+    expect(design.instruction).toMatch(/only when/);
+    expect(design.requires).toEqual(['outline']);
   });
 });
 
 describe('default task guidance', () => {
-  it('keeps tracked tasks within the pre-archive workflow (#1790)', () => {
-    const tasks = defaultSchema.artifacts.find(artifact => artifact.id === 'tasks');
-    expect(tasks).toBeDefined();
-    expect(tasks!.instruction).toMatch(
-      /Track implementation and verification work that can be completed before\s+archive/
-    );
-    expect(tasks!.instruction).toMatch(
-      /preserve those steps as plain bullets in an\s+optional `## Workflow follow-up` section at the end of tasks.md/
-    );
-
-    const examples = [...tasks!.instruction.matchAll(/```\s*([\s\S]*?)```/g)];
-    expect(examples).toHaveLength(2);
-    const implementation = examples[0][1];
-    const followUp = examples[1][1];
-    expect(followUp).toContain('## Workflow follow-up');
-    expect(followUp).toContain('- Verify the archived result.');
-    expect(parseTaskLines(followUp)).toEqual([]);
-    expect(parseTaskLines(`${implementation}\n${followUp}`)).toEqual(
-      parseTaskLines(implementation)
-    );
-  });
+  const tasks = () => defaultSchema.artifacts.find(artifact => artifact.id === 'tasks')!;
 
   it('requires a concrete verification method in each task (#345)', () => {
-    const tasks = defaultSchema.artifacts.find(artifact => artifact.id === 'tasks');
-    expect(tasks).toBeDefined();
-    expect(tasks!.instruction).toContain('Each task MUST state how to verify completion');
-    expect(tasks!.instruction).toMatch(
-      /a test, command,\s+observable behavior, or delivered artifact/
-    );
-    expect(tasks!.instruction).toMatch(
-      /Put the verification in\s+that task's checkbox description/
-    );
-    expect(tasks!.instruction).toMatch(
-      /Use a separate verification task only\s+when it checks broader integration or system behavior that spans\s+multiple implementation tasks/
-    );
-
-    const example = tasks!.instruction.match(/```\s*([\s\S]*?)```/)?.[1];
-    expect(example).toBeDefined();
-    const numberedTasks = example!.split('\n').filter(line => /^- \[ \] \d+\.\d+ /.test(line));
-    expect(numberedTasks).toHaveLength(5);
-    expect(numberedTasks.every(line => /\bverify\b/i.test(line))).toBe(true);
-    expect(numberedTasks[0]).toContain('expected files are present');
-    expect(numberedTasks[1]).toContain('package installation succeeds');
-    expect(numberedTasks[2]).toContain('export test passes');
-    expect(numberedTasks[3]).toContain('unit tests cover quoting and delimiters');
-    expect(numberedTasks[4]).toContain('Document the export API');
-    expect(example).not.toMatch(/^- \[ \] \d+\.\d+ (?:verify|run (?:the )?verification)\b/im);
+    expect(tasks().instruction).toContain('Each task states how to verify it');
   });
 
-  // #1952: agents parked testing and documentation in one trailing group, so a
-  // failure seeded in group 1 only surfaced at the end and cascaded into rework.
+  // #1952: a trailing testing group lets failures cascade back through every group.
   it('keeps tests and documentation inside the group that does the work (#1952)', () => {
-    const tasks = defaultSchema.artifacts.find(artifact => artifact.id === 'tasks');
-    expect(tasks).toBeDefined();
-    expect(tasks!.instruction).toMatch(
-      /Each task group MUST land the tests and documentation its own work\s+calls for/
-    );
-    expect(tasks!.instruction).toMatch(
-      /Do NOT collect testing or documentation into a final group/
-    );
-    // The rule is scoped to what a group's work actually needs, so the worked
-    // example's scaffolding group can carry no tests or docs without
-    // contradicting it.
-    expect(tasks!.instruction).toMatch(
-      /A group\s+whose work calls for neither, such as scaffolding or dependency setup,\s+carries neither/
-    );
-    expect(tasks!.instruction).toMatch(
-      /A final group is for integration checks only, not for\s+the tests and docs an earlier group owed/
-    );
+    expect(tasks().instruction).toMatch(/Each group lands the tests and docs its own work calls for/);
+  });
 
-    // The worked example has to show a docs task inside the implementation
-    // group, not a trailing "testing and documentation" group of its own.
-    const example = tasks!.instruction.match(/```\s*([\s\S]*?)```/)?.[1];
-    expect(example).toBeDefined();
-    const headings = example!
-      .split('\n')
-      .filter(line => /^## /.test(line.trim()))
-      .map(line => line.trim());
-    expect(headings).toHaveLength(2);
-    expect(headings.some(heading => /\b(test|testing|documentation|docs)\b/i.test(heading))).toBe(
-      false
+  it('ends with landing the change', () => {
+    expect(tasks().instruction).toContain('openspec land <change>');
+    const template = fs.readFileSync(
+      path.join(repoRoot, 'schemas', 'outline', 'templates', 'tasks.md'),
+      'utf-8'
     );
-
-    const lastGroup = example!.slice(example!.lastIndexOf(headings[headings.length - 1]));
-    expect(lastGroup).toMatch(/^- \[ \] \d+\.\d+ Document the export API in docs\/export\.md/im);
+    const tracked = parseTaskLines(template);
+    expect(tracked.length).toBeGreaterThan(0);
+    expect(template.trim().split('\n').pop()).toContain('openspec land');
   });
 });
 
@@ -521,9 +470,7 @@ describe('propose schema selection', () => {
 });
 
 describe('artifact loop guards (propose and ff)', () => {
-  // `status` is file-existence based (detectCompleted), so writing tasks.md before
-  // specs flips tasks to done and satisfies a bare applyRequires stop condition
-  // with specs never created. That is the #1260 failure chain.
+  // `status` is file-existence based, so tasks.md written first reads done with outline.md missing (#1260).
   it('warns that a done applyRequires artifact does not imply its deps exist (#788, #1260)', () => {
     for (const [label, body] of loopBodies) {
       expect(body, label).toMatch(/file-existence only/i);
@@ -574,29 +521,13 @@ describe('artifact loop guards (propose and ff)', () => {
     }
   });
 
-  // specs must not be skippable on the agent's own judgment. "Required" is not
-  // machine-readable (the graph has tasks requiring both specs and design), but
-  // the artifact's own instruction is: spec-driven's design says "create only if
-  // any apply", specs says nothing of the kind. The one legitimate way to skip
-  // specs is the `skipped` status the CLI reports for a change declaring
-  // `skip_specs` (#1399) — a decision the tool makes, never the agent.
+  // Only an artifact whose own instruction marks it conditional (design) may be skipped; outline never.
   it('permits skipping only artifacts their own instruction marks conditional', () => {
     for (const [label, body] of loopBodies) {
       expect(body, label).toContain(
-        'or when its own `instruction` says it is conditional'
+        'Skip one only when its own `instruction` says it is conditional'
       );
       expect(body, label).toContain('do not reconsider it');
-    }
-  });
-
-  // The skip_specs carve-out must stay explicit in the loop: an artifact the CLI
-  // already reports as `skipped` is satisfied and must never be written, or the
-  // agent creates spec files that `openspec validate` then rejects as
-  // conflicting with the marker (#1399).
-  it('treats a `skipped` status as satisfied and never creates it (#1399)', () => {
-    for (const [label, body] of loopBodies) {
-      expect(body, label).toContain('status: "skipped"');
-      expect(body, label).toContain('its files must NOT exist');
     }
   });
 
@@ -608,7 +539,7 @@ describe('artifact loop guards (propose and ff)', () => {
       expect(body, label).toContain(
         'run `openspec instructions <artifact-id> --change "<name>" --json` and skip only if its `instruction` field marks it optional'
       );
-      expect(body, label).toContain('never by your own judgment');
+      expect(body, label).toContain('`outline.md` never does');
     }
   });
 
@@ -654,7 +585,7 @@ describe('artifact loop guards (propose and ff)', () => {
   it('stops on the whole required set, not on applyRequires alone', () => {
     for (const [label, body] of loopBodies) {
       expect(body, label).toContain(
-        'Stop when every artifact in the required set is `done`, `skipped`, or was deliberately skipped'
+        'Stop when every artifact in the required set is `done` or was deliberately skipped'
       );
       expect(body, label).not.toContain('Stop when all `applyRequires` artifacts are done');
     }
@@ -673,8 +604,7 @@ describe('artifact loop guards (propose and ff)', () => {
     }
   });
 
-  // specs `generates` a glob (specs/**/*.md), so an agent told only to "write it
-  // to resolvedOutputPath" would create a directory literally named `**`.
+  // A custom schema may generate a glob; writing it literally creates a directory named `**`.
   it('tells the agent how to resolve a glob output path', () => {
     for (const [label, body] of loopBodies) {
       expect(body, label).toContain(

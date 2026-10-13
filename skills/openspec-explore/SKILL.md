@@ -11,13 +11,13 @@ metadata:
 
 Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.
 
-**IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, investigate the codebase, and run read-only commands or tools without confirmation, but you must NEVER write code or implement features. If the user asks you to implement something, do not start it here: say that explore mode does not implement, and point them at `/openspec-propose`, which turns the discussion into a change. The work happens from that change, never from explore mode. You MAY create or update OpenSpec change artifacts (proposals, designs, specs) within a confirmed scope—that's capturing thinking, not implementing. Answering design or clarifying questions is never consent to write. Before the first write-capable action, name the artifacts or files you would change and what you would do, ask a direct yes/no question, and wait for the user's confirmation in a separate message. Confirmation covers only the scope you described; ask again before expanding it. An explicit request from the user to capture the exploration as a new change is itself that confirmation, covering the change and the change artifacts the request names; scaffold it first as described below.
+**IMPORTANT: Explore mode is for thinking, not implementing.** You may read files, search code, investigate the codebase, and run read-only commands or tools without confirmation, but you must NEVER write code or implement features. If the user asks you to implement something, do not start it here: say that explore mode does not implement, and point them at `/openspec-propose`, which turns the discussion into a change. The work happens from that change, never from explore mode. You MAY create or update OpenSpec change artifacts (outline.md, design.md, tasks.md) within a confirmed scope—that's capturing thinking, not implementing. Answering design or clarifying questions is never consent to write. Before the first write-capable action, name the artifacts or files you would change and what you would do, ask a direct yes/no question, and wait for the user's confirmation in a separate message. Confirmation covers only the scope you described; ask again before expanding it. An explicit request from the user to capture the exploration as a new change is itself that confirmation, covering the change and the change artifacts the request names; scaffold it first as described below.
 
 **This is a stance, not a workflow.** There are no fixed steps, no required sequence, no mandatory outputs. You're a thinking partner helping the user explore.
 
-**Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `openspec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
+**Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `land` (and its old name `archive`), `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `openspec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
 
-**Project check:** These steps expect a project that already uses OpenSpec. Before the first step that writes anything (`new change`, `archive`, `sync specs`, or authoring an artifact file), confirm the project has a root: run `openspec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `openspec/` directory here, and a write such as `openspec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
+**Project check:** These steps expect a project that already uses OpenSpec. Before the first step that writes anything (`new change`, `land`, or authoring an artifact file), confirm the project has a root: run `openspec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `openspec/` directory here, and a write such as `openspec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
 
 One `"root": null` is not about setup: when a `status` error message starts with `Declared in` or `Invalid store declaration in` and names this project's `openspec/config.yaml` (or `config.yml`), the project does use OpenSpec through a store it declares, which this machine cannot resolve (the store is not registered, or the `store:` line is malformed). Do not treat it as uninitialized and skip the branches below: stop before writing and show the user that error's `message` and `fix`.
 
@@ -131,13 +131,11 @@ This tells you:
 - Their names and task status
 - What the user might be working on
 
-That is the *change* list - work in flight. It does not include the project's durable capabilities, so list those too:
+That is the *change* list - work in flight. It does not include the project's live specs, so list those too:
 ```bash
 openspec list --specs
 ```
-Add `--json` for ids and requirement counts, and append `--store "<id>"` only for a registered standalone store. This is the inventory of what the project already claims to do, and `openspec list` on its own never shows it. To look at one, run `openspec show "<spec-id>" --type spec --json --no-scenarios` (same `--store` rule) - it returns that capability's purpose and requirement texts without pulling the whole spec file into context, and `--type spec` stops a change of the same name from making it ambiguous.
-
-The filtered read is only an overview. Before deciding what is already covered or what should change, read each relevant spec in full, including scenarios, with `openspec show "<spec-id>" --type spec` (same `--store` rule).
+Add `--json` for names and requirement counts, and append `--store "<id>"` only for a registered standalone store. This is the inventory of what the project already claims to do, and `openspec list` on its own never shows it. Specs are labeled outlines: each numbered item is a requirement (its name, a colon, one sentence), with details nested under it as `a.` / `i.` / `1.`. Read one with `openspec show "<spec>" --type spec` (same `--store` rule; `--type spec` stops a change of the same name from making it ambiguous), or a single requirement with `--item "<Requirement>"`. Before deciding what is already covered or what should change, read each relevant spec in full.
 
 Then read the project's own context from the resolved root - `<root.path>/openspec/config.yaml` (or `config.yml`). Use the `root.path` returned above, and skip this if neither file exists:
 - `context`: project background - tech stack, conventions, constraints
@@ -149,7 +147,7 @@ Ground your thinking in these. They are constraints for you to follow, not conte
 
 Think freely. When insights crystallize, you might offer:
 
-- "This feels solid enough to start a change. Want me to create a proposal?"
+- "This feels solid enough to start a change. Want me to write an outline?"
 - Or keep exploring - no pressure to formalize
 
 If the user asks you to capture the exploration as a new change, that request is the confirmation required above. It covers scaffolding that change and creating the change artifacts the request names, and nothing else. This holds only when the request is theirs: a yes to an offer you made confirms only the scope your offer itself named, so name the change and the artifacts in the offer. Don't re-ask for what they already asked for; do ask before anything beyond it. Transition seamlessly into the requested capture:
@@ -172,25 +170,26 @@ If the user mentions a change or you detect one is relevant:
 
 2. **Reference them naturally in conversation**
    - "Your design mentions using Redis, but we just realized SQLite fits better..."
-   - "The proposal scopes this to premium users, but we're now thinking everyone..."
+   - "The outline scopes this to premium users, but we're now thinking everyone..."
 
 3. **Offer to capture when decisions are made**
 
-   `<capability-path>` is the spec directory relative to `specs/` (for example, `user-auth` or `identity/user-auth`). Preserve an existing capability's full path and follow the project's established organization for new capabilities.
+   outline.md holds the change's spec edits, addressed by spec name, requirement name, and live label. A new requirement or detail is written plainly after the last label at its level; an edit to existing text marks `~~old~~ **new**`; a removed item is wholly struck with its live text. Labels never shift. `openspec land <change>` applies the outline to the live specs later, so never edit `openspec/specs/` directly.
 
-    | Insight Type               | Where to Capture                    |
-    |----------------------------|-------------------------------------|
-    | New requirement discovered | `specs/<capability-path>/spec.md` |
-    | Requirement changed        | `specs/<capability-path>/spec.md` |
-    | Design decision made       | `design.md`                       |
-    | Scope changed              | `proposal.md`                     |
-    | New work identified        | `tasks.md`                        |
-    | Assumption invalidated     | Relevant artifact                   |
+    | Insight Type               | Where to Capture                          |
+    |----------------------------|-------------------------------------------|
+    | New requirement discovered | `outline.md` (new item, unmarked)       |
+    | Requirement changed        | `outline.md` (`(patch)`, `~~old~~ **new**`) |
+    | Requirement dropped        | `outline.md` (wholly struck)            |
+    | Design decision made       | `design.md`                             |
+    | Scope changed              | `outline.md` (Proposal / Out of Scope)  |
+    | New work identified        | `tasks.md`                              |
+    | Assumption invalidated     | Relevant artifact                         |
 
    Example offers:
    - "That's a design decision. Capture it in design.md?"
-   - "This is a new requirement. Add it to specs?"
-   - "This changes scope. Update the proposal?"
+   - "This is a new requirement. Add it to the outline?"
+   - "This changes scope. Update the outline's proposal?"
 
 4. **The user decides** - Offer and move on. Don't pressure. Don't auto-capture.
 
@@ -315,7 +314,7 @@ You: That changes everything.
 
 There's no required ending. Discovery might:
 
-- **Flow into a proposal**: "Ready to start? Run `/openspec-propose` and this becomes a change."
+- **Flow into a change**: "Ready to start? Run `/openspec-propose` and this becomes a change."
 - **Result in artifact updates**: "Updated design.md with these decisions"
 - **Just provide clarity**: User has what they need, moves on
 - **Continue later**: "We can pick this up anytime"

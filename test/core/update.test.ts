@@ -208,6 +208,24 @@ Old instructions content
       consoleSpy.mockRestore();
     });
 
+    it('should remove retired sync and bulk-archive skills and commands', async () => {
+      const skillsDir = path.join(testDir, '.claude', 'skills');
+      const commandsDir = path.join(testDir, '.claude', 'commands', 'opsx');
+      for (const dir of ['openspec-explore', 'openspec-sync-specs', 'openspec-bulk-archive-change']) {
+        await fs.mkdir(path.join(skillsDir, dir), { recursive: true });
+        await fs.writeFile(path.join(skillsDir, dir, 'SKILL.md'), 'old');
+      }
+      await fs.mkdir(commandsDir, { recursive: true });
+      await fs.writeFile(path.join(commandsDir, 'sync.md'), 'old');
+
+      await updateCommand.execute(testDir);
+
+      expect(await FileSystemUtils.directoryExists(path.join(skillsDir, 'openspec-sync-specs'))).toBe(false);
+      expect(await FileSystemUtils.directoryExists(path.join(skillsDir, 'openspec-bulk-archive-change'))).toBe(false);
+      expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'sync.md'))).toBe(false);
+      expect(await FileSystemUtils.fileExists(path.join(skillsDir, 'openspec-land-change', 'SKILL.md'))).toBe(true);
+    });
+
     it('should refresh configured DeepSeek Harness skills and stay idempotent', async () => {
       const skillsDir = path.join(testDir, '.dsh', 'skills');
       const skillFile = path.join(skillsDir, 'openspec-explore', 'SKILL.md');
@@ -1122,12 +1140,12 @@ metadata:
 
       await updateCommand.execute(testDir);
 
-      // Verify core profile skill files were created/updated (propose, explore, apply, update, sync, archive)
+      // Verify core profile skill files were created/updated (propose, explore, apply, update, land, archive)
       const coreSkillNames = [
         'openspec-explore',
         'openspec-apply-change',
         'openspec-update-change',
-        'openspec-sync-specs',
+        'openspec-land-change',
         'openspec-archive-change',
         'openspec-propose',
       ];
@@ -1148,7 +1166,6 @@ metadata:
         'openspec-new-change',
         'openspec-continue-change',
         'openspec-ff-change',
-        'openspec-bulk-archive-change',
         'openspec-verify-change',
       ];
 
@@ -1201,7 +1218,7 @@ metadata:
       await new UpdateCommand({ force: true }).execute(testDir);
 
       const command = await fs.readFile(commandFile, 'utf-8');
-      expect(command).toContain('/opsx-archive');
+      expect(command).toContain('/opsx-land');
       expect(command).not.toContain('/opsx:');
 
       const skill = await fs.readFile(skillFile, 'utf-8');
@@ -1221,14 +1238,14 @@ metadata:
         path.join(testDir, '.claude', 'commands', 'opsx', 'apply.md'),
         'utf-8'
       );
-      expect(claudeCommand).toContain('/opsx:archive');
-      expect(claudeCommand).not.toContain('/opsx-archive');
+      expect(claudeCommand).toContain('/opsx:land');
+      expect(claudeCommand).not.toContain('/opsx-land');
 
       const qwenCommand = await fs.readFile(
         path.join(testDir, '.qwen', 'commands', 'opsx-apply.md'),
         'utf-8'
       );
-      expect(qwenCommand).toContain('/opsx-archive');
+      expect(qwenCommand).toContain('/opsx-land');
       expect(qwenCommand).not.toContain('/opsx:');
 
       const qwenSkill = await fs.readFile(
@@ -1278,7 +1295,7 @@ metadata:
         expect(refreshed).not.toContain('/opsx-');
       }
       // The prompt body cross-references other prompts; those move too.
-      expect(await fs.readFile(promptFile, 'utf-8')).toContain('@opsx-archive');
+      expect(await fs.readFile(promptFile, 'utf-8')).toContain('@opsx-land');
     });
 
     it('should update opsx commands for configured Claude tool', async () => {
@@ -1377,8 +1394,8 @@ metadata:
 
       await updateCommand.execute(testDir);
 
-      // Verify core profile commands were created (propose, explore, apply, update, sync, archive)
-      const coreCommandIds = ['explore', 'apply', 'update', 'sync', 'archive', 'propose'];
+      // Verify core profile commands were created (propose, explore, apply, update, land, archive)
+      const coreCommandIds = ['explore', 'apply', 'update', 'land', 'archive', 'propose'];
       const commandsDir = path.join(testDir, '.claude', 'commands', 'opsx');
       for (const cmdId of coreCommandIds) {
         const cmdFile = path.join(commandsDir, `${cmdId}.md`);
@@ -1387,7 +1404,7 @@ metadata:
       }
 
       // Verify non-core commands are NOT created
-      const nonCoreCommandIds = ['new', 'continue', 'ff', 'bulk-archive', 'verify'];
+      const nonCoreCommandIds = ['new', 'continue', 'ff', 'verify'];
       for (const cmdId of nonCoreCommandIds) {
         const cmdFile = path.join(commandsDir, `${cmdId}.md`);
         const exists = await FileSystemUtils.fileExists(cmdFile);
@@ -1441,14 +1458,14 @@ metadata:
 
         const commandContent = await fs.readFile(path.join(commandsDir, 'opsx-apply.md'), 'utf-8');
         expect(commandContent).toMatch(/^---\ndescription: /);
-        expect(commandContent).toContain('/opsx-archive');
+        expect(commandContent).toContain('/opsx-land');
         expect(commandContent).not.toContain('/opsx:');
         expect(await FileSystemUtils.fileExists(path.join(commandsDir, 'opsx-propose.md'))).toBe(true);
 
         expect(await FileSystemUtils.fileExists(skillFile)).toBe(delivery === 'both');
         if (delivery === 'both') {
           const skillContent = await fs.readFile(skillFile, 'utf-8');
-          expect(skillContent).toContain('/opsx-archive');
+          expect(skillContent).toContain('/opsx-land');
           expect(skillContent).not.toContain('/opsx:');
         }
 
@@ -1462,7 +1479,7 @@ metadata:
       setMockConfig({ featureFlags: {}, profile: 'core', delivery: 'commands' });
       const commandsDir = path.join(testDir, '.claude', 'commands', 'opsx');
       await fs.mkdir(commandsDir, { recursive: true });
-      const coreCommandIds = ['explore', 'apply', 'update', 'sync', 'archive', 'propose'];
+      const coreCommandIds = ['explore', 'apply', 'update', 'land', 'archive', 'propose'];
       for (const cmdId of coreCommandIds) {
         await fs.writeFile(path.join(commandsDir, `${cmdId}.md`), 'old command content');
       }
@@ -1645,7 +1662,7 @@ metadata:
         'explore',
         'apply',
         'update',
-        'sync',
+        'land',
         'archive',
         'propose',
       ];
@@ -2877,8 +2894,8 @@ ${OPENSPEC_MARKERS.end}
 
     it.each([
       ['opsx-archive.md', 'openspec-archive-change'],
-      ['opsx-bulk-archive.md', 'openspec-bulk-archive-change'],
-    ])('should include sync when replacing legacy Codex %s', async (promptName, archiveSkill) => {
+      ['opsx-bulk-archive.md', 'openspec-land-change'],
+    ])('should include land when replacing legacy Codex %s', async (promptName, archiveSkill) => {
       setMockConfig({
         featureFlags: {},
         profile: 'core',
@@ -2898,7 +2915,7 @@ ${OPENSPEC_MARKERS.end}
         path.join(testDir, '.agents', 'skills', archiveSkill, 'SKILL.md')
       )).toBe(true);
       expect(await FileSystemUtils.fileExists(
-        path.join(testDir, '.agents', 'skills', 'openspec-sync-specs', 'SKILL.md')
+        path.join(testDir, '.agents', 'skills', 'openspec-land-change', 'SKILL.md')
       )).toBe(true);
     });
 
@@ -3506,7 +3523,7 @@ More user content after markers.
         'openspec-propose',
         'openspec-explore',
         'openspec-apply-change',
-        'openspec-sync-specs',
+        'openspec-land-change',
         'openspec-archive-change',
       ];
 
@@ -3705,7 +3722,7 @@ More user content after markers.
     });
 
     it.each(['skills', 'commands', 'both'] as const)(
-      'should repair an archive profile missing sync with %s delivery',
+      'should repair an archive profile missing land with %s delivery',
       async (delivery) => {
         setMockConfig({
           featureFlags: {},
@@ -3752,10 +3769,10 @@ More user content after markers.
         )).toBe(true);
 
         expect(await FileSystemUtils.fileExists(
-          path.join(testDir, '.claude', 'skills', 'openspec-sync-specs', 'SKILL.md')
+          path.join(testDir, '.claude', 'skills', 'openspec-land-change', 'SKILL.md')
         )).toBe(delivery !== 'commands');
         expect(await FileSystemUtils.fileExists(
-          path.join(testDir, '.claude', 'commands', 'opsx', 'sync.md')
+          path.join(testDir, '.claude', 'commands', 'opsx', 'land.md')
         )).toBe(delivery !== 'skills');
 
         consoleSpy.mockRestore();
@@ -3767,7 +3784,7 @@ More user content after markers.
         featureFlags: {},
         profile: 'custom',
         delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'sync', 'archive'],
+        workflows: ['propose', 'explore', 'apply', 'land', 'archive'],
       });
 
       const initCommand = new InitCommand({ tools: 'claude', force: true });
@@ -3795,7 +3812,7 @@ More user content after markers.
         featureFlags: {},
         profile: 'custom',
         delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'update', 'sync', 'archive', 'verify'],
+        workflows: ['propose', 'explore', 'apply', 'update', 'land', 'archive', 'verify'],
       });
 
       const initCommand = new InitCommand({ tools: 'claude', force: true });
@@ -3832,7 +3849,7 @@ More user content after markers.
       );
       const note = calls.find(call => call.includes('more workflows are available'));
       expect(note).toBeTruthy();
-      for (const workflow of ['new', 'continue', 'ff', 'bulk-archive', 'verify', 'onboard']) {
+      for (const workflow of ['new', 'continue', 'ff', 'verify', 'onboard']) {
         expect(note).toContain(workflow);
       }
 
@@ -3844,7 +3861,7 @@ More user content after markers.
         featureFlags: {},
         profile: 'custom',
         delivery: 'both',
-        workflows: ['propose', 'explore', 'apply', 'sync', 'archive'],
+        workflows: ['propose', 'explore', 'apply', 'land', 'archive'],
       });
 
       const initCommand = new InitCommand({ tools: 'claude', force: true });
@@ -3976,7 +3993,7 @@ More user content after markers.
         expect(await FileSystemUtils.fileExists(skillFile)).toBe(delivery === 'skills');
         if (delivery === 'skills') {
           const skillContent = await fs.readFile(skillFile, 'utf-8');
-          expect(skillContent).toContain('the openspec-archive-change skill');
+          expect(skillContent).toContain('the openspec-land-change skill');
           expect(skillContent).not.toContain('/openspec-');
           expect(skillContent).not.toContain('/opsx-');
         }
@@ -4143,8 +4160,8 @@ More user content after markers.
         'openspec-archive-change',
         'openspec-custom',
         'openspec-explore',
+        'openspec-land-change',
         'openspec-propose',
-        'openspec-sync-specs',
         'openspec-update-change',
       ]);
       expect(await fs.readFile(customSkill, 'utf-8')).toBe('my custom skill');
@@ -4335,7 +4352,7 @@ content
     });
 
     it('should remove workflows outside profile during update sync', async () => {
-      // Set core profile (propose, explore, apply, sync, archive)
+      // Set core profile (propose, explore, apply, update, land, archive)
       setMockConfig({
         featureFlags: {},
         profile: 'core',

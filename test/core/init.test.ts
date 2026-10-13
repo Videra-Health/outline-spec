@@ -152,7 +152,7 @@ describe('InitCommand', () => {
       expect(await fileExists(configPath)).toBe(true);
 
       const content = await fs.readFile(configPath, 'utf-8');
-      expect(content).toContain('schema: spec-driven');
+      expect(content).toContain('schema: outline');
     });
 
     it('should guide project.md migration without copying or deleting it', async () => {
@@ -185,7 +185,7 @@ describe('InitCommand', () => {
       expect(content).toContain('context: |');
       expect(content).toContain('  Language: Portuguese (pt-BR)');
       expect(content).toContain('  All artifacts must be written in Portuguese (pt-BR).');
-      expect(content).toContain('  Keep OpenSpec structural headings and SHALL/MUST keywords in English.');
+      expect(content).toContain('  Keep OpenSpec structural headings (such as ## Requirements) in English.');
       expect(readProjectConfig(testDir)?.context).toContain('Language: Portuguese (pt-BR)');
 
       await initCommand.execute(testDir);
@@ -197,7 +197,7 @@ describe('InitCommand', () => {
       await fs.mkdir(path.join(openspecPath, 'changes'), { recursive: true });
       await fs.mkdir(path.join(openspecPath, 'specs'), { recursive: true });
       const configPath = path.join(openspecPath, 'config.yaml');
-      const originalConfig = 'schema: spec-driven\ncontext: |\n  Keep this context exactly.\n';
+      const originalConfig = 'schema: outline\ncontext: |\n  Keep this context exactly.\n';
       await fs.writeFile(configPath, originalConfig, 'utf-8');
 
       const initCommand = new InitCommand({ tools: 'none', force: true, language: 'French' });
@@ -213,7 +213,7 @@ describe('InitCommand', () => {
       await fs.mkdir(path.join(openspecPath, 'changes'), { recursive: true });
       await fs.mkdir(path.join(openspecPath, 'specs'), { recursive: true });
       const configPath = path.join(openspecPath, 'config.yml');
-      const originalConfig = 'schema: spec-driven\ncontext: Keep this YAML context.\n';
+      const originalConfig = 'schema: outline\ncontext: Keep this YAML context.\n';
       await fs.writeFile(configPath, originalConfig, 'utf-8');
 
       const initCommand = new InitCommand({ tools: 'none', force: true, language: 'French' });
@@ -225,7 +225,7 @@ describe('InitCommand', () => {
     });
 
     it('should accept language context at the exact project context size limit', async () => {
-      const language = 'x'.repeat(25_542);
+      const language = 'x'.repeat(25_541);
       const initCommand = new InitCommand({ tools: 'none', force: true, language });
 
       await initCommand.execute(testDir);
@@ -315,13 +315,13 @@ describe('InitCommand', () => {
 
       await initCommand.execute(testDir);
 
-      // Core profile: propose, explore, apply, update, sync, archive
+      // Core profile: propose, explore, apply, update, land, archive
       const coreSkillNames = [
         'openspec-propose',
         'openspec-explore',
         'openspec-apply-change',
         'openspec-update-change',
-        'openspec-sync-specs',
+        'openspec-land-change',
         'openspec-archive-change',
       ];
 
@@ -340,7 +340,6 @@ describe('InitCommand', () => {
         'openspec-new-change',
         'openspec-continue-change',
         'openspec-ff-change',
-        'openspec-bulk-archive-change',
         'openspec-verify-change',
       ];
 
@@ -350,46 +349,40 @@ describe('InitCommand', () => {
       }
     });
 
-    it.each([
-      ['archive', 'openspec-archive-change'],
-      ['bulk-archive', 'openspec-bulk-archive-change'],
-    ] as const)(
-      'should install the sync workflow required by %s in a custom profile',
-      async (archiveWorkflow, archiveSkill) => {
-        saveGlobalConfig({
-          featureFlags: {},
-          profile: 'custom',
-          delivery: 'both',
-          workflows: ['propose', 'explore', 'apply', archiveWorkflow],
-        });
+    it('should install the land workflow required by archive in a custom profile', async () => {
+      saveGlobalConfig({
+        featureFlags: {},
+        profile: 'custom',
+        delivery: 'both',
+        workflows: ['propose', 'explore', 'apply', 'archive'],
+      });
 
-        const initCommand = new InitCommand({ tools: 'claude', force: true });
-        await initCommand.execute(testDir);
+      const initCommand = new InitCommand({ tools: 'claude', force: true });
+      await initCommand.execute(testDir);
 
-        await expect(
-          fs.access(path.join(testDir, '.claude', 'skills', archiveSkill, 'SKILL.md'))
-        ).resolves.toBeUndefined();
-        await expect(
-          fs.access(path.join(testDir, '.claude', 'skills', 'openspec-sync-specs', 'SKILL.md'))
-        ).resolves.toBeUndefined();
-        await expect(
-          fs.access(path.join(testDir, '.claude', 'commands', 'opsx', 'sync.md'))
-        ).resolves.toBeUndefined();
-      }
-    );
+      await expect(
+        fs.access(path.join(testDir, '.claude', 'skills', 'openspec-archive-change', 'SKILL.md'))
+      ).resolves.toBeUndefined();
+      await expect(
+        fs.access(path.join(testDir, '.claude', 'skills', 'openspec-land-change', 'SKILL.md'))
+      ).resolves.toBeUndefined();
+      await expect(
+        fs.access(path.join(testDir, '.claude', 'commands', 'opsx', 'land.md'))
+      ).resolves.toBeUndefined();
+    });
 
     it('should create core profile commands for Claude Code by default', async () => {
       const initCommand = new InitCommand({ tools: 'claude', force: true });
 
       await initCommand.execute(testDir);
 
-      // Core profile: propose, explore, apply, update, sync, archive
+      // Core profile: propose, explore, apply, update, land, archive
       const coreCommandNames = [
         'opsx/propose.md',
         'opsx/explore.md',
         'opsx/apply.md',
         'opsx/update.md',
-        'opsx/sync.md',
+        'opsx/land.md',
         'opsx/archive.md',
       ];
 
@@ -403,7 +396,6 @@ describe('InitCommand', () => {
         'opsx/new.md',
         'opsx/continue.md',
         'opsx/ff.md',
-        'opsx/bulk-archive.md',
         'opsx/verify.md',
       ];
 
@@ -517,10 +509,10 @@ describe('InitCommand', () => {
           'openspec-explore',
           'openspec-apply-change',
           'openspec-update-change',
-          'openspec-sync-specs',
+          'openspec-land-change',
           'openspec-archive-change',
         ].map((name) => path.join(testDir, '.claude', 'skills', name, 'SKILL.md')),
-        ...['propose', 'explore', 'apply', 'update', 'sync', 'archive'].map((name) =>
+        ...['propose', 'explore', 'apply', 'update', 'land', 'archive'].map((name) =>
           path.join(testDir, '.claude', 'commands', 'opsx', `${name}.md`)
         ),
       ];
@@ -593,25 +585,21 @@ describe('InitCommand', () => {
         expect(content).toContain('Keep the selected `--store <id>` on both commands');
       }
 
-      const syncFiles = [
-        path.join(testDir, '.claude', 'skills', 'openspec-sync-specs', 'SKILL.md'),
-        path.join(testDir, '.claude', 'commands', 'opsx', 'sync.md'),
+      const landFiles = [
+        path.join(testDir, '.claude', 'skills', 'openspec-land-change', 'SKILL.md'),
+        path.join(testDir, '.claude', 'commands', 'opsx', 'land.md'),
       ];
 
-      for (const file of syncFiles) {
+      // Land validates and previews before it writes anything.
+      for (const file of landFiles) {
         const content = await fs.readFile(file, 'utf-8');
-        const mutationsComplete = content.indexOf(
-          'Follow the **Main Spec Format Reference** below'
-        );
-        const validation = content.indexOf('openspec validate --specs');
-        const summary = content.indexOf('6. **Show summary**');
+        const validation = content.indexOf('openspec validate "<name>"');
+        const dryRun = content.indexOf('openspec land "<name>" --dry-run');
+        const land = content.indexOf('openspec land "<name>" --yes');
 
-        expect(mutationsComplete).toBeGreaterThanOrEqual(0);
-        expect(validation).toBeGreaterThan(mutationsComplete);
-        expect(summary).toBeGreaterThan(validation);
-        expect(content).toContain(
-          'If validation fails, report the problems and do not claim the sync succeeded'
-        );
+        expect(validation).toBeGreaterThanOrEqual(0);
+        expect(dryRun).toBeGreaterThan(validation);
+        expect(land).toBeGreaterThan(dryRun);
       }
     });
 
@@ -684,7 +672,7 @@ describe('InitCommand', () => {
 
         if (delivery !== 'commands') {
           const skillContent = await fs.readFile(skillFile, 'utf-8');
-          expect(skillContent).toContain(delivery === 'skills' ? 'the openspec-archive-change skill' : '/opsx-archive');
+          expect(skillContent).toContain(delivery === 'skills' ? 'the openspec-land-change skill' : '/opsx-land');
           expect(skillContent).not.toContain('/opsx:');
           if (delivery === 'skills') {
             expect(skillContent).not.toContain('/openspec-');
@@ -694,7 +682,7 @@ describe('InitCommand', () => {
         if (delivery !== 'skills') {
           const commandContent = await fs.readFile(commandFile, 'utf-8');
           expect(commandContent).toMatch(/^---\ndescription: /);
-          expect(commandContent).toContain('/opsx-archive');
+          expect(commandContent).toContain('/opsx-land');
           expect(commandContent).not.toContain('/opsx:');
         }
 
@@ -971,7 +959,7 @@ describe('InitCommand', () => {
         path.join(skillsRoot, 'openspec-apply-change', 'SKILL.md'),
         'utf-8',
       );
-      expect(applyBody).toMatch(/the openspec-archive-change skill/);
+      expect(applyBody).toMatch(/the openspec-land-change skill/);
 
       const rovoLogCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
       expect(rovoLogCalls.some((entry) => entry.includes('Created: Rovo Dev CLI'))).toBe(true);
@@ -1023,7 +1011,7 @@ describe('InitCommand', () => {
         path.join(skillsRoot, 'openspec-apply-change', 'SKILL.md'),
         'utf-8',
       );
-      expect(applyBody).toMatch(/\/openspec-archive-change/);
+      expect(applyBody).toMatch(/\/openspec-land-change/);
 
       const dshLogCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
       expect(dshLogCalls.some((entry) => entry.includes('Created: DeepSeek Harness'))).toBe(true);
@@ -1104,8 +1092,8 @@ describe('InitCommand', () => {
         'openspec-apply-change',
         'openspec-archive-change',
         'openspec-explore',
+        'openspec-land-change',
         'openspec-propose',
-        'openspec-sync-specs',
         'openspec-update-change',
       ];
       expect((await fs.readdir(skillsDir)).sort()).toEqual(skillNames);
@@ -1115,7 +1103,7 @@ describe('InitCommand', () => {
         expect(content).not.toMatch(/\/opsx[:-]/);
       }
       const applyContent = await fs.readFile(path.join(skillsDir, 'openspec-apply-change', 'SKILL.md'), 'utf-8');
-      expect(applyContent).toContain('/openspec-archive-change');
+      expect(applyContent).toContain('/openspec-land-change');
 
       const commandsDir = path.join(testDir, '.grok', 'commands');
       expect(await directoryExists(commandsDir)).toBe(false);
@@ -1731,7 +1719,7 @@ describe('InitCommand', () => {
           const commandFiles = await fs.readdir(commandsDir);
           expect(commandFiles.sort()).toEqual([
             'opsx-apply.md', 'opsx-archive.md', 'opsx-explore.md',
-            'opsx-propose.md', 'opsx-sync.md', 'opsx-update.md',
+            'opsx-land.md', 'opsx-propose.md', 'opsx-update.md',
           ]);
           for (const filename of commandFiles) {
             const content = await fs.readFile(path.join(commandsDir, filename), 'utf-8');
@@ -1756,7 +1744,7 @@ describe('InitCommand', () => {
       await initCommand.execute(testDir);
 
       const commandsDir = path.join(testDir, `.${toolId}`, 'commands', 'opsx');
-      const commandIds = ['apply', 'archive', 'explore', 'propose', 'sync', 'update'];
+      const commandIds = ['apply', 'archive', 'explore', 'land', 'propose', 'update'];
       expect((await fs.readdir(commandsDir)).sort()).toEqual(commandIds.map((id) => `${id}.toml`));
       for (const commandId of commandIds) {
         const content = parseToml(await fs.readFile(path.join(commandsDir, `${commandId}.toml`), 'utf-8'));
@@ -2102,8 +2090,8 @@ describe('InitCommand - profile and detection features', () => {
     );
     expect(await fileExists(skillFile)).toBe(true);
     const skillContent = await fs.readFile(skillFile, 'utf-8');
-    expect(skillContent).toContain('/openspec-archive-change');
-    expect(skillContent).not.toContain('$openspec-archive-change');
+    expect(skillContent).toContain('/openspec-land-change');
+    expect(skillContent).not.toContain('$openspec-land-change');
     expect(await fs.readFile(
       path.join(testDir, '.agents', 'skills', '.openspec-target'),
       'utf-8'
@@ -2480,7 +2468,7 @@ describe('InitCommand - profile and detection features', () => {
     const logCalls = (console.log as unknown as { mock: { calls: unknown[][] } }).mock.calls.flat().map(String);
     const note = logCalls.find((entry) => entry.includes('more workflows are available'));
     expect(note).toBeTruthy();
-    for (const workflow of ['new', 'continue', 'ff', 'bulk-archive', 'verify', 'onboard']) {
+    for (const workflow of ['new', 'continue', 'ff', 'verify', 'onboard']) {
       expect(note).toContain(workflow);
     }
     // Workflows that were installed must not be advertised as missing
@@ -2680,7 +2668,7 @@ describe('InitCommand - profile and detection features', () => {
     const cursorCommand = await read('.cursor', 'commands', 'opsx-apply.md');
     // A body cross-reference, not the frontmatter name, which already
     // carried the hyphen form before this behaviour existed.
-    expect(cursorCommand).toContain('/opsx-archive');
+    expect(cursorCommand).toContain('/opsx-land');
     expect(cursorCommand).not.toContain('/opsx:');
 
     const cursorSkill = await read('.cursor', 'skills', 'openspec-apply-change', 'SKILL.md');
@@ -2688,7 +2676,7 @@ describe('InitCommand - profile and detection features', () => {
 
     // Claude's namespaced commands are unchanged
     const claudeCommand = await read('.claude', 'commands', 'opsx', 'apply.md');
-    expect(claudeCommand).toContain('/opsx:archive');
+    expect(claudeCommand).toContain('/opsx:land');
     expect(claudeCommand).not.toContain('/opsx-');
 
     const claudeSkill = await read('.claude', 'skills', 'openspec-apply-change', 'SKILL.md');

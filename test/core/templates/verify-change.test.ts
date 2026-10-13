@@ -14,12 +14,12 @@ const bodies: Array<[string, string]> = [
 ];
 
 describe('verify-change templates', () => {
-  it('finds spec and design artifacts by output path, not by hardcoded artifact id', () => {
+  it('finds outline and design artifacts by output path, not by hardcoded artifact id', () => {
     for (const [label, body] of bodies) {
-      expect(body, label).not.toContain('`contextFiles.specs`');
+      expect(body, label).not.toContain('`contextFiles.outline`');
       expect(body, label).not.toContain('`contextFiles.design`');
       expect(body, label).toContain('`artifactPaths.<id>.outputPath`');
-      expect(body, label).toContain('under `specs/`');
+      expect(body, label).toContain('is or ends in `outline.md`');
       expect(body, label).toContain('`contextFiles.<id>`');
       expect(body, label).toContain('is or ends in `design.md`');
     }
@@ -64,7 +64,7 @@ describe('verify-change templates', () => {
 
   it('requires usable evidence rather than just existing artifact paths', () => {
     for (const [label, body] of bodies) {
-      expect(body, label).toContain('cannot be read or contain no usable requirements, scenarios, or design decisions');
+      expect(body, label).toContain('cannot be read or contain no usable requirements, details, or design decisions');
       expect(body, label).toContain('Continue checks supported by the remaining evidence');
       expect(body, label).toContain('a partially checked input set is not a fully verified check');
       expect(body, label).toContain('If implementation changes cannot be identified, mark **Code Pattern Consistency** as not verified');
@@ -74,22 +74,22 @@ describe('verify-change templates', () => {
   it('does not mistake apply readiness for verification or execute apply instructions', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('Treat apply `state` and `instruction` as context, not a verification verdict');
-      expect(body, label).toContain('Do not implement tasks or archive the change during verification');
+      expect(body, label).toContain('Do not implement tasks or land the change during verification');
     }
   });
 
-  it('preserves optional artifacts and the existing archive workflow', () => {
+  it('preserves optional artifacts and the existing land workflow', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('Verification is advisory');
-      expect(body, label).toContain('`skip_specs: true`');
+      expect(body, label).toContain('an outline with no spec edits');
       expect(body, label).toContain('schemas without task tracking');
       expect(body, label).toContain('Do not require or invent optional or intentionally omitted artifacts');
       expect(body, label).toContain('Mark checks the schema does not define, or artifacts the status reports as intentionally skipped, as **Not applicable**');
-      expect(body, label).toContain('Exclude them from skipped-check counts and the archive-readiness assessment');
+      expect(body, label).toContain('Exclude them from skipped-check counts and the land-readiness assessment');
       expect(body, label).toContain('If `taskTrackingConfigured` is false, report **Task Completion** as not applicable');
       expect(body, label).toContain('If `taskTrackingConfigured` is true and `tasks` is empty, mark **Task Completion** as not verified');
-      expect(body, label).toContain('`Not verified` describes a limit of this report, not a new archive prerequisite');
-      expect(body, label).toContain('Archive retains its own checks and user-confirmation behavior');
+      expect(body, label).toContain('`Not verified` describes a limit of this report, not a new land prerequisite');
+      expect(body, label).toContain('Land retains its own checks and user-confirmation behavior');
     }
   });
 
@@ -112,14 +112,14 @@ describe('verify-change templates', () => {
   it('maps missing supporting artifacts to every check they prevent', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        'mark **Spec Coverage**, **Requirement Implementation Mapping**, and **Scenario Coverage** as not verified'
+        'mark **Spec Coverage**, **Requirement Implementation Mapping**, and **Detail Coverage** as not verified'
       );
       expect(body, label).toContain('mark **Design Adherence** as not verified');
       expect(body, label).toContain('**Code Pattern Consistency** still runs');
     }
   });
 
-  it('never reports a skipped check as passing or archive-ready', () => {
+  it('never reports a skipped check as passing or ready to land', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain('`Not verified (<reason>)` for every skipped check');
       expect(body, label).toContain('Never score a skipped check as passing');
@@ -130,6 +130,19 @@ describe('verify-change templates', () => {
       );
       expect(body, label).toContain('do not claim readiness');
       expect(body, label).toContain('If no issues and no checks were skipped');
+    }
+  });
+
+  it('checks code against outline.md marks and the landed specs', () => {
+    for (const [label, body] of bodies) {
+      expect(body, label).toContain('`~~old~~ **new**`');
+      expect(body, label).toContain('openspec show "<spec>" --type spec');
+      expect(body, label).toContain('openspec validate "<name>"');
+      expect(body, label).toContain('openspec land "<name>" --dry-run');
+      expect(body, label).toContain('Never report a removed item as "Requirement not found"');
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/opsx:sync', 'spec-driven', 'skip_specs', '/opsx:archive']) {
+        expect(body, label).not.toContain(stale);
+      }
     }
   });
 });

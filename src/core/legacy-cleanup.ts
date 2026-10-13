@@ -10,7 +10,8 @@ import type { FileHandle } from 'fs/promises';
 import chalk from 'chalk';
 import { FileSystemUtils, removeMarkerBlock as removeMarkerBlockUtil } from '../utils/file-system.js';
 import { OPENSPEC_MARKERS } from './config.js';
-import { ALL_WORKFLOWS, type WorkflowId } from './profiles.js';
+import { CommandAdapterRegistry } from './command-generation/index.js';
+import { ALL_WORKFLOWS, RETIRED_WORKFLOWS, type WorkflowId } from './profiles.js';
 
 /**
  * Legacy config file names from the old ToolRegistry.
@@ -32,7 +33,7 @@ const LEGACY_DIRECTORY_COMMAND_FILES = ['proposal.md', 'apply.md', 'archive.md']
 
 /** Exact Kilo workflow files written by OpenSpec before the command path moved. */
 const LEGACY_KILOCODE_COMMAND_FILES = [
-  ...ALL_WORKFLOWS.map(workflow => `.kilocode/workflows/opsx-${workflow}.md`),
+  ...[...ALL_WORKFLOWS, ...RETIRED_WORKFLOWS.keys()].map(workflow => `.kilocode/workflows/opsx-${workflow}.md`),
   '.kilocode/workflows/openspec-proposal.md',
   '.kilocode/workflows/openspec-apply.md',
   '.kilocode/workflows/openspec-archive.md',
@@ -106,9 +107,9 @@ const LEGACY_GLOBAL_CODEX_WORKFLOWS: Record<string, readonly WorkflowId[]> = {
   'opsx-apply.md': ['apply'],
   'opsx-update.md': ['update'],
   'opsx-ff.md': ['ff'],
-  'opsx-sync.md': ['sync'],
+  'opsx-sync.md': ['land'],
   'opsx-archive.md': ['archive'],
-  'opsx-bulk-archive.md': ['bulk-archive'],
+  'opsx-bulk-archive.md': ['land'],
   'opsx-verify.md': ['verify'],
   'opsx-onboard.md': ['onboard'],
 };
@@ -1196,4 +1197,35 @@ export function formatProjectMdMigrationHint(): string {
   lines.push('');
   lines.push(chalk.dim('    Review config.yaml, then delete project.md when ready.'));
   return lines.join('\n');
+}
+
+/**
+ * Removes the skill directories and command files of workflows retired with
+ * delta specs (`sync`, `bulk-archive`). Returns how many it removed.
+ */
+export async function removeRetiredWorkflowFiles(
+  projectPath: string,
+  toolId: string,
+  skills?: { root: string; dir: string }
+): Promise<number> {
+  let removed = 0;
+  const adapter = CommandAdapterRegistry.get(toolId);
+  for (const [workflowId, skillDirName] of RETIRED_WORKFLOWS) {
+    if (skills) {
+      const skillDir = path.join(skills.dir, skillDirName);
+      if (await FileSystemUtils.directoryExists(skillDir)) {
+        FileSystemUtils.assertPathWithin(skills.root, skillDir);
+        await fs.rm(skillDir, { recursive: true, force: true });
+        removed++;
+      }
+    }
+    if (adapter) {
+      const commandFile = FileSystemUtils.resolveProjectArtifactPath(projectPath, adapter.getFilePath(workflowId));
+      if (await FileSystemUtils.fileExists(commandFile)) {
+        await fs.unlink(commandFile);
+        removed++;
+      }
+    }
+  }
+  return removed;
 }

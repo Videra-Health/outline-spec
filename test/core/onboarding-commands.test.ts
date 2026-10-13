@@ -28,7 +28,7 @@ describe('getOnboardingCommands', () => {
   });
 
   it('returns nothing when no onboarding workflow is installed', () => {
-    expect(getOnboardingCommands(['archive', 'sync'])).toEqual([]);
+    expect(getOnboardingCommands(['archive', 'land'])).toEqual([]);
     expect(getOnboardingCommands([])).toEqual([]);
   });
 
@@ -49,7 +49,7 @@ describe('formatOptionalWorkflowsNote', () => {
 
     expect(note).not.toBeNull();
     expect(note?.[0]).toBe(
-      'Note: 6 more workflows are available (new, continue, ff, bulk-archive, verify, onboard).'
+      'Note: 5 more workflows are available (new, continue, ff, verify, onboard).'
     );
     expect(note?.[1]).toBe(
       'Add them with `openspec config profile`.'

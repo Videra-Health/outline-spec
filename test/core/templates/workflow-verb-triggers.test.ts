@@ -25,9 +25,8 @@ const NATURAL_VERB_BY_WORKFLOW: Record<string, string> = {
   apply: 'apply',
   update: 'update change',
   ff: 'ff',
-  sync: 'sync',
+  land: 'land',
   archive: 'archive',
-  'bulk-archive': 'bulk-archive',
   verify: 'verify',
   onboard: 'onboard',
   propose: 'propose',
@@ -44,10 +43,9 @@ const NATURAL_VERB_BY_WORKFLOW: Record<string, string> = {
  * in its description.
  */
 const DELIBERATE_CLI_PHRASE_CLAIMS: Record<string, string> = {
-  'openspec archive':
-    'both archive and merge delta specs, but the workflow confirms with the user and verifies the merge capability-by-capability before anything moves, where the bare command does it in one shot; an agent asked to archive should take the checked path',
-  'openspec archive all': 'same, for several changes at once (bulk-archive)',
-  'openspec archive these changes': 'same, for several changes at once (bulk-archive)',
+  'openspec land':
+    'the land workflow runs this CLI command, but validates and shows a dry run first and fixes outline.md on a mismatch; an agent asked to land should take the checked path',
+  'openspec archive': 'same as land; archive is its old name and the CLI alias',
   'openspec new change':
     'the new-change workflow runs this exact CLI command as its first step, then continues with the artifacts',
   'openspec update change':
@@ -59,12 +57,7 @@ const DELIBERATE_CLI_PHRASE_CLAIMS: Record<string, string> = {
  * utterance matching the longer one also contains the shorter. Declared with
  * the reason it is safe; anything undeclared is an accidental misroute.
  */
-const DELIBERATE_PHRASE_SHADOWING: Record<string, string> = {
-  'openspec archive < openspec archive all':
-    'plural requests are claimed explicitly by bulk-archive so they outweigh the bare literal',
-  'openspec archive < openspec archive these changes':
-    'plural requests are claimed explicitly by bulk-archive so they outweigh the bare literal',
-};
+const DELIBERATE_PHRASE_SHADOWING: Record<string, string> = {};
 
 /**
  * Every command name the CLI registers, at any depth, including aliases.

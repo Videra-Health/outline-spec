@@ -20,11 +20,11 @@ const BLOCKED_STATE_HANDOFF = optionalWorkflow(
   'suggest completing the missing artifacts. Run `openspec status --change "<name>" --json`, select the next `ready` artifact (not `skipped` or `blocked`), and use `openspec instructions "<artifact-id>" --change "<name>" --json` for its rules and template. Keep the selected `--store <id>` on both commands.'
 );
 
-/** The archive handoff shown once every task is done. */
-const ARCHIVE_HANDOFF = optionalWorkflow(
-  'archive',
-  'You can archive this change with `/opsx:archive`.',
-  'You can archive this change by running `openspec archive "<name>"`.'
+/** The land handoff shown once every task is done. */
+const LAND_HANDOFF = optionalWorkflow(
+  'land',
+  'You can land this change with `/opsx:land`.',
+  'You can land this change by running `openspec land "<name>"`.'
 );
 
 /**
@@ -61,9 +61,9 @@ ${PROJECT_ROOT_GUARD}
    openspec status --change "<name>" --json
    \`\`\`
    Parse the JSON to understand:
-   - \`schemaName\`: The workflow being used (e.g., "spec-driven")
+   - \`schemaName\`: The workflow being used (e.g., "outline")
    - \`planningHome\`, \`changeRoot\`, and \`actionContext\`: planning scope and edit constraints
-   - Which artifact contains the tasks (typically "tasks" for spec-driven, check status for others)
+   - Which artifact contains the tasks (typically "tasks" for outline, check status for others)
 
 3. **Get apply instructions**
 
@@ -72,7 +72,7 @@ ${PROJECT_ROOT_GUARD}
    \`\`\`
 
    This returns:
-   - \`contextFiles\`: artifact ID -> array of concrete file paths (varies by schema - could be proposal/specs/design/tasks or spec/tests/implementation/docs)
+   - \`contextFiles\`: artifact ID -> array of concrete file paths (varies by schema - for outline: outline, design if present, tasks)
    - Progress (total, complete, remaining)
    - Task list with status, source path, and source line
    - Dynamic instruction based on current state
@@ -84,7 +84,7 @@ ${PROJECT_ROOT_GUARD}
    - If \`state: "blocked"\`: show the message and pause implementation.
      - If \`missingArtifacts\` is non-empty: ${BLOCKED_STATE_HANDOFF}
      - Otherwise, follow the CLI instruction to create or repair the schema-configured tracking file from existing planning artifacts. Do not assume another artifact is ready or start implementation while blocked.
-   - If \`state: "all_done"\`: report that all tracked tasks are complete and suggest review or verification as appropriate before archiving
+   - If \`state: "all_done"\`: report that all tracked tasks are complete and suggest review or verification as appropriate before landing
    - Otherwise: proceed to implementation
 
    Treat \`context\` as a required prompt-level input. Read and consider it, and
@@ -106,7 +106,7 @@ ${PROJECT_ROOT_GUARD}
 
    Read every file path listed under \`contextFiles\` from the apply instructions output.
    The files depend on the schema being used:
-   - **spec-driven**: proposal, specs, design, tasks
+   - **outline**: outline.md (the change's spec edits, by requirement name and label), design.md if present, tasks.md
    - Other schemas: follow the contextFiles from CLI output
 
    Do not copy \`context\` or \`operationGuidance\` verbatim into implementation
@@ -134,7 +134,7 @@ ${PROJECT_ROOT_GUARD}
    **Pause if:**
    - Task is unclear → ask for clarification
    - Implementation reveals a design issue → suggest updating artifacts
-   - A task needs work beyond what the spec and tasks describe, or you are tempted to drop, narrow, defer, or accept exceptions to specified behavior to make it fit → surface the added scope and ask; do not absorb it silently
+   - A task needs work beyond what outline.md and tasks describe, or you are tempted to drop, narrow, defer, or accept exceptions to specified behavior to make it fit → surface the added scope and ask; do not absorb it silently
    - Error or blocker encountered → report and wait for guidance
    - User interrupts
 
@@ -143,7 +143,7 @@ ${PROJECT_ROOT_GUARD}
    Display:
    - Tasks completed this session
    - Overall progress: "N/M tasks complete"
-   - If all done: report that tracked tasks are complete and suggest review or verification as appropriate before archiving
+   - If all done: report that tracked tasks are complete and suggest review or verification as appropriate before landing
    - If paused: explain why and wait for guidance
 
 **Output During Implementation**
@@ -175,7 +175,7 @@ Working on task 4/7: <task description>
 ...
 
 All tracked tasks are complete. Review or verify the change as appropriate
-before archiving. ${ARCHIVE_HANDOFF}
+before landing. ${LAND_HANDOFF}
 \`\`\`
 
 **Output On Pause (Issue Encountered)**
@@ -206,9 +206,10 @@ What would you like to do?
 - Keep code changes minimal and scoped to each task
 - Update task checkbox immediately after completing each task
 - Pause on errors, blockers, or unclear requirements - don't guess
-- When a task needs work beyond what the spec describes, surface the added scope and pause - never silently narrow, defer, or simplify away specified behavior
+- When a task needs work beyond what outline.md describes, surface the added scope and pause - never silently narrow, defer, or simplify away specified behavior
 - Only mark a task \`- [x]\` when its specified behavior is fully implemented, not when it is partially done or deferred
 - Use contextFiles from CLI output, don't assume specific file names
+- Never edit live specs in \`openspec/specs/\`; spec changes go in outline.md and land with the change
 - Use each task's sourcePath and line to update its exact checkbox
 - Do not use context or operation guidance as proof that a task is complete
 - Apply relevant project context; report conflicts with controlling workflow inputs

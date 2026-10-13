@@ -76,7 +76,36 @@ export function generateCopilotAgentFile(): string {
   return generateCopilotAgentFileBody(true);
 }
 
+// The outline-era agent file, derived from the archive-era one so installs of that version still read as managed.
 function generateCopilotAgentFileBody(includeManagedMarker = false): string {
+  let content = generateArchiveAgentFileBody(includeManagedMarker);
+  content = replaceRequired(
+    content,
+    'checking status, and archiving completed work.',
+    'checking status, and landing completed work.',
+    'agent description'
+  );
+  content = replaceRequired(
+    content,
+    'planning artifacts (proposals, specs, designs, tasks) that guide implementation.',
+    'planning artifacts (an outline of spec edits, an optional design, and tasks) that guide implementation. Landing a change applies its outline to the specs.',
+    'artifact list'
+  );
+  content = replaceRequired(
+    content,
+    '| `openspec archive <change> --json [--yes]` | Archive a completed change; use `--yes` only after confirming all tasks are complete |',
+    "| `openspec land <change> [--dry-run] --json [--yes]` | Apply a finished change's outline.md to the specs and delete the change; use `--yes` only after confirming all tasks are complete |",
+    'land command row'
+  );
+  return replaceRequired(
+    content,
+    '- When archiving, ensure all tasks are completed and validated first',
+    '- Before landing, ensure all tasks are completed, validate the change, and run `openspec land <change> --dry-run`',
+    'landing best practice'
+  );
+}
+
+function generateArchiveAgentFileBody(includeManagedMarker = false): string {
   const managedMarker = includeManagedMarker
     ? `<!-- ${OPENSPEC_MANAGED_MARKER} -->\n\n`
     : '';
@@ -157,7 +186,7 @@ When the user wants to propose a new change:
 }
 
 function generatePreviousCopilotAgentFileBody(includeManagedMarker = false): string {
-  let content = generateCopilotAgentFileBody();
+  let content = generateArchiveAgentFileBody();
   content = replaceRequired(
     content,
     'You are a specialized agent for managing OpenSpec workflows. Before using the `openspec` CLI, run `openspec --version`. If it is unavailable, install it with `npm install -g @fission-ai/openspec`.',
@@ -295,6 +324,8 @@ function getLegacyCopilotCloudFileContents(relPath: CopilotCloudFile): string[] 
 
   return [
     generateCopilotAgentFileBody(),
+    generateArchiveAgentFileBody(),
+    generateArchiveAgentFileBody(true),
     generatePreviousCopilotAgentFileBody(),
     generatePreviousCopilotAgentFileBody(true),
     generateLegacyCopilotAgentFileBody(),

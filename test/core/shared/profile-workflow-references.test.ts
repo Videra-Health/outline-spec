@@ -90,8 +90,6 @@ describe('generated files never name an uninstalled workflow', () => {
 
   // The mirror image: dropping a reference must not drop the handoff itself.
   // With every workflow installed, every reference that exists is emitted.
-  // `bulk-archive` is the one workflow nothing points at - it is reached from
-  // the CLI, not from another workflow.
   it('still names every referenced workflow when the profile installs them', () => {
     const bodies = [
       ...getSkillTemplates(ALL_WORKFLOWS).map(
@@ -107,15 +105,11 @@ describe('generated files never name an uninstalled workflow', () => {
       }
     }
 
-    expect([...named].sort()).toEqual(
-      [...ALL_WORKFLOWS].filter((id) => id !== 'bulk-archive').sort()
-    );
+    expect([...named].sort()).toEqual([...ALL_WORKFLOWS].sort());
   });
 
-  // Archiving merges delta specs into main specs, which is the sync workflow's
-  // job. Selecting archive in a custom profile pulls sync in with it.
-  it('injects sync for a custom profile that selects archive', () => {
-    expect(getProfileWorkflows('custom', ['archive'])).toContain('sync');
-    expect(getProfileWorkflows('custom', ['bulk-archive'])).toContain('sync');
+  // The archive skill only points at the land flow, so selecting it pulls land in.
+  it('injects land for a custom profile that selects archive', () => {
+    expect(getProfileWorkflows('custom', ['archive'])).toContain('land');
   });
 });

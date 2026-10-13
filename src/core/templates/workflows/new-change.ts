@@ -72,7 +72,7 @@ ${PROJECT_ROOT_GUARD}
    Use the returned \`planningHome\`, \`changeRoot\`, \`artifactPaths\`, and \`nextSteps\` instead of assuming repo-local paths.
 
 5. **Get instructions for the first artifact**
-   The first artifact depends on the schema (e.g., \`proposal\` for spec-driven).
+   The first artifact depends on the schema (e.g., \`outline\` for the default outline schema).
    Check the status output to find the first artifact with status "ready".
    \`\`\`bash
    openspec instructions <first-artifact-id> --change "<name>"

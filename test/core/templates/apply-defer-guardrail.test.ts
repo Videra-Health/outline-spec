@@ -13,7 +13,7 @@ describe('apply instructions surface deferred scope (#1529)', () => {
 
   it('tells the agent to surface added scope rather than defer or simplify', () => {
     expect(instructions).toContain('surface the added scope');
-    expect(instructions).toContain('beyond what the spec describes');
+    expect(instructions).toContain('beyond what outline.md describes');
     expect(instructions).toMatch(/never silently narrow, defer/);
   });
 
@@ -26,6 +26,14 @@ describe('apply instructions surface deferred scope (#1529)', () => {
     expect(instructions).toMatch(
       /Only mark a task .* when its specified behavior is fully implemented/
     );
+  });
+
+  it('describes the outline model and lands rather than archives', () => {
+    expect(instructions).toContain('outline.md');
+    expect(instructions).toContain('Never edit live specs');
+    for (const stale of ['delta', 'Scenario', 'SHALL', '/opsx:sync', 'spec-driven', '/opsx:archive']) {
+      expect(instructions).not.toContain(stale);
+    }
   });
 
   it('carries the same guidance on both the skill and command surfaces', () => {

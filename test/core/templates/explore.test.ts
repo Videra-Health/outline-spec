@@ -601,6 +601,26 @@ describe('explore templates', () => {
   });
 });
 
+describe('explore templates describe the outline model', () => {
+  it('captures spec edits in outline.md with marks and stable labels', () => {
+    for (const [label, body] of bodies) {
+      expect(body, label).toContain("outline.md holds the change's spec edits");
+      expect(body, label).toContain('`~~old~~ **new**`');
+      expect(body, label).toContain('Labels never shift');
+      expect(body, label).toContain('`openspec land <change>`');
+      expect(body, label).toContain('never edit `openspec/specs/` directly');
+    }
+  });
+
+  it('carries no delta-spec vocabulary', () => {
+    for (const [label, body] of bodies) {
+      for (const word of ['delta', 'Scenario', 'scenario', 'SHALL', '/opsx:sync', 'proposal.md', 'specs/<capability-path>', '--no-scenarios']) {
+        expect(body, `${label}: ${word}`).not.toContain(word);
+      }
+    }
+  });
+});
+
 // Regression for #869: explore refused to implement and told the agent to
 // "create a change proposal" without ever naming the workflow that does it.
 // With no named exit, agents answered the discovery questions and then went
@@ -621,7 +641,7 @@ describe('explore handoff to the propose workflow (#869)', () => {
   it('names the propose workflow where discovery ends', () => {
     for (const [label, body] of bodies) {
       expect(body, label).toContain(
-        '**Flow into a proposal**: "Ready to start? Run `/opsx:propose` and this becomes a change."'
+        '**Flow into a change**: "Ready to start? Run `/opsx:propose` and this becomes a change."'
       );
       expect(body, label).not.toContain('I can create a change proposal');
     }

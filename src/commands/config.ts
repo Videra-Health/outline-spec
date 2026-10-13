@@ -183,7 +183,7 @@ interface WorkflowPromptMeta {
 export const WORKFLOW_PROMPT_META: Record<string, WorkflowPromptMeta> = {
   propose: {
     name: 'Propose change',
-    description: 'Create proposal, design, and tasks from a request',
+    description: 'Create the outline and tasks from a request',
   },
   explore: {
     name: 'Explore ideas',
@@ -209,17 +209,13 @@ export const WORKFLOW_PROMPT_META: Record<string, WorkflowPromptMeta> = {
     name: 'Fast-forward',
     description: 'Run a faster implementation workflow',
   },
-  sync: {
-    name: 'Sync specs',
-    description: 'Sync change artifacts with specs',
+  land: {
+    name: 'Land change',
+    description: "Apply a finished change's outline to the specs and delete it",
   },
   archive: {
     name: 'Archive change',
-    description: 'Finalize and archive a completed change',
-  },
-  'bulk-archive': {
-    name: 'Bulk archive',
-    description: 'Archive multiple completed changes together',
+    description: 'Old name for land; routes to the land flow',
   },
   verify: {
     name: 'Verify change',

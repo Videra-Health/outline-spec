@@ -1,6 +1,6 @@
 ---
 name: openspec-verify-change
-description: Verify implementation matches OpenSpec change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before archiving. Also use when the user says "openspec verify" or "opsx verify".
+description: Verify implementation matches OpenSpec change artifacts. Use when the user wants to validate that implementation is complete, correct, and coherent before landing. Also use when the user says "openspec verify" or "opsx verify".
 allowed-tools: Bash(openspec:*)
 license: MIT
 compatibility: Requires openspec CLI.
@@ -9,11 +9,11 @@ metadata:
   version: "1.0"
 ---
 
-Verify that an implementation matches the change artifacts (specs, tasks, design).
+Verify that an implementation matches the change artifacts (outline.md, tasks, design) and the live specs.
 
-**Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `archive`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `openspec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
+**Store selection:** If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run `openspec store list --json` to discover registered store ids, then pass `--store <id>` on the commands that read or write specs and changes (`new change`, `status`, `instructions`, `list`, `show`, `validate`, `land` (and its old name `archive`), `pending`, `relabel`, `migrate-specs`, `doctor`, `context`, `schemas`, `view`). Once selected, treat `--store <id>` as sticky for the rest of the workflow. Every unscoped example of those commands below is shorthand: before running it, append the flag. For example, run `openspec status --change "<name>" --json --store "<id>"`, not the unscoped form shown below. Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local `openspec/` root.
 
-**Project check:** These steps expect a project that already uses OpenSpec. Before the first step that writes anything (`new change`, `archive`, `sync specs`, or authoring an artifact file), confirm the project has a root: run `openspec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `openspec/` directory here, and a write such as `openspec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
+**Project check:** These steps expect a project that already uses OpenSpec. Before the first step that writes anything (`new change`, `land`, or authoring an artifact file), confirm the project has a root: run `openspec list --json` (with `--store <id>` when a store is selected, since the store is then the root) and read `root`. A root object means the project is set up. `"root": null` means it is not - there is no `openspec/` directory here, and a write such as `openspec new change` would create one as a side effect. The command also exits non-zero, which is that answer rather than a broken CLI, so read the JSON instead of retrying or working around it.
 
 One `"root": null` is not about setup: when a `status` error message starts with `Declared in` or `Invalid store declaration in` and names this project's `openspec/config.yaml` (or `config.yml`), the project does use OpenSpec through a store it declares, which this machine cannot resolve (the store is not registered, or the `store:` line is malformed). Do not treat it as uninitialized and skip the branches below: stop before writing and show the user that error's `message` and `fix`.
 
@@ -46,7 +46,7 @@ In both branches, never create the root as a side effect: do not run `openspec i
    openspec status --change "<name>" --json
    ```
    Parse the JSON to understand:
-   - `schemaName`: The workflow being used (e.g., "spec-driven")
+   - `schemaName`: The workflow being used (e.g., "outline")
    - `planningHome`, `changeRoot`, `artifactPaths`, and `actionContext`: path and scope context
    - Which artifacts exist for this change
 
@@ -58,26 +58,38 @@ In both branches, never create the root as a side effect: do not run `openspec i
 
    This returns the change directory, `contextFiles` (artifact ID -> array of concrete file paths), `taskTrackingConfigured`, and top-level `tasks` and `progress` aggregated from every concrete file matched by the schema's `apply.tracks` configuration that could be read. Read all available artifacts from `contextFiles`.
 
-   Treat apply `state` and `instruction` as context, not a verification verdict. Do not implement tasks or archive the change during verification.
+   Treat apply `state` and `instruction` as context, not a verification verdict. Do not implement tasks or land the change during verification.
 
-4. **Initialize verification report structure**
+4. **Load the spec edits and the live specs**
+
+   `contextFiles` is keyed by artifact id, and artifact ids come from the active schema, so do not assume an id such as `outline`. The outline artifact is the one whose `artifactPaths.<id>.outputPath` is or ends in `outline.md`; read it from `contextFiles.<id>`.
+
+   outline.md lists, under `## Requirements`, only what the change adds, edits, or removes. Each top-level item names a spec; each second-level item is a requirement by name; deeper items are details by their live labels. Read it as:
+   - **New**: unmarked text on a requirement without `(patch)`, or on a label the live spec doesn't have
+   - **Edited**: `~~old~~ **new**` marks inside an existing item; the `**new**` words are the behavior to check
+   - **Removed**: an item wholly in `~~ ~~`; that behavior should be gone
+   - **Renamed**: `~~Old~~ **New** (patch):`; the name changes, the behavior stays
+
+   For each spec the outline touches, read the live spec with `openspec show "<spec>" --type spec` for the unchanged surrounding requirements. Run `openspec validate "<name>"` to confirm the outline still lands cleanly, and `openspec land "<name>" --dry-run` to see the resulting spec text — that landed text is what the code must satisfy. Never edit live specs; a mismatch is fixed in outline.md.
+
+5. **Initialize verification report structure**
 
    Create a report structure with three dimensions:
    - **Completeness**: Track tasks and spec coverage
-   - **Correctness**: Track requirement implementation and scenario coverage
+   - **Correctness**: Track requirement and detail implementation
    - **Coherence**: Track design adherence and pattern consistency
 
    Each dimension can have CRITICAL, WARNING, or SUGGESTION issues.
 
-   Verification is advisory. Respect intentional omissions such as `skip_specs: true`, optional design documents, and schemas without task tracking. Do not require or invent optional or intentionally omitted artifacts to obtain a clean report. `Not verified` describes a limit of this report, not a new archive prerequisite. Archive retains its own checks and user-confirmation behavior.
+   Verification is advisory. Respect intentional omissions such as an outline with no spec edits, optional design documents, and schemas without task tracking. Do not require or invent optional or intentionally omitted artifacts to obtain a clean report. `Not verified` describes a limit of this report, not a new land prerequisite. Land retains its own checks and user-confirmation behavior.
 
-   Mark checks the schema does not define, or artifacts the status reports as intentionally skipped, as **Not applicable**. The correctness checks of a change whose readable delta specs contain REMOVED or RENAMED requirements but no ADDED or MODIFIED requirements are also **Not applicable** (see step 6). Exclude them from skipped-check counts and the archive-readiness assessment. Reserve **Not verified** for applicable checks whose evidence is missing or unusable.
+   Mark checks the schema does not define, or artifacts the status reports as intentionally skipped, as **Not applicable**. The correctness checks of a change whose outline only removes or renames items are also **Not applicable** (see step 7). Exclude them from skipped-check counts and the land-readiness assessment. Reserve **Not verified** for applicable checks whose evidence is missing or unusable.
 
    If only task evidence is available for applicable checks, verify task completion only and mark the remaining applicable checks, including **Code Pattern Consistency**, as not verified with the reason "Only task evidence available".
 
-   If artifacts cannot be read or contain no usable requirements, scenarios, or design decisions, mark the affected checks as not verified with the specific reason. Continue checks supported by the remaining evidence, but a partially checked input set is not a fully verified check. Missing requirements affect Spec Coverage and Requirement Implementation Mapping; missing scenarios affect Scenario Coverage; missing design decisions affect Design Adherence.
+   If artifacts cannot be read or contain no usable requirements, details, or design decisions, mark the affected checks as not verified with the specific reason. Continue checks supported by the remaining evidence, but a partially checked input set is not a fully verified check. Missing requirements affect Spec Coverage and Requirement Implementation Mapping; missing details affect Detail Coverage; missing design decisions affect Design Adherence.
 
-5. **Verify Completeness**
+6. **Verify Completeness**
 
    **Task Completion**:
    - If `taskTrackingConfigured` is false, report **Task Completion** as not applicable. Do not treat empty `tasks` as missing evidence.
@@ -88,57 +100,48 @@ In both branches, never create the root as a side effect: do not run `openspec i
    - If `progress.remaining` is greater than 0:
      - Add CRITICAL issue for each listed incomplete task. If the remaining count exceeds the listed incomplete tasks, also report the incomplete checkboxes without descriptions and recommend adding descriptions and completing them. Do not infer completion from the listed tasks alone.
      - Recommendation: "Complete task: <description>" or "Mark as done if already implemented"
+     - Ignore the final landing task (`openspec land`); it runs after verification.
 
    **Spec Coverage**:
-   - If status marks the spec artifact skipped by `skip_specs: true`, or the schema defines no spec artifact (no artifact whose `artifactPaths.<id>.outputPath` is under `specs/`), report the spec-dependent checks as not applicable.
-   - Otherwise, `contextFiles` is keyed by artifact id, and artifact ids come from the active schema, so do not assume an id such as `specs`. The spec artifacts are those whose `artifactPaths.<id>.outputPath` is under `specs/`; read their files from `contextFiles.<id>`. If those spec files are absent or empty, mark **Spec Coverage**, **Requirement Implementation Mapping**, and **Scenario Coverage** as not verified; do not treat any of them as clean.
-   - If delta specs exist in those spec files:
-     - Extract all requirements (marked with "### Requirement:", or listed as `FROM:`/`TO:` pairs under `## RENAMED Requirements`) and note the delta section each one sits under: `## ADDED`, `## MODIFIED`, `## REMOVED`, or `## RENAMED Requirements`. The section decides what the check looks for.
-     - For each ADDED or MODIFIED requirement (for MODIFIED, check the text in the delta, not the old wording):
-       - Search codebase for keywords related to the requirement
-       - Assess if implementation likely exists
-     - If ADDED or MODIFIED requirements appear unimplemented:
-       - Add CRITICAL issue: "Requirement not found: <requirement name>"
-       - Recommendation: "Implement requirement X: <description>"
-     - For each REMOVED requirement, the change asks for the behavior to be gone, so invert the check:
-       - Search codebase for the removed behavior. Matches in `openspec/` artifacts or docs, or in code that serves only the Migration note or an ADDED requirement, are not evidence by themselves. Report any code path that still delivers the removed behavior, including one shared with an ADDED requirement.
-       - Finding no implementation is the expected result. Never report a REMOVED requirement as "Requirement not found" or recommend implementing it.
-       - If the behavior is still present:
-         - Add CRITICAL issue: "Removed requirement still implemented: <requirement name>"
-         - Recommendation: "Remove the remaining implementation at <file>:<lines>, following the requirement's Migration note if it has one"
-     - For each RENAMED entry (`FROM:`/`TO:`), the name changes but the behavior stays, so check the TO requirement for that unchanged behavior:
-       - Do not report the FROM name as missing, and do not require code symbols, identifiers, or file names to be renamed.
-       - If the TO name also appears under MODIFIED, its behavior is checked there against the MODIFIED text; skip it here.
-       - Otherwise, read the baseline requirement in the main spec at `<planningHome.root>/openspec/specs/<capability-path>/spec.md`, using the same capability path as the delta spec: the requirement under the FROM name, or under the TO name only when the FROM name is absent because the main spec is already synced. Its body and scenarios are the evidence for the behavior the TO requirement keeps.
-       - Search codebase for that behavior and assess if it is still implemented.
-       - If it appears unimplemented:
-         - Add CRITICAL issue: "Renamed requirement not found: <TO name>"
-         - Recommendation: "Restore the behavior of <TO name> (renamed from <FROM name>); a rename must not change behavior"
-       - If the baseline requirement cannot be found or read, mark **Spec Coverage** as not verified for that entry with the reason. Never count an unchecked rename as passing.
+   - If the schema defines no outline artifact, report the spec-dependent checks as not applicable. If outline.md exists but its `## Requirements` is empty, report them as not applicable (the change edits no specs).
+   - If outline.md is absent or unreadable, or `openspec validate` reports it no longer lands, mark **Spec Coverage**, **Requirement Implementation Mapping**, and **Detail Coverage** as not verified; do not treat any of them as clean. Recommend fixing outline.md against the live spec.
+   - For each new or edited requirement and detail:
+     - Search codebase for keywords related to it
+     - Assess if implementation likely exists
+     - If it appears unimplemented:
+       - Add CRITICAL issue: "Requirement not found: <spec>: <requirement name>"
+       - Recommendation: "Implement <requirement>: <description>"
+   - For each removed item, invert the check:
+     - Search codebase for the removed behavior. Matches in `openspec/` artifacts or docs are not evidence by themselves.
+     - Finding no implementation is the expected result. Never report a removed item as "Requirement not found" or recommend implementing it.
+     - If the behavior is still present:
+       - Add CRITICAL issue: "Removed requirement still implemented: <name>"
+       - Recommendation: "Remove the remaining implementation at <file>:<lines>"
+   - For each renamed requirement, check that the live behavior is still implemented under the new name. Do not require code symbols or file names to be renamed. If it appears unimplemented, add CRITICAL issue: "Renamed requirement not found: <New>".
 
-6. **Verify Correctness**
+7. **Verify Correctness**
 
-   If the delta specs are readable and contain at least one REMOVED or RENAMED requirement but no ADDED or MODIFIED requirements (the change only removes or renames requirements), report **Requirement Implementation Mapping** and **Scenario Coverage** as **Not applicable**. The REMOVED and RENAMED checks under Spec Coverage are the evidence for such a change (each RENAMED entry is checked there against its baseline behavior), so do not mark these two checks as not verified. A delta spec with no parseable requirements at all is unusable evidence, not a removal-only change: mark these checks as not verified.
+   If the outline only removes or renames items, report **Requirement Implementation Mapping** and **Detail Coverage** as **Not applicable**; the checks under Spec Coverage are the evidence.
 
    **Requirement Implementation Mapping**:
-   - For each ADDED or MODIFIED requirement from delta specs (REMOVED entries, and RENAMED entries without a MODIFIED block, were settled under Spec Coverage):
+   - For each new or edited requirement (check the landed text, not the struck words):
      - Search codebase for implementation evidence
      - If found, note file paths and line ranges
      - Assess if implementation matches requirement intent
      - If divergence detected:
        - Add WARNING: "Implementation may diverge from spec: <details>"
-       - Recommendation: "Review <file>:<lines> against requirement X"
+       - Recommendation: "Review <file>:<lines> against <requirement>"
 
-   **Scenario Coverage**:
-   - For each scenario under an ADDED or MODIFIED requirement in delta specs (marked with "#### Scenario:"):
-     - Check if conditions are handled in code
-     - Check if tests exist covering the scenario
-     - If scenario appears uncovered:
-       - Add WARNING: "Scenario not covered: <scenario name>"
-       - Recommendation: "Add test or implementation for scenario: <description>"
-   - Skip scenarios under a REMOVED requirement; that behavior is meant to be gone.
+   **Detail Coverage**:
+   - For each new or edited detail (`a.` / `i.` / `1.` items) under those requirements:
+     - Check if the behavior is handled in code
+     - Check if tests exist covering it
+     - If it appears uncovered:
+       - Add WARNING: "Detail not covered: <requirement> <label>"
+       - Recommendation: "Add test or implementation for: <detail>"
+   - Skip struck details; that behavior is meant to be gone.
 
-7. **Verify Coherence**
+8. **Verify Coherence**
 
    **Design Adherence**:
    - If the schema defines no design artifact (no artifact with id `design`, and none whose `artifactPaths.<id>.outputPath` is or ends in `design.md`), report **Design Adherence** as not applicable.
@@ -148,7 +151,7 @@ In both branches, never create the root as a side effect: do not run `openspec i
      - If contradiction detected:
        - Add WARNING: "Design decision not followed: <decision>"
        - Recommendation: "Update implementation or revise design.md to match reality"
-   - Otherwise, if the design artifact's `contextFiles.<id>` file is absent or empty: mark **Design Adherence** as not verified. With other supporting artifacts, **Code Pattern Consistency** still runs; the task-only case remains limited to task completion.
+   - Otherwise, design.md is optional in the outline schema: if it is absent, report **Design Adherence** as not applicable. If it exists but is empty or unreadable, mark **Design Adherence** as not verified. With other supporting artifacts, **Code Pattern Consistency** still runs; the task-only case remains limited to task completion.
 
    **Code Pattern Consistency**:
    - If implementation changes cannot be identified, mark **Code Pattern Consistency** as not verified and explain the missing evidence.
@@ -158,7 +161,7 @@ In both branches, never create the root as a side effect: do not run `openspec i
      - Add SUGGESTION: "Code pattern deviation: <details>"
      - Recommendation: "Consider following project pattern: <example>"
 
-8. **Generate Verification Report**
+9. **Generate Verification Report**
 
    **Summary Scorecard**:
    ```markdown
@@ -172,20 +175,20 @@ In both branches, never create the root as a side effect: do not run `openspec i
    | Coherence    | Followed/Issues  |
    ```
 
-   In each Status cell, report the results of checks that ran and `Not verified (<reason>)` for every skipped check. If all checks in a dimension were skipped, start the cell with `Not verified`. Never score a skipped check as passing. Treat every not verified or partially verified check as skipped in the final assessment. Count only ADDED and MODIFIED requirements in N, and report REMOVED and RENAMED requirements separately (for example, "1 removal confirmed, 1 rename verified"). For a change that only removes or renames requirements, the Correctness cell reads `Not applicable (no ADDED or MODIFIED requirements)`.
+   In each Status cell, report the results of checks that ran and `Not verified (<reason>)` for every skipped check. If all checks in a dimension were skipped, start the cell with `Not verified`. Never score a skipped check as passing. Treat every not verified or partially verified check as skipped in the final assessment. Count only new and edited requirements in N, and report removals and renames separately (for example, "1 removal confirmed, 1 rename verified").
 
    **Issues by Priority**:
 
-   1. **CRITICAL** (Must fix before archive):
+   1. **CRITICAL** (Must fix before landing):
       - Incomplete tasks
       - Missing requirement implementations
       - Removed requirements still implemented
-      - Renamed requirements whose behavior is no longer implemented
+      - An outline that no longer lands against the live specs
       - Each with specific, actionable recommendation
 
    2. **WARNING** (Should fix):
       - Spec/design divergences
-      - Missing scenario coverage
+      - Uncovered details
       - Each with specific recommendation
 
    3. **SUGGESTION** (Nice to fix):
@@ -194,16 +197,16 @@ In both branches, never create the root as a side effect: do not run `openspec i
       - Each with specific recommendation
 
    **Final Assessment**:
-   - If CRITICAL issues: "X critical issue(s) found. Fix before archiving." If any check was skipped, also name every skipped check and its reason.
-   - If no CRITICAL issues, one or more warnings, and no checks were skipped: "No critical issues. Y warning(s) to consider. Ready for archive (with noted improvements)."
-   - If only suggestions and no checks were skipped: "No critical issues or warnings. Z suggestion(s) to consider. Ready for archive (with noted improvements)."
-   - If no issues and no checks were skipped: "All checks passed. Ready for archive."
+   - If CRITICAL issues: "X critical issue(s) found. Fix before landing." If any check was skipped, also name every skipped check and its reason.
+   - If no CRITICAL issues, one or more warnings, and no checks were skipped: "No critical issues. Y warning(s) to consider. Ready to land (with noted improvements)."
+   - If only suggestions and no checks were skipped: "No critical issues or warnings. Z suggestion(s) to consider. Ready to land (with noted improvements)."
+   - If no issues and no checks were skipped: "All checks passed. Ready to land with `/openspec-land-change`."
    - If any check was skipped and there are no CRITICAL issues: do not claim readiness. Say "No critical issues found in the checks that ran. <check(s)> not verified: <reason>." Include the warning count when nonzero.
    - Include the suggestion count when nonzero in every final assessment.
 
 **Verification Heuristics**
 
-- **Completeness**: Focus on objective checklist items (checkboxes, requirements list)
+- **Completeness**: Focus on objective checklist items (checkboxes, outline items)
 - **Correctness**: Use keyword search, file path analysis, reasonable inference - don't require perfect certainty
 - **Coherence**: Look for glaring inconsistencies, don't nitpick style
 - **False Positives**: When uncertain, prefer SUGGESTION over WARNING, WARNING over CRITICAL

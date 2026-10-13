@@ -14,9 +14,8 @@ import { runCLI } from '../../helpers/run-cli.js';
 // templates: these workflows carry optional-workflow blocks, and only these
 // entry points resolve them against an installed set. Building from the raw
 // template leaves `[[opsx:if-workflow ...]]` in the text, which skill
-// generation rejects. The set names sync so the installed branch is chosen,
-// which is the wording these assertions are about.
-const WORKFLOWS = ['archive', 'bulk-archive', 'sync'];
+// generation rejects.
+const WORKFLOWS = ['land', 'archive'];
 const skill = (workflowId: string): string =>
   generateSkillContent(
     getSkillTemplates(WORKFLOWS).find((entry) => entry.workflowId === workflowId)!.template,
@@ -26,13 +25,13 @@ const command = (id: string): string =>
   getCommandTemplates(WORKFLOWS).find((entry) => entry.id === id)!.template.content;
 
 const surfaces = [
+  ['land skill', skill('land')],
+  ['land command', command('land')],
   ['archive skill', skill('archive')],
   ['archive command', command('archive')],
-  ['bulk archive skill', skill('bulk-archive')],
-  ['bulk archive command', command('bulk-archive')],
 ] as const;
 
-describe('archive task discovery uses schema-resolved CLI progress', () => {
+describe('land task discovery uses schema-resolved CLI progress', () => {
   let root: string;
   let callerRoot: string;
   let env: NodeJS.ProcessEnv;
@@ -45,7 +44,7 @@ describe('archive task discovery uses schema-resolved CLI progress', () => {
   }
 
   beforeEach(async () => {
-    root = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-archive-task-guidance-'));
+    root = await fs.mkdtemp(path.join(os.tmpdir(), 'openspec-land-task-guidance-'));
     env = {
       XDG_DATA_HOME: path.join(root, 'data'),
       XDG_CONFIG_HOME: path.join(root, 'config'),
@@ -60,7 +59,7 @@ describe('archive task discovery uses schema-resolved CLI progress', () => {
     // The caller's nearest root contains the same change name, but its tasks
     // are all done. Omitting --store must therefore produce different progress.
     callerRoot = path.join(root, 'caller');
-    await write('caller/openspec/config.yaml', 'schema: spec-driven\n');
+    await write('caller/openspec/config.yaml', 'schema: outline\n');
     await write('caller/openspec/changes/selected/tasks.md', '- [x] Local work is done\n');
   });
 
@@ -91,20 +90,12 @@ describe('archive task discovery uses schema-resolved CLI progress', () => {
         await write(`openspec/changes/selected/${file}`, '- [ x ] Finished\n- [~] Pending\n- [ ] Pending\n');
       }
 
-      // Execute the lookup actually taught in the task-checking step. The old
-      // single workflow read tasks.md, and bulk assumed an artifact id "tasks";
-      // neither can find this schema's implementation checklist.
+      // Execute the lookup actually taught in the task-checking step.
       const step = content.split('3. **')[1].split('4. **')[0];
       const command = step.match(/`openspec (list[^`]*)`/);
       expect(command, surface).not.toBeNull();
-      expect(step).toContain('same selected-root flags');
-      expect(step).toMatch(/name` exactly matches/);
-      expect(step).toContain('totalTasks - completedTasks');
-      expect(step).toContain('nonnegative integer');
-      expect(step).toContain('completedTasks <= totalTasks');
-      expect(step).toMatch(/other markers.*remain incomplete/s);
+      expect(step).toContain('`completedTasks < totalTasks`');
       expect(step).not.toContain('artifactPaths.tasks');
-      expect(step).not.toContain('If no tasks file exists');
 
       const args = command![1].trim().split(/\s+/);
       expect(args).toEqual(['list', '--json']);

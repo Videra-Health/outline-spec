@@ -230,8 +230,8 @@ describe('update-change templates', () => {
       expect(body, label).toContain('Custom schemas must work unchanged');
       // No literal artifact filenames anywhere: no proposal.md/design.md/tasks.md
       // branching, and no worked example that names them. The only .md literal
-      // allowed is the specs/**/*.md glob illustration.
-      expect(body.replace(/specs\/\*\*\/\*\.md/g, ''), label).not.toMatch(/\b[\w-]+\.md\b/);
+      // allowed is the docs/**/*.md glob illustration.
+      expect(body.replace(/docs\/\*\*\/\*\.md/g, ''), label).not.toMatch(/\b[\w-]+\.md\b/);
     }
   });
 
@@ -309,7 +309,7 @@ describe('update-change templates', () => {
       );
       expect(body, label).toContain('suggest `/opsx:continue`');
       expect(body, label).toContain('suggest `/opsx:apply`');
-      expect(body, label).toContain('suggest `/opsx:archive`');
+      expect(body, label).toContain('suggest `/opsx:land`');
       expect(body, label).toContain('the code may no longer match the revised plan');
     }
   });
@@ -365,6 +365,17 @@ describe('update-change templates', () => {
       expect(body, label).toContain('openspec new change "<new-change-name>"');
       expect(body, label).not.toContain('openspec new change "<name>"');
       expect(body, label).toContain('Update vs. Start Fresh');
+    }
+  });
+
+  it('keeps outline revisions in outline form and never touches live specs', () => {
+    for (const [label, body] of bodies) {
+      expect(body, label).toContain('`~~old~~ **new**`');
+      expect(body, label).toContain('labels never shift');
+      expect(body, label).toContain('Never edit the live specs under `openspec/specs/`');
+      for (const stale of ['delta', 'Scenario', 'SHALL', '/opsx:sync', 'spec-driven', '/opsx:archive']) {
+        expect(body, label).not.toContain(stale);
+      }
     }
   });
 });

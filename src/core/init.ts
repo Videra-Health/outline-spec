@@ -96,13 +96,13 @@ const { version: OPENSPEC_VERSION } = require('../../package.json');
 // Constants
 // -----------------------------------------------------------------------------
 
-const DEFAULT_SCHEMA = 'spec-driven';
+const DEFAULT_SCHEMA = 'outline';
 
 function formatLanguageContext(language: string): string {
   return [
     `Language: ${language}`,
     `All artifacts must be written in ${language}.`,
-    'Keep OpenSpec structural headings and SHALL/MUST keywords in English.',
+    'Keep OpenSpec structural headings (such as ## Requirements) in English.',
   ].join('\n');
 }
 
@@ -118,9 +118,8 @@ const WORKFLOW_TO_SKILL_DIR: Record<string, string> = {
   'apply': 'openspec-apply-change',
   'update': 'openspec-update-change',
   'ff': 'openspec-ff-change',
-  'sync': 'openspec-sync-specs',
+  'land': 'openspec-land-change',
   'archive': 'openspec-archive-change',
-  'bulk-archive': 'openspec-bulk-archive-change',
   'verify': 'openspec-verify-change',
   'onboard': 'openspec-onboard',
   'propose': 'openspec-propose',

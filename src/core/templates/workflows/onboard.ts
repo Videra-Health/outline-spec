@@ -30,7 +30,7 @@ const COMMAND_REFERENCE_ROWS = [
   onlyWithWorkflow('propose', ' | `/opsx:propose` | Create a change and generate all artifacts |'),
   onlyWithWorkflow('explore', ' | `/opsx:explore` | Think through problems before/during work  |'),
   onlyWithWorkflow('apply', ' | `/opsx:apply`   | Implement tasks from a change              |'),
-  onlyWithWorkflow('archive', ' | `/opsx:archive` | Archive a completed change                 |'),
+  onlyWithWorkflow('land', ' | `/opsx:land`    | Apply a finished change to the specs       |'),
   onlyWithWorkflow('new', ' | `/opsx:new`     | Start a new change, one artifact at a time |'),
   onlyWithWorkflow('continue', ' | `/opsx:continue` | Continue working on an existing change    |'),
   onlyWithWorkflow('ff', ' | `/opsx:ff`      | Fast-forward: create all artifacts at once |'),
@@ -41,7 +41,7 @@ const QUICK_REFERENCE_ROWS = [
   onlyWithWorkflow('propose', ' | `/opsx:propose <name>`  | Create a change and generate all artifacts |'),
   onlyWithWorkflow('explore', ' | `/opsx:explore`         | Think through problems (no code changes)   |'),
   onlyWithWorkflow('apply', ' | `/opsx:apply <name>`    | Implement tasks                            |'),
-  onlyWithWorkflow('archive', ' | `/opsx:archive <name>`  | Archive when done                          |'),
+  onlyWithWorkflow('land', ' | `/opsx:land <name>`     | Land when done                             |'),
   onlyWithWorkflow('new', ' | `/opsx:new <name>`      | Start a new change, step by step           |'),
   onlyWithWorkflow('continue', ' | `/opsx:continue <name>` | Continue an existing change                |'),
   onlyWithWorkflow('ff', ' | `/opsx:ff <name>`       | Fast-forward: all artifacts at once        |'),
@@ -121,9 +121,9 @@ I'll walk you through a complete change cycle—from idea to implementation—us
 1. Pick a small, real task in your codebase
 2. Explore the problem briefly
 3. Create a change (the container for our work)
-4. Build the artifacts: proposal → specs → design → tasks
+4. Build the artifacts: outline → design (if needed) → tasks
 5. Implement the tasks
-6. Archive the completed change
+6. Land the change into the specs
 
 **Time:** ~15-20 minutes
 
@@ -244,7 +244,7 @@ Now let's create a change to hold our work.
 \`\`\`
 ## Creating a Change
 
-A "change" in OpenSpec is a container for all the thinking and planning around a piece of work. It lives at the \`changeRoot\` reported by \`openspec status --change "<name>" --json\` and holds your artifacts—proposal, specs, design, tasks.
+A "change" in OpenSpec is a container for all the thinking and planning around a piece of work. It lives at the \`changeRoot\` reported by \`openspec status --change "<name>" --json\` and holds your artifacts—outline, design, tasks.
 
 Let me create one for our task.
 \`\`\`
@@ -261,176 +261,88 @@ Created: <changeRoot from status JSON>
 The folder structure:
 \`\`\`
 <changeRoot>/
-├── proposal.md    ← Why we're doing this (empty, we'll fill it)
-├── design.md      ← How we'll build it (empty)
-├── specs/         ← Detailed requirements (empty)
-└── tasks.md       ← Implementation checklist (empty)
+├── outline.md     ← What we're doing and the spec edits it makes
+├── design.md      ← How we'll build it (only if needed)
+└── tasks.md       ← Implementation checklist
 \`\`\`
 
-Now let's fill in the first artifact—the proposal.
+Now let's write the first artifact—the outline.
 \`\`\`
 
 ---
 
-## Phase 5: Proposal
+## Phase 5: Outline
 
 **EXPLAIN:**
 \`\`\`
-## The Proposal
+## The Outline
 
-The proposal captures **why** we're making this change and **what** it involves at a high level. It's the "elevator pitch" for the work.
+The project's specs live in \`openspec/specs/<spec>/spec.md\` as labeled outlines: each numbered item is a requirement (a name, a colon, one sentence), with details nested under it as a. / i. / 1.
 
-I'll draft one based on our task.
+A change never edits those files directly. Its outline.md states the proposal in a sentence or two, then lists only the spec edits it makes:
+- A new requirement or detail is written plainly, labeled after the last one at its level.
+- An edit to existing text marks what it drops and adds: ~~old~~ **new**.
+- A removed item is wholly struck, with its live text.
+- Labels never shift: a removed item leaves a gap.
+
+When the work is done, \`openspec land\` applies these edits to the live specs.
 \`\`\`
 
-**DO:** Draft the proposal content (don't save yet):
+**DO:** Read the specs this task touches (\`openspec list --specs\`, then \`openspec show "<spec>" --type spec\`), and get the artifact instructions:
+\`\`\`bash
+openspec instructions outline --change "<name>" --json
+\`\`\`
 
-\`<capability-path>\` is the spec directory relative to \`specs/\` (for example,
-\`user-auth\` or \`identity/user-auth\`). Use the exact existing path for modified
-capabilities. For new capabilities, follow the project's established spec
-organization.
+Draft the outline (don't save yet), following the returned \`template\` and \`instruction\`:
 
 \`\`\`
-Here's a draft proposal:
+Here's a draft outline:
 
 ---
 
-# Proposal
+# Outline
 
-## Why
+## Proposal
+[1-2 sentences on what we're changing and why]
 
-[1-2 sentences explaining the problem/opportunity]
-
-## What Changes
-
-[Bullet points of what will be different]
-
-## Capabilities
-
-### New Capabilities
-- \`<capability-path>\`: [brief description]
-
-### Modified Capabilities
-<!-- If modifying existing behavior -->
-- \`<existing-capability-path>\`: [brief description]
-
-## Impact
-
-- \`src/path/to/file.ts\`: [what changes]
-- [other files if applicable]
+## Requirements
+1. <spec-name>:
+  a. <Existing requirement name> (patch):
+    b. <Kept words> ~~<dropped words>~~ **<added words>**
+    e. <A new detail, after the last label at its level>
+  f. <New requirement name>: <One sentence>
+    a. <Detail>
 
 ---
 
-Does this capture the intent? I can adjust before we save it.
+Every line here is an edit the change makes to a live spec. Does this capture the intent?
 \`\`\`
 
 **PAUSE** - Wait for user approval/feedback.
 
-After approval, save the proposal:
+After approval, write it to the \`resolvedOutputPath\` from the instructions JSON, then check it lands cleanly:
 \`\`\`bash
-openspec instructions proposal --change "<name>" --json
+openspec validate "<name>"
 \`\`\`
-Then write the content to the \`resolvedOutputPath\` from \`openspec instructions proposal --change "<name>" --json\`.
 
 \`\`\`
-Proposal saved. This is your "why" document—you can always come back and refine it as understanding evolves.
+Outline saved and validated against the live specs. You can refine it as understanding evolves.
 
-Next up: specs.
+Next up: design, if the change needs one.
 \`\`\`
 
 ---
 
-## Phase 6: Specs
-
-**EXPLAIN:**
-\`\`\`
-## Specs
-
-Specs define **what** we're building in precise, testable terms. They use a requirement/scenario format that makes expected behavior crystal clear.
-
-For a small task like this, we might only need one spec file.
-\`\`\`
-
-**DO:** Resolve where the spec file should be created:
-\`\`\`bash
-openspec instructions specs --change "<name>" --json
-# Use resolvedOutputPath from the JSON. If it is a glob, choose the concrete file path using the schema instruction and the change's context.
-\`\`\`
-
-Draft the spec content:
-
-\`\`\`
-Here's the spec:
-
----
-
-# Spec Delta
-
-## ADDED Requirements
-
-### Requirement: <Name>
-
-<Description of what the system should do>
-
-#### Scenario: <Scenario name>
-
-- **WHEN** <trigger condition>
-- **THEN** <expected outcome>
-- **AND** <additional outcome if needed>
-
----
-
-This format—WHEN/THEN/AND—makes requirements testable. You can literally read them as test cases.
-\`\`\`
-
-Save to the concrete file path chosen from \`resolvedOutputPath\`.
-
----
-
-## Phase 7: Design
+## Phase 6: Design (optional)
 
 **EXPLAIN:**
 \`\`\`
 ## Design
 
-The design captures **how** we'll build it—technical decisions, tradeoffs, approach.
-
-For small changes, this might be brief. That's fine—not every change needs deep design discussion.
+The design captures **how** we'll build it—technical decisions and tradeoffs. It's optional: only write one when the change needs decisions explained. Small changes usually skip it.
 \`\`\`
 
-**DO:** Draft design.md:
-
-\`\`\`
-Here's the design:
-
----
-
-# Design
-
-## Context
-
-[Brief context about the current state]
-
-## Goals / Non-Goals
-
-**Goals:**
-- [What we're trying to achieve]
-
-**Non-Goals:**
-- [What's explicitly out of scope]
-
-## Decisions
-
-### Decision 1: [Key decision]
-
-[Explanation of approach and rationale]
-
----
-
-For a small task, this captures the key decisions without over-engineering.
-\`\`\`
-
-Save to the \`resolvedOutputPath\` from \`openspec instructions design --change "<name>" --json\`.
+**DO:** Decide whether this change needs a design. If it does, draft design.md following \`openspec instructions design --change "<name>" --json\`, show it, and save it to the \`resolvedOutputPath\`. If not, say so and move on.
 
 ---
 
@@ -445,7 +357,7 @@ Finally, we break the work into implementation tasks—checkboxes that drive the
 These should be small, clear, and in logical order. Each group carries the tests and documentation for its own work - the last group is only for integration checks.
 \`\`\`
 
-**DO:** Generate tasks based on specs and design:
+**DO:** Generate tasks based on the outline (and design, if any):
 
 \`\`\`
 Here are the implementation tasks:
@@ -462,6 +374,7 @@ Here are the implementation tasks:
 ## 2. Integration Verification
 
 - [ ] 2.1 Verify [broader integration or system behavior] with [end-to-end test or observable result]
+- [ ] 2.2 Land the change with \`openspec land <name>\`
 
 ---
 
@@ -485,14 +398,14 @@ Then ask:
 \`\`\`
 ## Implementation
 
-Now we implement each task, checking them off as we go. I'll announce each one and occasionally note how the specs/design informed the approach.
+Now we implement each task, checking them off as we go. I'll announce each one and occasionally note how the outline/design informed the approach.
 \`\`\`
 
 **DO:** For each task:
 
 1. Announce: "Working on task N: [description]"
 2. Implement the change in the codebase
-3. Reference specs/design naturally: "The spec says X, so I'm doing Y"
+3. Reference the outline/design naturally: "The outline says X, so I'm doing Y"
 4. Mark complete in tasks.md: \`- [ ]\` → \`- [x]\`
 5. Brief status: "✓ Task N complete"
 
@@ -508,32 +421,32 @@ All tasks done:
 - [x] Task 2
 - [x] ...
 
-The change is implemented! One more step—let's archive it.
+The change is implemented! One more step—let's land it.
 \`\`\`
 
 ---
 
-## Phase 10: Archive
+## Phase 10: Land
 
 **EXPLAIN:**
 \`\`\`
-## Archiving
+## Landing
 
-When a change is complete, we archive it. The archive path is derived from \`planningHome.changesDir\` and the date.
-
-Archived changes become your project's decision history—you can always find them later to understand why something was built a certain way.
+Landing applies the change's outline.md to the live specs and deletes the change folder; git history keeps the record. (\`archive\` is the old name for this step.)
 \`\`\`
 
-**DO:** Archive the change (\`--yes\` answers the confirmation prompts, which you cannot answer from a tool call):
+**DO:** Validate, preview, then land (\`--yes\` answers the confirmation prompt, which you cannot answer from a tool call):
 \`\`\`bash
-openspec archive "<name>" --yes
+openspec validate "<name>"
+openspec land "<name>" --dry-run
+openspec land "<name>" --yes
 \`\`\`
+
+Show the dry-run result before landing. If validate or land reports a mismatch, fix outline.md so its struck text and labels match the live spec—never hand-edit \`openspec/specs/\`.
 
 **SHOW:**
 \`\`\`
-Archived to: \`<planningHome.changesDir>/archive/<target-name>/\` (the target name prepends today's date, unless the name already starts with a \`YYYY-MM-DD-\` prefix — then it is kept as-is, no second date)
-
-The change is now part of your project's history. The code is in your codebase, the decision record is preserved.
+Landed. The specs now describe the new behavior, the change folder is gone, and the code is in your codebase. Commit to keep the record.
 \`\`\`
 
 ---
@@ -547,12 +460,11 @@ You just completed a full OpenSpec cycle:
 
 1. **Explore** - Thought through the problem
 2. **New** - Created a change container
-3. **Proposal** - Captured WHY
-4. **Specs** - Defined WHAT in detail
-5. **Design** - Decided HOW
-6. **Tasks** - Broke it into steps
-7. **Apply** - Implemented the work
-8. **Archive** - Preserved the record
+3. **Outline** - Captured WHY and the spec edits
+4. **Design** - Decided HOW (when needed)
+5. **Tasks** - Broke it into steps
+6. **Apply** - Implemented the work
+7. **Land** - Applied the outline to the specs
 
 This same rhythm works for any size change—a small fix or a major feature.
 
@@ -614,7 +526,7 @@ Exit gracefully.
 
 ## Guardrails
 
-- **Follow the EXPLAIN → DO → SHOW → PAUSE pattern** at key transitions (after explore, after proposal draft, after tasks, after archive)
+- **Follow the EXPLAIN → DO → SHOW → PAUSE pattern** at key transitions (after explore, after outline draft, after tasks, after landing)
 - **Keep narration light** during implementation—teach without lecturing
 - **Don't skip phases** even if the change is small—the goal is teaching the workflow
 - **Pause for acknowledgment** at marked points, but don't over-pause
