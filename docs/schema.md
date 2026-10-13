@@ -29,6 +29,7 @@ State the proposal in one or two sentences under `## Proposal`.
 Under `## Requirements`, write a nested outline, one sentence per item.
 This outline is the change's spec edits: `outline-spec archive <change>` applies
 it to the live specs in `outline-spec/specs/` and deletes the change folder.
+`outline-spec sync <change>` applies it earlier and keeps the change open.
 
 Before writing, read the specs this change touches. Run `outline-spec list --specs`
 for the inventory, then `outline-spec show "<spec>" --type spec` for each related

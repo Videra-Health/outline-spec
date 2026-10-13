@@ -1,6 +1,6 @@
 # Outlines
 
-Specs in `outline-spec/specs/<name>/spec.md` are labeled outlines. A change holds its spec edits in its own `outline.md`, also an outline, until it is archived. Archiving applies the edits to the live specs and deletes the change folder. There is no archive folder; git history is the record.
+Specs in `outline-spec/specs/<name>/spec.md` are labeled outlines. A change holds its spec edits in its own `outline.md`, also an outline, until it is archived. Archiving applies the edits to the live specs and deletes the change folder. There is no archive folder; git history is the record. Syncing applies the edits early and keeps the change open ([Applied records](#applied-records)).
 
 ## Spec files
 
@@ -118,7 +118,7 @@ Requirement `3` is gone and leaves a gap. No other label moved.
 
 ## What archiving checks
 
-`outline-spec validate <change>` and `outline-spec archive <change>` stop, with every problem listed, when:
+`outline-spec validate <change>`, `outline-spec sync <change>`, and `outline-spec archive <change>` stop, with every problem listed, when:
 
 - struck text doesn't match the live item, sentence, or purpose;
 - a `(patch)` requirement, or a detail label being edited or removed, doesn't exist;
@@ -128,6 +128,22 @@ Requirement `3` is gone and leaves a gap. No other label moved.
 - a table edit doesn't fit the live table ([Tables](#editing-a-table)).
 
 Nothing is written when any check fails. [Workflows](workflows.md#when-a-change-no-longer-fits) covers fixing a change that stopped fitting.
+
+## Applied records
+
+`outline-spec sync <change>` applies the edits under `## Requirements` to the live specs, with the same checks as archiving, then moves them out of `outline.md`:
+
+```
+outline-spec/changes/wallets/
+  outline.md            # ## Requirements is now empty
+  applied/
+    2026-10-13-1.md     # what the first sync applied
+    2026-10-13-2.md     # a second sync the same day
+```
+
+Each file is named for the local date and a counter, and holds `# Applied <date>`, the change name, and the `## Requirements` section exactly as it was applied. Every other section of `outline.md` is left as it was.
+
+`applied/` is a record only. `validate`, `pending`, `status`, `instructions`, and `archive` never read it, so its edits are never applied twice. New edits go in `outline.md`, written against the live specs as they now stand. `archive` applies what's left in `outline.md` and deletes the change folder, `applied/` included; git history keeps it. `outline-spec show <change>` lists the files.
 
 ## Tables
 

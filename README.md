@@ -13,7 +13,7 @@ Because an edit addresses one labeled detail, two changes that touch different d
 
 ## Fork notice
 
-outline-spec is a fork of [OpenSpec](https://github.com/Fission-AI/OpenSpec) by Fission AI, under the MIT license (see [LICENSE](LICENSE)). OpenSpec's delta specs replace whole requirements, so parallel changes to one requirement overwrite each other. This fork replaces them with outline specs that merge by label. It also drops scenarios, spec sync, the archive folder, telemetry, and the update check, and renames the CLI, project folder, skills, and commands so both tools can be installed side by side. [CHANGELOG.md](CHANGELOG.md) has the details.
+outline-spec is a fork of [OpenSpec](https://github.com/Fission-AI/OpenSpec) by Fission AI, under the MIT license (see [LICENSE](LICENSE)). OpenSpec's delta specs replace whole requirements, so parallel changes to one requirement overwrite each other. This fork replaces them with outline specs that merge by label. It also drops scenarios, delta-spec sync (sync now applies outline edits), the archive folder, telemetry, and the update check, and renames the CLI, project folder, skills, and commands so both tools can be installed side by side. [CHANGELOG.md](CHANGELOG.md) has the details.
 
 ## Install
 
@@ -37,6 +37,7 @@ outline-spec init                      # pick your AI tools
 # in your AI tool:
 /outl:propose add dark mode    # writes outline.md, diagrams.md, and tasks.md
 /outl:apply                    # implements the tasks
+/outl:sync                     # optional: applies spec edits early, keeps the change open
 /outl:archive                  # applies the outline to the specs
 ```
 
@@ -46,7 +47,7 @@ Moving from OpenSpec? Run `outline-spec adopt` ([Adopting](docs/adopting.md)).
 
 - [Getting started](docs/getting-started.md)
 - [Outlines](docs/outlines.md): the spec and change format
-- [Workflows](docs/workflows.md): propose, apply, archive, and parallel changes
+- [Workflows](docs/workflows.md): propose, apply, sync, archive, and parallel changes
 - [CLI](docs/cli.md)
 - [Skills and commands](docs/skills.md)
 - [Configuration](docs/configuration.md) and [the outline schema](docs/schema.md)

@@ -85,13 +85,25 @@ In the `apply` JSON, each `tasks` entry carries `id`, `description`, `done`, `so
 
 ### outline-spec archive [change]
 
-Applies a change's `outline.md` to the live specs and deletes the change folder. It checks the whole outline first and writes nothing if any edit doesn't fit ([What archiving checks](outlines.md#what-archiving-checks)). There is no archive folder; git history is the record. It warns about unchecked tasks.
+Applies a change's `outline.md` to the live specs and deletes the change folder. It checks the whole outline first and writes nothing if any edit doesn't fit ([What archiving checks](outlines.md#what-archiving-checks)). There is no archive folder; git history is the record. It warns about unchecked tasks. It applies only what `outline.md` still holds, and deletes `applied/` with the rest of the folder.
 
 | Flag | Effect |
 |---|---|
 | `--dry-run` | Print the resulting spec text and write nothing. |
 | `-y, --yes` | Skip confirmation prompts. |
 | `--json`, `--store <id>` | |
+
+### outline-spec sync [change]
+
+Applies the spec edits under `outline.md`'s `## Requirements` to the live specs now and keeps the change open. It selects and checks the change the same way `archive` does and writes nothing if any edit doesn't fit. Then it moves the applied section verbatim into `applied/<YYYY-MM-DD>-<n>.md` in the change folder and leaves `## Requirements` empty ([Applied records](outlines.md#applied-records)). It doesn't check tasks. With no edits under `## Requirements`, it reports nothing to sync and exits 0. Also runs as `outl sync`.
+
+| Flag | Effect |
+|---|---|
+| `--dry-run` | Print the resulting spec text and the `applied/` path, and write nothing. |
+| `-y, --yes` | Skip the confirmation prompt (asked only in a terminal). |
+| `--json`, `--store <id>` | |
+
+`--json` prints `{ "synced": "<change>", "specs": [{ "name", "action" }], "applied": "<path to the applied file, relative to the root>" }`. `action` is `updated`, `created`, or `deleted`; `applied` is `null` when there was nothing to sync. `--dry-run` adds `"dryRun": true` and each spec's `text`. A failure prints `"synced": null` with a `status` diagnostic, such as `sync_conflicts`.
 
 ### outline-spec pending
 

@@ -70,6 +70,8 @@ The agent implements the tasks and checks them off. When they're done:
 
 It validates the change, shows you the spec it will write, writes `outline-spec/specs/settings/spec.md`, and deletes the change folder (there is no archive folder; git history is the record). Commit.
 
+On a longer change, `/outl:sync` applies the spec edits so far and keeps the change open ([Workflows](workflows.md#sync)).
+
 ## Next
 
 - [Outlines](outlines.md) for the spec and change format.

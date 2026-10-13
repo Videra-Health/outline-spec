@@ -23,6 +23,7 @@ Commit the installed files with the rest of your project.
 | `explore` | `outl-explore` | A thinking partner for an idea or a problem. It reads code and specs and never writes code. It captures the discussion only when you ask, or say yes when it offers: it runs `outline-spec new change` and writes the artifacts you name. |
 | `apply` | `outl-apply-change` | Implements a change's tasks and checks each off in the tracked file identified by `sourcePath` and one-based `line`. A schema can track tasks across multiple files. |
 | `update` | `outl-update-change` | Revises a change's artifacts and keeps them consistent with each other. Never edits code. |
+| `sync` | `outl-sync-specs` | Validates, previews with `--dry-run`, and syncs a change: applies its spec edits to the specs now, records them in `applied/`, and keeps the change open ([Workflows](workflows.md#sync)). |
 | `archive` | `outl-archive-change` | Validates, previews with `--dry-run`, and archives a finished change: applies its outline to the specs and deletes the folder ([Workflows](workflows.md#archive)). |
 | `new` | `outl-new-change` | Creates an empty change and stops, ready for `continue`. |
 | `continue` | `outl-continue-change` | Writes the next ready artifact of a change. |
@@ -36,7 +37,7 @@ A profile chooses which workflows are installed. It's a global setting, per mach
 
 ### Core profile
 
-The default `core` profile installs `propose`, `explore`, `apply`, `update`, and `archive`.
+The default `core` profile installs `propose`, `explore`, `apply`, `update`, `sync`, and `archive`.
 
 ### Custom profile
 

@@ -1,6 +1,6 @@
 # Workflows
 
-A change moves through three steps: propose, apply, archive. Each is a skill and a slash command in your AI tool ([Skills and commands](skills.md)), and each drives the CLI underneath.
+A change moves through three steps: propose, apply, archive, with an optional sync along the way. Each is a skill and a slash command in your AI tool ([Skills and commands](skills.md)), and each drives the CLI underneath.
 
 ## Propose
 
@@ -23,6 +23,23 @@ Review the outline before applying. `outline-spec show <change> --diff` prints t
 
 If the plan changes while you build, `/outl:update` revises the change's artifacts and keeps them consistent with each other. It never edits code.
 
+## Sync
+
+`/outl:sync` applies a change's spec edits to the live specs now and keeps the change open:
+
+1. It runs `outline-spec validate <change>`.
+2. It runs `outline-spec sync <change> --dry-run` and shows you the resulting spec text and the `applied/` file it would write.
+3. It runs `outline-spec sync <change> --yes`, which writes the specs, moves the applied `## Requirements` section verbatim into `applied/<date>-<n>.md` in the change folder, and leaves `## Requirements` in `outline.md` empty.
+
+Sync doesn't check tasks. Add new spec edits to `outline.md` as they come up and sync again whenever they should reach the live specs.
+
+### Sync or archive
+
+- **Sync** when the live specs should change before the work is done: a long change whose finished parts other changes need to build on, or spec edits you want reviewed and committed now. The change stays open.
+- **Archive** when the work is done. It applies whatever `outline.md` still holds, possibly nothing, and deletes the change folder, `applied/` included.
+
+A change you never sync just archives as before.
+
 ## Archive
 
 `/outl:archive` finishes the change:
@@ -32,7 +49,7 @@ If the plan changes while you build, `/outl:update` revises the change's artifac
 3. It runs `outline-spec archive <change> --dry-run` and shows you the resulting spec text.
 4. It runs `outline-spec archive <change> --yes`, which writes the specs and deletes the change folder.
 
-Commit the result. Archiving applies the outline and deletes the change folder; there is no archive folder, and git history keeps the change.
+Commit the result. Archiving applies the outline and deletes the change folder; there is no archive folder, and git history keeps the change and its `applied/` records.
 
 ## Parallel changes
 
@@ -55,7 +72,7 @@ An overlap is a warning. Whichever change is archived second has to agree with t
 
 ## When a change no longer fits
 
-If another change was archived first and edited the same item, the second change's struck text no longer matches. Validation reports it, and archive refuses and writes nothing:
+If another change was archived or synced first and edited the same item, the second change's struck text no longer matches. Validation reports it, and archive and sync refuse and write nothing:
 
 ```
 $ outline-spec archive b
@@ -68,9 +85,9 @@ To fix it:
 
 1. Read the live item: `outline-spec show widgets --item "Spin.a"`.
 2. Edit the change's `outline.md` so it strikes the live text exactly, addresses live labels, and puts new items after the last label at their level.
-3. Run `outline-spec validate b`, then archive again.
+3. Run `outline-spec validate b`, then archive or sync again.
 
-Never edit the live specs by hand to make a change fit. `outline.md` is the only place a change edits specs, and the archive skill follows the same rule.
+Never edit the live specs by hand to make a change fit. `outline.md` is the only place a change edits specs, and the archive and sync skills follow the same rule.
 
 ## Labels and gaps
 

@@ -2,7 +2,7 @@
 
 - [Getting started](getting-started.md): install, set up a project, and archive your first change.
 - [Outlines](outlines.md): the spec format and how a change outline edits it.
-- [Workflows](workflows.md): propose, apply, archive; pending changes, overlaps, and mismatches.
+- [Workflows](workflows.md): propose, apply, sync, archive; pending changes, overlaps, and mismatches.
 - [CLI](cli.md): every command and its flags.
 - [Skills and commands](skills.md): what `init` and `update` install in your AI tool, and profiles.
 - [Configuration](configuration.md): `config.yaml`, global settings, environment variables, and custom schemas.
