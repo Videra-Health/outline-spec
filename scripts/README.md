@@ -66,7 +66,3 @@ The rewriting lives in `parity-hash-shared.mjs` so its guards can be exercised
 against fabricated input — see `test/core/templates/parity-hash-shared.test.ts`.
 A test that ran this script for real would rewrite the repository's own parity
 test file mid-suite.
-
-## pack-version-check.mjs
-
-Validates package version consistency before publishing.

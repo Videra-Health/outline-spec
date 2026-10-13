@@ -17,7 +17,7 @@ body:
       label: What happened
       description: The actual behavior. Paste the command you ran and its output if you have it.
       placeholder: |
-        I ran `outline-spec archive add-login` and it exited 0 without writing the main spec.
+        I ran `outline-spec land add-login` and it exited 0 without editing the spec.
     validations:
       required: true
 
@@ -25,7 +25,7 @@ body:
     id: expected
     attributes:
       label: What you expected instead
-      placeholder: The main spec at outline-spec/specs/auth/spec.md should have been updated.
+      placeholder: outline-spec/specs/auth/spec.md should have the change's edits.
     validations:
       required: true
 
@@ -46,7 +46,7 @@ body:
     attributes:
       label: outline-spec version
       description: Output of `outline-spec --version`, or "unknown" if installation failed or the command cannot run.
-      placeholder: '1.11.0'
+      placeholder: '0.1.0'
     validations:
       required: true
 

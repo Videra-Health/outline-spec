@@ -53,11 +53,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "prepare": "node build.js",
-    "prepublishOnly": "pnpm run build",
-    "check:pack-version": "node scripts/pack-version-check.mjs",
-    "release": "pnpm run release:ci",
-    "release:ci": "pnpm run check:pack-version && pnpm exec changeset publish",
-    "changeset": "changeset"
+    "prepublishOnly": "pnpm run build"
   },
   "engines": {
     "node": ">=20.19.0"

@@ -2,19 +2,12 @@ name: Feature request
 description: Something outline-spec should do that it does not do yet.
 labels: ['enhancement', 'needs-triage']
 body:
-  - type: markdown
-    attributes:
-      value: |
-        If this would change outline-spec's core design, open a
-        [discussion](https://github.com/heneryville/outline-spec/discussions) instead — see
-        [CONTRIBUTING.md](https://github.com/heneryville/outline-spec/blob/main/CONTRIBUTING.md).
-
   - type: textarea
     id: problem
     attributes:
       label: The problem, in one or two sentences
       description: What you were trying to do, and where outline-spec got in the way. Describe the problem, not the solution.
-      placeholder: There is no way to tell which change a spec came from after it is archived.
+      placeholder: There is no way to tell which change last edited a requirement.
     validations:
       required: true
 
@@ -23,7 +16,7 @@ body:
     attributes:
       label: Who this affects
       description: Just you, everyone on a particular agent, everyone using a particular workflow, or everyone. outline-spec serves many agents and models, so this shapes whether a change fits.
-      placeholder: Anyone archiving more than a handful of changes.
+      placeholder: Anyone landing more than a handful of changes.
     validations:
       required: true
 
