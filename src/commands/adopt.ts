@@ -3,7 +3,8 @@ import path from 'path';
 import { isOutlineSpec, migrateSpec, type Unplaced } from '../core/outline/migrate.js';
 import { OUTLINE_SPEC_DIR_NAME } from '../core/config.js';
 import { METADATA_FILENAME } from '../utils/change-metadata.js';
-import { discoverSpecFiles } from '../utils/spec-discovery.js';
+import { applySpecLayout, planSpecLayout } from '../core/outline/spec-layout.js';
+import { findOldLayoutSpecs, OLD_SPEC_FILE } from '../core/outline/specs.js';
 
 const OPENSPEC_DIR = 'openspec';
 const OPENSPEC_METADATA = '.openspec.yaml';
@@ -90,6 +91,8 @@ export async function adoptProject(projectPath: string, options: AdoptOptions = 
   for (const spec of specs) {
     if (spec.text !== undefined) await fs.writeFile(path.join(to, 'specs', spec.rel), spec.text);
   }
+  // OpenSpec's <id>/spec.md becomes <id>.md; the folder was just moved, so git has nothing to rename.
+  await applySpecLayout(path.join(to, 'specs'), planSpecLayout(path.join(to, 'specs')), { git: false });
   for (const name of report.metadataRenamed) {
     const dir = path.join(to, 'changes', name);
     await fs.rename(path.join(dir, OPENSPEC_METADATA), path.join(dir, METADATA_FILENAME));
@@ -103,10 +106,13 @@ export async function adoptProject(projectPath: string, options: AdoptOptions = 
   return report;
 }
 
+/** OpenSpec keeps each spec at `specs/<id>/spec.md`. */
 async function planSpecs(specsDir: string): Promise<SpecPlan[]> {
   const plans: SpecPlan[] = [];
-  for (const { id, specFile } of await discoverSpecFiles(specsDir)) {
-    const rel = path.relative(specsDir, specFile);
+  for (const relPosix of findOldLayoutSpecs(specsDir)) {
+    const id = relPosix.slice(0, -(OLD_SPEC_FILE.length + 1));
+    const rel = path.join(...relPosix.split('/'));
+    const specFile = path.join(specsDir, rel);
     const src = await fs.readFile(specFile, 'utf-8');
     if (isOutlineSpec(src)) {
       plans.push({ name: id, rel, status: 'already-outline', notes: [], unplaced: [] });

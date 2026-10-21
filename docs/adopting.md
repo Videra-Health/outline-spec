@@ -11,7 +11,7 @@ outline-spec update            # install outline-spec's skills and commands
 ## What it does
 
 - Moves `openspec/` to `outline-spec/`.
-- Converts each spec in `specs/` to an outline. Specs that are already outlines are left as they are.
+- Converts each spec in `specs/` to an outline and moves it from `specs/<name>/spec.md` to `specs/<name>.md`. Specs that are already outlines are only moved.
 - Deletes `changes/archive/`. Git history keeps the archived changes.
 - Renames each open change's `.openspec.yaml` to `.outline-spec.yaml`.
 - Sets `schema: outline` where `config.yaml` or a change's metadata says `schema: spec-driven`. A project-local schema name is left alone.
@@ -59,7 +59,7 @@ The `## Purpose` text becomes the purpose. Each `### Requirement:` becomes a num
 
 Adopt refuses if `outline-spec/` already exists.
 
-Specs already under `outline-spec/specs/` in the old format can be converted on their own with `outline-spec migrate-specs`.
+Specs already under `outline-spec/specs/` in the old format, or still in `<name>/spec.md` folders, can be converted and moved on their own with `outline-spec migrate-specs`.
 
 ## Running alongside OpenSpec
 

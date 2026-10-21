@@ -3,7 +3,8 @@ import path, { join } from 'path';
 import { parseSpec, type Spec } from '../core/outline/outline.js';
 import { findItem, rowObject, writeItem } from '../core/outline/item.js';
 import { Validator } from '../core/validation/validator.js';
-import type { RootOutput } from '../core/root-selection.js';
+import { assertFlatSpecLayout, type RootOutput } from '../core/root-selection.js';
+import { specFile } from '../core/outline/specs.js';
 import { isInteractive } from '../utils/interactive.js';
 import { getSpecIds } from '../utils/item-discovery.js';
 import { discoverSpecFiles } from '../utils/spec-discovery.js';
@@ -22,11 +23,11 @@ function assertSpecPath(specsDir: string, specPath: string): void {
   }
 
   try {
-    // Preserve confined spec.md links, including links to a sibling capability.
+    // Preserve confined spec links, including links to elsewhere in the specs root.
     FileSystemUtils.assertPathWithin(specsDir, specPath);
   } catch {
-    // A capability directory may intentionally be a monorepo symlink. Treat it
-    // as the trust root while still rejecting a link outside that capability.
+    // An area directory may intentionally be a monorepo symlink. Treat it
+    // as the trust root while still rejecting a link outside that area.
     FileSystemUtils.assertPathWithin(path.dirname(specPath), specPath);
   }
 }
@@ -80,12 +81,12 @@ export class SpecCommand {
       }
     }
 
-    const specPath = join(this.specsDir, specId, 'spec.md');
+    const specPath = specFile(this.specsDir, specId);
     assertSpecPath(this.specsDir, specPath);
     if (!existsSync(specPath)) {
       // Root-aware callers get the absolute path; the cwd-based noun form
       // keeps its historical forward-slash relative message on all platforms.
-      const displayPath = this.rootPath ? specPath : `outline-spec/specs/${specId}/spec.md`;
+      const displayPath = this.rootPath ? specPath : `outline-spec/specs/${specId}.md`;
       throw new Error(`Spec '${specId}' not found at ${displayPath}`);
     }
 
@@ -115,6 +116,7 @@ export async function specShowCommand(
   options: ShowOptions & { noInteractive?: boolean }
 ): Promise<void> {
   try {
+    assertFlatSpecLayout(process.cwd());
     const cmd = new SpecCommand();
     await cmd.show(specId, options as any);
   } catch (error) {
@@ -125,6 +127,7 @@ export async function specShowCommand(
 
 export async function specListCommand(options: { json?: boolean; long?: boolean }): Promise<void> {
   try {
+    assertFlatSpecLayout(process.cwd());
     if (!existsSync(SPECS_DIR)) {
       console.log('No items found');
       return;
@@ -178,6 +181,7 @@ export async function specValidateCommand(
   options: { strict?: boolean; json?: boolean; noInteractive?: boolean }
 ): Promise<void> {
   try {
+    assertFlatSpecLayout(process.cwd());
     if (!specId) {
       const canPrompt = isInteractive(options);
       const specIds = await getSpecIds();
@@ -192,11 +196,11 @@ export async function specValidateCommand(
       }
     }
 
-    const specPath = join(SPECS_DIR, specId, 'spec.md');
+    const specPath = specFile(SPECS_DIR, specId);
     assertSpecPath(SPECS_DIR, specPath);
     
     if (!existsSync(specPath)) {
-      throw new Error(`Spec '${specId}' not found at outline-spec/specs/${specId}/spec.md`);
+      throw new Error(`Spec '${specId}' not found at outline-spec/specs/${specId}.md`);
     }
 
     const validator = new Validator(options.strict);

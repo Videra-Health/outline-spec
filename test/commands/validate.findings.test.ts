@@ -45,8 +45,8 @@ describe('validate findings reports', () => {
     await writeWarningChange('b-warning');
     await write('outline-spec/changes/c-info/outline.md', outline(false));
     await fs.mkdir(path.join(root.changesDir, 'd-error'));
-    await write('outline-spec/specs/clean/spec.md', '# clean\nThis specification defines a deterministic example for testing validation output contracts.\n\n1. Example behavior: The feature returns its documented result.\n');
-    await write('outline-spec/specs/error/spec.md', '# Invalid specification\n');
+    await write('outline-spec/specs/clean.md', '# clean\nThis specification defines a deterministic example for testing validation output contracts.\n\n1. Example behavior: The feature returns its documented result.\n');
+    await write('outline-spec/specs/error.md', '# Invalid specification\n');
     // Left by older projects; discovery must not treat it as a change.
     await write('outline-spec/changes/archive/old/tasks.md', '- [ ] 1.1 Pending\n');
   }

@@ -27,7 +27,7 @@ describe('FileSystemUtils.assertPathWithin', () => {
   });
 
   it('accepts a path inside the allowed directory', () => {
-    const inside = path.join(root, 'specs', 'widgets', 'spec.md');
+    const inside = path.join(root, 'specs', 'widgets.md');
     expect(() => FileSystemUtils.assertPathWithin(root, inside)).not.toThrow();
   });
 

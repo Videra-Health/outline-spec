@@ -31,7 +31,7 @@ outline-spec init
 ```
 outline-spec/
 ├── config.yaml   schema and optional project context
-├── specs/        the live specs
+├── specs/        the live specs, one <name>.md file each
 └── changes/      open changes
 ```
 
@@ -68,7 +68,7 @@ The agent implements the tasks and checks them off. When they're done:
 /outl:archive
 ```
 
-It validates the change, shows you the spec it will write, writes `outline-spec/specs/settings/spec.md`, and deletes the change folder (there is no archive folder; git history is the record). Commit.
+It validates the change, shows you the spec it will write, writes `outline-spec/specs/settings.md`, and deletes the change folder (there is no archive folder; git history is the record). Commit.
 
 On a longer change, `/outl:sync` applies the spec edits so far and keeps the change open ([Workflows](workflows.md#sync)).
 

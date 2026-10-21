@@ -34,7 +34,7 @@ describe('SpecCommand path boundaries', () => {
     'rejects a spec file symlink that leaves the specs root',
     async () => {
       const outsideSpec = path.join(tempDir, 'outside.md');
-      const linkedSpec = path.join(tempDir, 'outline-spec', 'specs', 'linked', 'spec.md');
+      const linkedSpec = path.join(tempDir, 'outline-spec', 'specs', 'linked.md');
       await fs.writeFile(outsideSpec, '# Outside sentinel');
       await fs.mkdir(path.dirname(linkedSpec), { recursive: true });
       await fs.symlink(outsideSpec, linkedSpec);
@@ -46,20 +46,20 @@ describe('SpecCommand path boundaries', () => {
   );
 
   it.skipIf(process.platform === 'win32')(
-    'allows a linked capability directory as its own trust root',
+    'allows a linked area directory as its own trust root',
     async () => {
-      const sharedCapability = path.join(tempDir, 'shared-capability');
-      await fs.mkdir(sharedCapability);
+      const sharedArea = path.join(tempDir, 'shared-area');
+      await fs.mkdir(sharedArea);
       await fs.writeFile(
-        path.join(sharedCapability, 'spec.md'),
+        path.join(sharedArea, 'widget.md'),
         '# Shared\n\n## Purpose\n\nShared safely.\n\n## Requirements\n'
       );
       await fs.symlink(
-        sharedCapability,
+        sharedArea,
         path.join(tempDir, 'outline-spec', 'specs', 'shared')
       );
 
-      await expect(new SpecCommand().show('shared')).resolves.toBeUndefined();
+      await expect(new SpecCommand().show('shared/widget')).resolves.toBeUndefined();
     }
   );
 
@@ -68,7 +68,7 @@ describe('SpecCommand path boundaries', () => {
     async () => {
       const specsDir = path.join(tempDir, 'outline-spec', 'specs');
       const sharedSpec = path.join(specsDir, 'shared.md');
-      const linkedSpec = path.join(specsDir, 'linked', 'spec.md');
+      const linkedSpec = path.join(specsDir, 'linked.md');
       await fs.writeFile(
         sharedSpec,
         '# Shared\n\n## Purpose\n\nShared safely.\n\n## Requirements\n'

@@ -6,6 +6,7 @@ import { isNonInteractivePromptError } from '../utils/interactive.js';
 import { folderStyleNameProblem } from './id.js';
 import { describeNestedChange, findNestedChangesIn } from '../utils/nested-change.js';
 import {
+  assertFlatSpecLayout,
   emitStoreRootBanner,
   isRootSelectionError,
   resolveOutlineSpecRoot,
@@ -75,6 +76,7 @@ export async function runChangeCommand<T extends object>(
       ...(options.store !== undefined ? { store: options.store } : {}),
       ...(options.storePath !== undefined ? { storePath: options.storePath } : {}),
     });
+    assertFlatSpecLayout(root.path, root.specsDir);
   } catch (error) {
     if (json && isRootSelectionError(error)) return printFailure(undefined, error);
     throw error;

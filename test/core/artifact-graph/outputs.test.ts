@@ -48,7 +48,7 @@ describe('artifact-graph/outputs', () => {
     [String.raw`specs\auth\spec.md`, false],
     ['review-{api}.md', false],
     ['proposal.md', false],
-    ['specs/auth/spec.md', false],
+    ['specs/auth.md', false],
   ])('classifies glob pattern %s as %s', (pattern, expected) => {
     expect(isGlobPattern(pattern)).toBe(expected);
   });

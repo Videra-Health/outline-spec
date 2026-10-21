@@ -213,7 +213,7 @@ Now let's write the first artifact—the outline.
 ```
 ## The Outline
 
-The project's specs live in `outline-spec/specs/<spec>/spec.md` as labeled outlines: each numbered item is a requirement (a name, a colon, one sentence), with details nested under it as a. / i. / 1.
+The project's specs live in `outline-spec/specs/<spec>.md` as labeled outlines: each numbered item is a requirement (a name, a colon, one sentence), with details nested under it as a. / i. / 1.
 
 A change never edits those files directly. Its outline.md states the proposal in a sentence or two, then lists only the spec edits it makes:
 - A new requirement or detail is written plainly, labeled after the last one at its level.

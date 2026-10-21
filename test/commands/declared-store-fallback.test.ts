@@ -116,7 +116,7 @@ describe('declared store fallback (3.2)', () => {
     });
     expect(archived.exitCode).toBe(0);
     expect(fs.existsSync(changeDir)).toBe(false);
-    expect(fs.existsSync(path.join(storeRoot, 'outline-spec', 'specs', 'billing', 'spec.md'))).toBe(true);
+    expect(fs.existsSync(path.join(storeRoot, 'outline-spec', 'specs', 'billing.md'))).toBe(true);
 
     // The pointer repo is byte-identical: no specs/, no changes/, nothing.
     expect(snapshot(pointerRepo)).toEqual(pointerBefore);

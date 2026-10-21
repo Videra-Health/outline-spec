@@ -24,7 +24,7 @@ This is a test specification for the authentication system.
 `;
 
     await fs.mkdir(path.join(specsDir, 'auth'), { recursive: true });
-    await fs.writeFile(path.join(specsDir, 'auth', 'spec.md'), testSpec);
+    await fs.writeFile(path.join(specsDir, 'auth.md'), testSpec);
 
     const testSpec2 = `# payment
 This specification defines the payment processing system.
@@ -33,7 +33,7 @@ This specification defines the payment processing system.
 `;
 
     await fs.mkdir(path.join(specsDir, 'payment'), { recursive: true });
-    await fs.writeFile(path.join(specsDir, 'payment', 'spec.md'), testSpec2);
+    await fs.writeFile(path.join(specsDir, 'payment.md'), testSpec2);
   });
 
   afterEach(async () => {
@@ -50,7 +50,7 @@ This specification defines the payment processing system.
         });
         
         // Raw passthrough should match spec.md content
-        const raw = await fs.readFile(path.join(specsDir, 'auth', 'spec.md'), 'utf-8');
+        const raw = await fs.readFile(path.join(specsDir, 'auth.md'), 'utf-8');
         expect(output.trim()).toBe(raw.trim());
       } finally {
         process.chdir(originalCwd);
@@ -203,7 +203,7 @@ This specification defines the payment processing system.
 `;
 
       await fs.mkdir(path.join(specsDir, 'invalid'), { recursive: true });
-      await fs.writeFile(path.join(specsDir, 'invalid', 'spec.md'), invalidSpec);
+      await fs.writeFile(path.join(specsDir, 'invalid.md'), invalidSpec);
 
       const originalCwd = process.cwd();
       try {

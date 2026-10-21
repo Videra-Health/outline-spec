@@ -41,8 +41,8 @@ const today = () => {
 beforeEach(() => {
   root = mkdtempSync(path.join(os.tmpdir(), 'outline-spec-sync-'));
   write('config.yaml', 'schema: outline\n');
-  write('specs/hull/spec.md', HULL);
-  write('specs/ships/spec.md', SHIPS);
+  write('specs/hull.md', HULL);
+  write('specs/ships.md', SHIPS);
   write('changes/c1/outline.md', outline(REQS));
   write('changes/c1/tasks.md', '- [ ] 1.1 Not yet\n');
 });
@@ -52,7 +52,7 @@ describe('outline-spec sync', () => {
   it('applies the edits, records them under applied/, and empties Requirements', async () => {
     const r = await cli('sync', 'c1', '--yes');
     expect(r.exitCode).toBe(0);
-    expect(read('specs/hull/spec.md')).toContain('1. Plating: Hull plating stops most damage.');
+    expect(read('specs/hull.md')).toContain('1. Plating: Hull plating stops most damage.');
 
     const name = `${today()}-1.md`;
     expect(readdirSync(file('changes/c1/applied'))).toEqual([name]);
@@ -70,7 +70,7 @@ describe('outline-spec sync', () => {
     const r = await cli('sync', 'c1', '--yes', '--json');
     expect(JSON.parse(r.stdout).applied).toBe(`outline-spec/changes/c1/applied/${today()}-2.md`);
     expect(readdirSync(file('changes/c1/applied')).sort()).toEqual([`${today()}-1.md`, `${today()}-2.md`]);
-    expect(read('specs/hull/spec.md')).toContain('2. Repair: Docks repair the hull for a fee.');
+    expect(read('specs/hull.md')).toContain('2. Repair: Docks repair the hull for a fee.');
   });
 
   it('reports nothing to sync and writes nothing when Requirements is empty', async () => {
@@ -91,7 +91,7 @@ describe('outline-spec sync', () => {
     const r = await cli('sync', 'c1', '--yes');
     expect(r.exitCode).not.toBe(0);
     expect(r.stderr + r.stdout).toMatch(/Cannot sync 'c1'; nothing was written:[\s\S]*struck sentence doesn't match/);
-    expect(read('specs/hull/spec.md')).toBe(HULL);
+    expect(read('specs/hull.md')).toBe(HULL);
     expect(read('changes/c1/outline.md')).toBe(before);
     expect(existsSync(file('changes/c1/applied'))).toBe(false);
 
@@ -103,10 +103,10 @@ describe('outline-spec sync', () => {
   it('prints the result and the applied/ path on --dry-run and writes nothing', async () => {
     const r = await cli('sync', 'c1', '--dry-run');
     expect(r.exitCode).toBe(0);
-    expect(r.stdout).toContain('--- outline-spec/specs/hull/spec.md (updated)');
+    expect(r.stdout).toContain('--- outline-spec/specs/hull.md (updated)');
     expect(r.stdout).toContain('1. Plating: Hull plating stops most damage.');
     expect(r.stdout).toContain(`outline-spec/changes/c1/applied/${today()}-1.md`);
-    expect(read('specs/hull/spec.md')).toBe(HULL);
+    expect(read('specs/hull.md')).toBe(HULL);
     expect(read('changes/c1/outline.md')).toBe(outline(REQS));
     expect(existsSync(file('changes/c1/applied'))).toBe(false);
 
@@ -147,7 +147,7 @@ describe('outline-spec sync', () => {
     write('changes/c1/outline.md', outline(reqs));
     const r = await cli('sync', 'c1', '--yes');
     expect(r.exitCode).toBe(0);
-    expect(read('specs/ships/spec.md')).toContain('| m60 | M-60 Courier | 8500 |\n  | hauler |  | 9000 |\n');
+    expect(read('specs/ships.md')).toContain('| m60 | M-60 Courier | 8500 |\n  | hauler |  | 9000 |\n');
     expect(read(`changes/c1/applied/${today()}-1.md`)).toContain(`## Requirements\n${reqs}`);
   });
 });
@@ -185,7 +185,7 @@ describe('applied/ is a record only', () => {
     const r = await cli('archive', 'c1', '--yes', '--json');
     expect(r.exitCode).toBe(0);
     expect(JSON.parse(r.stdout)).toMatchObject({ archived: 'c1', specs: [{ name: 'hull', action: 'updated' }] });
-    expect(read('specs/hull/spec.md')).toContain('1. Plating: Hull plating stops most damage.\n\n2. Repair: Docks repair the hull for a fee.\n');
+    expect(read('specs/hull.md')).toContain('1. Plating: Hull plating stops most damage.\n\n2. Repair: Docks repair the hull for a fee.\n');
     expect(existsSync(file('changes/c1'))).toBe(false);
   });
 

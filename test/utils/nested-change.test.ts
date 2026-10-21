@@ -76,7 +76,7 @@ describe('nested change detection (#1846)', () => {
     it('recognises a nested change that has only delta specs', async () => {
       // A nested change is always hand-made (`new change` rejects a separator),
       // and "mkdir the tree, write the deltas first" is how someone gets here.
-      await write(path.join('mobile', 'refresh-token', 'specs', 'auth', 'spec.md'));
+      await write(path.join('mobile', 'refresh-token', 'specs', 'auth.md'));
 
       expect(await findNestedChangesIn(changesDir, 'mobile')).toEqual({
         name: 'mobile',
@@ -101,13 +101,13 @@ describe('nested change detection (#1846)', () => {
     });
 
     it('ignores a change whose only content is a root delta spec', async () => {
-      await write(path.join('add-auth', 'specs', 'spec.md'), '## ADDED Requirements\n');
+      await write(path.join('add-auth', 'specs.md'), '## ADDED Requirements\n');
 
       expect(await findNestedChangesIn(changesDir, 'add-auth')).toBeUndefined();
     });
 
     it('ignores a change whose only content is a nested delta spec', async () => {
-      await write(path.join('add-auth', 'specs', 'identity', 'user-auth', 'spec.md'));
+      await write(path.join('add-auth', 'specs', 'identity', 'user-auth.md'));
 
       expect(await findNestedChangesIn(changesDir, 'add-auth')).toBeUndefined();
     });
@@ -125,7 +125,7 @@ describe('nested change detection (#1846)', () => {
       // namespace folder wrapping a change called "rfc".
       await write(path.join('hand-made', 'rfc', 'proposal.md'));
       await write(path.join('hand-made', 'rfc', 'tasks.md'));
-      await write(path.join('hand-made', 'specs', 'auth', 'spec.md'));
+      await write(path.join('hand-made', 'specs', 'auth.md'));
 
       expect(await findNestedChangesIn(changesDir, 'hand-made')).toBeUndefined();
     });

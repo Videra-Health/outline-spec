@@ -14,7 +14,7 @@ describe('spec validate (interactive behavior)', () => {
     await fs.mkdir(specsDir, { recursive: true });
     const content = `## Purpose\nValid spec for interactive test.\n\n## Requirements\n\n### Requirement: X\nText`;
     await fs.mkdir(path.join(specsDir, 's1'), { recursive: true });
-    await fs.writeFile(path.join(specsDir, 's1', 'spec.md'), content, 'utf-8');
+    await fs.writeFile(path.join(specsDir, 's1.md'), content, 'utf-8');
   });
 
   afterEach(async () => {

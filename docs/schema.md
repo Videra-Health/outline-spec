@@ -35,10 +35,10 @@ it to the live specs in `outline-spec/specs/` and deletes the change folder.
 Before writing, read the specs this change touches. Run `outline-spec list --specs`
 for the inventory, then `outline-spec show "<spec>" --type spec` for each related
 one (append `--store "<id>"` to both only for a registered standalone store).
-Reuse an existing spec's exact folder name instead of inventing a near-duplicate.
+Reuse an existing spec's exact name instead of inventing a near-duplicate.
 
 Structure:
-- Each top-level item is one spec: its kebab-case folder name, a colon, and
+- Each top-level item is one spec: its kebab-case name, a colon, and
   for a new spec its purpose.
 - Each second-level item is one requirement, found by its exact name. Deeper
   items are its details, labeled exactly as the live spec labels them

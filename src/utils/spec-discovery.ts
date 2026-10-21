@@ -1,32 +1,31 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { FileSystemUtils } from './file-system.js';
+import { SPEC_EXT } from '../core/outline/specs.js';
 
 export interface DiscoveredSpec {
   /** Spec id relative to the specs root, forward-slash separated on every platform (e.g. "web" or "platform/session-layout"). */
   id: string;
-  /** Path to the spec.md file (absolute if the specs root is absolute). */
+  /** Path to the `<id>.md` file (absolute if the specs root is absolute). */
   specFile: string;
 }
 
-function assertDiscoveredSpecPath(specsRoot: string, capabilityDir: string, specFile: string): void {
+function assertDiscoveredSpecPath(specsRoot: string, areaDir: string, specFile: string): void {
   try {
     FileSystemUtils.assertPathWithin(specsRoot, specFile);
   } catch {
-    // Direct capability directories may intentionally be external monorepo
-    // links. In that case, confine the file to the capability itself.
-    FileSystemUtils.assertPathWithin(capabilityDir, specFile);
+    // Area directories may intentionally be external monorepo links. In that
+    // case, confine the file to the area itself.
+    FileSystemUtils.assertPathWithin(areaDir, specFile);
   }
 }
 
 /**
- * Recursively discover every `spec.md` under a specs root, so both the flat
- * `specs/<id>/spec.md` layout and nested `specs/<area>/<id>/spec.md` layouts
- * are found (#1353). A `spec.md` sitting directly in the root is ignored,
- * matching the historical requirement that specs live in a capability folder.
- * Dot-directories are skipped and symlinked directories are not followed.
- * An in-capability symlinked `spec.md` IS resolved; a link outside its
- * capability is rejected and a dangling link is skipped. Results are sorted by id.
+ * Recursively discover every `<id>.md` under a specs root; nested ids name
+ * area folders (`specs/<area>/<id>.md`). Dot entries and non-`.md` files are
+ * skipped and symlinked directories are not followed. A symlinked spec file
+ * IS resolved; a link outside its area is rejected and a dangling link is
+ * skipped. Results are sorted by id.
  *
  * A missing root (ENOENT) yields an empty list, but any other read failure
  * (EACCES, EIO, ...) is thrown rather than swallowed, so an unreadable spec
@@ -46,21 +45,23 @@ export async function discoverSpecFiles(specsRoot: string): Promise<DiscoveredSp
       if (entry.name.startsWith('.')) continue;
       if (entry.isDirectory()) {
         await walk(path.join(dir, entry.name), [...segments, entry.name]);
-      } else if (entry.name === 'spec.md' && segments.length > 0) {
-        const specFile = path.join(dir, entry.name);
-        if (entry.isFile()) {
-          assertDiscoveredSpecPath(specsRoot, dir, specFile);
-          results.push({ id: segments.join('/'), specFile });
-        } else if (entry.isSymbolicLink()) {
-          try {
-            if ((await fs.stat(specFile)).isFile()) {
-              assertDiscoveredSpecPath(specsRoot, dir, specFile);
-              results.push({ id: segments.join('/'), specFile });
-            }
-          } catch (err: any) {
-            // A dangling link is not content; anything else fails loudly.
-            if (err?.code !== 'ENOENT') throw err;
+        continue;
+      }
+      if (!entry.name.endsWith(SPEC_EXT) || entry.name.length === SPEC_EXT.length) continue;
+      const specFile = path.join(dir, entry.name);
+      const id = [...segments, entry.name.slice(0, -SPEC_EXT.length)].join('/');
+      if (entry.isFile()) {
+        assertDiscoveredSpecPath(specsRoot, dir, specFile);
+        results.push({ id, specFile });
+      } else if (entry.isSymbolicLink()) {
+        try {
+          if ((await fs.stat(specFile)).isFile()) {
+            assertDiscoveredSpecPath(specsRoot, dir, specFile);
+            results.push({ id, specFile });
           }
+        } catch (err: any) {
+          // A dangling link is not content; anything else fails loudly.
+          if (err?.code !== 'ENOENT') throw err;
         }
       }
     }

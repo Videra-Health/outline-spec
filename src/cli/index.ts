@@ -480,8 +480,8 @@ program
 
 program
   .command('migrate-specs')
-  .description('Convert old-format specs (### Requirement: / #### Scenario:) to outlines')
-  .option('--dry-run', 'Print the converted specs and write nothing')
+  .description('Move specs to the <id>.md layout and convert old-format specs (### Requirement: / #### Scenario:) to outlines')
+  .option('--dry-run', 'Print the moves and converted specs and write nothing')
   .option('--json', 'Output as JSON')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   .addOption(hiddenStorePathOption())

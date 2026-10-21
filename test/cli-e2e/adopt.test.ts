@@ -40,8 +40,8 @@ describe('outline-spec adopt', () => {
 
     expect(r.exitCode).toBe(0);
     expect(existsSync(at('openspec'))).toBe(false);
-    expect(read('outline-spec/specs/auth/spec.md')).toBe(CONVERTED);
-    expect(read('outline-spec/specs/hull/spec.md')).toBe(OUTLINE);
+    expect(read('outline-spec/specs/auth.md')).toBe(CONVERTED);
+    expect(read('outline-spec/specs/hull.md')).toBe(OUTLINE);
     expect(existsSync(at('outline-spec/changes/archive'))).toBe(false);
     expect(read('outline-spec/config.yaml')).toBe('schema: outline\ncontext: |\n  Web app.\n');
     expect(read('outline-spec/changes/add-mfa/.outline-spec.yaml')).toBe('schema: outline\ncreated: 2025-01-02\n');
@@ -59,7 +59,7 @@ describe('outline-spec adopt', () => {
     write('openspec/specs/ships/spec.md', ships);
     const r = await cli();
     expect(r.exitCode).toBe(0);
-    expect(read('outline-spec/specs/ships/spec.md')).toBe(ships);
+    expect(read('outline-spec/specs/ships.md')).toBe(ships);
   });
 
   it('writes nothing on --dry-run', async () => {

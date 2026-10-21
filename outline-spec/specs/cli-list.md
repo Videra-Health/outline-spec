@@ -3,14 +3,14 @@ The `outline-spec list` command SHALL provide developers with a quick overview o
 
 1. Command Execution: The command SHALL scan and analyze either active changes or specs based on the selected mode.  
   a. Scanning for changes (default): WHEN `outline-spec list` is executed without flags THEN scan the `outline-spec/changes/` directory for change directories AND exclude the `archive/` subdirectory from results AND parse each change's `tasks.md` file to count task completion  
-  b. Scanning for specs: WHEN `outline-spec list --specs` is executed THEN scan the `outline-spec/specs/` directory for capabilities AND read each capability's `spec.md` AND parse requirements to compute requirement counts
+  b. Scanning for specs: WHEN `outline-spec list --specs` is executed THEN scan the `outline-spec/specs/` directory for spec files (see `spec-files`) AND read each one AND parse requirements to compute requirement counts
 
 2. Task Counting: The command SHALL accurately count task completion status using standard markdown checkbox patterns.  
   a. Counting tasks in tasks.md: WHEN parsing a `tasks.md` file THEN count tasks matching these patterns: Completed: Lines containing `- [x]` Incomplete: Lines containing `- [ ]` AND calculate total tasks as the sum of completed and incomplete
 
 3. Output Format: The command SHALL display items in a clear, readable table format with mode-appropriate progress or counts.  
   a. Displaying change list (default): WHEN displaying the list of changes THEN show a table with columns: Change name (directory name) Task progress (e.g., "3/5 tasks" or "✓ Complete")  
-  b. Displaying spec list: WHEN displaying the list of specs THEN show a table with columns: Spec id (directory name) Requirement count (e.g., "requirements 12")
+  b. Displaying spec list: WHEN displaying the list of specs THEN show a table with columns: Spec id (its path under `outline-spec/specs/` without `.md`) Requirement count (e.g., "requirements 12")
 
 4. Flags: The command SHALL accept flags to select the noun being listed.  
   a. Selecting specs: WHEN `--specs` is provided THEN list specs instead of changes  

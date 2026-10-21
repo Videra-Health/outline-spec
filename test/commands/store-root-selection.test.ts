@@ -401,7 +401,7 @@ operations:
         fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'archive'))
       ).toBe(false);
       expect(
-        fs.readFileSync(path.join(storeRoot, 'outline-spec', 'specs', 'billing', 'spec.md'), 'utf-8')
+        fs.readFileSync(path.join(storeRoot, 'outline-spec', 'specs', 'billing.md'), 'utf-8')
       ).toBe(outlineSpec('billing', 'Bills customers.', 'Billing: The system creates bills.'));
       expectNoLocalOutlineSpec();
     });
@@ -433,7 +433,7 @@ operations:
         { cwd: appRepo, env }
       );
       expect(result.exitCode).toBe(0);
-      expect(result.stdout).toContain('--- outline-spec/specs/billing/spec.md (updated)');
+      expect(result.stdout).toContain('--- outline-spec/specs/billing.md (updated)');
       expect(result.stdout).toContain('1. Billing: The system creates bills monthly.');
       expect(result.stdout).not.toContain('decoy');
     });
@@ -940,10 +940,10 @@ operations:
       // "Nothing was written" must be true: the good spec was not created
       // and the bad target is byte-identical.
       expect(
-        fs.existsSync(path.join(storeRoot, 'outline-spec', 'specs', 'aaa-good', 'spec.md'))
+        fs.existsSync(path.join(storeRoot, 'outline-spec', 'specs', 'aaa-good.md'))
       ).toBe(false);
       expect(
-        fs.readFileSync(path.join(storeRoot, 'outline-spec', 'specs', 'zzz-bad', 'spec.md'), 'utf-8')
+        fs.readFileSync(path.join(storeRoot, 'outline-spec', 'specs', 'zzz-bad.md'), 'utf-8')
       ).toBe(badTargetContent);
       expect(
         fs.existsSync(path.join(storeRoot, 'outline-spec', 'changes', 'two-spec-change'))

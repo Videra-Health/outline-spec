@@ -20,6 +20,7 @@ import { getAvailableChanges } from './workflow/shared.js';
 import { nearestMatches } from '../utils/match.js';
 import { folderStyleNameProblem } from '../core/id.js';
 import { MERMAID_ISSUE } from '../core/validation/mermaid.js';
+import { specFile } from '../core/outline/specs.js';
 
 type ItemType = 'change' | 'spec';
 
@@ -280,7 +281,7 @@ export class ValidateCommand {
     // guarded before it is joined onto a directory. `show` already rejects a
     // traversing id.
     //
-    // Spec ids are nested (`specs/<area>/<capability>/spec.md`, #1353), so the
+    // Spec ids are nested (`specs/<area>/<name>.md`, #1353), so the
     // guard runs per segment - rejecting the whole id for containing a `/`
     // would break every nested capability, including the hint that
     // `validate --specs` prints. Change names are flat, so they keep the
@@ -324,7 +325,7 @@ export class ValidateCommand {
       process.exitCode = report.valid ? 0 : 1;
       return;
     }
-    const file = path.join(root.specsDir, id, 'spec.md');
+    const file = specFile(root.specsDir, id);
     const start = Date.now();
     const report = await validator.validateSpec(file, id);
     const durationMs = Date.now() - start;
@@ -444,7 +445,7 @@ export class ValidateCommand {
     for (const id of specIds) {
       queue.push(async () => {
         const start = Date.now();
-        const file = path.join(root.specsDir, id, 'spec.md');
+        const file = specFile(root.specsDir, id);
         const report = await validator.validateSpec(file, id);
         const durationMs = Date.now() - start;
         return { id, type: 'spec' as const, valid: report.valid, issues: report.issues, durationMs };

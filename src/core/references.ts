@@ -19,7 +19,8 @@ import {
   readStoreRegistryState,
 } from './store/foundation.js';
 import { getStoreRootForBackend } from './store/registry.js';
-import { inspectRegisteredStore, type ResolvedOutlineSpecRoot } from './root-selection.js';
+import { assertFlatSpecLayout, inspectRegisteredStore, isRootSelectionError, type ResolvedOutlineSpecRoot } from './root-selection.js';
+import { specFile } from './outline/specs.js';
 import { getSpecIds } from '../utils/item-discovery.js';
 import { FileSystemUtils } from '../utils/file-system.js';
 import { MAX_CONTEXT_SIZE, type DeclarationEntry } from './project-config.js';
@@ -177,10 +178,7 @@ async function collectSpecEntries(referencedRoot: string): Promise<ReferenceSpec
     specIds.map(async (specId) => {
       let summary = '';
       try {
-        const content = await fs.readFile(
-          path.join(referencedRoot, 'outline-spec', 'specs', specId, 'spec.md'),
-          'utf-8'
-        );
+        const content = await fs.readFile(specFile(path.join(referencedRoot, 'outline-spec', 'specs'), specId), 'utf-8');
         summary = sanitizeInline(extractFirstPurposeLine(content));
       } catch {
         // Unreadable spec file: index the id with an empty summary.
@@ -482,6 +480,14 @@ export async function assembleReferenceIndex(
     if (!includeSpecs) {
       // Health mode: resolution facts only — no content, no budget.
       entries.push({ store_id: id, root: inspection.canonicalRoot, status: [] });
+      continue;
+    }
+
+    try {
+      assertFlatSpecLayout(inspection.canonicalRoot);
+    } catch (error) {
+      if (!isRootSelectionError(error)) throw error;
+      entries.push({ store_id: id, root: inspection.canonicalRoot, status: [error.diagnostic as StoreDiagnostic] });
       continue;
     }
 

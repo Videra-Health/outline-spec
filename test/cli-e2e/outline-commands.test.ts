@@ -35,8 +35,8 @@ const cli = (...args: string[]) => runCLI(args, { cwd: root });
 beforeEach(() => {
   root = mkdtempSync(path.join(os.tmpdir(), 'outline-spec-outline-'));
   write('config.yaml', 'schema: outline\n');
-  write('specs/outfitting/spec.md', OUTFITTING);
-  write('specs/hull/spec.md', HULL);
+  write('specs/outfitting.md', OUTFITTING);
+  write('specs/hull.md', HULL);
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 
@@ -56,8 +56,8 @@ describe('outline-spec archive', () => {
         { name: 'hull', action: 'deleted' },
       ],
     });
-    expect(read('specs/outfitting/spec.md')).toContain('  c. Bracing Kit: 3 / 0 / 0.  \n  d. Salvage Plate: 2 / 0 / 0.\n');
-    expect(read('specs/docking/spec.md')).toBe('# docking\nShips dock at stations.\n\n1. Clamps: Docking takes 2 s.\n');
+    expect(read('specs/outfitting.md')).toContain('  c. Bracing Kit: 3 / 0 / 0.  \n  d. Salvage Plate: 2 / 0 / 0.\n');
+    expect(read('specs/docking.md')).toBe('# docking\nShips dock at stations.\n\n1. Clamps: Docking takes 2 s.\n');
     expect(existsSync(file('specs/hull'))).toBe(false);
     expect(existsSync(file('changes/c1'))).toBe(false);
   });
@@ -68,7 +68,7 @@ describe('outline-spec archive', () => {
     expect(r.exitCode).not.toBe(0);
     expect(r.stderr + r.stdout).toMatch(/Catalog › y: no such item[\s\S]*Catalog › z: no such item/);
     expect(existsSync(file('specs/docking'))).toBe(false);
-    expect(read('specs/outfitting/spec.md')).toBe(OUTFITTING);
+    expect(read('specs/outfitting.md')).toBe(OUTFITTING);
     expect(existsSync(file('changes/c1/outline.md'))).toBe(true);
   });
 
@@ -83,9 +83,9 @@ describe('outline-spec archive', () => {
     change('c1', '1. outfitting:\n  a. Catalog (patch): The catalog is ~~these~~ **all of the** items.\n');
     const r = await cli('archive', 'c1', '--dry-run');
     expect(r.exitCode).toBe(0);
-    expect(r.stdout).toContain('--- outline-spec/specs/outfitting/spec.md (updated)');
+    expect(r.stdout).toContain('--- outline-spec/specs/outfitting.md (updated)');
     expect(r.stdout).toContain('2. Catalog: The catalog is all of the items.');
-    expect(read('specs/outfitting/spec.md')).toBe(OUTFITTING);
+    expect(read('specs/outfitting.md')).toBe(OUTFITTING);
     expect(existsSync(file('changes/c1'))).toBe(true);
   });
 
@@ -175,7 +175,7 @@ describe('outline-spec relabel', () => {
   it('closes label gaps', async () => {
     const r = await cli('relabel', 'outfitting');
     expect(r.exitCode).toBe(0);
-    expect(read('specs/outfitting/spec.md')).toContain('  a. RP-2 Radiator Panel: 0.5 / 2 / 0.  \n  b. Bracing Kit: 3 / 0 / 0.\n');
+    expect(read('specs/outfitting.md')).toContain('  a. RP-2 Radiator Panel: 0.5 / 2 / 0.  \n  b. Bracing Kit: 3 / 0 / 0.\n');
   });
 
   it('refuses while a pending change edits the spec', async () => {
@@ -183,7 +183,7 @@ describe('outline-spec relabel', () => {
     const r = await cli('relabel', 'outfitting');
     expect(r.exitCode).not.toBe(0);
     expect(r.stderr + r.stdout).toContain('outfitting has pending edits in c1');
-    expect(read('specs/outfitting/spec.md')).toBe(OUTFITTING);
+    expect(read('specs/outfitting.md')).toBe(OUTFITTING);
   });
 });
 
@@ -191,37 +191,37 @@ describe('outline-spec migrate-specs', () => {
   const OLD = '# legacy Specification\n\n## Purpose\nOld purpose.\n\n## Requirements\n### Requirement: R\nThe system SHALL work.\n\n#### Scenario: S\n- **WHEN** x\n- **THEN** y\n';
 
   it('converts old-format specs and lays out outlines written before the current layout', async () => {
-    write('specs/legacy/spec.md', OLD);
+    write('specs/legacy.md', OLD);
     const r = await cli('migrate-specs', '--json');
     expect(r.exitCode).toBe(0);
     const specs = JSON.parse(r.stdout).specs;
     expect(specs).toContainEqual(expect.objectContaining({ name: 'legacy', status: 'converted' }));
     expect(specs).toContainEqual(expect.objectContaining({ name: 'outfitting', status: 'reformatted' }));
-    expect(read('specs/legacy/spec.md')).toBe('# legacy\nOld purpose.\n\n1. R: The system SHALL work.  \n  a. S: WHEN x THEN y\n');
-    const laidOut = read('specs/outfitting/spec.md');
+    expect(read('specs/legacy.md')).toBe('# legacy\nOld purpose.\n\n1. R: The system SHALL work.  \n  a. S: WHEN x THEN y\n');
+    const laidOut = read('specs/outfitting.md');
     expect(laidOut).toBe(
       '# outfitting\nShips carry add-on equipment.\n\n1. Makers: Every item is from one maker.  \n  a. Kessler makes radiators.\n\n' +
         '2. Catalog: The catalog is these items.  \n  a. RP-2 Radiator Panel: 0.5 / 2 / 0.  \n  c. Bracing Kit: 3 / 0 / 0.\n'
     );
     const again = JSON.parse((await cli('migrate-specs', '--json')).stdout).specs;
     expect(again).toContainEqual(expect.objectContaining({ name: 'outfitting', status: 'already-outline' }));
-    expect(read('specs/outfitting/spec.md')).toBe(laidOut);
+    expect(read('specs/outfitting.md')).toBe(laidOut);
   });
 
   it('writes nothing on --dry-run', async () => {
-    write('specs/legacy/spec.md', OLD);
+    write('specs/legacy.md', OLD);
     const r = await cli('migrate-specs', '--dry-run');
     expect(r.stdout).toContain('legacy: would convert');
-    expect(read('specs/legacy/spec.md')).toBe(OLD);
+    expect(read('specs/legacy.md')).toBe(OLD);
   });
 
   it('leaves a spec with unplaceable content untouched and says where it is', async () => {
     const blocked = OLD + '\n## Why\nBecause.\n';
-    write('specs/legacy/spec.md', blocked);
+    write('specs/legacy.md', blocked);
     const r = await cli('migrate-specs');
     expect(r.exitCode).toBe(1);
-    expect(r.stdout).toMatch(/legacy\/spec\.md:15 \(section "Why"\)/);
-    expect(read('specs/legacy/spec.md')).toBe(blocked);
+    expect(r.stdout).toMatch(/specs\/legacy\.md:15 \(section "Why"\)/);
+    expect(read('specs/legacy.md')).toBe(blocked);
   });
 });
 

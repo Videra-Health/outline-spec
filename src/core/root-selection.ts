@@ -39,6 +39,7 @@ import { findRepoPlanningRootSync, type PlanningHome } from './planning-home.js'
 import { classifyOutlineSpecDir, storePointerProblem } from './project-config.js';
 import { getGlobalConfig } from './global-config.js';
 import { FileSystemUtils } from '../utils/file-system.js';
+import { findOldLayoutSpecs } from './outline/specs.js';
 
 export type OutlineSpecRootSource =
   | 'store'
@@ -73,6 +74,8 @@ export interface RootSelectionDiagnostic {
   message: string;
   target?: string;
   fix?: string;
+  /** Old-layout spec files, relative to `target`, for `old_spec_layout`. */
+  paths?: string[];
 }
 
 export class RootSelectionError extends Error {
@@ -81,7 +84,7 @@ export class RootSelectionError extends Error {
   constructor(
     message: string,
     code: string,
-    options: { target?: string; fix?: string } = {}
+    options: { target?: string; fix?: string; paths?: string[] } = {}
   ) {
     super(message);
     this.name = 'RootSelectionError';
@@ -96,6 +99,20 @@ export class RootSelectionError extends Error {
 
 export function isRootSelectionError(error: unknown): error is RootSelectionError {
   return error instanceof RootSelectionError;
+}
+
+export const OLD_SPEC_LAYOUT_CODE = 'old_spec_layout';
+
+/** Refuses a root whose specs are still `<id>/spec.md`; `migrate-specs` moves them. */
+export function assertFlatSpecLayout(rootPath: string, specsDir = path.join(rootPath, 'outline-spec', 'specs')): void {
+  const old = findOldLayoutSpecs(specsDir);
+  if (old.length === 0) return;
+  const rel = old.map((p) => FileSystemUtils.toPosixPath(path.join(path.relative(rootPath, specsDir), p)));
+  throw new RootSelectionError(
+    `Specs in ${rootPath} use the old <id>/spec.md layout; each spec is now <id>.md:\n${rel.map((p) => `  ${p}`).join('\n')}\nRun \`outline-spec migrate-specs\` there to move them.`,
+    OLD_SPEC_LAYOUT_CODE,
+    { target: rootPath, fix: `cd ${JSON.stringify(rootPath)} && outline-spec migrate-specs`, paths: rel }
+  );
 }
 
 function fromStoreError(error: unknown): never {
@@ -554,6 +571,8 @@ export async function resolveRootForCommand(
     failurePayload?: Record<string, unknown>;
     /** Commands that require an existing root set this to false. */
     allowImplicitRoot?: boolean;
+    /** Only `migrate-specs` reads a root whose specs are still in the old layout. */
+    allowOldSpecLayout?: boolean;
   } = {}
 ): Promise<ResolvedOutlineSpecRoot | null> {
   try {
@@ -570,6 +589,7 @@ export async function resolveRootForCommand(
     if (!output.json) {
       emitStoreRootBanner(root);
     }
+    if (!output.allowOldSpecLayout) assertFlatSpecLayout(root.path, root.specsDir);
 
     return root;
   } catch (error) {

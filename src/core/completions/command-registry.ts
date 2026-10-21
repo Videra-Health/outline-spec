@@ -250,11 +250,11 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
   },
   {
     name: 'migrate-specs',
-    description: 'Convert old-format specs (### Requirement: / #### Scenario:) to outlines',
+    description: 'Move specs to the <id>.md layout and convert old-format specs (### Requirement: / #### Scenario:) to outlines',
     flags: [
       {
         name: 'dry-run',
-        description: 'Print the converted specs and write nothing',
+        description: 'Print the moves and converted specs and write nothing',
       },
       COMMON_FLAGS.json,
       COMMON_FLAGS.store,

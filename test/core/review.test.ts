@@ -34,8 +34,8 @@ const change = (name: string, reqs: string) => write(`changes/${name}/outline.md
 
 beforeEach(() => {
   root = mkdtempSync(path.join(os.tmpdir(), 'outline-spec-review-'));
-  write('specs/ships/spec.md', SHIPS);
-  write('specs/cargo/spec.md', CARGO);
+  write('specs/ships.md', SHIPS);
+  write('specs/cargo.md', CARGO);
 });
 afterEach(() => rmSync(root, { recursive: true, force: true }));
 

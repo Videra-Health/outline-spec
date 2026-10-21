@@ -484,7 +484,7 @@ describe('outline-spec CLI e2e basics', () => {
 
       // The change is untouched: nothing was archived.
       expect(await fileExists(path.join(projectDir, 'outline-spec', 'changes', 'add-greeting', 'outline.md'))).toBe(true);
-      expect(await fileExists(path.join(projectDir, 'outline-spec', 'specs', 'greeting', 'spec.md'))).toBe(false);
+      expect(await fileExists(path.join(projectDir, 'outline-spec', 'specs', 'greeting.md'))).toBe(false);
     });
 
     it('archives without prompting when every task is done', async () => {
@@ -493,7 +493,7 @@ describe('outline-spec CLI e2e basics', () => {
 
       expect(result.exitCode, result.stderr).toBe(0);
       expect(result.stderr).not.toContain('Note:');
-      expect(await fileExists(path.join(projectDir, 'outline-spec', 'specs', 'greeting', 'spec.md'))).toBe(true);
+      expect(await fileExists(path.join(projectDir, 'outline-spec', 'specs', 'greeting.md'))).toBe(true);
       expect(await fileExists(path.join(projectDir, 'outline-spec', 'changes', 'add-greeting'))).toBe(false);
     });
 
@@ -502,7 +502,7 @@ describe('outline-spec CLI e2e basics', () => {
       const result = await runCLI(['archive', 'add-greeting', '--yes'], { cwd: projectDir });
 
       expect(result.exitCode).toBe(0);
-      expect(await fs.readFile(path.join(projectDir, 'outline-spec', 'specs', 'greeting', 'spec.md'), 'utf-8')).toBe(
+      expect(await fs.readFile(path.join(projectDir, 'outline-spec', 'specs', 'greeting.md'), 'utf-8')).toBe(
         '# greeting\nHow the system greets.\n\n1. Greeting: The system greets the user.\n'
       );
     });

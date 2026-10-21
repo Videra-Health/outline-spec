@@ -14,20 +14,20 @@ async function withTempDir(run: (dir: string) => Promise<void>) {
 }
 
 async function writeSpec(root: string, ...segments: string[]) {
-  const dir = path.join(root, ...segments);
-  await fs.mkdir(dir, { recursive: true });
-  await fs.writeFile(path.join(dir, 'spec.md'), '# Spec\n', 'utf8');
+  const file = path.join(root, ...segments) + '.md';
+  await fs.mkdir(path.dirname(file), { recursive: true });
+  await fs.writeFile(file, '# Spec\n', 'utf8');
 }
 
 describe('discoverSpecFiles', () => {
-  it('discovers flat specs one level below the root', async () => {
+  it('discovers spec files directly in the root', async () => {
     await withTempDir(async (dir) => {
       await writeSpec(dir, 'auth');
       await writeSpec(dir, 'payments');
 
       const found = await discoverSpecFiles(dir);
       expect(found.map((s) => s.id)).toEqual(['auth', 'payments']);
-      expect(found[0].specFile).toBe(path.join(dir, 'auth', 'spec.md'));
+      expect(found[0].specFile).toBe(path.join(dir, 'auth.md'));
     });
   });
 
@@ -44,20 +44,31 @@ describe('discoverSpecFiles', () => {
         'platform/platform-session-layout',
       ]);
       expect(found[2].specFile).toBe(
-        path.join(dir, 'platform', 'platform-session-layout', 'spec.md')
+        path.join(dir, 'platform', 'platform-session-layout.md')
       );
     });
   });
 
-  it('ignores a spec.md directly in the root, dot-directories, and non-spec files', async () => {
+  it('ignores dot entries and files not ending in .md', async () => {
     await withTempDir(async (dir) => {
-      await fs.writeFile(path.join(dir, 'spec.md'), '# Root spec\n', 'utf8');
       await writeSpec(dir, '.hidden', 'secret');
+      await writeSpec(dir, '.draft');
       await writeSpec(dir, 'real');
-      await fs.writeFile(path.join(dir, 'real', 'design.md'), '# Design\n', 'utf8');
+      await fs.writeFile(path.join(dir, 'notes.txt'), 'notes\n', 'utf8');
+      await fs.writeFile(path.join(dir, '.md'), '# Nameless\n', 'utf8');
 
       const found = await discoverSpecFiles(dir);
       expect(found.map((s) => s.id)).toEqual(['real']);
+    });
+  });
+
+  it('keeps a spec and a same-named area folder as two specs', async () => {
+    await withTempDir(async (dir) => {
+      await writeSpec(dir, 'platform');
+      await writeSpec(dir, 'platform', 'session-layout');
+
+      const found = await discoverSpecFiles(dir);
+      expect(found.map((s) => s.id)).toEqual(['platform', 'platform/session-layout']);
     });
   });
 
@@ -108,39 +119,36 @@ describe('discoverSpecFiles', () => {
     });
   });
 
-  it.skipIf(process.platform === 'win32')('discovers an in-capability symlinked spec.md file', async () => {
+  it.skipIf(process.platform === 'win32')('discovers an in-area symlinked spec file', async () => {
     await withTempDir(async (dir) => {
-      // hasAnyFileUnder and the artifact graph's globs both count a symlinked
-      // spec.md as content, so discovery must not silently drop it.
-      await fs.mkdir(path.join(dir, 'auth'), { recursive: true });
-      const target = path.join(dir, 'auth', 'shared-delta.md');
+      await fs.mkdir(path.join(dir, 'platform', '.shared'), { recursive: true });
+      const target = path.join(dir, 'platform', '.shared', 'auth.md');
       await fs.writeFile(target, '# Spec\n', 'utf8');
-      await fs.symlink(target, path.join(dir, 'auth', 'spec.md'), 'file');
+      await fs.symlink(target, path.join(dir, 'platform', 'auth.md'), 'file');
 
       const found = await discoverSpecFiles(dir);
-      expect(found.map((s) => s.id)).toEqual(['auth']);
-      expect(found[0].specFile).toBe(path.join(dir, 'auth', 'spec.md'));
+      expect(found.map((s) => s.id)).toEqual(['platform/auth']);
+      expect(found[0].specFile).toBe(path.join(dir, 'platform', 'auth.md'));
     });
   });
 
-  it.skipIf(process.platform === 'win32')('discovers a spec.md symlink elsewhere in the specs root', async () => {
+  it.skipIf(process.platform === 'win32')('discovers a spec symlink to elsewhere in the specs root', async () => {
     await withTempDir(async (dir) => {
-      const target = path.join(dir, 'shared.md');
+      const target = path.join(dir, '.shared.md');
       await fs.writeFile(target, '# Shared\n', 'utf8');
-      await fs.mkdir(path.join(dir, 'auth'), { recursive: true });
-      await fs.symlink(target, path.join(dir, 'auth', 'spec.md'), 'file');
+      await fs.mkdir(path.join(dir, 'area'), { recursive: true });
+      await fs.symlink(target, path.join(dir, 'area', 'auth.md'), 'file');
 
       const found = await discoverSpecFiles(dir);
-      expect(found.map((s) => s.id)).toEqual(['auth']);
+      expect(found.map((s) => s.id)).toEqual(['area/auth']);
     });
   });
 
-  it.skipIf(process.platform === 'win32')('rejects a spec.md symlink outside the specs root', async () => {
+  it.skipIf(process.platform === 'win32')('rejects a spec symlink outside the specs root', async () => {
     await withTempDir(async (dir) => {
       const target = path.join(path.dirname(dir), `${path.basename(dir)}-outside.md`);
       await fs.writeFile(target, '# Outside\n', 'utf8');
-      await fs.mkdir(path.join(dir, 'auth'), { recursive: true });
-      await fs.symlink(target, path.join(dir, 'auth', 'spec.md'), 'file');
+      await fs.symlink(target, path.join(dir, 'auth.md'), 'file');
 
       await expect(discoverSpecFiles(dir)).rejects.toThrow(
         'Path is outside the allowed directory'
@@ -149,15 +157,10 @@ describe('discoverSpecFiles', () => {
     });
   });
 
-  it.skipIf(process.platform === 'win32')('skips a dangling spec.md symlink', async () => {
+  it.skipIf(process.platform === 'win32')('skips a dangling spec symlink', async () => {
     await withTempDir(async (dir) => {
       await writeSpec(dir, 'real');
-      await fs.mkdir(path.join(dir, 'ghost'), { recursive: true });
-      await fs.symlink(
-        path.join(dir, 'missing-target.md'),
-        path.join(dir, 'ghost', 'spec.md'),
-        'file'
-      );
+      await fs.symlink(path.join(dir, 'missing-target.md'), path.join(dir, 'ghost.md'), 'file');
 
       const found = await discoverSpecFiles(dir);
       expect(found.map((s) => s.id)).toEqual(['real']);
@@ -166,13 +169,13 @@ describe('discoverSpecFiles', () => {
 
   it.skipIf(process.platform === 'win32')('does not follow symlinked directories', async () => {
     await withTempDir(async (dir) => {
-      await writeSpec(dir, 'real');
-      const target = path.join(dir, 'real');
+      await writeSpec(dir, 'area', 'real');
+      const target = path.join(dir, 'area');
       const link = path.join(dir, 'linked');
       await fs.symlink(target, link, 'dir');
 
       const found = await discoverSpecFiles(dir);
-      expect(found.map((s) => s.id)).toEqual(['real']);
+      expect(found.map((s) => s.id)).toEqual(['area/real']);
     });
   });
 });

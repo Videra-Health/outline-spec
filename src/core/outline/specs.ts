@@ -1,10 +1,14 @@
 /** Reads and writes outline specs and change outlines on disk. */
-import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmdirSync, rmSync, statSync, writeFileSync } from 'fs';
 import path from 'path';
 import { applyEdit, parseChange, parseSpec, touches, writeSpec, type Spec, type SpecEdit } from './outline.js';
 import { folderStyleNameProblem } from '../id.js';
 
 export const CHANGE_OUTLINE = 'outline.md';
+/** A live spec is `specs/<id>.md`. */
+export const SPEC_EXT = '.md';
+/** The old layout's file name, `specs/<id>/spec.md`; only the guard and migrate-specs look for it. */
+export const OLD_SPEC_FILE = 'spec.md';
 /** Where sync records the edits it applied; a record only, never read as an artifact or outline. */
 export const APPLIED_DIR = 'applied';
 
@@ -13,16 +17,67 @@ export type SpecPlan = Map<string, Spec | null>;
 
 /** Spec ids may be nested (`area/name`), so each segment is checked on its own. */
 export function specNameProblem(name: string): string | null {
-  return name.split('/').map((s) => folderStyleNameProblem(s, 'Spec name')).find(Boolean) ?? null;
+  const segments = name.split('/');
+  const problem = segments.map((s) => folderStyleNameProblem(s, 'Spec name')).find(Boolean);
+  if (problem) return problem;
+  // `area/spec.md` would read as an old-layout spec for `area`.
+  return segments.length > 1 && segments[segments.length - 1] === 'spec' ? "A nested spec name must not end in 'spec'" : null;
 }
 
 export function specFile(specsDir: string, name: string): string {
-  return path.join(specsDir, ...name.split('/'), 'spec.md');
+  return path.join(specsDir, ...name.split('/')) + SPEC_EXT;
+}
+
+/** Old-layout spec files (`<id>/spec.md`) under `specsDir`, as `/`-joined paths relative to it. */
+export function findOldLayoutSpecs(specsDir: string): string[] {
+  const found: string[] = [];
+  const walk = (dir: string, segments: string[]): void => {
+    let entries;
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code === 'ENOENT' || (err as NodeJS.ErrnoException).code === 'ENOTDIR') return;
+      throw err;
+    }
+    for (const e of entries) {
+      if (e.name.startsWith('.')) continue;
+      if (e.isDirectory()) walk(path.join(dir, e.name), [...segments, e.name]);
+      else if (e.name === OLD_SPEC_FILE && segments.length > 0) found.push([...segments, e.name].join('/'));
+    }
+  };
+  walk(specsDir, []);
+  return found.sort();
+}
+
+/** Removes folders emptied under `specsDir`, from `dir` upward, never `specsDir` itself. */
+export function removeEmptySpecFolders(specsDir: string, dir: string): void {
+  const root = path.resolve(specsDir);
+  for (let d = path.resolve(dir); d !== root && d.startsWith(root + path.sep); d = path.dirname(d)) {
+    if (!existsSync(d) || readdirSync(d).length > 0) return;
+    rmdirSync(d);
+  }
+}
+
+/** The on-disk id when it differs from `name` only in case, as a case-insensitive file system allows. */
+function caseConflict(specsDir: string, name: string): string | null {
+  const wanted = [...name.split('/').slice(0, -1), name.split('/').pop()! + SPEC_EXT];
+  const actual: string[] = [];
+  let dir = specsDir;
+  for (const seg of wanted) {
+    const found = readdirSync(dir).find((e) => e.toLowerCase() === seg.toLowerCase()) ?? seg;
+    actual.push(found);
+    dir = path.join(dir, found);
+  }
+  const id = actual.join('/').slice(0, -SPEC_EXT.length);
+  return id === name ? null : id;
 }
 
 export function readLiveSpec(specsDir: string, name: string): Spec | null {
   const file = specFile(specsDir, name);
-  return existsSync(file) ? parseSpec(readFileSync(file, 'utf-8').replace(/\r\n/g, '\n'), file) : null;
+  if (!existsSync(file)) return null;
+  const other = caseConflict(specsDir, name);
+  if (other) throw new Error(`${name}: conflicts with spec '${other}'; spec names differing only in case can't coexist`);
+  return parseSpec(readFileSync(file, 'utf-8').replace(/\r\n/g, '\n'), file);
 }
 
 /** Open changes: every directory under changes/ except `archive` (left by older projects) and dot dirs. */
@@ -94,7 +149,7 @@ export function describePlan(specsDir: string, plan: SpecPlan): Array<{ name: st
   }));
 }
 
-/** Writes a plan: new specs get folders, removed specs lose their file and folder. */
+/** Writes a plan: new specs get their area folders, removed specs lose their file and any area folders left empty. */
 export function writePlan(specsDir: string, plan: SpecPlan): void {
   for (const [name, spec] of plan) {
     const file = specFile(specsDir, name);
@@ -102,7 +157,8 @@ export function writePlan(specsDir: string, plan: SpecPlan): void {
       mkdirSync(path.dirname(file), { recursive: true });
       writeFileSync(file, writeSpec(spec));
     } else {
-      rmSync(path.dirname(file), { recursive: true, force: true });
+      rmSync(file, { force: true });
+      removeEmptySpecFolders(specsDir, path.dirname(file));
     }
   }
 }

@@ -1,9 +1,9 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { Validator } from '../core/validation/validator.js';
-import type { RootOutput } from '../core/root-selection.js';
+import { assertFlatSpecLayout, type RootOutput } from '../core/root-selection.js';
 import { writeSpec } from '../core/outline/outline.js';
-import { APPLIED_DIR, CHANGE_OUTLINE, describePlan, editTouches, planEdits, readChangeEdits } from '../core/outline/specs.js';
+import { APPLIED_DIR, CHANGE_OUTLINE, describePlan, editTouches, planEdits, readChangeEdits, specFile } from '../core/outline/specs.js';
 import { isInteractive } from '../utils/interactive.js';
 import { getActiveChangeIds } from '../utils/item-discovery.js';
 import { describeNestedChange, findNestedChangesIn } from '../utils/nested-change.js';
@@ -48,6 +48,8 @@ export class ChangeCommand {
     changeName?: string,
     options?: { json?: boolean; diff?: boolean; noInteractive?: boolean; rootOutput?: RootOutput }
   ): Promise<void> {
+    // Root-aware callers were already checked when the root resolved.
+    if (!this.rootPath) assertFlatSpecLayout(process.cwd());
     const changesPath = this.getChangesPath();
 
     if (!changeName) {
@@ -139,7 +141,8 @@ export class ChangeCommand {
       return;
     }
     for (const s of archived) {
-      console.log(s.text !== undefined ? `\n--- outline-spec/specs/${s.name}/spec.md (${s.action})\n${s.text.trimEnd()}` : `\n--- outline-spec/specs/${s.name}/spec.md (deleted)`);
+      const file = FileSystemUtils.toPosixPath(path.relative(path.dirname(this.getSpecsPath()), specFile(this.getSpecsPath(), s.name)));
+      console.log(s.text !== undefined ? `\n--- outline-spec/${file} (${s.action})\n${s.text.trimEnd()}` : `\n--- outline-spec/${file} (deleted)`);
     }
   }
 
@@ -149,6 +152,7 @@ export class ChangeCommand {
    * - JSON: array of { id, title, specCount, taskStatus }, sorted by id
    */
   async list(options?: { json?: boolean; long?: boolean }): Promise<void> {
+    assertFlatSpecLayout(process.cwd());
     const changesPath = path.join(process.cwd(), 'outline-spec', 'changes');
     const changes = await getActiveChangeIds();
     const specCount = (name: string): number | null => {
@@ -189,6 +193,7 @@ export class ChangeCommand {
   }
 
   async validate(changeName?: string, options?: { strict?: boolean; json?: boolean; noInteractive?: boolean }): Promise<void> {
+    assertFlatSpecLayout(process.cwd());
     const changesPath = path.join(process.cwd(), 'outline-spec', 'changes');
 
     if (!changeName) {

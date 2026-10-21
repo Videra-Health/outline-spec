@@ -164,7 +164,7 @@ describe('capstone persona journeys (6.1)', () => {
     expect(archived.exitCode).toBe(0);
     expect(JSON.parse(archived.stdout).specs).toEqual([{ name: 'api', action: 'created' }]);
     expect(fs.existsSync(changeDir)).toBe(false);
-    expect(fs.existsSync(path.join(storeRoot, 'outline-spec', 'specs', 'api', 'spec.md'))).toBe(true);
+    expect(fs.existsSync(path.join(storeRoot, 'outline-spec', 'specs', 'api.md'))).toBe(true);
 
     // The code repo never grew planning state.
     expect(fs.readdirSync(path.join(codeRepo, 'outline-spec'))).toEqual(['config.yaml']);

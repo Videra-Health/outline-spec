@@ -21,7 +21,7 @@ describe('top-level show command', () => {
 
     const specContent = `# auth\nAuth spec.\n\n1. User Authentication: Users sign in.\n  a. Valid credentials sign the user in.\n    i. The session lasts one day.\n`;
     await fs.mkdir(path.join(specsDir, 'auth'), { recursive: true });
-    await fs.writeFile(path.join(specsDir, 'auth', 'spec.md'), specContent, 'utf-8');
+    await fs.writeFile(path.join(specsDir, 'auth.md'), specContent, 'utf-8');
   });
 
   afterEach(async () => {
@@ -124,7 +124,7 @@ describe('top-level show command', () => {
     await fs.mkdir(path.join(changesDir, 'foo'), { recursive: true });
     await fs.writeFile(path.join(changesDir, 'foo', 'outline.md'), '## Proposal\nFoo.\n', 'utf-8');
     await fs.mkdir(path.join(specsDir, 'foo'), { recursive: true });
-    await fs.writeFile(path.join(specsDir, 'foo', 'spec.md'), '# foo\nFoo spec.\n\n1. R: X.\n', 'utf-8');
+    await fs.writeFile(path.join(specsDir, 'foo.md'), '# foo\nFoo spec.\n\n1. R: X.\n', 'utf-8');
 
     const originalCwd = process.cwd();
     try {

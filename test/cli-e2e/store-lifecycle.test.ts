@@ -300,7 +300,7 @@ describe('standalone store lifecycle journey', () => {
     expect(archivePayload.specs).toEqual([{ name: 'billing', action: 'created' }]);
     expect(archivePayload.root.store_id).toBe(STORE_ID);
 
-    const specPath = path.join(storeRoot, 'outline-spec', 'specs', 'billing', 'spec.md');
+    const specPath = path.join(storeRoot, 'outline-spec', 'specs', 'billing.md');
     await expect(fs.readFile(specPath, 'utf-8')).resolves.toContain('1. billing works:');
     await expect(fs.access(changeDir)).rejects.toThrow();
   }, JOURNEY_TIMEOUT_MS);
@@ -410,7 +410,7 @@ describe('standalone store lifecycle journey', () => {
     expect(archived.exitCode).toBe(0);
     expect(JSON.parse(archived.stdout).archived).toBe(changeId);
 
-    const specPath = path.join(cloneRoot, 'outline-spec', 'specs', 'invoicing', 'spec.md');
+    const specPath = path.join(cloneRoot, 'outline-spec', 'specs', 'invoicing.md');
     await expect(fs.readFile(specPath, 'utf-8')).resolves.toContain('1. invoicing works:');
 
     // Post-resolution failures keep the banner, and the hint keeps the store:

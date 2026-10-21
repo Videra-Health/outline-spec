@@ -75,9 +75,9 @@ beforeAll(async () => {
   );
   expect(setup.exitCode, setup.stderr).toBe(0);
 
-  const specDir = path.join(storeRoot, 'outline-spec', 'specs', 'billing');
-  await fs.mkdir(specDir, { recursive: true });
-  await fs.writeFile(path.join(specDir, 'spec.md'), SPEC);
+  const specsDir = path.join(storeRoot, 'outline-spec', 'specs');
+  await fs.mkdir(specsDir, { recursive: true });
+  await fs.writeFile(path.join(specsDir, 'billing.md'), SPEC);
 
   // An archive folder left by an older project must not show up as a change.
   const archiveDir = path.join(storeRoot, 'outline-spec', 'changes', 'archive', '2026-08-27-store-history');

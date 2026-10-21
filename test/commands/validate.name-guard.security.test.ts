@@ -6,7 +6,7 @@ import { runCLI } from '../helpers/run-cli.js';
 
 /**
  * `--type` short-circuits the membership check, so the id reached
- * `path.join(root.specsDir, id, 'spec.md')` unguarded and
+ * `specFile(root.specsDir, id)` unguarded and
  * `outline-spec validate ../../secret --type spec` traversed out of the root.
  * `outline-spec show` already rejects the same input.
  */
@@ -19,8 +19,7 @@ describe('validate --type name guard', () => {
     testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'outline-spec-validate-name-guard-'));
     await fs.mkdir(path.join(testDir, 'outline-spec', 'changes'), { recursive: true });
     await fs.mkdir(path.join(testDir, 'outline-spec', 'specs'), { recursive: true });
-    await fs.mkdir(path.join(testDir, 'secret'), { recursive: true });
-    await fs.writeFile(path.join(testDir, 'secret', 'spec.md'), '# secret\n', 'utf-8');
+    await fs.writeFile(path.join(testDir, 'secret.md'), '# secret\n', 'utf-8');
   });
 
   afterEach(async () => {
@@ -42,14 +41,14 @@ describe('validate --type name guard', () => {
   });
 
   it('still accepts a nested spec id', async () => {
-    // Nested capabilities (specs/<area>/<capability>/spec.md, #1353) are legal,
+    // Nested specs (specs/<area>/<name>.md, #1353) are legal,
     // so the guard runs per segment - rejecting every id containing a `/` would
     // break them, including the hint `validate --specs` prints.
-    await fs.mkdir(path.join(testDir, 'outline-spec', 'specs', 'platform', 'widgets'), {
+    await fs.mkdir(path.join(testDir, 'outline-spec', 'specs', 'platform'), {
       recursive: true,
     });
     await fs.writeFile(
-      path.join(testDir, 'outline-spec', 'specs', 'platform', 'widgets', 'spec.md'),
+      path.join(testDir, 'outline-spec', 'specs', 'platform', 'widgets.md'),
       [
         '# platform/widgets',
         'A nested capability used to prove nested ids still validate cleanly.',

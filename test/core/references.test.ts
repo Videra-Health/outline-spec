@@ -131,6 +131,25 @@ describe('reference index assembly', () => {
     expect(entries[0].status).toEqual([]);
   });
 
+  it('reports a referenced store still in the old spec layout, naming its root', async () => {
+    const storeRoot = await registerStore('old-context');
+    fs.mkdirSync(path.join(storeRoot, 'outline-spec', 'specs', 'billing'), { recursive: true });
+    fs.writeFileSync(path.join(storeRoot, 'outline-spec', 'specs', 'billing', 'spec.md'), '## Purpose\n\nOld.\n');
+
+    const entries = await assemble(['old-context']);
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0].specs).toBeUndefined();
+    expect(entries[0].status).toEqual([
+      expect.objectContaining({
+        code: 'old_spec_layout',
+        target: entries[0].root,
+        paths: ['outline-spec/specs/billing/spec.md'],
+        fix: expect.stringContaining('outline-spec migrate-specs'),
+      }),
+    ]);
+  });
+
   it('degrades an unregistered reference to reference_unresolved with a pasteable fix', async () => {
     const entries = await assemble(['missing-context']);
 

@@ -22,7 +22,7 @@ describe('top-level validate command', () => {
       '',
     ].join('\n');
     await fs.mkdir(path.join(specsDir, 'alpha'), { recursive: true });
-    await fs.writeFile(path.join(specsDir, 'alpha', 'spec.md'), specContent('alpha'), 'utf-8');
+    await fs.writeFile(path.join(specsDir, 'alpha.md'), specContent('alpha'), 'utf-8');
 
     await fs.mkdir(path.join(changesDir, 'c1'), { recursive: true });
     await fs.writeFile(path.join(changesDir, 'c1', 'outline.md'), changeOutline('alpha'), 'utf-8');
@@ -31,7 +31,7 @@ describe('top-level validate command', () => {
     await fs.mkdir(path.join(changesDir, 'dup'), { recursive: true });
     await fs.writeFile(path.join(changesDir, 'dup', 'outline.md'), changeOutline('alpha'), 'utf-8');
     await fs.mkdir(path.join(specsDir, 'dup'), { recursive: true });
-    await fs.writeFile(path.join(specsDir, 'dup', 'spec.md'), specContent('dup'), 'utf-8');
+    await fs.writeFile(path.join(specsDir, 'dup.md'), specContent('dup'), 'utf-8');
   });
 
   /** A change outline adding one requirement to an existing spec. */
@@ -97,7 +97,7 @@ describe('top-level validate command', () => {
   it('rejects an old-format spec with a migrate-specs hint', async () => {
     await fs.mkdir(path.join(specsDir, 'legacy'), { recursive: true });
     await fs.writeFile(
-      path.join(specsDir, 'legacy', 'spec.md'),
+      path.join(specsDir, 'legacy.md'),
       '# legacy\n\n## Purpose\nOld.\n\n## Requirements\n### Requirement: Old\nThe system SHALL be old.\n',
       'utf-8'
     );

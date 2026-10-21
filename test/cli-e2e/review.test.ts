@@ -22,7 +22,7 @@ const payload = (html: string) => JSON.parse(/id="outline-spec-review">([\s\S]*?
 beforeEach(() => {
   root = realpathSync.native(mkdtempSync(path.join(os.tmpdir(), 'outline-spec-review-')));
   write('config.yaml', 'schema: outline\n');
-  write('specs/ships/spec.md', SHIPS);
+  write('specs/ships.md', SHIPS);
   write('changes/c1/outline.md', '## Proposal\nWhy.\n\n## Requirements\n1. ships:\n  a. Docking (patch): Ships dock at ~~stations~~ **ports**.\n');
   write('changes/c1/diagrams.md', '# Diagrams\n');
   write('changes/c1/design.md', '# Design\n');

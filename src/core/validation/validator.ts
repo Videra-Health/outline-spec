@@ -38,8 +38,8 @@ export class Validator {
     } catch (error) {
       return this.createReport([{ level: 'ERROR', path: 'file', message: (error as Error).message }]);
     }
-    // A nested id like `area/name` sits that many folders below specs/.
-    const specsDir = specId ? path.join(path.dirname(filePath), ...specId.split('/').map(() => '..')) : undefined;
+    // A nested id like `area/name` is `specs/area/name.md`, one folder per leading segment.
+    const specsDir = specId ? path.join(path.dirname(filePath), ...specId.split('/').slice(1).map(() => '..')) : undefined;
     return this.validateSpecContent(specName, content, specsDir);
   }
 
@@ -49,7 +49,7 @@ export class Validator {
     const src = content.replace(/\r\n/g, '\n');
     let spec;
     try {
-      spec = parseSpec(src, 'spec.md');
+      spec = parseSpec(src, `${specName}.md`);
     } catch (error) {
       return this.createReport([{ level: 'ERROR', path: 'file', message: this.oldFormatHint(src, (error as Error).message) }]);
     }
@@ -57,7 +57,7 @@ export class Validator {
       return this.createReport([{ level: 'ERROR', path: 'file', message: this.oldFormatHint(src, 'Spec has headings after its title') }]);
     }
     if (spec.name !== specName) {
-      issues.push({ level: 'WARNING', path: 'title', line: 1, message: `Title "# ${spec.name}" should be the spec's folder name, "# ${specName}"` });
+      issues.push({ level: 'WARNING', path: 'title', line: 1, message: `Title "# ${spec.name}" should be the spec's id, "# ${specName}"` });
     }
     if (!spec.purpose) {
       issues.push({ level: 'ERROR', path: 'purpose', line: 2, message: 'Spec needs a purpose: one or more lines after the title' });
@@ -354,13 +354,10 @@ export class Validator {
     const normalizedPath = FileSystemUtils.toPosixPath(filePath);
     const parts = normalizedPath.split('/');
     
-    // Look for the directory name after 'specs' or 'changes'
+    // A spec's id is its path under 'specs' without `.md`; a change's is the folder after 'changes'
     for (let i = parts.length - 1; i >= 0; i--) {
-      if (parts[i] === 'specs' || parts[i] === 'changes') {
-        if (i < parts.length - 1) {
-          return parts[i + 1];
-        }
-      }
+      if (parts[i] === 'specs' && i < parts.length - 1) return parts.slice(i + 1).join('/').replace(/\.md$/, '');
+      if (parts[i] === 'changes' && i < parts.length - 1) return parts[i + 1];
     }
     
     // Fallback to filename without extension if not in expected structure

@@ -43,7 +43,9 @@ Converts an OpenSpec project: moves `openspec/` to `outline-spec/` and converts 
 
 ### outline-spec migrate-specs
 
-Converts old-format specs already under `outline-spec/specs/` (`### Requirement:` / `#### Scenario:`) to outlines, and rewrites outline specs written before the current [layout](outlines.md#rendering). Flags: `--dry-run`, `--json`, `--store <id>`.
+Moves each spec still in the old `outline-spec/specs/<name>/spec.md` layout to `outline-spec/specs/<name>.md`, then converts old-format specs (`### Requirement:` / `#### Scenario:`) to outlines and rewrites outline specs written before the current [layout](outlines.md#rendering). Inside a git work tree each move is a `git mv`. A folder the move empties is removed; one that still holds other files is kept and listed. A spec whose `<name>.md` already exists is not moved, and the command exits non-zero. Flags: `--dry-run` (list moves and conversions, write nothing), `--json` (adds `moves`, `conflicts`, and `keptFolders`), `--store <id>`.
+
+Every other command that reads specs refuses to run while any spec is in the old layout, lists those files, and points here.
 
 ## Changes
 

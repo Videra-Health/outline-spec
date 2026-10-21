@@ -97,8 +97,7 @@ describe('validateSpecContent tables', () => {
     let dir: string;
     beforeEach(() => {
       dir = mkdtempSync(path.join(os.tmpdir(), 'outline-spec-refs-'));
-      mkdirSync(path.join(dir, 'ships'));
-      writeFileSync(path.join(dir, 'ships', 'spec.md'), '# ships\nHulls.\n\n1. Catalog: Hulls.\n  | id | Mass |\n  |---|---|\n  | m60 | 25 |\n2. Plain: No table.\n');
+      writeFileSync(path.join(dir, 'ships.md'), '# ships\nHulls.\n\n1. Catalog: Hulls.\n  | id | Mass |\n  |---|---|\n  | m60 | 25 |\n2. Plain: No table.\n');
     });
     afterEach(() => rmSync(dir, { recursive: true, force: true }));
     const refs = async (text: string) =>
@@ -116,8 +115,7 @@ describe('validateSpecContent tables', () => {
       ]));
 
     it('finds references through validateSpec on a file', async () => {
-      mkdirSync(path.join(dir, 'radar'));
-      const f = path.join(dir, 'radar', 'spec.md');
+      const f = path.join(dir, 'radar.md');
       writeFileSync(f, spec('1. Radar: A (see `ships` Catalog, Speed).\n'));
       expect((await new Validator().validateSpec(f, 'radar')).issues).toEqual([expect.objectContaining({ level: 'WARNING', path: '1' })]);
     });
@@ -136,7 +134,7 @@ describe('validateChange', () => {
 
   beforeEach(() => {
     root = mkdtempSync(path.join(os.tmpdir(), 'outline-spec-validate-'));
-    write('specs/radar/spec.md', spec('1. Radar: A round radar.\n  a. A circle.\n'));
+    write('specs/radar.md', spec('1. Radar: A round radar.\n  a. A circle.\n'));
   });
   afterEach(() => rmSync(root, { recursive: true, force: true }));
 

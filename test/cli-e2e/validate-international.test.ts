@@ -10,10 +10,10 @@ const tempRoots: string[] = [];
 async function prepareNonEnglishSpec(): Promise<string> {
   const projectDir = await fs.mkdtemp(path.join(tmpdir(), 'outline-spec-i18n-validation-'));
   tempRoots.push(projectDir);
-  const specDir = path.join(projectDir, 'outline-spec', 'specs', '日志记录');
-  await fs.mkdir(specDir, { recursive: true });
+  const specsDir = path.join(projectDir, 'outline-spec', 'specs');
+  await fs.mkdir(specsDir, { recursive: true });
   await fs.writeFile(
-    path.join(specDir, 'spec.md'),
+    path.join(specsDir, '日志记录.md'),
     `# 日志记录
 记录应用程序中的重要事件，以便团队能够诊断问题、调查故障、审计活动并了解长期的系统行为。
 

@@ -1,6 +1,6 @@
 # Outlines
 
-Specs in `outline-spec/specs/<name>/spec.md` are labeled outlines. A change holds its spec edits in its own `outline.md`, also an outline, until it is archived. Archiving applies the edits to the live specs and deletes the change folder. There is no archive folder; git history is the record. Syncing applies the edits early and keeps the change open ([Applied records](#applied-records)).
+Specs in `outline-spec/specs/<name>.md` are labeled outlines; a nested name such as `platform/session` is `outline-spec/specs/platform/session.md`. A change holds its spec edits in its own `outline.md`, also an outline, until it is archived. Archiving applies the edits to the live specs and deletes the change folder. There is no archive folder; git history is the record. Syncing applies the edits early and keeps the change open ([Applied records](#applied-records)).
 
 ## Spec files
 
@@ -18,7 +18,7 @@ How a shopper pays for the items in their cart.
 3. Guest checkout: A shopper can pay without an account.
 ```
 
-- The first line is `# ` and the spec's folder name. The text after it, up to the first item, is the spec's purpose.
+- The first line is `# ` and the spec's name. The text after it, up to the first item, is the spec's purpose.
 - Each numbered item is a requirement: its name, a colon, and one sentence. The name is how changes find it, so keep `: ` out of names.
 - Details nest under a requirement, two spaces per level, labeled `a.`, then `i.`, then `1.` by depth, and the cycle repeats.
 - An item may carry a table of facts about many things ([Tables](#tables)).
@@ -44,7 +44,7 @@ To close gaps, run `outline-spec relabel <spec>`. It refuses while any open chan
 
 A change's `outline.md` has a `## Proposal` section, a `## Requirements` section holding the spec edits, and an optional `## Out of Scope`. Under `## Requirements`, list only what the change adds, edits, or removes. Anything unchanged stays out.
 
-- **Top level: a spec**, by folder name and a colon. A new spec gives its purpose after the colon.
+- **Top level: a spec**, by name and a colon. A new spec gives its purpose after the colon.
 - **Second level: a requirement**, found by its exact name. Its label in the change doesn't matter.
   - `Name (patch):` edits an existing requirement. List only the details that change under it.
   - `Name: sentence` with no tag adds a new requirement, numbered after the spec's last one. Its details are written plainly, labeled from `a.`.

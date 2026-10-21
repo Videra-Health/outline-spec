@@ -38,7 +38,7 @@ Define `outline-spec validate` behavior for validating changes and specs with ac
 
 8. Bulk and filtered validation: The validate command SHALL support flags for bulk validation (--all) and filtered validation by type (--changes, --specs).  
   a. Validate everything: WHEN executing `outline-spec validate --all` THEN validate all changes in outline-spec/changes/ (excluding archive) AND validate all specs in outline-spec/specs/ AND display a summary showing passed/failed items AND exit with code 1 if any validation fails  
-  b. Scope of bulk validation: WHEN validating with `--all` or `--changes` THEN include all change proposals under `outline-spec/changes/` AND exclude the `outline-spec/changes/archive/` directory WHEN validating with `--specs` THEN include all specs that have a `spec.md` under `outline-spec/specs/<capability-path>/spec.md`  
+  b. Scope of bulk validation: WHEN validating with `--all` or `--changes` THEN include all change proposals under `outline-spec/changes/` AND exclude the `outline-spec/changes/archive/` directory WHEN validating with `--specs` THEN include all specs under `outline-spec/specs/` (see `spec-files`)  
   c. Validate all changes: WHEN executing `outline-spec validate --changes` THEN validate all changes in outline-spec/changes/ (excluding archive) AND display results for each change AND show summary statistics  
   d. Validate all specs: WHEN executing `outline-spec validate --specs` THEN validate all specs in outline-spec/specs/ AND display results for each spec AND show summary statistics
 
