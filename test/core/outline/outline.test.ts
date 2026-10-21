@@ -1,16 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { applyEdit, labelFor, labelValue, parseChange, parseSpec, relabel, sides, touches, writeSpec } from "../../../src/core/outline/outline.js";
 
+// A Markdown line break: GitHub would otherwise join an item's details into one paragraph.
+const BR = "  ";
 const LIVE = `# outfitting
 Ships carry add-on equipment.
 
-1. Makers: Every item is from one maker.
+1. Makers: Every item is from one maker.${BR}
   a. Kessler makes radiators.
-2. Catalog: The catalog is these items.
-  a. RP-2 Radiator Panel: 0.5 / 2 / 0.
-  b. M-60 RCS Pod: 1 / 2 / 0.5.
-    i. Sold in pairs.
-  c. Bracing Kit: 3 / 0 / 0 / +2 t armor.
+
+2. Catalog: The catalog is these items.${BR}
+  a. RP-2 Radiator Panel: 0.5 / 2 / 0.${BR}
+  b. M-60 RCS Pod: 1 / 2 / 0.5.${BR}
+    i. Sold in pairs.${BR}
+  c. Bracing Kit: 3 / 0 / 0 / +2 t armor.${BR}
   d. Overdrive Injectors: 0.5 / 0 / 1.
 `;
 const live = () => parseSpec(LIVE, "live");
@@ -19,6 +22,10 @@ const apply = (reqs: string) => writeSpec(applyEdit(live(), change(reqs))!);
 
 describe("spec files", () => {
   it("round-trips", () => expect(writeSpec(live())).toBe(LIVE));
+  it("sets a table apart with blank lines so GitHub renders it", () => {
+    const src = "# x\nP.\n\n1. A: Rows.\n  | id | V |\n  |---|---|\n  | a | 1 |\n  a. After.\n2. B: Last.\n";
+    expect(writeSpec(parseSpec(src, "x"))).toBe(`# x\nP.\n\n1. A: Rows.\n\n  | id | V |\n  |---|---|\n  | a | 1 |\n\n  a. After.\n\n2. B: Last.\n`);
+  });
   it("reads the title and purpose", () => expect([live().name, live().purpose]).toEqual(["outfitting", "Ships carry add-on equipment."]));
   it("rejects lines that aren't outline items", () =>
     expect(() => parseSpec("# x\nPurpose.\n\n1. A: b.\nstray\n", "x")).toThrow("not an outline item"));
@@ -45,7 +52,7 @@ describe("applying an outline", () => {
 
   it("adds an unmarked detail whose label is new", () =>
     expect(apply("  a. Catalog (patch):\n    e. Salvage Plate: 2 / 0 / 0.\n      i. Sold only at salvage yards.")).toMatch(
-      /e\. Salvage Plate: 2 \/ 0 \/ 0\.\n {4}i\. Sold only at salvage yards\.\n$/,
+      /e\. Salvage Plate: 2 \/ 0 \/ 0\. {2}\n {4}i\. Sold only at salvage yards\.\n$/,
     ));
 
   it("still treats an unmarked existing label as a path", () => expect(apply("  a. Catalog (patch):\n    d. Something else.")).toBe(LIVE));
@@ -71,7 +78,7 @@ describe("applying an outline", () => {
   it("renames a requirement", () => expect(apply("  a. ~~Makers~~ **Brands** (patch):")).toContain("1. Brands: Every item is from one maker."));
 
   it("adds a requirement with the next number", () =>
-    expect(apply("  a. Hull rating: Frame items add Hk.\n    a. Current hull rises too.")).toMatch(/3\. Hull rating: Frame items add Hk\.\n {2}a\. Current hull rises too\.\n$/));
+    expect(apply("  a. Hull rating: Frame items add Hk.\n    a. Current hull rises too.")).toMatch(/\n\n3\. Hull rating: Frame items add Hk\. {2}\n {2}a\. Current hull rises too\.\n$/));
 
   it("removes a requirement", () => expect(apply("  a. ~~Makers: Every item is from one maker.~~")).not.toContain("Makers"));
 

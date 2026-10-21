@@ -43,7 +43,7 @@ Converts an OpenSpec project: moves `openspec/` to `outline-spec/` and converts 
 
 ### outline-spec migrate-specs
 
-Converts old-format specs already under `outline-spec/specs/` (`### Requirement:` / `#### Scenario:`) to outlines. Flags: `--dry-run`, `--json`, `--store <id>`.
+Converts old-format specs already under `outline-spec/specs/` (`### Requirement:` / `#### Scenario:`) to outlines, and rewrites outline specs written before the current [layout](outlines.md#rendering). Flags: `--dry-run`, `--json`, `--store <id>`.
 
 ## Changes
 

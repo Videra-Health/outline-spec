@@ -44,7 +44,7 @@ export function parseOutline(lines: string[], where: string, offset = 0): Node[]
     const depth = m[1].length / 2;
     if (!Number.isInteger(depth) || depth > stack.length - 1) throw new Error(`${where}:${offset + i + 1}: bad indent: ${line}`);
     stack.length = depth + 1;
-    const node: Node = { label: m[2], text: m[3] ?? "", children: [] };
+    const node: Node = { label: m[2], text: (m[3] ?? "").trimEnd(), children: [] };
     stack[depth].push(node);
     stack.push(node.children);
     open.length = depth;
@@ -72,8 +72,20 @@ export function parseSpec(src: string, where: string): Spec {
   return { name: title[1], purpose, items: first < 0 ? [] : parseOutline(lines.slice(first), where, first) };
 }
 
+/** Writes a spec so GitHub renders it line for line: see "Rendering" in docs/outlines.md. */
 export function writeSpec(s: Spec): string {
-  return [`# ${s.name}`, s.purpose, "", ...writeOutline(s.items)].join("\n") + "\n";
+  const lines = writeOutline(s.items);
+  const out: string[] = [];
+  const isItem = (l: string | undefined) => l !== undefined && LINE.test(l);
+  const isRow = (l: string | undefined) => l !== undefined && isTableLine(l);
+  lines.forEach((l, i) => {
+    const next = lines[i + 1];
+    if ((/^\S/.test(l) && i > 0) || (isRow(l) && !isRow(lines[i - 1]))) out.push("");
+    // Two trailing spaces are a Markdown line break, so a sub-item starts its own line.
+    out.push(isItem(l) && isItem(next) && /^ /.test(next!) ? `${l}  ` : l);
+    if (isRow(l) && !isRow(next) && next !== undefined && !/^\S/.test(next)) out.push("");
+  });
+  return [`# ${s.name}`, s.purpose, "", ...out].join("\n") + "\n";
 }
 
 /** A requirement's name: the text before its first ": ". */

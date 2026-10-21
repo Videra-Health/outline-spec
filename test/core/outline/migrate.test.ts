@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { isOutlineSpec, migrateSpec } from '../../../src/core/outline/migrate.js';
+import { isOutlineSpec, migrateSpec as migrateRaw } from '../../../src/core/outline/migrate.js';
+import { compact } from './compact.js';
 import { parseSpec } from '../../../src/core/outline/outline.js';
 
+const migrateSpec = (...args: Parameters<typeof migrateRaw>) => {
+  const r = migrateRaw(...args);
+  return { ...r, text: compact(r.text) };
+};
 const OLD = (body: string, purpose = 'The round scope at the top of the sidebar.') =>
   `# radar Specification\n\n## Purpose\n${purpose}\n\n## Requirements\n\n${body}`;
 

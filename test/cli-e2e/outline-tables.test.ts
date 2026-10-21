@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import os from 'node:os';
 import path from 'node:path';
 import { runCLI } from '../helpers/run-cli.js';
+import { compact } from '../core/outline/compact.js';
 
 const SHIPS = `# ships
 Every hull the yards sell.
@@ -47,7 +48,7 @@ describe('archive with tables', () => {
     );
     const r = await cli('archive', 'c1', '--yes');
     expect(r.exitCode).toBe(0);
-    expect(read('specs/ships/spec.md')).toContain(
+    expect(compact(read('specs/ships/spec.md'))).toContain(
       '  | id | Name | Mass | Cost | Crew |\n  |---|---|---|---|---|\n  | m60 | M-60 Courier | 25 | 9000 | 2 |\n  | hauler |  |  | 100 | 6 |\n3.'
     );
   });
@@ -57,7 +58,7 @@ describe('archive with tables', () => {
     const r = await cli('archive', 'c1', '--yes');
     expect(r.exitCode).not.toBe(0);
     expect(r.stderr + r.stdout).toContain('ships › Catalog › prototype › Cost: struck text doesn\'t match the live cell "12000"');
-    expect(read('specs/ships/spec.md')).toBe(SHIPS);
+    expect(compact(read('specs/ships/spec.md'))).toBe(SHIPS);
     expect(existsSync(file('specs/docks'))).toBe(false);
   });
 
@@ -108,12 +109,12 @@ describe('relabel and migrate-specs with tables', () => {
   it('relabel keeps tables on their items', async () => {
     const r = await cli('relabel', 'ships');
     expect(r.exitCode).toBe(0);
-    expect(read('specs/ships/spec.md')).toBe(SHIPS.replace('3. Fit budgets', '2. Fit budgets').replace('  b. Budgets', '  a. Budgets'));
+    expect(compact(read('specs/ships/spec.md'))).toBe(SHIPS.replace('3. Fit budgets', '2. Fit budgets').replace('  b. Budgets', '  a. Budgets'));
   });
 
   it('migrate-specs treats a spec with tables as an outline', async () => {
     const r = await cli('migrate-specs', '--json');
-    expect(JSON.parse(r.stdout).specs).toContainEqual(expect.objectContaining({ name: 'ships', status: 'already-outline' }));
-    expect(read('specs/ships/spec.md')).toBe(SHIPS);
+    expect(JSON.parse(r.stdout).specs).toContainEqual(expect.objectContaining({ name: 'ships', status: 'reformatted' }));
+    expect(compact(read('specs/ships/spec.md'))).toBe(SHIPS);
   });
 });

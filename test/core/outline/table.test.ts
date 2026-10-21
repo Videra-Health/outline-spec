@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { applyEdit, parseChange, parseSpec, relabel, touches, writeSpec } from "../../../src/core/outline/outline.js";
+import { applyEdit, parseChange, parseSpec, relabel, touches, writeSpec as writeRaw } from "../../../src/core/outline/outline.js";
+import { compact } from "./compact.js";
 import { splitRow, tableProblems } from "../../../src/core/outline/table.js";
 import { planEdits } from "../../../src/core/outline/specs.js";
 
+const writeSpec = (s: Parameters<typeof writeRaw>[0]) => compact(writeRaw(s));
 const LIVE = `# ships
 Every hull the yards sell.
 

@@ -5,7 +5,7 @@ import path from 'node:path';
 import { runCLI } from '../helpers/run-cli.js';
 
 const OLD = '# auth Specification\n\n## Purpose\nSign users in.\n\n## Requirements\n### Requirement: Login\nThe system SHALL log users in.\n\n#### Scenario: Good password\n- **WHEN** the password matches\n- **THEN** a session starts\n';
-const CONVERTED = '# auth\nSign users in.\n\n1. Login: The system SHALL log users in.\n  a. Good password: WHEN the password matches THEN a session starts\n';
+const CONVERTED = '# auth\nSign users in.\n\n1. Login: The system SHALL log users in.  \n  a. Good password: WHEN the password matches THEN a session starts\n';
 const OUTLINE = '# hull\nShips have a hull.\n\n1. Plating: Hull plating stops damage.\n';
 
 let root: string;

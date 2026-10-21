@@ -185,7 +185,7 @@ describe('applied/ is a record only', () => {
     const r = await cli('archive', 'c1', '--yes', '--json');
     expect(r.exitCode).toBe(0);
     expect(JSON.parse(r.stdout)).toMatchObject({ archived: 'c1', specs: [{ name: 'hull', action: 'updated' }] });
-    expect(read('specs/hull/spec.md')).toContain('1. Plating: Hull plating stops most damage.\n2. Repair: Docks repair the hull for a fee.\n');
+    expect(read('specs/hull/spec.md')).toContain('1. Plating: Hull plating stops most damage.\n\n2. Repair: Docks repair the hull for a fee.\n');
     expect(existsSync(file('changes/c1'))).toBe(false);
   });
 

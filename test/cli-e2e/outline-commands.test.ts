@@ -56,7 +56,7 @@ describe('outline-spec archive', () => {
         { name: 'hull', action: 'deleted' },
       ],
     });
-    expect(read('specs/outfitting/spec.md')).toContain('  c. Bracing Kit: 3 / 0 / 0.\n  d. Salvage Plate: 2 / 0 / 0.\n');
+    expect(read('specs/outfitting/spec.md')).toContain('  c. Bracing Kit: 3 / 0 / 0.  \n  d. Salvage Plate: 2 / 0 / 0.\n');
     expect(read('specs/docking/spec.md')).toBe('# docking\nShips dock at stations.\n\n1. Clamps: Docking takes 2 s.\n');
     expect(existsSync(file('specs/hull'))).toBe(false);
     expect(existsSync(file('changes/c1'))).toBe(false);
@@ -175,7 +175,7 @@ describe('outline-spec relabel', () => {
   it('closes label gaps', async () => {
     const r = await cli('relabel', 'outfitting');
     expect(r.exitCode).toBe(0);
-    expect(read('specs/outfitting/spec.md')).toContain('  a. RP-2 Radiator Panel: 0.5 / 2 / 0.\n  b. Bracing Kit: 3 / 0 / 0.\n');
+    expect(read('specs/outfitting/spec.md')).toContain('  a. RP-2 Radiator Panel: 0.5 / 2 / 0.  \n  b. Bracing Kit: 3 / 0 / 0.\n');
   });
 
   it('refuses while a pending change edits the spec', async () => {
@@ -190,15 +190,22 @@ describe('outline-spec relabel', () => {
 describe('outline-spec migrate-specs', () => {
   const OLD = '# legacy Specification\n\n## Purpose\nOld purpose.\n\n## Requirements\n### Requirement: R\nThe system SHALL work.\n\n#### Scenario: S\n- **WHEN** x\n- **THEN** y\n';
 
-  it('converts old-format specs and skips outlines', async () => {
+  it('converts old-format specs and lays out outlines written before the current layout', async () => {
     write('specs/legacy/spec.md', OLD);
     const r = await cli('migrate-specs', '--json');
     expect(r.exitCode).toBe(0);
     const specs = JSON.parse(r.stdout).specs;
     expect(specs).toContainEqual(expect.objectContaining({ name: 'legacy', status: 'converted' }));
-    expect(specs).toContainEqual(expect.objectContaining({ name: 'outfitting', status: 'already-outline' }));
-    expect(read('specs/legacy/spec.md')).toBe('# legacy\nOld purpose.\n\n1. R: The system SHALL work.\n  a. S: WHEN x THEN y\n');
-    expect(read('specs/outfitting/spec.md')).toBe(OUTFITTING);
+    expect(specs).toContainEqual(expect.objectContaining({ name: 'outfitting', status: 'reformatted' }));
+    expect(read('specs/legacy/spec.md')).toBe('# legacy\nOld purpose.\n\n1. R: The system SHALL work.  \n  a. S: WHEN x THEN y\n');
+    const laidOut = read('specs/outfitting/spec.md');
+    expect(laidOut).toBe(
+      '# outfitting\nShips carry add-on equipment.\n\n1. Makers: Every item is from one maker.  \n  a. Kessler makes radiators.\n\n' +
+        '2. Catalog: The catalog is these items.  \n  a. RP-2 Radiator Panel: 0.5 / 2 / 0.  \n  c. Bracing Kit: 3 / 0 / 0.\n'
+    );
+    const again = JSON.parse((await cli('migrate-specs', '--json')).stdout).specs;
+    expect(again).toContainEqual(expect.objectContaining({ name: 'outfitting', status: 'already-outline' }));
+    expect(read('specs/outfitting/spec.md')).toBe(laidOut);
   });
 
   it('writes nothing on --dry-run', async () => {

@@ -26,7 +26,8 @@ The instruction sent to the agent when it writes this artifact.
 ```md
 State the proposal in one or two sentences under `## Proposal`.
 
-Under `## Requirements`, write a nested outline, one sentence per item.
+Under `## Requirements`, write a nested outline, one short sentence per item, 25 words at most.
+Move a list, an example, or a second clause into sub-items.
 This outline is the change's spec edits: `outline-spec archive <change>` applies
 it to the live specs in `outline-spec/specs/` and deletes the change folder.
 `outline-spec sync <change>` applies it earlier and keeps the change open.
