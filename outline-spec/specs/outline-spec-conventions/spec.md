@@ -49,3 +49,11 @@ outline-spec conventions SHALL define how system capabilities are documented, ho
   a. Verb-first command discovery: WHEN a user runs a command like `outline-spec list` THEN the verb communicates the action clearly AND nouns refine scope via flags or arguments (e.g., `--changes`, `--specs`)  
   b. Backward compatibility for noun commands: WHEN users run noun-prefixed commands such as `outline-spec spec ...` or `outline-spec change ...` THEN the CLI SHALL continue to support them for at least one release AND display a deprecation warning that points to verb-first alternatives  
   c. Disambiguation guidance: WHEN item names are ambiguous between changes and specs THEN `outline-spec show` and `outline-spec validate` SHALL accept `--type spec|change` AND the help text SHALL document this clearly
+
+13. Spec layout: Every command that writes a spec SHALL lay it out so GitHub renders each item on its own line.  
+  a. An item line followed by one of its details ends in a Markdown line break.  
+  b. A blank line comes before each requirement after the first, and around each table.  
+  c. Parsing ignores the line breaks and blank lines.  
+  d. `migrate-specs` rewrites outline specs written before this layout, and reports them as updated.
+
+14. Short items: The outline instruction SHALL ask for one short sentence per item, with lists, examples, and extra clauses as sub-items.

@@ -67,3 +67,8 @@ Define `outline-spec validate` behavior for validating changes and specs with ac
 13. Mermaid diagrams: Change validation SHALL report, as an error, each Mermaid code block in the change's Markdown files that Mermaid cannot parse, naming the file, the block's first line number, and Mermaid's parse message.  
   a. Parsing uses the same Mermaid version the review page draws with, so a block that validates also draws.  
   b. A change with no Mermaid blocks validates without loading Mermaid.
+
+14. Item length: Validation SHALL warn on any spec or outline item over 25 words.  
+  a. A requirement's name doesn't count toward its words.  
+  b. An outline item counts its text after archive.  
+  c. The warning names the item and suggests moving lists, examples, and extra clauses into sub-items.
