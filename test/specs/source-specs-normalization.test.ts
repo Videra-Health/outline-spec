@@ -28,9 +28,7 @@ describe('source-of-truth specs are outlines', () => {
       expect(spec.name, `${relativeFile} title must be its id`).toBe(name);
       expect(writeSpec(spec), `${relativeFile} must be written in canonical outline form`).toBe(content);
       const report = await new Validator(true).validateSpecContent(name, content);
-      // These specs predate the 25-word item limit; shortening them is separate work.
-      const issues = report.issues.filter((i) => !i.message.startsWith('Item is '));
-      expect(issues, `${relativeFile} must validate strictly`).toEqual([]);
+      expect(report.issues, `${relativeFile} must validate strictly`).toEqual([]);
     }
   });
 });

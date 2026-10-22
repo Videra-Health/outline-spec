@@ -55,5 +55,3 @@ outline-spec conventions SHALL define how system capabilities are documented, ho
   b. A blank line comes before each requirement after the first, and around each table.  
   c. Parsing ignores the line breaks and blank lines.  
   d. `migrate-specs` rewrites outline specs written before this layout, and reports them as updated.
-
-14. Short items: The outline instruction SHALL ask for one short sentence per item, with lists, examples, and extra clauses as sub-items.

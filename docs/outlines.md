@@ -22,7 +22,7 @@ How a shopper pays for the items in their cart.
 - Each numbered item is a requirement: its name, a colon, and one sentence. The name is how changes find it, so keep `: ` out of names.
 - Details nest under a requirement, two spaces per level, labeled `a.`, then `i.`, then `1.` by depth, and the cycle repeats.
 - An item may carry a table of facts about many things ([Tables](#tables)).
-- One short sentence per item, 25 words at most; `validate` warns past that. A list, an example, or a second clause becomes sub-items.
+- One sentence per item.
 - A spec describes behavior someone can observe, not how the code does it.
 
 ### Rendering

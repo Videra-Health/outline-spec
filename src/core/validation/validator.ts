@@ -1,7 +1,7 @@
 import { readFileSync, promises as fs } from 'fs';
 import path from 'path';
 import { ValidationReport, ValidationIssue } from './types.js';
-import { kindAt, labelFor, labelValue, parseSpec, reqName, sides, type Node, type Spec } from '../outline/outline.js';
+import { kindAt, labelFor, labelValue, parseSpec, reqName, type Node, type Spec } from '../outline/outline.js';
 import { CHANGE_OUTLINE, planEdits, readChangeEdits, readLiveSpec, specNameProblem } from '../outline/specs.js';
 import { findItem } from '../outline/item.js';
 import { tableProblems } from '../outline/table.js';
@@ -20,7 +20,6 @@ import { getPackageSchemasDir, getSchemaDir } from '../artifact-graph/index.js';
 
 // `(see \`spec\` Item, Column)`: Item is a requirement name or an item path as `show --item` takes it.
 const REFERENCE = /\(see `([^`]+)` ([^,()]+), ([^()]+)\)/g;
-export const MAX_ITEM_WORDS = 25;
 const LABEL_SHAPE = { num: /^[1-9][0-9]*$/, alpha: /^[a-z]+$/, roman: /^[ivxlcdm]+$/ } as const;
 
 export class Validator {
@@ -78,7 +77,6 @@ export class Validator {
       names.add(name);
     }
     issues.push(...this.labelIssues(spec.items, 0, ''));
-    issues.push(...this.lengthIssues(spec.items, ''));
     issues.push(...this.referenceIssues(spec, specsDir));
     return this.createReport(issues);
   }
@@ -130,26 +128,6 @@ export class Validator {
       }
     };
     walk(spec.items, '');
-    return issues;
-  }
-
-  /** Warns on items longer than MAX_ITEM_WORDS, counting an outline edit's text after archive and skipping requirement names. */
-  private lengthIssues(nodes: Node[], prefix: string, file?: string, depth = 0): ValidationIssue[] {
-    const issues: ValidationIssue[] = [];
-    for (const n of nodes) {
-      const named = depth === 0 ? /^(.+?)(?: \(patch\))?:(?: (.*)|$)/.exec(sides(n.text).new) : null;
-      const text = named ? named[2] ?? '' : sides(n.text).new;
-      const words = text.split(/\s+/).filter(Boolean).length;
-      const here = `${prefix}${named ? named[1] : n.label}`;
-      if (words > MAX_ITEM_WORDS) {
-        issues.push({
-          level: 'WARNING',
-          path: file ? `${file} › ${here}` : here,
-          message: `Item is ${words} words; keep it to ${MAX_ITEM_WORDS} and move lists, examples, and extra clauses into sub-items`,
-        });
-      }
-      issues.push(...this.lengthIssues(n.children, `${here} › `, file, depth + 1));
-    }
     return issues;
   }
 
@@ -206,7 +184,6 @@ export class Validator {
           issues.push({ level: 'INFO', path: CHANGE_OUTLINE, message: 'Change edits no specs (no "## Requirements" items)' });
         }
         planEdits(specsDir, edits);
-        for (const edit of edits) issues.push(...this.lengthIssues(edit.node.children, `${edit.spec} › `, CHANGE_OUTLINE));
       } catch (error) {
         for (const line of (error as Error).message.split('\n')) {
           issues.push({ level: 'ERROR', path: CHANGE_OUTLINE, message: line });

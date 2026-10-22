@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-- **Short items.** `validate` warns on any spec or outline item over 25 words, and the outline instruction asks for one short sentence per item with lists, examples, and extra clauses as sub-items.
 - **Specs render on GitHub.** Specs are written with a Markdown line break after each item that has details, and a blank line between requirements and around tables, so GitHub shows each detail on its own line instead of one paragraph. `migrate-specs` rewrites existing outline specs in this layout.
 - **New items in the outline.** The Outline tab marks the label of each item a patch adds, and its details' labels, as added.
 - **Review diffs.** The spec-changes view shows an edited requirement as one diff instead of live and after-archive columns. Tables render as tables, and each changed cell shows its old value struck and its new value bold, compared only within its row and column. Runs of unchanged lines and rows fold behind a control, and table edits sit behind a toggle. In the Outline tab, an edit's bold text now renders bold next to punctuation, as in `space**, its**`. The payload's `segments` field is replaced by `lines`.

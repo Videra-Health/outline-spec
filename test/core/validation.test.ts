@@ -14,14 +14,6 @@ describe('validateSpecContent', () => {
     expect(r).toMatchObject({ valid: true, issues: [] });
   });
 
-  it('warns on an item over 25 words, not counting a requirement name', async () => {
-    const long = Array.from({ length: 26 }, (_, i) => `w${i}`).join(' ');
-    const ok = Array.from({ length: 25 }, (_, i) => `w${i}`).join(' ');
-    expect(await messages(spec(`1. A very long requirement name here: ${ok}\n  a. ${long}\n`))).toEqual([
-      'WARNING A very long requirement name here › a: Item is 26 words; keep it to 25 and move lists, examples, and extra clauses into sub-items',
-    ]);
-  });
-
   it('requires a purpose', async () => {
     expect(await messages('# radar\n\n1. Radar: A round radar.\n')).toContain(
       'ERROR purpose: Spec needs a purpose: one or more lines after the title'
@@ -166,14 +158,6 @@ describe('validateChange', () => {
     const issues = (await validate()).issues.filter((i) => i.level === 'ERROR');
     expect(issues).toEqual([{ level: 'ERROR', path: 'diagrams.md:9', message: expect.stringMatching(/^Mermaid diagram does not parse: Parse error on line 5/) }]);
   }, 30_000);
-
-  it('warns on a long item in an outline by its text after archive', async () => {
-    const words = (n: number) => Array.from({ length: n }, (_, i) => `w${i}`).join(' ');
-    write('changes/c1/outline.md', `## Requirements\n1. radar:\n  a. Radar (patch):\n    a. ~~A circle.~~ **${words(26)}**\n  b. Sweep: ${words(20)} ~~${words(10)}~~\n`);
-    expect((await validate()).issues).toEqual([
-      expect.objectContaining({ level: 'WARNING', path: 'outline.md › radar › Radar › a', message: expect.stringMatching(/^Item is 26 words/) }),
-    ]);
-  });
 
   it('notes an outline that edits no specs', async () => {
     write('changes/c1/outline.md', '## Proposal\nTooling only.\n');
