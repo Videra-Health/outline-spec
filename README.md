@@ -1,6 +1,15 @@
 # outline-spec
 
-outline-spec gives you and your coding agent a written plan before code is written, and keeps a living spec of what the software does. Specs are labeled outlines. Each change carries its spec edits as a small outline of its own, marked up with `~~removed~~` and `**added**` text, and archiving the change applies those edits to the live specs by label.
+Outline Spec is a spec-first approach to using coding agents similar ot OpenSpec and SpecKit.
+Specs are living concise definitions of what the code *should* do.
+This differs in that:
+1. Specs are hierarchical outlines, making specs very concise
+2. Archived specs are not retained. No more 2k LOC changes for only 100 lines of real changes
+3. Every proposal includes a detailed artifact showing the spec differences
+
+## Outlines
+
+Specs are labeled outlines. Each change carries its spec edits as a small outline of its own, marked up with `~~removed~~` and `**added**` text, and archiving the change applies those edits to the live specs by label.
 
 ```
 1. checkout:
@@ -9,35 +18,31 @@ outline-spec gives you and your coding agent a written plan before code is writt
       i. Orders over ~~$50~~ **$75** ship free.
 ```
 
-Because an edit addresses one labeled detail, two changes that touch different details of the same requirement both archive cleanly. When they touch the same detail, the second one stops with a clear error instead of overwriting the first.
-
 ## Fork notice
 
-outline-spec is a fork of [OpenSpec](https://github.com/Fission-AI/OpenSpec) by Fission AI, under the MIT license (see [LICENSE](LICENSE)). OpenSpec's delta specs replace whole requirements, so parallel changes to one requirement overwrite each other. This fork replaces them with outline specs that merge by label. It also drops scenarios, delta-spec sync (sync now applies outline edits), the archive folder, telemetry, and the update check, and renames the CLI, project folder, skills, and commands so both tools can be installed side by side. [CHANGELOG.md](CHANGELOG.md) has the details.
+outline-spec is a fork of [OpenSpec](https://github.com/Fission-AI/OpenSpec) by Fission AI, under the MIT license (see [LICENSE](LICENSE)). Outline spec follows the same propose/apply/archive cycle as OpenSpec, but has changed mostly how those specs are represented (as outlines) in the final archived spec.
 
 ## Install
 
 Node.js 20.19 or later.
 
+Install the CLI, then install the skills once into your home directory so every project gets them:
+
 ```bash
 npm install -g github:Videra-Health/outline-spec
+cd ~ && outline-spec init --tools claude,codex   # or pick your AI tools interactively
+rm -rf ~/outline-spec                            # init also made a project folder in ~; drop it
 ```
 
-Or from a clone:
-
-```bash
-pnpm install && pnpm build && npm install -g .
-```
+From a clone, replace the first line with `pnpm install && pnpm build && npm install -g .`.
 
 ## Quick start
 
 ```bash
 cd your-project
-outline-spec init                      # pick your AI tools
 # in your AI tool:
 /outl:propose add dark mode    # writes outline.md, diagrams.md, and tasks.md
 /outl:apply                    # implements the tasks
-/outl:sync                     # optional: applies spec edits early, keeps the change open
 /outl:archive                  # applies the outline to the specs
 ```
 

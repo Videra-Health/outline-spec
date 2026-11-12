@@ -18,15 +18,26 @@ pnpm install && pnpm build && npm install -g .
 
 Check it with `outline-spec --version`.
 
+## Install the skills
+
+Install the workflow skills and commands once, into your home directory, so every project gets them:
+
+```bash
+cd ~ && outline-spec init --tools claude,codex
+rm -rf ~/outline-spec
+```
+
+Leave out `--tools` to pick your AI tools interactively. This writes to `~/.claude/` and `~/.agents/`. `init` also creates a project folder in `~`; remove it, or every repo under your home directory without its own `outline-spec/` will use it. Restart your AI tool so it picks up the new commands.
+
 ## Set up a project
 
 At the root of your project:
 
 ```bash
-outline-spec init
+outline-spec init --tools none
 ```
 
-`init` asks which AI tools you use and installs the workflow skills and commands for each. `--tools claude,cursor` skips the picker, and `--tools none` creates only the project folder. It creates:
+The skills are already installed, so `--tools none` creates only the project folder:
 
 ```
 outline-spec/
@@ -35,7 +46,7 @@ outline-spec/
 └── changes/      open changes
 ```
 
-plus the skills and commands in each tool's folder, for example `.claude/skills/` and `.claude/commands/outl/` for Claude Code. Commit all of it. Restart your AI tool so it picks up the new commands.
+Commit it.
 
 Coming from OpenSpec? Use `outline-spec adopt` instead ([Adopting](adopting.md)).
 

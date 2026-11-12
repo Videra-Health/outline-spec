@@ -1,10 +1,10 @@
 # Skills and commands
 
-`outline-spec init` installs the workflows into each AI tool you pick, and `outline-spec update` refreshes them. Each workflow is a skill your agent picks up when you ask for the work, and a slash command you can type. A workflow's skill and command carry the same instructions.
+`outline-spec init` installs the workflows into each AI tool you pick. Run it once in your home directory to install them for every project ([Getting started](getting-started.md#install-the-skills)). Each workflow is a skill your agent picks up when you ask for the work, and a slash command you can type. A workflow's skill and command carry the same instructions.
 
 ## Where they go
 
-Each tool gets its own folder. For Claude Code:
+Each tool gets its own folder, under the directory you ran `init` in (`~` for a global install). For Claude Code:
 
 - Skills: `.claude/skills/outl-*/SKILL.md`
 - Commands: `.claude/commands/outl/<id>.md`, typed as `/outl:<id>`
@@ -13,7 +13,14 @@ Other tools use their own folder (`.cursor/`, `.gemini/`, the shared `.agents/`,
 
 How you invoke a workflow depends on the tool. Claude Code uses `/outl:propose` for the command and `/outl-propose` for the skill. Most other tools use `/outl-propose`. Amazon Q uses `@outl-propose`, Codex `$outl-propose`, and Kimi Code `/skill:outl-propose`. GSD, Rovo Dev, and SourceCraft Code Assistant have no slash form for skills, so you ask for the work by name. Where a tool runs skills directly, init installs skills only and says so.
 
-Commit the installed files with the rest of your project.
+## Refreshing them
+
+`outline-spec update` needs an `outline-spec/` folder, so it can't refresh skills installed from `~`. After upgrading the CLI or changing the profile, install them again:
+
+```bash
+cd ~ && outline-spec init --tools claude,codex
+rm -rf ~/outline-spec
+```
 
 ## Workflows
 
@@ -51,16 +58,11 @@ Delivery chooses the form: `both` (default), `skills`, or `commands`.
 outline-spec config set delivery skills
 ```
 
-After changing the profile or delivery, run `outline-spec update` in each project. The interactive picker offers to update the current project for you.
+After changing the profile or delivery, install the skills again ([Refreshing them](#refreshing-them)).
 
 ## When workflows don't show up
 
-If the files are missing, run `outline-spec update`. If Claude Code has the command files but `/outline-spec:` shows nothing, update and restart Claude Code. If commands still don't load, install skills too:
-
-```bash
-outline-spec config set delivery both
-outline-spec update
-```
+If the files are missing, install them again ([Refreshing them](#refreshing-them)). If Claude Code has the command files but `/outl:` shows nothing, restart Claude Code. If commands still don't load, set `outline-spec config set delivery both` and install them again.
 
 Restart Claude Code and run `/outl-propose`.
 
