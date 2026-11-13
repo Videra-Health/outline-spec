@@ -120,6 +120,13 @@ describe('migrate-specs moves specs to the flat layout', () => {
     expect(existsSync(file('specs', 'auth.md'))).toBe(false);
   });
 
+  it('reports each spec once on --dry-run, under its new name', async () => {
+    write('specs/auth/spec.md', SPEC('auth'));
+    write('specs/platform/session/spec.md', SPEC('platform/session'));
+    const r = await cli('migrate-specs', '--dry-run', '--json');
+    expect(JSON.parse(r.stdout).specs.map((s: { name: string }) => s.name)).toEqual(['auth', 'platform/session']);
+  });
+
   it('says so when every spec is already flat', async () => {
     write('specs/auth.md', SPEC('auth'));
     const r = await cli('migrate-specs');

@@ -1,5 +1,6 @@
 /** Converts old `## Requirements` / `### Requirement:` specs into outlines. */
 import { kindAt, labelFor, labelValue, parseOutline, parseSpec, writeSpec, type Node } from './outline.js';
+import { isTableLine, parseTable, TABLE_ID, tableProblems, type Table } from './table.js';
 
 export interface Unplaced {
   line: number;
@@ -18,7 +19,9 @@ export interface MigrationResult {
 const ITEM = /^( *)([0-9]+|[a-z]+)\. (.*)$/;
 const LIST = /^\s*(?:[-*+]|\d+\.)\s+(.*)$/;
 const FENCE = /^\s*(```|~~~)/;
+const HEADING = /^#{1,6}(\s|$)/;
 const tidy = (s: string) => s.replace(/\s+/g, ' ').trim();
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9_.]+/g, '-').replace(/^[-_.]+|[-_.]+$/g, '');
 // Bold pairs only; a lone `**` (as in a `**/*.md` glob) or one inside backticks stays.
 const unbold = (s: string) => s.replace(/\*\*([^*`]+?)\*\*/g, '$1');
 
@@ -33,11 +36,19 @@ export function isOutlineSpec(src: string): boolean {
   }
 }
 
+/** A body list item, or a paragraph after the list that may introduce a list of its own. */
+interface Entry {
+  text: string;
+  children: string[];
+  paragraph: boolean;
+}
+
 interface Requirement {
   name: string;
   line: number;
   body: string[];
-  list: string[];
+  list: Entry[];
+  table: Array<{ line: number; text: string }>;
   details: Array<{ line: number; text: string }>;
   scenarios: Array<{ name: string; lines: string[] }>;
 }
@@ -51,6 +62,9 @@ export function migrateSpec(src: string, name: string): MigrationResult {
   let section: string | null = null;
   let sub: 'body' | 'details' | 'scenario' | 'other' = 'body';
   let fence: string | null = null;
+  // A blank line ends a list item, so text right after a bullet continues it.
+  let blank = false;
+  let inItem = false;
 
   const drop = (i: number, reason: string) => unplaced.push({ line: i + 1, text: lines[i], reason });
 
@@ -67,17 +81,20 @@ export function migrateSpec(src: string, name: string): MigrationResult {
       if (section !== 'purpose' && section !== 'requirements') drop(i, `section "${h2[1]}"`);
       return;
     }
-    if (!line.trim()) return;
+    if (!line.trim()) return void (blank = true);
+    const afterBlank = blank;
+    blank = false;
     if (section === 'purpose') {
-      if (/^#/.test(line)) return void drop(i, 'heading in purpose');
+      if (HEADING.test(line)) return void drop(i, 'heading in purpose');
       return void purpose.push(line.trim());
     }
     if (section !== 'requirements') return void drop(i, section ? `section "${section}"` : 'text outside any section');
 
     const h3 = /^### +Requirement:\s*(.+?)\s*$/.exec(line);
     if (h3) {
-      reqs.push({ name: h3[1], line: i + 1, body: [], list: [], details: [], scenarios: [] });
+      reqs.push({ name: h3[1], line: i + 1, body: [], list: [], table: [], details: [], scenarios: [] });
       sub = 'body';
+      inItem = false;
       return;
     }
     if (/^### /.test(line)) return void drop(i, 'heading that is not "### Requirement:"');
@@ -97,8 +114,12 @@ export function migrateSpec(src: string, name: string): MigrationResult {
       }
       return;
     }
-    if (/^#/.test(line)) return void drop(i, 'heading');
-    if (/^\s*\|/.test(line)) return void drop(i, 'table row');
+    if (HEADING.test(line)) return void drop(i, 'heading');
+    if (isTableLine(line.trimStart())) {
+      inItem = false;
+      if (sub === 'body') return void req.table.push({ line: i + 1, text: line.trim() });
+      return void drop(i, 'table row');
+    }
     if (sub === 'other') return void drop(i, 'text under an unknown heading');
     if (sub === 'details') {
       if (!ITEM.test(line)) return void drop(i, 'details line without a label');
@@ -106,9 +127,21 @@ export function migrateSpec(src: string, name: string): MigrationResult {
     }
     if (sub === 'scenario') return void req.scenarios[req.scenarios.length - 1].lines.push(line);
     const item = /^\s*(?:[-*+])\s+(.*)$/.exec(line);
-    if (item) return void req.list.push(item[1]);
-    if (req.list.length) return void drop(i, 'text after a list in a requirement body');
-    req.body.push(line.trim());
+    const last = req.list[req.list.length - 1];
+    if (item) {
+      inItem = true;
+      if (last?.paragraph) return void last.children.push(item[1]);
+      return void req.list.push({ text: item[1], children: [], paragraph: false });
+    }
+    if (inItem && !afterBlank) {
+      if (last.paragraph) last.children[last.children.length - 1] += ` ${line.trim()}`;
+      else last.text += ` ${line.trim()}`;
+      return;
+    }
+    inItem = false;
+    if (!last) return void req.body.push(line.trim());
+    if (last.paragraph && !last.children.length && !afterBlank) return void (last.text += ` ${line.trim()}`);
+    req.list.push({ text: line.trim(), children: [], paragraph: true });
   });
 
   const purposeText = tidy(purpose.join(' '));
@@ -131,15 +164,39 @@ export function migrateSpec(src: string, name: string): MigrationResult {
     }
     const kind = kindAt(1);
     let next = Math.max(0, ...children.map((n) => labelValue(kind, n.label))) + 1;
-    for (const text of req.list) children.push({ label: labelFor(kind, next++), text: tidy(text), children: [] });
+    for (const e of req.list)
+      children.push({
+        label: labelFor(kind, next++),
+        text: tidy(e.text),
+        children: e.children.map((c, k) => ({ label: labelFor(kindAt(2), k + 1), text: tidy(c), children: [] })),
+      });
     for (const s of req.scenarios) {
       const joined = tidy(s.lines.map((l) => unbold(l.replace(LIST, '$1'))).join(' '));
       const text = joined ? (s.name ? `${s.name}: ${joined}` : joined) : s.name;
       children.push({ label: labelFor(kind, next++), text, children: [] });
     }
-    return { label: String(r + 1), text: sentence ? `${req.name}: ${sentence}` : `${req.name}:`, children };
+    const table = req.table.length ? bodyTable(req.table, `${name} › ${req.name}`, unplaced) : undefined;
+    return { label: String(r + 1), text: sentence ? `${req.name}: ${sentence}` : `${req.name}:`, ...(table ? { table } : {}), children };
   });
 
   return { text: writeSpec({ name, purpose: purposeText, items }), notes, unplaced };
 }
 
+/** Reads a requirement body's table, adding an `id` column from the first column's slugs when it has none. */
+function bodyTable(lines: Array<{ line: number; text: string }>, where: string, unplaced: Unplaced[]): Table | undefined {
+  const reject = (reason: string) => void unplaced.push(...lines.map((l) => ({ line: l.line, text: l.text, reason })));
+  let table: Table;
+  try {
+    table = parseTable(lines.map((l) => l.text), where);
+  } catch (e) {
+    return reject((e as Error).message);
+  }
+  if (table.columns[0]?.toLowerCase() !== 'id') {
+    const ids = table.rows.map((row) => slug(row[0] ?? ''));
+    if (ids.some((id) => !TABLE_ID.test(id)) || new Set(ids).size !== ids.length) return reject('table whose rows have no unique id');
+    table = { columns: ['id', ...table.columns], rows: table.rows.map((row, k) => [ids[k], ...row]) };
+  }
+  const error = tableProblems(table).find((p) => p.level === 'ERROR');
+  if (error) return reject(error.message);
+  return table;
+}

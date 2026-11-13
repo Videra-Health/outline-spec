@@ -35,9 +35,13 @@ export async function migrateSpecsCommand(options: MigrateSpecsOptions): Promise
   const keptFolders = kept.map((k) => ({ dir: rel(k.dir), files: k.files.map(FileSystemUtils.toPosixPath) }));
   if (conflicts.length) process.exitCode = 1;
 
-  const specs = await discoverSpecFiles(root.specsDir);
-  // A dry run converts each spec where it sits, before its move.
-  if (options.dryRun) specs.push(...layout.moves.map((m) => ({ id: m.id, specFile: m.from })));
+  let specs = await discoverSpecFiles(root.specsDir);
+  // A dry run converts each spec where it sits, before its move, under the name it moves to.
+  if (options.dryRun) {
+    const moving = new Set(layout.moves.map((m) => path.resolve(m.from)));
+    specs = specs.filter((s) => !moving.has(path.resolve(s.specFile)));
+    specs.push(...layout.moves.map((m) => ({ id: m.id, specFile: m.from })));
+  }
   specs.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
   const reports: SpecReport[] = [];
