@@ -55,15 +55,30 @@ A rendered page a developer reads to check a change before approving it.
   g. When no developer is in the session, as for a subagent, a headless or scripted run, or CI, the workflow does not render, publish, or open the page, and does not mention it.
 
 8. Pull request page: `outline-spec review --base <ref>` SHALL render one page for the work between the commit `<ref>` names and the current working tree.  
-  a. `--summary <file>` adds a first tab, Summary, rendering that Markdown file with its Mermaid blocks drawn as diagrams.  
-  b. Raw HTML in the summary shows as text and never runs, because an agent or model writes it.  
+  a. The page opens on an Outline tab: the `--summary <file>` Markdown under `## Summary`, then the spec edits since the base under `## Outline` (see Pull request outline).  
+  b. Raw HTML in the summary and in each `--tab` file shows as text and never runs, because an agent or model writes it.  
   c. A Spec changes tab lists each spec under `outline-spec/specs/` that differs between the base and the working tree, tagged and marked as the Spec changes view marks a change's edits, and is left off when none differ.  
   d. Each change under `outline-spec/changes/` that has a file added or edited since the base, and still exists in the working tree, gets the file tabs its schema's review block lists, titled `<change> · <tab title>`.  
   e. A change with no file changed since the base gets no tabs, even though it is open.  
   f. When a touched change fails `outline-spec validate`, the banner names the change and lists its errors; otherwise the page has no banner.  
   g. `--title <text>` heads the page; without it the page is headed with the current branch name.  
-  h. A repository with no `outline-spec/` folder still gets a page, with the Summary tab only.  
+  h. A repository with no `outline-spec/` folder still gets a page, with an Outline tab holding only the summary, and its `--tab` tabs.  
   i. A `<ref>` that git can't resolve fails naming the ref, and writes no file.  
-  j. Spec and change paths are matched with `/` on every platform, and `--summary` and `--out` are resolved against the current directory with the platform's path rules, so the page is the same on macOS, Linux, and Windows.  
+  j. Spec and change paths are matched with `/` on every platform, and `--summary`, each `--tab` file, and `--out` are resolved against the current directory with the platform's path rules, so the page is the same on macOS, Linux, and Windows.  
   k. The command reads the base through git and never changes the working tree, the index, or any branch.  
-  l. With `--json`, the command prints the file path, the base it compared against, and the names of the changes it rendered.
+  l. With `--json`, the command prints the file path, the base it compared against, and the names of the changes it rendered.  
+  m. `--tab <title>=<file>`, repeatable, adds a tab titled `<title>` rendering that Markdown file with its Mermaid blocks drawn as diagrams, after the Outline tab and before Spec changes, in the order given.  
+  n. The title is everything before the first `=`, so a file path may itself contain `=`, and a value with no `=`, an empty title, or an empty path fails naming the value and writes no file.  
+  o. A `--tab` file that is empty or holds only whitespace adds no tab.  
+  p. With no summary and no spec edits, the page has no Outline tab.  
+  q. The page is headed `outline-spec · pull request`, and its browser title is the page's title alone.
+
+9. Pull request outline: The Outline tab SHALL write the specs' changes between the base and the working tree as the change outline that would make them, so it reads like a change's `outline.md`.  
+  a. Each changed spec is a top-level item; a new spec carries its purpose.  
+  b. An added requirement is written whole and unmarked, with its details.  
+  c. An edited requirement is `<Name> (patch):` with only the details that changed, each edit marked `new` against the base, and a detail passed through to reach a deeper one shown as its bare label.  
+  d. A removed requirement or detail is written wholly struck, with its text at the base.  
+  e. A renamed requirement shows `New (patch):` when its text is otherwise the same.  
+  f. Labels are the head's, so the outline matches the specs the pull request leaves behind.  
+  g. It renders with the Outline tab's labeled tree, so added labels, struck text and bold text read as they do for a change.  
+  h. Specs that differ only in whitespace are left out.

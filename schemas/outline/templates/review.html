@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>{{change}} proposal</title>
+<title>{{pageTitle}}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -197,7 +197,7 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
 
 <div class="page">
   <header class="masthead">
-    <span class="eyebrow">outline-spec · change review</span>
+    <span class="eyebrow" id="eyebrow">outline-spec · change review</span>
     <h1 id="change-name"></h1>
     <span class="meta" id="generated"></span>
   </header>
@@ -235,6 +235,7 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
 
   // Masthead
   $('#change-name').textContent = data.title || data.change || 'Change';
+  if (data.base) $('#eyebrow').textContent = 'outline-spec · pull request';
   if (data.generatedAt) {
     const when = new Date(data.generatedAt);
     const base = data.base ? `Compared against ${data.base.slice(0, 7)} · ` : '';
@@ -317,17 +318,18 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
   }
   function renderMarkdown(name, text, newItems, untrusted) {
     const wrap = el('div', { class: 'md' });
-    if (untrusted) { wrap.innerHTML = safeBlock(text); return finishMarkdown(wrap); }
-    const req = name === 'outline.md' ? /^## Requirements\s*$/m.exec(text) : null;
-    if (!req) { wrap.innerHTML = block(text); return finishMarkdown(wrap); }
+    // An untrusted file's prose is escaped; its outline section, which the CLI derived, draws as a tree
+    const prose = untrusted ? safeBlock : block;
+    const req = name === 'outline.md' ? /^## (?:Requirements|Outline)\s*$/m.exec(text) : null;
+    if (!req) { wrap.innerHTML = prose(text); return finishMarkdown(wrap); }
     const before = text.slice(0, req.index);
     const rest = text.slice(req.index + req[0].length);
     const next = /^## /m.exec(rest);
     const items = next ? rest.slice(0, next.index) : rest;
-    wrap.innerHTML = block(before) + block('## Requirements');
+    wrap.innerHTML = prose(before) + block(req[0].trim());
     const added = new Set(newItems || []);
     wrap.append(renderOutline(items, text.slice(0, req.index).split('\n').length - 1, (n) => added.has(n)));
-    if (next) wrap.insertAdjacentHTML('beforeend', block(rest.slice(next.index)));
+    if (next) wrap.insertAdjacentHTML('beforeend', prose(rest.slice(next.index)));
     return finishMarkdown(wrap);
   }
   function finishMarkdown(wrap) {

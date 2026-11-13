@@ -112,15 +112,25 @@ describe('outline-spec review --base', () => {
     writeFileSync(path.join(root, 'summary.md'), '# Why\n\n<script>alert(1)</script>\n');
   });
 
-  it('renders Summary, Spec changes and the touched change, with the base and changes in --json', async () => {
-    const r = await cli('review', '--base', 'main', '--summary', 'summary.md', '--title', 'Fix docking', '--out', 'pr.html', '--json');
+  it('renders Outline, --tab tabs, Spec changes and the touched change, with the base and changes in --json', async () => {
+    writeFileSync(path.join(root, 'diagrams.md'), '```mermaid\nflowchart LR\n  A-->B\n```\n');
+    writeFileSync(path.join(root, 'blank.md'), '  \n');
+    const r = await cli('review', '--base', 'main', '--summary', 'summary.md', '--tab', 'Diagrams=diagrams.md', '--tab', 'Empty=blank.md', '--title', 'Fix docking', '--out', 'pr.html', '--json');
     expect(r.exitCode).toBe(0);
     expect(JSON.parse(r.stdout)).toEqual({ path: path.join(root, 'pr.html'), base, changes: ['c1'] });
     const data = payload(readFileSync(path.join(root, 'pr.html'), 'utf-8'));
     expect(data).toMatchObject({ title: 'Fix docking', base, banner: null });
-    expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Summary', 'Spec changes', 'c1 · Outline', 'c1 · Diagrams']);
-    expect(data.tabs[0].files[0]).toMatchObject({ untrusted: true, markdown: '# Why\n\n<script>alert(1)</script>\n' });
-    expect(data.tabs[1].specs[0].requirements[0]).toMatchObject({ name: 'Hulls', kind: 'added' });
+    expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Outline', 'Diagrams', 'Spec changes', 'c1 · Outline', 'c1 · Diagrams']);
+    expect(data.tabs[0].files[0]).toMatchObject({
+      name: 'outline.md',
+      untrusted: true,
+      markdown: '## Summary\n# Why\n\n<script>alert(1)</script>\n\n## Outline\n1. ships:\n  a. Hulls: Every ship has a hull.\n',
+      newItems: [7],
+    });
+    expect(data.tabs[1].files[0]).toMatchObject({ untrusted: true });
+    expect(data.tabs[2].specs[0].requirements[0]).toMatchObject({ name: 'Hulls', kind: 'added' });
+    const html = readFileSync(path.join(root, 'pr.html'), 'utf-8');
+    expect(html).toContain('<title>Fix docking</title>');
   });
 
   it('heads the page with the branch and leaves out a change the work did not touch', async () => {
@@ -129,7 +139,8 @@ describe('outline-spec review --base', () => {
     expect(JSON.parse(r.stdout).changes).toEqual([]);
     const data = payload(readFileSync(path.join(root, 'pr.html'), 'utf-8'));
     expect(data.title).toBe('fix-docking');
-    expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Spec changes']);
+    expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Outline', 'Spec changes']);
+    expect(data.tabs[0].files[0].markdown).toBe('## Outline\n1. ships:\n  a. Hulls: Every ship has a hull.\n');
   });
 
   it('names a touched change that fails validate in the banner', async () => {
@@ -138,12 +149,28 @@ describe('outline-spec review --base', () => {
     expect(data.banner).toMatchObject({ valid: false, errors: ['c1: ships › Nope: no such requirement to patch'] });
   });
 
-  it('gives a repository without outline-spec a Summary-only page', async () => {
+  it('gives a repository without outline-spec an Outline tab with the summary only, then its --tab tabs', async () => {
     rmSync(file(), { recursive: true });
     commit();
-    const r = await cli('review', '--base', 'main', '--summary', 'summary.md', '--out', 'pr.html', '--json');
+    writeFileSync(path.join(root, 'diagrams.md'), 'A view.\n');
+    const r = await cli('review', '--base', 'main', '--summary', 'summary.md', '--tab', 'Diagrams=diagrams.md', '--out', 'pr.html', '--json');
     expect(r.exitCode).toBe(0);
-    expect(payload(readFileSync(path.join(root, 'pr.html'), 'utf-8')).tabs.map((t: { title: string }) => t.title)).toEqual(['Summary']);
+    const data = payload(readFileSync(path.join(root, 'pr.html'), 'utf-8'));
+    expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Outline', 'Diagrams']);
+    expect(data.tabs[0].files[0].markdown).not.toContain('## Outline');
+  });
+
+  it.each(['noequals', '=d.md', 'T='])('fails naming a --tab value without a title and file: %s', async (value) => {
+    const r = await cli('review', '--base', 'main', '--tab', value, '--out', 'pr.html');
+    expect(r.exitCode).toBe(1);
+    expect(r.stderr + r.stdout).toContain(`--tab needs <title>=<file>, got '${value}'`);
+    expect(existsSync(path.join(root, 'pr.html'))).toBe(false);
+  });
+
+  it('splits a --tab value at its first =', async () => {
+    writeFileSync(path.join(root, 'b=c.md'), 'Text.\n');
+    const data = payload(readFileSync(JSON.parse((await cli('review', '--base', 'main', '--tab', 'a=b=c.md', '--out', 'pr.html', '--json')).stdout).path, 'utf-8'));
+    expect(data.tabs.find((t: { title: string }) => t.title === 'a').files[0].name).toBe('b=c.md');
   });
 
   it('fails naming a base git cannot resolve, writing nothing', async () => {
