@@ -4,6 +4,8 @@ import { getSchemaDir, resolveSchema } from '../core/artifact-graph/resolver.js'
 import { readProjectConfig, REVIEW_WORKFLOWS, type ReviewWorkflow } from '../core/project-config.js';
 import { buildBanner, buildBaseSpecChanges, buildTabs, defaultReviewPath, fillTemplate, hasPayloadSlot, type ReviewPageTab } from '../core/review.js';
 import { baseSpecTexts, branchName, changedPaths, repoPath, resolveBase, touchedChanges } from '../core/review-base.js';
+import { buildPullRequestOutline } from '../core/pr-outline.js';
+import { discoverSpecFiles } from '../utils/spec-discovery.js';
 import { resolveOutlineSpecRoot, resolveRootForCommand, type ResolvedOutlineSpecRoot } from '../core/root-selection.js';
 import { Validator } from '../core/validation/validator.js';
 import { readChangeMetadata, resolveSchemaForChange, setChangeReviewUrl } from '../utils/change-metadata.js';
@@ -17,6 +19,7 @@ export interface ReviewOptions {
   base?: string;
   summary?: string;
   title?: string;
+  tab?: string[];
   store?: string;
   storePath?: string;
 }
@@ -55,17 +58,45 @@ async function reviewPullRequest(options: ReviewOptions & { base: string }): Pro
   const cwd = process.cwd();
   const sha = resolveBase(cwd, options.base);
   const root = await nearestRoot();
+  // Every --tab is checked before anything is read or written
+  const extra = (options.tab ?? []).map((value) => {
+    const at = value.indexOf('=');
+    const [title, file] = at < 0 ? ['', ''] : [value.slice(0, at).trim(), value.slice(at + 1).trim()];
+    if (!title || !file) throw new Error(`--tab needs <title>=<file>, got '${value}'`);
+    return { title, file: path.resolve(file) };
+  });
+  const read = (file: string) => readFileSync(file, 'utf-8').replace(/\r\n/g, '\n');
+  const summary = options.summary !== undefined ? read(path.resolve(options.summary)).trim() : '';
+
   const tabs: ReviewPageTab[] = [];
-  if (options.summary !== undefined) {
-    const markdown = readFileSync(path.resolve(options.summary), 'utf-8').replace(/\r\n/g, '\n');
-    tabs.push({ title: 'Summary', kind: 'markdown', files: [{ name: path.basename(options.summary), kind: 'markdown', markdown, untrusted: true }] });
+  let outline = { lines: [] as string[], newLines: [] as number[] };
+  let base: Map<string, string> = new Map();
+  if (root) {
+    base = baseSpecTexts(cwd, sha, repoPath(cwd, root.specsDir));
+    const now = new Map<string, string>();
+    for (const { id, specFile } of await discoverSpecFiles(root.specsDir)) now.set(id, read(specFile));
+    outline = buildPullRequestOutline(base, now);
+  }
+  if (summary || outline.lines.length) {
+    const head = summary ? `## Summary\n${summary}\n\n` : '';
+    const markdown = `${head}${outline.lines.length ? `## Outline\n${outline.lines.join('\n')}\n` : ''}`;
+    const first = head.split('\n').length;
+    tabs.push({
+      title: 'Outline',
+      kind: 'markdown',
+      files: [{ name: 'outline.md', kind: 'markdown', markdown, untrusted: true, ...(outline.newLines.length ? { newItems: outline.newLines.map((i) => first + i) } : {}) }],
+    });
+  }
+  for (const { title, file } of extra) {
+    const markdown = read(file);
+    if (markdown.trim()) tabs.push({ title, kind: 'markdown', files: [{ name: path.basename(file), kind: 'markdown', markdown, untrusted: true }] });
   }
 
   const errors: string[] = [];
   const changes: string[] = [];
   let schemaName = 'outline';
   if (root) {
-    const specs = await buildBaseSpecChanges(root.specsDir, baseSpecTexts(cwd, sha, repoPath(cwd, root.specsDir)));
+    const specs = await buildBaseSpecChanges(root.specsDir, base);
     if (specs.length) tabs.push({ title: 'Spec changes', kind: 'spec-changes', specs });
     const config = readProjectConfig(root.path);
     for (const change of touchedChanges(changedPaths(cwd, sha), repoPath(cwd, root.changesDir), root.changesDir)) {

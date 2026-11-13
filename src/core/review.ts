@@ -102,7 +102,7 @@ function requirementBody(node: Node): string {
 }
 
 /** Diffs whole whitespace-separated words, so `1,400,000` changes as one value; a space between two changes joins them. */
-function wordDiff(live: string, after: string): Segment[] {
+export function wordDiff(live: string, after: string): Segment[] {
   const words = (s: string) => s.split(/(\s+)/).filter(Boolean);
   const parts = diffArrays(words(live), words(after));
   const out: Segment[] = [];
@@ -405,7 +405,9 @@ export const hasPayloadSlot = (template: string): boolean => PAYLOAD.test(templa
 export function fillTemplate(template: string, payload: ReviewPayload): string {
   const json = JSON.stringify(payload).replace(/</g, '\\u003c');
   const name = (payload.title ?? payload.change).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+  const pageTitle = payload.title ? name : `${name} proposal`;
   return template
+    .replace(/\{\{pageTitle\}\}/g, () => pageTitle)
     .replace(/\{\{change\}\}/g, () => name)
     .replace(PAYLOAD, (_m, open: string, close: string) => `${open}${json}${close}`);
 }

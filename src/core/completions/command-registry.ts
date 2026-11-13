@@ -229,7 +229,12 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
       },
       {
         name: 'summary',
-        description: 'With --base, a Markdown file shown first as the Summary tab',
+        description: "With --base, a Markdown summary shown at the top of the Outline tab",
+        takesValue: true,
+      },
+      {
+        name: 'tab',
+        description: 'With --base, add a Markdown tab after Outline (repeatable)',
         takesValue: true,
       },
       {

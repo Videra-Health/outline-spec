@@ -452,11 +452,12 @@ program
   .option('--url <link>', "Record the page's published link without rendering")
   .option('--out <path>', 'Write the page here instead of the temp directory')
   .option('--base <ref>', 'With no change name, render a page for the work since this commit')
-  .option('--summary <file>', 'With --base, a Markdown file shown first as the Summary tab')
+  .option('--summary <file>', "With --base, a Markdown summary shown at the top of the Outline tab")
+  .option('--tab <title=file>', 'With --base, add a Markdown tab after Outline (repeatable)', (v: string, prev: string[]) => [...prev, v], [] as string[])
   .option('--title <text>', 'With --base, the page heading (default: the current branch)')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   .addOption(hiddenStorePathOption())
-  .action(async (changeName: string | undefined, options: { json?: boolean; for?: string; url?: string; out?: string; base?: string; summary?: string; title?: string; store?: string; storePath?: string }) => {
+  .action(async (changeName: string | undefined, options: { json?: boolean; for?: string; url?: string; out?: string; base?: string; summary?: string; tab?: string[]; title?: string; store?: string; storePath?: string }) => {
     try {
       const { reviewCommand } = await import('../commands/review.js');
       await reviewCommand(changeName, options);
