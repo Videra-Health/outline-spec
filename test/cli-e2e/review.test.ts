@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -90,5 +91,78 @@ describe('outline-spec review', () => {
     const r = await cli('review', 'c1', '--json');
     expect(r.exitCode).toBe(1);
     expect(JSON.parse(r.stdout).status[0].message).toMatch(/Schema 'plain' has no review block/);
+  });
+});
+
+describe('outline-spec review --base', () => {
+  const git = (...args: string[]) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' }).trim();
+  const commit = () => {
+    git('add', '-A');
+    git('-c', 'user.name=t', '-c', 'user.email=t@t', 'commit', '-q', '-m', 'c');
+    return git('rev-parse', 'HEAD');
+  };
+  let base: string;
+  beforeEach(() => {
+    git('init', '-q', '-b', 'main');
+    write('changes/stale/outline.md', '## Proposal\nOld.\n\n## Requirements\n1. ships:\n  a. Docking (patch): Ships dock at ~~stations~~ **docks**.\n');
+    base = commit();
+    git('checkout', '-q', '-b', 'fix-docking');
+    write('specs/ships.md', `${SHIPS}2. Hulls: Every ship has a hull.\n`);
+    write('changes/c1/diagrams.md', '# Diagrams\nEdited on the branch.\n');
+    writeFileSync(path.join(root, 'summary.md'), '# Why\n\n<script>alert(1)</script>\n');
+  });
+
+  it('renders Summary, Spec changes and the touched change, with the base and changes in --json', async () => {
+    const r = await cli('review', '--base', 'main', '--summary', 'summary.md', '--title', 'Fix docking', '--out', 'pr.html', '--json');
+    expect(r.exitCode).toBe(0);
+    expect(JSON.parse(r.stdout)).toEqual({ path: path.join(root, 'pr.html'), base, changes: ['c1'] });
+    const data = payload(readFileSync(path.join(root, 'pr.html'), 'utf-8'));
+    expect(data).toMatchObject({ title: 'Fix docking', base, banner: null });
+    expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Summary', 'Spec changes', 'c1 · Outline', 'c1 · Diagrams']);
+    expect(data.tabs[0].files[0]).toMatchObject({ untrusted: true, markdown: '# Why\n\n<script>alert(1)</script>\n' });
+    expect(data.tabs[1].specs[0].requirements[0]).toMatchObject({ name: 'Hulls', kind: 'added' });
+  });
+
+  it('heads the page with the branch and leaves out a change the work did not touch', async () => {
+    rmSync(file('changes', 'c1'), { recursive: true });
+    const r = await cli('review', '--base', 'main', '--out', 'pr.html', '--json');
+    expect(JSON.parse(r.stdout).changes).toEqual([]);
+    const data = payload(readFileSync(path.join(root, 'pr.html'), 'utf-8'));
+    expect(data.title).toBe('fix-docking');
+    expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Spec changes']);
+  });
+
+  it('names a touched change that fails validate in the banner', async () => {
+    write('changes/c1/outline.md', '## Proposal\nWhy.\n\n## Requirements\n1. ships:\n  a. Nope (patch):\n');
+    const data = payload(readFileSync(JSON.parse((await cli('review', '--base', 'main', '--out', 'pr.html', '--json')).stdout).path, 'utf-8'));
+    expect(data.banner).toMatchObject({ valid: false, errors: ['c1: ships › Nope: no such requirement to patch'] });
+  });
+
+  it('gives a repository without outline-spec a Summary-only page', async () => {
+    rmSync(file(), { recursive: true });
+    commit();
+    const r = await cli('review', '--base', 'main', '--summary', 'summary.md', '--out', 'pr.html', '--json');
+    expect(r.exitCode).toBe(0);
+    expect(payload(readFileSync(path.join(root, 'pr.html'), 'utf-8')).tabs.map((t: { title: string }) => t.title)).toEqual(['Summary']);
+  });
+
+  it('fails naming a base git cannot resolve, writing nothing', async () => {
+    const r = await cli('review', '--base', 'nope', '--out', 'pr.html');
+    expect(r.exitCode).toBe(1);
+    expect(r.stderr + r.stdout).toContain("Can't resolve base 'nope' to a commit");
+    expect(existsSync(path.join(root, 'pr.html'))).toBe(false);
+  });
+
+  it('asks for a change or --base when given neither', async () => {
+    const r = await cli('review');
+    expect(r.exitCode).toBe(1);
+    expect(r.stderr + r.stdout).toContain('Name a change to review, or pass --base <ref>');
+  });
+
+  it('leaves the working tree, index and branch as they were', async () => {
+    const before = [git('status', '--porcelain'), git('rev-parse', '--abbrev-ref', 'HEAD')];
+    await cli('review', '--base', 'main', '--out', path.join('..', `${path.basename(root)}-pr.html`));
+    expect([git('status', '--porcelain'), git('rev-parse', '--abbrev-ref', 'HEAD')]).toEqual(before);
+    rmSync(path.join(root, '..', `${path.basename(root)}-pr.html`), { force: true });
   });
 });

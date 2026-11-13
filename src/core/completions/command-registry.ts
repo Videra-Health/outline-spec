@@ -200,10 +200,10 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
   },
   {
     name: 'review',
-    description: "Render a change's review page to an HTML file and print its path",
+    description: "Render a change's review page, or with --base a pull request's, to an HTML file and print its path",
     acceptsPositional: true,
     positionalType: 'change-id',
-    positionals: [{ name: 'change-name', type: 'change-id' }],
+    positionals: [{ name: 'change-name', type: 'change-id', optional: true }],
     flags: [
       COMMON_FLAGS.json,
       {
@@ -220,6 +220,21 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
       {
         name: 'out',
         description: 'Write the page here instead of the temp directory',
+        takesValue: true,
+      },
+      {
+        name: 'base',
+        description: 'With no change name, render a page for the work since this commit',
+        takesValue: true,
+      },
+      {
+        name: 'summary',
+        description: 'With --base, a Markdown file shown first as the Summary tab',
+        takesValue: true,
+      },
+      {
+        name: 'title',
+        description: 'With --base, the page heading (default: the current branch)',
         takesValue: true,
       },
       COMMON_FLAGS.store,

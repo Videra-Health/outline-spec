@@ -2,7 +2,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { buildBanner, buildSpecChanges, buildTabs, fillTemplate, type TableDiff } from '../../src/core/review.js';
+import { readFileSync } from 'node:fs';
+import { buildBanner, buildBaseSpecChanges, buildSpecChanges, buildTabs, fillTemplate, type TableDiff } from '../../src/core/review.js';
 
 const SHIPS = `# ships
 Ships fly between stations.
@@ -242,5 +243,38 @@ describe('fillTemplate', () => {
     expect(html.match(/<\/script>/g)).toHaveLength(1);
     const json = /id="outline-spec-review">([\s\S]*?)<\/script>/.exec(html)![1];
     expect(JSON.parse(json).tabs[0].files[0].markdown).toBe('</script><b>$&</b>');
+  });
+});
+
+describe('buildBaseSpecChanges', () => {
+  it('lists what changed between the base specs and the ones on disk', async () => {
+    write('specs/ships.md', SHIPS.replace('Ships dock at stations.', 'Ships dock at any port.').replace('  a. A hull has 100 armor.\n', '') + '4. Cloaks: Some ships cloak.\n');
+    write('specs/stations.md', '# stations\nWhere ships dock.\n\n1. Berths: A station has berths.\n');
+    const base = new Map([['ships', SHIPS], ['cargo', CARGO], ['old', '# old\nGone.\n\n1. Relic: Still here.\n']]);
+    const out = await buildBaseSpecChanges(specsDir(), base);
+    expect(out.map((s) => [s.name, s.status])).toEqual([['old', 'removed'], ['ships', 'changed'], ['stations', 'new']]);
+    const ships = out.find((s) => s.name === 'ships')!;
+    expect(ships.requirements.map((r) => [r.name, r.kind])).toEqual([['Hulls', 'edited'], ['Docking', 'edited'], ['Cloaks', 'added']]);
+  });
+
+  it('leaves out specs that are the same', async () => {
+    expect(await buildBaseSpecChanges(specsDir(), new Map([['ships', SHIPS], ['cargo', CARGO]]))).toEqual([]);
+  });
+});
+
+describe('review page template', () => {
+  it('declares UTF-8 first', () => {
+    expect(readFileSync(path.join('schemas', 'outline', 'templates', 'review.html'), 'utf-8').startsWith('<meta charset="utf-8">\n')).toBe(true);
+  });
+
+  it('heads the page with a title when the payload has one', () => {
+    const html = fillTemplate('<title>{{change}}</title><script type="application/json" id="outline-spec-review"></script>', {
+      change: 'c1',
+      title: 'Fix <docking>',
+      generatedAt: 'now',
+      banner: null,
+      tabs: [],
+    });
+    expect(html.startsWith('<title>Fix &#60;docking&#62;</title>')).toBe(true);
   });
 });

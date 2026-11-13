@@ -115,6 +115,10 @@ Lists what each open change touches (`spec › requirement › label`; for table
 
 Renders the change's review page to one HTML file and prints its path: a banner for `validate` and overlapping changes, then tabs for the outline, the diagrams, the designs (when the change has any, each running in a sandboxed frame), and the spec changes (each requirement added, edited, or removed; an edit shows as one diff with tables drawn as tables, changed cells marked, and unchanged lines and rows folded). The file goes to `<temp>/outline-spec-review/<project>/<change>.html` and is overwritten on each run. Tabs come from the schema's [review block](schema.md#review) or `review.tabs` in `config.yaml`. Flags: `--json` (`path`, `change`, `reviewUrl`, `enabled`), `--for <propose|update>` (render only when `review-on` includes it, otherwise `enabled: false`), `--out <path>` (write there instead, relative to the current directory), `--url <link>` (record the published link in `.outline-spec.yaml` without rendering), `--store <id>`.
 
+### outline-spec review --base <ref>
+
+Renders one page for a pull request's work: everything between the commit `<ref>` names and the working tree. Tabs, in order: Summary from `--summary <file>` (Markdown and Mermaid; raw HTML shows as text), Spec changes for each spec that differs from the base, then each change with a file added or edited since the base, titled `<change> · <tab>`. The banner appears only when a touched change fails `validate`. A repository with no `outline-spec/` folder gets the Summary tab alone. The base is read through git; nothing in the working tree, index, or branches changes. Flags: `--summary <file>`, `--title <text>` (default: the current branch), `--out <path>`, `--json` (`path`, `base`, `changes`).
+
 ### outline-spec relabel <spec>
 
 Renumbers a spec's labels without gaps. Refused while an open change edits that spec. Flag: `--store <id>`.

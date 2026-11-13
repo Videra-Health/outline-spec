@@ -445,15 +445,18 @@ program
   });
 
 program
-  .command('review <change-name>')
-  .description("Render a change's review page to an HTML file and print its path")
+  .command('review [change-name]')
+  .description("Render a change's review page, or with --base a pull request's, to an HTML file and print its path")
   .option('--json', 'Output as JSON')
   .option('--for <workflow>', 'Render only when review-on includes this workflow (propose or update)')
   .option('--url <link>', "Record the page's published link without rendering")
   .option('--out <path>', 'Write the page here instead of the temp directory')
+  .option('--base <ref>', 'With no change name, render a page for the work since this commit')
+  .option('--summary <file>', 'With --base, a Markdown file shown first as the Summary tab')
+  .option('--title <text>', 'With --base, the page heading (default: the current branch)')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   .addOption(hiddenStorePathOption())
-  .action(async (changeName: string, options: { json?: boolean; for?: string; url?: string; out?: string; store?: string; storePath?: string }) => {
+  .action(async (changeName: string | undefined, options: { json?: boolean; for?: string; url?: string; out?: string; base?: string; summary?: string; title?: string; store?: string; storePath?: string }) => {
     try {
       const { reviewCommand } = await import('../commands/review.js');
       await reviewCommand(changeName, options);
