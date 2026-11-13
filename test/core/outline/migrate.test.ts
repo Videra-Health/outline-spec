@@ -74,6 +74,78 @@ describe('migrateSpec', () => {
     expect(r.text).toContain('1. R: The CLI SHALL:\n  a. respect --no-interactive\n  b. respect CI=1\n  c. S: WHEN x');
   });
 
+  it('joins a wrapped bullet line onto its bullet', () => {
+    const r = migrateSpec(OLD('### Requirement: R\nThe CLI SHALL:\n- respect --no-interactive and\n  the CI variable\n- respect CI=1\n'), 'radar');
+    expect(r.unplaced).toEqual([]);
+    expect(r.text).toContain('1. R: The CLI SHALL:\n  a. respect --no-interactive and the CI variable\n  b. respect CI=1\n');
+  });
+
+  it('turns a paragraph after a list into a detail after the list', () => {
+    const r = migrateSpec(
+      OLD('### Requirement: R\nOrigins SHALL be stored as:\n- lowercased;\n- without a default port.\n\nA refused update SHALL change\nnothing.\n\n#### Scenario: S\n- **WHEN** x\n'),
+      'radar'
+    );
+    expect(r.unplaced).toEqual([]);
+    expect(r.text).toContain(
+      '1. R: Origins SHALL be stored as:\n  a. lowercased;\n  b. without a default port.\n  c. A refused update SHALL change nothing.\n  d. S: WHEN x\n'
+    );
+  });
+
+  it('nests a second list under the paragraph that introduces it', () => {
+    const r = migrateSpec(
+      OLD('### Requirement: R\nEach call SHALL be given:\n- the story;\n- the report.\n\nThe agent SHALL be told:\n- to explain why;\n- to leave out AI attribution.\n'),
+      'radar'
+    );
+    expect(r.unplaced).toEqual([]);
+    expect(r.text).toContain(
+      [
+        '1. R: Each call SHALL be given:',
+        '  a. the story;',
+        '  b. the report.',
+        '  c. The agent SHALL be told:',
+        '    i. to explain why;',
+        '    ii. to leave out AI attribution.',
+      ].join('\n')
+    );
+  });
+
+  it('makes a body table the requirement table, adding an id column when it has none', () => {
+    const r = migrateSpec(
+      OLD('### Requirement: Bands\nA failure SHALL be graded into one band:\n\n| Band | Sentry |\n|---|---|\n| Inert | none |\n| Tracked (2-5 s) | warning |\n'),
+      'radar'
+    );
+    expect(r.unplaced).toEqual([]);
+    expect(parseSpec(r.text, 'x').items[0].table).toEqual({
+      columns: ['id', 'Band', 'Sentry'],
+      rows: [
+        ['inert', 'Inert', 'none'],
+        ['tracked-2-5-s', 'Tracked (2-5 s)', 'warning'],
+      ],
+    });
+  });
+
+  it('keeps dots and underscores in a generated id', () => {
+    const r = migrateSpec(OLD('### Requirement: R\nSentence.\n\n| type | fires when |\n|---|---|\n| `session-report.downloaded` | a report is downloaded |\n'), 'radar');
+    expect(parseSpec(r.text, 'x').items[0].table?.rows[0][0]).toBe('session-report.downloaded');
+  });
+
+  it('keeps a body table whose first column is already id', () => {
+    const r = migrateSpec(OLD('### Requirement: R\nSentence.\n\n| id | Value |\n|---|---|\n| issuer | the site |\n'), 'radar');
+    expect(r.unplaced).toEqual([]);
+    expect(parseSpec(r.text, 'x').items[0].table).toEqual({ columns: ['id', 'Value'], rows: [['issuer', 'the site']] });
+  });
+
+  it('reports a body table whose rows would share an id', () => {
+    const r = migrateSpec(OLD('### Requirement: R\nSentence.\n\n| Name | V |\n|---|---|\n| A b | 1 |\n| a-b | 2 |\n'), 'radar');
+    expect(r.unplaced.map((u) => u.reason)).toEqual(Array(4).fill('table whose rows have no unique id'));
+  });
+
+  it('reads a line starting with # and no space as text, not a heading', () => {
+    const r = migrateSpec(OLD('### Requirement: R\nThe suite SHALL carry manifold-tuatara\n#43. The suite SHALL score it.\n'), 'radar');
+    expect(r.unplaced).toEqual([]);
+    expect(r.text).toContain('1. R: The suite SHALL carry manifold-tuatara #43. The suite SHALL score it.');
+  });
+
   it('keeps a TBD purpose verbatim and reports it', () => {
     const tbd = 'TBD - created by archiving change add-flight-hud. Update Purpose after archive.';
     const r = migrateSpec(OLD('### Requirement: R\nSentence.\n', tbd), 'radar');

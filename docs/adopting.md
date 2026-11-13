@@ -50,11 +50,11 @@ How users sign in.
   a. Signing out ends the session on this device.
 ```
 
-The `## Purpose` text becomes the purpose. Each `### Requirement:` becomes a numbered requirement with its body as the sentence. Bullets in the body and each `#### Scenario:` become details, in that order, and a `#### Details` section that's already a labeled outline is kept. Expect to tighten the converted text by hand afterward; scenarios in particular read better rewritten as plain sentences.
+The `## Purpose` text becomes the purpose. Each `### Requirement:` becomes a numbered requirement with its body as the sentence. Bullets in the body and each `#### Scenario:` become details, in that order, and a `#### Details` section that's already a labeled outline is kept. A bullet's wrapped lines join it. A paragraph after the body's list becomes a detail of its own, and a list that follows that paragraph nests under it. A table in the body becomes the requirement's table; when its first column isn't `id`, an `id` column is added from the first column's text, lowercased with other characters turned to `-`. Expect to tighten the converted text by hand afterward; scenarios in particular read better rewritten as plain sentences.
 
 ## What it can't convert
 
-- **Content with no place in an outline**: code blocks, tables, other `##` sections, other headings, or text before the first requirement. Adopt lists each line with its reason and moves nothing. Rewrite those lines in `openspec/specs/` as requirement text, details, or scenarios, then run it again.
+- **Content with no place in an outline**: code blocks, tables outside a requirement's body, a body table whose rows don't give unique ids, other `##` sections, other headings, or text before the first requirement. Adopt lists each line with its reason and moves nothing. Rewrite those lines in `openspec/specs/` as requirement text, details, or scenarios, then run it again.
 - **Open changes in delta format** (`proposal.md` plus `specs/` deltas). Adopt moves them but can't turn deltas into outline edits, and lists them at the end. Write an `outline.md` for each ([Outlines](outlines.md)), or archive them with OpenSpec before adopting.
 
 Adopt refuses if `outline-spec/` already exists.
