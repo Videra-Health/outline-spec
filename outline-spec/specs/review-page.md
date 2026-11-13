@@ -9,7 +9,9 @@ A rendered page a developer reads to check a change before approving it.
   e. `--for <workflow>` renders only when `review-on` includes that workflow, and otherwise reports `enabled: false` and writes nothing.  
   f. `--url <link>` records the page's published link in the change's `.outline-spec.yaml` without rendering.  
   g. An unknown change name fails with the list of open changes, as `outline-spec status` does.  
-  h. `--out <path>` writes the file to that path instead, resolved against the current directory with the platform's path rules and creating missing parent folders, so an agent can render into a folder its page tool publishes from.
+  h. `--out <path>` writes the file to that path instead, resolved against the current directory with the platform's path rules and creating missing parent folders, so an agent can render into a folder its page tool publishes from.  
+  i. The page declares UTF-8, so its punctuation and symbols render as written even where it is served without a character set.  
+  j. `--base <ref>` with no change name renders the pull request page instead (see Pull request page).
 
 2. Tabs: The page SHALL show one tab per entry in the schema's review block, in order, the first tab open.  
   a. A file tab renders the listed change files as Markdown, in the listed order, skipping any file the change does not have.  
@@ -51,3 +53,17 @@ A rendered page a developer reads to check a change before approving it.
   e. An agent that cannot publish pages gives the developer the file path instead.  
   f. When `review-on` excludes the workflow, the workflow does not render the page or mention it.  
   g. When no developer is in the session, as for a subagent, a headless or scripted run, or CI, the workflow does not render, publish, or open the page, and does not mention it.
+
+8. Pull request page: `outline-spec review --base <ref>` SHALL render one page for the work between the commit `<ref>` names and the current working tree.  
+  a. `--summary <file>` adds a first tab, Summary, rendering that Markdown file with its Mermaid blocks drawn as diagrams.  
+  b. Raw HTML in the summary shows as text and never runs, because an agent or model writes it.  
+  c. A Spec changes tab lists each spec under `outline-spec/specs/` that differs between the base and the working tree, tagged and marked as the Spec changes view marks a change's edits, and is left off when none differ.  
+  d. Each change under `outline-spec/changes/` that has a file added or edited since the base, and still exists in the working tree, gets the file tabs its schema's review block lists, titled `<change> · <tab title>`.  
+  e. A change with no file changed since the base gets no tabs, even though it is open.  
+  f. When a touched change fails `outline-spec validate`, the banner names the change and lists its errors; otherwise the page has no banner.  
+  g. `--title <text>` heads the page; without it the page is headed with the current branch name.  
+  h. A repository with no `outline-spec/` folder still gets a page, with the Summary tab only.  
+  i. A `<ref>` that git can't resolve fails naming the ref, and writes no file.  
+  j. Spec and change paths are matched with `/` on every platform, and `--summary` and `--out` are resolved against the current directory with the platform's path rules, so the page is the same on macOS, Linux, and Windows.  
+  k. The command reads the base through git and never changes the working tree, the index, or any branch.  
+  l. With `--json`, the command prints the file path, the base it compared against, and the names of the changes it rendered.

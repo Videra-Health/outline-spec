@@ -6,8 +6,9 @@ import path from 'node:path';
 import { diffArrays } from 'diff';
 import { collectPending } from '../commands/pending.js';
 import type { ReviewTab } from './artifact-graph/types.js';
-import { marksOf, reqName, sides, touches, writeOutline, type Node, type Spec, type SpecEdit } from './outline/outline.js';
-import { planChange, readChangeEdits, readLiveSpec } from './outline/specs.js';
+import { marksOf, parseSpec, reqName, sides, touches, writeOutline, type Node, type Spec, type SpecEdit } from './outline/outline.js';
+import { planChange, readChangeEdits, readLiveSpec, SPEC_EXT } from './outline/specs.js';
+import { discoverSpecFiles } from '../utils/spec-discovery.js';
 import { isTableLine, parseTable, writeTable, type Table } from './outline/table.js';
 import { Validator } from './validation/validator.js';
 import { isGlobPattern, resolveArtifactOutputs } from './artifact-graph/outputs.js';
@@ -56,6 +57,8 @@ export interface ReviewFile {
   name: string;
   kind: 'markdown' | 'html';
   markdown: string;
+  /** Written by an agent or model, so its raw HTML renders as text. */
+  untrusted?: true;
   /** For `outline.md`, the 0-based lines of items a patch adds, whose label its live requirement lacks. */
   newItems?: number[];
 }
@@ -66,8 +69,13 @@ export type ReviewPageTab =
 
 export interface ReviewPayload {
   change: string;
+  /** Heads the page in place of the change name, as for a pull request. */
+  title?: string;
+  /** The commit a pull request page compares against. */
+  base?: string;
   generatedAt: string;
-  banner: Banner;
+  /** null leaves the page without a banner. */
+  banner: Banner | null;
   tabs: ReviewPageTab[];
 }
 
@@ -297,6 +305,22 @@ export function buildSpecChanges(changesDir: string, specsDir: string, change: s
   return [...plan].map(([name, after]) => compareSpecs(name, readLiveSpec(specsDir, name), after, edits, tablePaths));
 }
 
+/** Every spec that differs between `base` (spec id to text at the base commit) and the specs on disk. */
+export async function buildBaseSpecChanges(specsDir: string, base: Map<string, string>): Promise<SpecChange[]> {
+  const now = new Map<string, string>();
+  for (const { id, specFile } of await discoverSpecFiles(specsDir)) now.set(id, readFileSync(specFile, 'utf-8').replace(/\r\n/g, '\n'));
+  const out: SpecChange[] = [];
+  for (const name of [...new Set([...base.keys(), ...now.keys()])].sort()) {
+    const [was, is] = [base.get(name), now.get(name)];
+    if (was === is) continue;
+    const live = was === undefined ? null : parseSpec(was, `${name}${SPEC_EXT} at base`);
+    const after = is === undefined ? null : parseSpec(is, path.join(specsDir, ...name.split('/')) + SPEC_EXT);
+    const diff = compareSpecs(name, live, after, [], []);
+    if (diff.status !== 'changed' || diff.requirements.length || diff.purpose) out.push(diff);
+  }
+  return out;
+}
+
 const HTML_EXTENSIONS = ['.html', '.htm'];
 const OUTLINE_LINE = /^( *)([0-9]+|[a-z]+)\. (.*)$/;
 
@@ -380,7 +404,7 @@ export const hasPayloadSlot = (template: string): boolean => PAYLOAD.test(templa
 /** Fills the template's payload script and `{{change}}`; `<` is escaped so file text can't end the tag. */
 export function fillTemplate(template: string, payload: ReviewPayload): string {
   const json = JSON.stringify(payload).replace(/</g, '\\u003c');
-  const name = payload.change.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
+  const name = (payload.title ?? payload.change).replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
   return template
     .replace(/\{\{change\}\}/g, () => name)
     .replace(PAYLOAD, (_m, open: string, close: string) => `${open}${json}${close}`);

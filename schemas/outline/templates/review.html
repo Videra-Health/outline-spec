@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>{{change}} proposal</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -224,19 +225,30 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
   const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const inline = (s) => (hasMarked ? marked.parseInline(s) : escapeHtml(s));
   const block = (s) => (hasMarked ? marked.parse(s) : `<pre>${escapeHtml(s)}</pre>`);
+  // An untrusted file's raw HTML and script links show as text
+  const safe = hasMarked && marked.Marked ? new marked.Marked({ renderer: {
+    html: ({ text }) => escapeHtml(text),
+    link({ href, tokens }) { const t = this.parser.parseInline(tokens); return /^\s*(javascript|data|vbscript):/i.test(href) ? t : `<a href="${escapeHtml(href)}">${t}</a>`; },
+    image: ({ href, text }) => (/^\s*(javascript|data|vbscript):/i.test(href) ? escapeHtml(text) : `<img src="${escapeHtml(href)}" alt="${escapeHtml(text)}">`),
+  } }) : null;
+  const safeBlock = (s) => (safe ? safe.parse(s) : `<pre>${escapeHtml(s)}</pre>`);
 
   // Masthead
-  $('#change-name').textContent = data.change || 'Change';
+  $('#change-name').textContent = data.title || data.change || 'Change';
   if (data.generatedAt) {
     const when = new Date(data.generatedAt);
-    $('#generated').textContent = `Rendered ${isNaN(when) ? data.generatedAt : when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`;
+    const base = data.base ? `Compared against ${data.base.slice(0, 7)} · ` : '';
+    $('#generated').textContent = `${base}Rendered ${isNaN(when) ? data.generatedAt : when.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}`;
   }
 
   // Banner
   const banner = $('#banner');
   const b = data.banner || { valid: true, errors: [], overlaps: [] };
   banner.classList.add(b.valid ? 'pass' : 'fail');
-  if (b.valid) {
+  // A pull request page has a banner only when a change it touches fails validate
+  if (data.banner === null) {
+    banner.hidden = true;
+  } else if (b.valid) {
     banner.append(el('div', { class: 'verdict' }, el('span', { class: 'mark', 'aria-hidden': 'true' }, '✓'),
       el('div', { class: 'body' }, el('span', {}, el('strong', {}, 'Passes validate. '), 'The outline archives cleanly against the live specs.'))));
   } else {
@@ -303,8 +315,9 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     full.addEventListener('click', () => box.requestFullscreen?.());
     return el('div', { class: 'file' }, el('div', { class: 'design-head' }, el('span', { class: 'file-name' }, name), full), box);
   }
-  function renderMarkdown(name, text, newItems) {
+  function renderMarkdown(name, text, newItems, untrusted) {
     const wrap = el('div', { class: 'md' });
+    if (untrusted) { wrap.innerHTML = safeBlock(text); return finishMarkdown(wrap); }
     const req = name === 'outline.md' ? /^## Requirements\s*$/m.exec(text) : null;
     if (!req) { wrap.innerHTML = block(text); return finishMarkdown(wrap); }
     const before = text.slice(0, req.index);
@@ -470,7 +483,7 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     else panel.append(el('div', { class: 'files' }, tab.files.map((f) =>
       f.kind === 'html'
         ? renderDesign(f.name, f.markdown)
-        : el('div', { class: 'file' }, tab.files.length > 1 ? el('span', { class: 'file-name' }, f.name) : null, renderMarkdown(f.name, f.markdown, f.newItems)))));
+        : el('div', { class: 'file' }, tab.files.length > 1 ? el('span', { class: 'file-name' }, f.name) : null, renderMarkdown(f.name, f.markdown, f.newItems, f.untrusted)))));
     btn.addEventListener('click', () => select(i, true));
     btn.addEventListener('keydown', (e) => {
       const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
