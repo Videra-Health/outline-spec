@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { getSchemaDir, resolveSchema } from '../core/artifact-graph/resolver.js';
 import { readProjectConfig, REVIEW_WORKFLOWS, type ReviewWorkflow } from '../core/project-config.js';
-import { buildBanner, buildBaseSpecChanges, buildTabs, defaultReviewPath, fillTemplate, hasPayloadSlot, type ReviewPageTab } from '../core/review.js';
+import { buildBanner, buildBaseSpecChanges, buildTabs, defaultReviewPath, fillTemplate, hasPayloadSlot, type ReviewFile, type ReviewPageTab } from '../core/review.js';
 import { baseSpecTexts, branchName, changedPaths, repoPath, resolveBase, touchedChanges } from '../core/review-base.js';
 import { buildPullRequestOutline } from '../core/pr-outline.js';
 import { discoverSpecFiles } from '../utils/spec-discovery.js';
@@ -53,6 +53,20 @@ async function nearestRoot(): Promise<ResolvedOutlineSpecRoot | null> {
   }
 }
 
+/** The items under a change outline's `## Requirements`, with its new-item lines counted from the first item. */
+function requirementLines(file: ReviewFile): { lines: string[]; newLines: number[] } | null {
+  const all = file.markdown.split('\n');
+  const at = all.findIndex((l) => /^## Requirements\s*$/.test(l));
+  if (at < 0) return null;
+  const end = all.findIndex((l, i) => i > at && /^## /.test(l));
+  const lines = all.slice(at + 1, end < 0 ? undefined : end);
+  while (lines.length && !lines[lines.length - 1]!.trim()) lines.pop();
+  while (lines.length && !lines[0]!.trim()) lines.shift();
+  const skipped = all.slice(at + 1).findIndex((l) => l.trim());
+  const newLines = (file.newItems ?? []).map((i) => i - (at + 1 + skipped)).filter((i) => i >= 0 && i < lines.length);
+  return { lines, newLines };
+}
+
 /** Renders one page for the work between `options.base` and the working tree. */
 async function reviewPullRequest(options: ReviewOptions & { base: string }): Promise<void> {
   const cwd = process.cwd();
@@ -68,15 +82,48 @@ async function reviewPullRequest(options: ReviewOptions & { base: string }): Pro
   const read = (file: string) => readFileSync(file, 'utf-8').replace(/\r\n/g, '\n');
   const summary = options.summary !== undefined ? read(path.resolve(options.summary)).trim() : '';
 
-  const tabs: ReviewPageTab[] = [];
   let outline = { lines: [] as string[], newLines: [] as number[] };
   let base: Map<string, string> = new Map();
+  let specChanges: ReviewPageTab | null = null;
+  // Touched changes fold into the page's tabs by title: outlines into Outline, the rest replacing a --tab
+  const folded = new Map<string, ReviewFile[]>();
+  const errors: string[] = [];
+  const changes: string[] = [];
+  let schemaName = 'outline';
   if (root) {
     base = baseSpecTexts(cwd, sha, repoPath(cwd, root.specsDir));
     const now = new Map<string, string>();
     for (const { id, specFile } of await discoverSpecFiles(root.specsDir)) now.set(id, read(specFile));
     outline = buildPullRequestOutline(base, now);
+    const specs = await buildBaseSpecChanges(root.specsDir, base);
+    if (specs.length) specChanges = { title: 'Spec changes', kind: 'spec-changes', specs };
+    const config = readProjectConfig(root.path);
+    for (const change of touchedChanges(changedPaths(cwd, sha), repoPath(cwd, root.changesDir), root.changesDir)) {
+      const changeSchema = resolveSchemaForChange(path.join(root.changesDir, change), undefined, root.path);
+      const review = resolveSchema(changeSchema, root.path).review;
+      if (!review) continue;
+      const fileTabs = (config?.review?.tabs ?? review.tabs).filter((t) => !t.view);
+      for (const tab of buildTabs(root.changesDir, root.specsDir, change, fileTabs)) {
+        if (tab.kind !== 'markdown') continue;
+        for (const f of tab.files) {
+          if (f.name !== 'outline.md') {
+            folded.set(tab.title, [...(folded.get(tab.title) ?? []), f]);
+            continue;
+          }
+          const reqs = requirementLines(f);
+          if (!reqs) continue;
+          outline.newLines.push(...reqs.newLines.map((i) => outline.lines.length + i));
+          outline.lines.push(...reqs.lines);
+        }
+      }
+      const report = await new Validator().validateChange(path.join(root.changesDir, change), { specsDir: root.specsDir, projectRoot: root.path });
+      errors.push(...report.issues.filter((i) => i.level === 'ERROR').map((i) => `${change}: ${i.message}`));
+      changes.push(change);
+    }
+    schemaName = config?.schema ?? schemaName;
   }
+
+  const tabs: ReviewPageTab[] = [];
   if (summary || outline.lines.length) {
     const head = summary ? `## Summary\n${summary}\n\n` : '';
     const markdown = `${head}${outline.lines.length ? `## Outline\n${outline.lines.join('\n')}\n` : ''}`;
@@ -87,30 +134,16 @@ async function reviewPullRequest(options: ReviewOptions & { base: string }): Pro
       files: [{ name: 'outline.md', kind: 'markdown', markdown, untrusted: true, ...(outline.newLines.length ? { newItems: outline.newLines.map((i) => first + i) } : {}) }],
     });
   }
+  // A change's tab takes the place of a --tab with its title; the rest follow the --tab tabs
   for (const { title, file } of extra) {
-    const markdown = read(file);
-    if (markdown.trim()) tabs.push({ title, kind: 'markdown', files: [{ name: path.basename(file), kind: 'markdown', markdown, untrusted: true }] });
+    const files = folded.get(title);
+    folded.delete(title);
+    const markdown = files ? '' : read(file);
+    if (files) tabs.push({ title, kind: 'markdown', files });
+    else if (markdown.trim()) tabs.push({ title, kind: 'markdown', files: [{ name: path.basename(file), kind: 'markdown', markdown, untrusted: true }] });
   }
-
-  const errors: string[] = [];
-  const changes: string[] = [];
-  let schemaName = 'outline';
-  if (root) {
-    const specs = await buildBaseSpecChanges(root.specsDir, base);
-    if (specs.length) tabs.push({ title: 'Spec changes', kind: 'spec-changes', specs });
-    const config = readProjectConfig(root.path);
-    for (const change of touchedChanges(changedPaths(cwd, sha), repoPath(cwd, root.changesDir), root.changesDir)) {
-      const changeSchema = resolveSchemaForChange(path.join(root.changesDir, change), undefined, root.path);
-      const review = resolveSchema(changeSchema, root.path).review;
-      if (!review) continue;
-      const fileTabs = (config?.review?.tabs ?? review.tabs).filter((t) => !t.view);
-      for (const tab of buildTabs(root.changesDir, root.specsDir, change, fileTabs)) tabs.push({ ...tab, title: `${change} · ${tab.title}` });
-      const report = await new Validator().validateChange(path.join(root.changesDir, change), { specsDir: root.specsDir, projectRoot: root.path });
-      errors.push(...report.issues.filter((i) => i.level === 'ERROR').map((i) => `${change}: ${i.message}`));
-      changes.push(change);
-    }
-    schemaName = config?.schema ?? schemaName;
-  }
+  for (const [title, files] of folded) tabs.push({ title, kind: 'markdown', files });
+  if (specChanges) tabs.push(specChanges);
 
   const schema = resolveSchema(schemaName, root?.path);
   if (!schema.review) throw new Error(`Schema '${schemaName}' has no review block, so there is no review page.`);

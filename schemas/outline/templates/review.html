@@ -225,9 +225,10 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
   const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const inline = (s) => (hasMarked ? marked.parseInline(s) : escapeHtml(s));
   const block = (s) => (hasMarked ? marked.parse(s) : `<pre>${escapeHtml(s)}</pre>`);
-  // An untrusted file's raw HTML and script links show as text
+  // An untrusted file's raw HTML and script links show as text, except bare tags that only style text
+  const styleTag = /^\s*<\/?(sub|sup|br)\s*\/?>\s*$/i;
   const safe = hasMarked && marked.Marked ? new marked.Marked({ renderer: {
-    html: ({ text }) => escapeHtml(text),
+    html: ({ text }) => (styleTag.test(text) ? text.trim() : escapeHtml(text)),
     link({ href, tokens }) { const t = this.parser.parseInline(tokens); return /^\s*(javascript|data|vbscript):/i.test(href) ? t : `<a href="${escapeHtml(href)}">${t}</a>`; },
     image: ({ href, text }) => (/^\s*(javascript|data|vbscript):/i.test(href) ? escapeHtml(text) : `<img src="${escapeHtml(href)}" alt="${escapeHtml(text)}">`),
   } }) : null;

@@ -112,25 +112,41 @@ describe('outline-spec review --base', () => {
     writeFileSync(path.join(root, 'summary.md'), '# Why\n\n<script>alert(1)</script>\n');
   });
 
-  it('renders Outline, --tab tabs, Spec changes and the touched change, with the base and changes in --json', async () => {
+  it('folds the touched change into Outline and in place of the --tab it shares a title with, with the base and changes in --json', async () => {
     writeFileSync(path.join(root, 'diagrams.md'), '```mermaid\nflowchart LR\n  A-->B\n```\n');
+    writeFileSync(path.join(root, 'notes.md'), 'Notes.\n');
     writeFileSync(path.join(root, 'blank.md'), '  \n');
-    const r = await cli('review', '--base', 'main', '--summary', 'summary.md', '--tab', 'Diagrams=diagrams.md', '--tab', 'Empty=blank.md', '--title', 'Fix docking', '--out', 'pr.html', '--json');
+    const r = await cli('review', '--base', 'main', '--summary', 'summary.md', '--tab', 'Diagrams=diagrams.md', '--tab', 'Notes=notes.md', '--tab', 'Empty=blank.md', '--title', 'Fix docking', '--out', 'pr.html', '--json');
     expect(r.exitCode).toBe(0);
     expect(JSON.parse(r.stdout)).toEqual({ path: path.join(root, 'pr.html'), base, changes: ['c1'] });
     const data = payload(readFileSync(path.join(root, 'pr.html'), 'utf-8'));
     expect(data).toMatchObject({ title: 'Fix docking', base, banner: null });
-    expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Outline', 'Diagrams', 'Spec changes', 'c1 · Outline', 'c1 · Diagrams']);
+    expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Outline', 'Diagrams', 'Notes', 'Spec changes']);
     expect(data.tabs[0].files[0]).toMatchObject({
       name: 'outline.md',
       untrusted: true,
-      markdown: '## Summary\n# Why\n\n<script>alert(1)</script>\n\n## Outline\n1. ships:\n  a. Hulls: Every ship has a hull.\n',
+      markdown:
+        '## Summary\n# Why\n\n<script>alert(1)</script>\n\n## Outline\n1. ships:\n  a. Hulls: Every ship has a hull.\n' +
+        '1. ships:\n  a. Docking (patch): Ships dock at ~~stations~~ **ports**.\n',
       newItems: [7],
     });
-    expect(data.tabs[1].files[0]).toMatchObject({ untrusted: true });
-    expect(data.tabs[2].specs[0].requirements[0]).toMatchObject({ name: 'Hulls', kind: 'added' });
+    expect(data.tabs[1].files).toEqual([{ name: 'diagrams.md', kind: 'markdown', markdown: '# Diagrams\nEdited on the branch.\n' }]);
+    expect(data.tabs[2].files[0]).toMatchObject({ untrusted: true, markdown: 'Notes.\n' });
+    expect(data.tabs[3].specs[0].requirements[0]).toMatchObject({ name: 'Hulls', kind: 'added' });
     const html = readFileSync(path.join(root, 'pr.html'), 'utf-8');
     expect(html).toContain('<title>Fix docking</title>');
+  });
+
+  it("gives a touched change's tab its own title when no --tab shares it", async () => {
+    const data = payload(readFileSync(JSON.parse((await cli('review', '--base', 'main', '--out', 'pr.html', '--json')).stdout).path, 'utf-8'));
+    expect(data.tabs.map((t: { title: string }) => t.title)).toEqual(['Outline', 'Diagrams', 'Spec changes']);
+  });
+
+  it("marks the items a touched change's patch adds as new in the Outline tab", async () => {
+    write('changes/c1/outline.md', '## Proposal\nWhy.\n\n## Requirements\n1. ships:\n  a. Docking (patch):\n    a. Ships wait for clearance.\n');
+    const data = payload(readFileSync(JSON.parse((await cli('review', '--base', 'main', '--out', 'pr.html', '--json')).stdout).path, 'utf-8'));
+    const lines = data.tabs[0].files[0].markdown.split('\n');
+    expect(data.tabs[0].files[0].newItems.map((i: number) => lines[i])).toContain('    a. Ships wait for clearance.');
   });
 
   it('heads the page with the branch and leaves out a change the work did not touch', async () => {
