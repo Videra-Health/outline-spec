@@ -1,0 +1,47 @@
+name: Latest build
+
+# Every push to main replaces the `latest` release's tarball: the CLI installed with its runtime
+# dependencies, so a workflow untars it and runs `bin/outline-spec` with no npm and no build.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: latest-build
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Build
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+          pnpm build
+      - name: Pack with runtime dependencies
+        run: |
+          pnpm pack --pack-destination "$RUNNER_TEMP"
+          npm install -g --prefix "$RUNNER_TEMP/pkg" "$RUNNER_TEMP"/outline-spec-*.tgz
+          "$RUNNER_TEMP/pkg/bin/outline-spec" --version
+          git rev-parse HEAD > "$RUNNER_TEMP/pkg/COMMIT"
+          tar -czf "$RUNNER_TEMP/outline-spec.tar.gz" -C "$RUNNER_TEMP/pkg" .
+      - name: Replace the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view latest >/dev/null 2>&1; then
+            gh release create latest --prerelease --target "$GITHUB_SHA" --title "Latest main" --notes "Built from $GITHUB_SHA"
+          fi
+          gh api -X PATCH "repos/$GITHUB_REPOSITORY/git/refs/tags/latest" -f sha="$GITHUB_SHA" -F force=true >/dev/null
+          gh release upload latest "$RUNNER_TEMP/outline-spec.tar.gz" --clobber
+          gh release edit latest --notes "Built from $GITHUB_SHA"
