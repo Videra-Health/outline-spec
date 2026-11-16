@@ -20,9 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      # setup-node's pnpm cache runs before `corepack enable` puts pnpm on the PATH.
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+          package-manager-cache: false
       - name: Build
         run: |
           corepack enable
