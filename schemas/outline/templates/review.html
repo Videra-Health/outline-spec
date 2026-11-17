@@ -24,6 +24,11 @@
   --pass: #12602d;
   --fail: #a01d1d;
   --warn: #6b4a00;
+  --code-kw: #8a2b8f;
+  --code-str: #1a6b37;
+  --code-com: #6b7685;
+  --code-fn: #1d5c86;
+  --code-lit: #9a4a00;
   --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
@@ -39,6 +44,7 @@
     --ink: #7fbbe6; --ink-soft: #1b3346;
     --add-fg: #8fe0a6; --add-bg: #143823; --del-fg: #ffaaa2; --del-bg: #4a1d1f; --edit-fg: #f2cd73; --edit-bg: #3b2f10;
     --pass: #8fe0a6; --fail: #ffaaa2; --warn: #f2cd73;
+    --code-kw: #e19ae6; --code-str: #8fe0a6; --code-com: #8692a1; --code-fn: #7fbbe6; --code-lit: #f2b56b;
     color-scheme: dark;
   }
 }
@@ -47,6 +53,7 @@
   --ink: #7fbbe6; --ink-soft: #1b3346;
   --add-fg: #8fe0a6; --add-bg: #143823; --del-fg: #ffaaa2; --del-bg: #4a1d1f; --edit-fg: #f2cd73; --edit-bg: #3b2f10;
   --pass: #8fe0a6; --fail: #ffaaa2; --warn: #f2cd73;
+  --code-kw: #e19ae6; --code-str: #8fe0a6; --code-com: #8692a1; --code-fn: #7fbbe6; --code-lit: #f2b56b;
   color-scheme: dark;
 }
 
@@ -106,6 +113,17 @@ body {
 .md pre { background: var(--sunk); padding: 0.85rem 1rem; border-radius: 6px; overflow-x: auto; line-height: 1.45; }
 .md pre code { background: none; padding: 0; font-size: var(--step--1); overflow-wrap: normal; }
 .md sub { color: var(--muted); font-size: var(--step--1); }
+/* Code: highlighted from the page tokens; a diff shades its added and removed lines across the block's full width */
+.md pre code.diff { display: inline-block; min-width: 100%; }
+.diff-line { display: block; padding-right: 0.5rem; }
+.diff-line.add { background: var(--add-bg); }
+.diff-line.del { background: var(--del-bg); }
+.diff-mark { display: inline-block; width: 1.2em; color: var(--muted); user-select: none; }
+.hljs-keyword, .hljs-selector-tag, .hljs-meta, .hljs-type { color: var(--code-kw); }
+.hljs-string, .hljs-regexp, .hljs-symbol, .hljs-attr { color: var(--code-str); }
+.hljs-comment, .hljs-quote { color: var(--code-com); font-style: italic; }
+.hljs-title, .hljs-name, .hljs-function, .hljs-built_in, .hljs-section { color: var(--code-fn); }
+.hljs-number, .hljs-literal, .hljs-variable, .hljs-template-variable { color: var(--code-lit); }
 .md blockquote { margin: 0 0 0.85rem; padding-left: 1rem; border-left: 3px solid var(--rule); color: var(--muted); }
 .table-wrap { overflow-x: auto; margin: 0 0 0.85rem; }
 .md table, .req-text table { border-collapse: collapse; font-size: var(--step--1); font-variant-numeric: tabular-nums; }
@@ -209,6 +227,8 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
 <script type="application/json" id="outline-spec-review"></script>
 <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.11.1/languages/clojure.min.js"></script>
 <script>
 (function () {
   const data = JSON.parse(document.getElementById('outline-spec-review').textContent || '{}');
@@ -225,9 +245,10 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
   const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
   const inline = (s) => (hasMarked ? marked.parseInline(s) : escapeHtml(s));
   const block = (s) => (hasMarked ? marked.parse(s) : `<pre>${escapeHtml(s)}</pre>`);
-  // An untrusted file's raw HTML and script links show as text
+  // An untrusted file's raw HTML and script links show as text, except bare tags that only style text
+  const styleTag = /^\s*<\/?(sub|sup|br)\s*\/?>\s*$/i;
   const safe = hasMarked && marked.Marked ? new marked.Marked({ renderer: {
-    html: ({ text }) => escapeHtml(text),
+    html: ({ text }) => (styleTag.test(text) ? text.trim() : escapeHtml(text)),
     link({ href, tokens }) { const t = this.parser.parseInline(tokens); return /^\s*(javascript|data|vbscript):/i.test(href) ? t : `<a href="${escapeHtml(href)}">${t}</a>`; },
     image: ({ href, text }) => (/^\s*(javascript|data|vbscript):/i.test(href) ? escapeHtml(text) : `<img src="${escapeHtml(href)}" alt="${escapeHtml(text)}">`),
   } }) : null;
@@ -345,7 +366,29 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
       code.parentElement.replaceWith(d);
       diagrams.push(d);
     });
+    wrap.querySelectorAll('pre > code').forEach(highlightCode);
     return wrap;
+  }
+
+  // A fenced language is highlighted as named; a diff block's language is guessed from its lines, and plain pseudocode stays plain
+  const hasHljs = typeof window.hljs !== 'undefined';
+  const GUESS_FROM = ['clojure', 'sql', 'typescript', 'javascript', 'yaml', 'json', 'bash', 'python', 'graphql', 'java'];
+  const paint = (text, lang) => (lang ? hljs.highlight(text, { language: lang, ignoreIllegals: true }).value : escapeHtml(text));
+  function highlightCode(codeEl) {
+    if (!hasHljs) return;
+    const lang = (/language-([\w-]+)/.exec(codeEl.className) || [])[1];
+    const text = codeEl.textContent.replace(/\n$/, '');
+    if (lang !== 'diff') {
+      if (lang && hljs.getLanguage(lang)) codeEl.innerHTML = paint(text, lang);
+      return;
+    }
+    const lines = text.split('\n').map((l) => ({ mark: /^[+-]/.test(l) ? l[0] : '', code: /^[+\- ]/.test(l) ? l.slice(1) : l }));
+    const guess = hljs.highlightAuto(lines.map((l) => l.code).join('\n'), GUESS_FROM);
+    const inner = guess.relevance >= 5 ? guess.language : null;
+    codeEl.classList.add('diff');
+    codeEl.innerHTML = lines
+      .map((l) => `<span class="diff-line${l.mark === '+' ? ' add' : l.mark === '-' ? ' del' : ''}"><span class="diff-mark">${l.mark || ' '}</span>${paint(l.code, inner) || ' '}</span>`)
+      .join('');
   }
 
   // Spec changes
