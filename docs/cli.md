@@ -155,7 +155,16 @@ Checks that specs parse as outlines with a purpose and well-formed labels, and t
 | `--strict` | Treat warnings as failures. |
 | `--report full\|findings` | Bulk report content. |
 | `--concurrency <n>` | Parallel validations (default 6, or `OUTLINE_SPEC_CONCURRENCY`). |
+| `--markdown <file...>` | Check only the Mermaid blocks in these Markdown files, in any folder, with or without `outline-spec/`. Repeatable. Combines with `--json`. |
 | `--json`, `--no-interactive`, `--store <id>` | |
+
+`--markdown` checks the blocks the review page draws: a fence whose info string starts with `mermaid`, not inside another fence. It exits 1 when a block doesn't parse or a file can't be read. With `--json`, each file is an item of type `markdown`, in the order given, and each Mermaid issue carries `file`, `line` (the opening fence), and `error` (Mermaid's message). A CI step can check model-written Markdown before publishing it:
+
+```bash
+outline-spec validate --markdown summary.md diagrams.md --json > mermaid.json || echo "fix the blocks in mermaid.json"
+```
+
+When Mermaid itself can't load, the output has a `status` error and no `items`.
 
 ### outline-spec spec show|list|validate
 

@@ -6,6 +6,10 @@ export interface ValidationIssue {
   message: string;
   line?: number;
   column?: number;
+  /** The Markdown file a Mermaid issue is in. */
+  file?: string;
+  /** Mermaid's parse message on one line. */
+  error?: string;
 }
 
 export interface ValidationReport {

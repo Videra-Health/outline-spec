@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { Validator } from '../../src/core/validation/validator.js';
+import { mermaidBlocks } from '../../src/core/validation/mermaid.js';
 
 const spec = (items: string, purpose = 'What it is for.') => `# radar\n${purpose}\n\n${items}`;
 const check = async (text: string, strict = false) => new Validator(strict).validateSpecContent('radar', text);
@@ -156,7 +157,11 @@ describe('validateChange', () => {
       '```mermaid', 'sequenceDiagram', '  participant Loop as tick', '  participant C', '  Loop->>C: a', '  C-->>Loop: b', '```',
     ].join('\n'));
     const issues = (await validate()).issues.filter((i) => i.level === 'ERROR');
-    expect(issues).toEqual([{ level: 'ERROR', path: 'diagrams.md:9', message: expect.stringMatching(/^Mermaid diagram does not parse: Parse error on line 5/) }]);
+    expect(issues).toEqual([{
+      level: 'ERROR', path: 'diagrams.md:9', message: expect.stringMatching(/^Mermaid diagram does not parse: Parse error on line 5/),
+      file: 'diagrams.md', line: 9, error: expect.stringMatching(/^Parse error on line 5/),
+    }]);
+    expect(issues[0].message).toBe(`Mermaid diagram does not parse: ${issues[0].error}`);
   }, 30_000);
 
   it('notes an outline that edits no specs', async () => {
@@ -176,5 +181,26 @@ describe('validateChange metadata keys', () => {
     rmSync(root, { recursive: true, force: true });
     expect(r.valid).toBe(false);
     expect(r.issues).toContainEqual(expect.objectContaining({ level: 'WARNING', path: '.outline-spec.yaml', message: expect.stringContaining('skip_specs') }));
+  });
+});
+
+describe('mermaidBlocks', () => {
+  it('finds the blocks the review page draws, by their opening fence', () => {
+    const md = ['```mermaid', 'flowchart LR', '```', '', '``` mermaid title="x"', 'graph TD', '```', '', '~~~~mermaid', 'pie', '~~~~'].join('\n');
+    expect(mermaidBlocks(md)).toEqual([
+      { line: 1, source: 'flowchart LR' },
+      { line: 5, source: 'graph TD' },
+      { line: 9, source: 'pie' },
+    ]);
+  });
+
+  it('skips a mermaid fence shown inside another fenced block', () => {
+    const md = ['````markdown', '```mermaid', 'sequenceDiagram', '  participant Note', '```', '````', '', '```mermaid', 'flowchart LR', '```'].join('\n');
+    expect(mermaidBlocks(md)).toEqual([{ line: 8, source: 'flowchart LR' }]);
+  });
+
+  it('ignores fences for other languages and words that only start with mermaid', () => {
+    const md = ['```mermaidjs', 'x', '```', '```text', 'graph TD', '```', '```mermaid```'].join('\n');
+    expect(mermaidBlocks(md)).toEqual([]);
   });
 });
