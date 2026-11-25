@@ -1,23 +1,28 @@
-/** Finds Mermaid blocks in a change's Markdown files that Mermaid can't parse. */
+/** Finds Mermaid blocks in Markdown that Mermaid can't parse. */
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { ValidationIssue } from './types.js';
 
 export const MERMAID_ISSUE = 'Mermaid diagram does not parse';
-const FENCE = /^(\s*)(`{3,}|~{3,})\s*mermaid\s*$/;
+export const MERMAID_FIX_HINT = 'Fix each Mermaid block so it parses; a name that is a Mermaid keyword (loop, end, alt, opt, note) is a common cause';
 
-/** Each fenced mermaid block in `markdown`, with the 1-based line of its opening fence. */
+const OPEN = /^\s*(`{3,}|~{3,})(.*)$/;
+
+/** Each fenced mermaid block in `markdown`, with the 1-based line of its opening fence, as the review page finds them. */
 export function mermaidBlocks(markdown: string): Array<{ line: number; source: string }> {
   const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
   const blocks: Array<{ line: number; source: string }> = [];
   for (let i = 0; i < lines.length; i++) {
-    const open = FENCE.exec(lines[i]);
+    const open = OPEN.exec(lines[i]);
     if (!open) continue;
-    const close = new RegExp(`^\\s*${open[2][0]}{${open[2].length},}\\s*$`);
+    const [, fence, info] = open;
+    // A backtick fence's info string can't contain a backtick (CommonMark).
+    if (fence[0] === '`' && info.includes('`')) continue;
+    const close = new RegExp(`^\\s*${fence[0]}{${fence.length},}\\s*$`);
     const body: string[] = [];
     let j = i + 1;
     while (j < lines.length && !close.test(lines[j])) body.push(lines[j++]);
-    blocks.push({ line: i + 1, source: body.join('\n') });
+    if (info.trim().split(/\s+/)[0] === 'mermaid') blocks.push({ line: i + 1, source: body.join('\n') });
     i = j;
   }
   return blocks;
@@ -26,7 +31,7 @@ export function mermaidBlocks(markdown: string): Array<{ line: number; source: s
 type Parse = (source: string) => Promise<unknown>;
 let parser: Promise<Parse> | undefined;
 
-// Mermaid's sanitizer needs a DOM, so it loads behind a jsdom window, once, and only when a change has diagrams.
+// Mermaid's sanitizer needs a DOM, so it loads behind a jsdom window, once, and only when there are diagrams.
 function loadParser(): Promise<Parse> {
   parser ??= (async () => {
     const { JSDOM } = await import('jsdom');
@@ -42,6 +47,29 @@ function loadParser(): Promise<Parse> {
   return parser;
 }
 
+/** Mermaid's message on one line, without the caret line that points into the block. */
+function oneLine(error: unknown): string {
+  return String((error as Error)?.message ?? error).split('\n').map((l) => l.trim()).filter((l) => l && !/^-*\^$/.test(l)).join(' ');
+}
+
+/** One error per Mermaid block in `text` that fails to parse, reported against `file`. */
+export async function mermaidIssuesIn(file: string, text: string): Promise<ValidationIssue[]> {
+  const blocks = mermaidBlocks(text);
+  if (!blocks.length) return [];
+  const parse = await loadParser();
+  const issues: ValidationIssue[] = [];
+  for (const b of blocks) {
+    try {
+      await parse(b.source);
+    } catch (error) {
+      const detail = oneLine(error);
+      issues.push({ level: 'ERROR', path: `${file}:${b.line}`, message: `${MERMAID_ISSUE}: ${detail}`, file, line: b.line, error: detail });
+    }
+  }
+  return issues;
+}
+
+/** Markdown files under `dir`, relative to it and written with `/`, in name order. */
 async function markdownFiles(dir: string, rel = ''): Promise<string[]> {
   const entries = await fs.readdir(path.join(dir, rel), { withFileTypes: true }).catch(() => []);
   const out: string[] = [];
@@ -55,22 +83,36 @@ async function markdownFiles(dir: string, rel = ''): Promise<string[]> {
 
 /** One error per Mermaid block in the change's Markdown files that fails to parse. */
 export async function findMermaidIssues(changeDir: string): Promise<ValidationIssue[]> {
-  const found: Array<{ file: string; line: number; source: string }> = [];
+  const issues: ValidationIssue[] = [];
   for (const file of await markdownFiles(changeDir)) {
     // Unreadable files are reported by the checks that own them.
-    const text = await fs.readFile(path.join(changeDir, file), 'utf-8').catch(() => '');
-    for (const b of mermaidBlocks(text)) found.push({ file, ...b });
-  }
-  if (!found.length) return [];
-  const parse = await loadParser();
-  const issues: ValidationIssue[] = [];
-  for (const b of found) {
-    try {
-      await parse(b.source);
-    } catch (error) {
-      const detail = String((error as Error)?.message ?? error).split('\n').map((l) => l.trim()).filter((l) => l && !/^-*\^$/.test(l)).join(' ');
-      issues.push({ level: 'ERROR', path: `${b.file}:${b.line}`, message: `${MERMAID_ISSUE}: ${detail}` });
-    }
+    const text = await fs.readFile(path.join(changeDir, ...file.split('/')), 'utf-8').catch(() => '');
+    issues.push(...await mermaidIssuesIn(file, text));
   }
   return issues;
+}
+
+export interface MarkdownFileResult {
+  /** The path as given. */
+  file: string;
+  issues: ValidationIssue[];
+  durationMs: number;
+}
+
+/** Checks each file's Mermaid blocks, in the order given; rejects when Mermaid can't load. */
+export async function checkMarkdownFiles(files: string[], cwd = process.cwd()): Promise<MarkdownFileResult[]> {
+  const results: MarkdownFileResult[] = [];
+  for (const file of files) {
+    const start = Date.now();
+    let text: string;
+    try {
+      text = await fs.readFile(path.resolve(cwd, file), 'utf-8');
+    } catch (error) {
+      const reason = (error as NodeJS.ErrnoException)?.code === 'ENOENT' ? 'no such file' : oneLine(error);
+      results.push({ file, issues: [{ level: 'ERROR', path: file, message: `Cannot read ${file}: ${reason}`, file }], durationMs: Date.now() - start });
+      continue;
+    }
+    results.push({ file, issues: await mermaidIssuesIn(file, text), durationMs: Date.now() - start });
+  }
+  return results;
 }

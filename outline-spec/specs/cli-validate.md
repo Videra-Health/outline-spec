@@ -45,7 +45,7 @@ Define `outline-spec validate` behavior for validating changes and specs with ac
 9. Validation options and progress indication: The validate command SHALL support standard validation options (--strict, --json) and display progress during bulk operations.  
   a. Strict validation: WHEN executing `outline-spec validate --all --strict` THEN apply strict validation to all items AND treat warnings as errors AND fail if any item has warnings or errors  
   b. JSON output: WHEN executing `outline-spec validate --all --json` THEN output validation results as JSON AND include detailed issues for each item AND include summary statistics  
-  c. JSON output schema for bulk validation: WHEN executing `outline-spec validate --all --json` (or `--changes` / `--specs`) THEN output a JSON object with the following shape: `items`: Array of objects with fields `{ id: string, type: "change"|"spec", valid: boolean, issues: Issue[], durationMs: number }` `summary`: Object `{ totals: { items: number, passed: number, failed: number }, byType: { change?: { items: number, passed: number, failed: number }, spec?: { items: number, passed: number, failed: number } } }` `version`: String identifier for the schema (e.g., `"1.0"`) AND exit with code 1 if any `items[].valid === false` Where `Issue` follows the existing per-item validation report shape `{ level: "ERROR"|"WARNING"|"INFO", path: string, message: string }`.  
+  c. JSON output schema for bulk validation: WHEN executing `outline-spec validate --all --json` (or `--changes` / `--specs`) THEN output a JSON object with the following shape: `items`: Array of objects with fields `{ id: string, type: "change"|"spec"|"markdown", valid: boolean, issues: Issue[], durationMs: number }` `summary`: Object `{ totals: { items: number, passed: number, failed: number }, byType: { change?: { items: number, passed: number, failed: number }, spec?: { items: number, passed: number, failed: number }, markdown?: { items: number, passed: number, failed: number } } }` `version`: String identifier for the schema (e.g., `"1.0"`) AND exit with code 1 if any `items[].valid === false` Where `Issue` follows the existing per-item validation report shape `{ level: "ERROR"|"WARNING"|"INFO", path: string, message: string }`, plus `file`, `line`, and `error` on Mermaid issues (see Mermaid diagrams).  
   d. Show validation progress: WHEN validating multiple items (--all, --changes, or --specs) THEN show progress indicator or status updates AND indicate which item is currently being validated AND display running count of passed/failed items  
   e. Concurrency limits for performance: WHEN validating multiple items THEN run validations with a bounded concurrency (e.g., 4–8 in parallel) AND ensure progress indicators remain responsive
 
@@ -65,5 +65,21 @@ Define `outline-spec validate` behavior for validating changes and specs with ac
   a. Required sections parsed with CRLF line endings: GIVEN a change proposal markdown saved with CRLF line endings AND the document contains `## Why` and `## What Changes` WHEN running `outline-spec validate <change-id>` THEN validation SHALL recognize the sections and NOT raise parsing errors
 
 13. Mermaid diagrams: Change validation SHALL report, as an error, each Mermaid code block in the change's Markdown files that Mermaid cannot parse, naming the file, the block's first line number, and Mermaid's parse message.  
-  a. Parsing uses the same Mermaid version the review page draws with, so a block that validates also draws.  
-  b. A change with no Mermaid blocks validates without loading Mermaid.
+  a. Parsing uses the same Mermaid version the review page draws with, so a block that validates also parses when the page draws it.  
+  b. A change or a set of `--markdown` files with no Mermaid blocks validates without loading Mermaid.  
+  c. With `--json`, each Mermaid issue carries `file`, `line`, and `error` beside its level, path, and message.  
+    i. `file` is the Markdown file: relative to the change folder, written with `/` on every platform, in change validation, and the path as given with `--markdown`.  
+    ii. `line` is the line of the block's opening fence; the line numbers inside Mermaid's message count from the line after it.  
+    iii. `error` is Mermaid's parse message on one line, the same text that follows `Mermaid diagram does not parse: ` in `message`.  
+  d. A Mermaid block is a fenced code block whose info string starts with the word `mermaid`, as in ```` ```mermaid ```` or ```` ```mermaid title ````, and that isn't inside another fenced block, so validation checks the blocks the review page draws and no others.
+
+14. Markdown file check: `outline-spec validate --markdown <file>...` SHALL report each Mermaid block in the named Markdown files that Mermaid cannot parse, as change validation does (see Mermaid diagrams).  
+  a. It works in any folder, with or without an `outline-spec/` folder, so a repository that doesn't use outline-spec can check its Markdown.  
+  b. Each file is resolved against the current directory with the platform's path rules and reported as it was given, so the check reads the same on macOS, Linux, and Windows.  
+  c. `--markdown` takes one or more files and may be repeated, so `--markdown a.md b.md` and a shell glob such as `--markdown docs/*.md` check every file named.  
+  d. A file that can't be read is reported as an error naming the file, with no `line` or `error`, and the other files are still checked.  
+  e. The command exits with code 1 when any file has an error, and with code 0 otherwise.  
+  f. When Mermaid itself can't load, the command reports that error with no items and exits with code 1, so a caller can tell a broken install from a broken diagram.  
+  g. With `--json`, the command prints the bulk validation shape (see Validation options and progress indication), with one item per file in the order given, whose `id` is the path as given and whose `type` is `markdown`.  
+  h. Without `--json`, the command marks each file as passing or failing and prints each failing block as `<file>:<line>` with Mermaid's message.  
+  i. `--markdown` with an item name or any other way of choosing what to validate fails, saying `--markdown` checks only the files it names, and checks nothing.

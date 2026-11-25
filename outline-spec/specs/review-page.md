@@ -18,6 +18,7 @@ A rendered page a developer reads to check a change before approving it.
   b. A file tab whose files are all missing is left off the page.  
   c. In the outline, struck text shows as removed and bold text in an edit shows as added, so edits read as a diff.  
   d. Mermaid code blocks render as diagrams fit to the tab's width; clicking one opens it in a lightbox the developer can zoom and pan, and Escape or a click outside closes it.  
+    i. A Mermaid block that doesn't draw, because Mermaid can't parse or draw it or couldn't load, shows its source under a short note saying the diagram didn't render.  
   e. A view tab shows a view the CLI computes; `spec-changes` is the one view.  
   g. In the outline, the label of each item a patch adds, one its live requirement doesn't have, shows as added, and so do the labels of that item's details.  
   h. A code block fenced with a language is syntax highlighted in that language, in colors that follow the page's light or dark theme.  

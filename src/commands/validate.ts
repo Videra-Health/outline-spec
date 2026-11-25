@@ -19,7 +19,7 @@ import { getSpecIds } from '../utils/item-discovery.js';
 import { getAvailableChanges } from './workflow/shared.js';
 import { nearestMatches } from '../utils/match.js';
 import { folderStyleNameProblem } from '../core/id.js';
-import { MERMAID_ISSUE } from '../core/validation/mermaid.js';
+import { checkMarkdownFiles, MERMAID_FIX_HINT, MERMAID_ISSUE } from '../core/validation/mermaid.js';
 import { specFile } from '../core/outline/specs.js';
 
 type ItemType = 'change' | 'spec';
@@ -29,6 +29,7 @@ interface ExecuteOptions {
   changes?: boolean;
   specs?: boolean;
   report?: string;
+  markdown?: string[];
   type?: string;
   strict?: boolean;
   json?: boolean;
@@ -43,7 +44,7 @@ interface BulkItemResult {
   id: string;
   type: ItemType;
   valid: boolean;
-  issues: { level: 'ERROR' | 'WARNING' | 'INFO'; path: string; message: string }[];
+  issues: ValidationIssue[];
   durationMs: number;
 }
 
@@ -77,6 +78,11 @@ export function projectValidationFindings<T extends BulkItemResult>(full: BulkVa
 
 export class ValidateCommand {
   async execute(itemName: string | undefined, options: ExecuteOptions = {}): Promise<void> {
+    // Named Markdown files need no outline-spec root, so this runs before one is resolved.
+    if (options.markdown) {
+      await this.runMarkdownCheck(itemName, options.markdown, options);
+      return;
+    }
     const bulk = options.all || options.changes || options.specs;
     let findingsScope: BulkScope | undefined;
     if (options.report !== undefined) {
@@ -361,7 +367,7 @@ export class ValidateCommand {
       bullets.push('- Move each nested change directly under outline-spec/changes/, folding the namespace into its name');
       bullets.push('- Only specs may be nested by domain; change directories are always flat');
     } else if (type === 'change' && issues.some(i => i.message.startsWith(MERMAID_ISSUE))) {
-      bullets.push('- Fix each Mermaid block so it parses; a name that is a Mermaid keyword (loop, end, alt, opt, note) is a common cause');
+      bullets.push(`- ${MERMAID_FIX_HINT}`);
       if (issues.some(i => !i.message.startsWith(MERMAID_ISSUE) && i.level === 'ERROR')) {
         bullets.push('- Edit outline.md so its "## Requirements" items match the live specs (struck text, labels, "(patch)")');
       }
@@ -539,6 +545,39 @@ export class ValidateCommand {
       this.printBulkDetails(results, root);
     }
 
+    process.exitCode = failed > 0 ? 1 : 0;
+  }
+
+  private async runMarkdownCheck(itemName: string | undefined, files: string[], options: ExecuteOptions): Promise<void> {
+    const flags: Array<[keyof ExecuteOptions, string]> = [
+      ['all', '--all'], ['changes', '--changes'], ['specs', '--specs'], ['type', '--type'], ['report', '--report'], ['store', '--store'], ['storePath', '--store-path'],
+    ];
+    const others = [
+      ...(itemName !== undefined ? [`the item name '${itemName}'`] : []),
+      ...flags.filter(([key]) => options[key] !== undefined && options[key] !== false).map(([, flag]) => flag),
+    ];
+    if (others.length) {
+      throw new Error(`--markdown checks only the files it names, so it can't be combined with ${others.join(', ')}. To check several files, list them after --markdown or repeat --markdown before each.`);
+    }
+
+    const results = await checkMarkdownFiles(files);
+    const items = results.map((r) => ({ id: r.file, type: 'markdown' as const, valid: r.issues.length === 0, issues: r.issues, durationMs: r.durationMs }));
+    const failed = items.filter((i) => !i.valid).length;
+    const counts = { items: items.length, passed: items.length - failed, failed };
+
+    if (options.json) {
+      console.log(JSON.stringify({ items, summary: { totals: counts, byType: { markdown: counts } }, version: '1.0' }, null, 2));
+    } else {
+      for (const item of items) {
+        if (item.valid) console.log(`✓ ${item.id}`);
+        else console.error(`✗ ${item.id}`);
+        for (const issue of item.issues) console.error(`  ✗ [${issue.level}] ${issue.path}: ${issue.message}`);
+      }
+      console.log(`Totals: ${counts.passed} passed, ${counts.failed} failed (${counts.items} file${counts.items === 1 ? '' : 's'})`);
+      if (items.some((i) => i.issues.some((issue) => issue.message.startsWith(MERMAID_ISSUE)))) {
+        console.error(`Next step: ${MERMAID_FIX_HINT}`);
+      }
+    }
     process.exitCode = failed > 0 ? 1 : 0;
   }
 }

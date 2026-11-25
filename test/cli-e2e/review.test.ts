@@ -57,6 +57,16 @@ describe('outline-spec review', () => {
     expect(existsSync(expected)).toBe(true);
   });
 
+  it("shows a diagram that doesn't draw as its source under a note, without Mermaid's own error graphic", async () => {
+    const r = await cli('review', 'c1', '--out', 'c1.html');
+    expect(r.exitCode).toBe(0);
+    const html = readFileSync(path.join(root, 'c1.html'), 'utf-8');
+    expect(html).toContain(`<p class="diagram-note">This diagram didn't render.</p><pre>`);
+    expect(html).toMatch(/if \(typeof window\.mermaid === 'undefined'\) \{\s*diagrams\.forEach\(failed\);/);
+    expect(html).toMatch(/catch \(e\) \{\s*failed\(d\);/);
+    expect(html).toContain('suppressErrorRendering: true');
+  });
+
   it('writes nothing when review-on excludes the workflow', async () => {
     write('config.yaml', 'schema: outline\nreview-on: [update]\n');
     const r = await cli('review', 'c1', '--for', 'propose', '--json', '--out', 'page.html');

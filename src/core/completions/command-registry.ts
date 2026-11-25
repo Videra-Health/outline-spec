@@ -110,6 +110,11 @@ export const COMMAND_REGISTRY: CommandDefinition[] = [
         takesValue: true,
         values: ['full', 'findings'],
       },
+      {
+        name: 'markdown',
+        description: 'Check the Mermaid blocks in these Markdown files instead',
+        takesValue: true,
+      },
       COMMON_FLAGS.type,
       COMMON_FLAGS.strict,
       COMMON_FLAGS.jsonValidation,

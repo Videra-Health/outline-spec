@@ -141,6 +141,8 @@ body { overflow-x: clip; }
 .diagram:hover, .diagram:focus-visible { border-color: var(--ink); outline: none; }
 .diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
 .diagram > pre { margin: 0; cursor: auto; }
+.diagram.failed { cursor: auto; }
+.diagram-note { margin: 0 0 0.5rem; color: var(--warn); font: 600 var(--step--1)/1.4 var(--font-body); }
 .lightbox { width: 96vw; height: 92vh; max-width: none; max-height: none; padding: 0; overflow: hidden; color: var(--fg); background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; }
 .lightbox::backdrop { background: rgb(0 0 0 / 0.55); }
 .lightbox .view { position: absolute; inset: 0; overflow: hidden; cursor: grab; touch-action: none; }
@@ -645,14 +647,20 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
   async function drawDiagrams() {
     if (!diagrams.length) return;
     lightbox.close();
+    const failed = (d) => {
+      d.classList.add('failed');
+      d.innerHTML = `<p class="diagram-note">This diagram didn't render.</p><pre>${escapeHtml(d.dataset.source)}</pre>`;
+    };
     if (typeof window.mermaid === 'undefined') {
-      diagrams.forEach((d) => { d.innerHTML = `<pre>${escapeHtml(d.dataset.source)}</pre>`; });
+      diagrams.forEach(failed);
       return;
     }
     const css = getComputedStyle(document.documentElement);
     const v = (name) => css.getPropertyValue(name).trim();
     mermaid.initialize({
       startOnLoad: false,
+      // Otherwise a failed render leaves Mermaid's error graphic at the bottom of the page.
+      suppressErrorRendering: true,
       securityLevel: 'strict',
       theme: 'base',
       fontFamily: v('--font-body'),
@@ -668,10 +676,11 @@ del, .seg-del { color: var(--del-fg); background: var(--del-bg); text-decoration
     for (const [i, d] of diagrams.entries()) {
       try {
         const { svg } = await mermaid.render(`diagram-${i}-${Date.now()}`, d.dataset.source);
+        d.classList.remove('failed');
         d.innerHTML = svg;
         openable(d);
       } catch (e) {
-        d.innerHTML = `<pre>${escapeHtml(d.dataset.source)}</pre>`;
+        failed(d);
       }
     }
   }

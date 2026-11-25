@@ -530,6 +530,7 @@ program
   .option('--changes', 'Validate all changes')
   .option('--specs', 'Validate all specs')
   .option('--report <full|findings>', 'Select bulk report content: full|findings; combine with --json for JSON')
+  .option('--markdown <file...>', 'Check the Mermaid blocks in these Markdown files instead (repeatable; no outline-spec/ folder needed)', (v: string, prev: string[] | undefined) => [...(prev ?? []), v])
   .option('--type <type>', 'Specify item type when ambiguous: change|spec')
   .option('--strict', 'Enable strict validation mode')
   .option('--json', 'Output validation results as JSON')
@@ -537,7 +538,7 @@ program
   .option('--no-interactive', 'Disable interactive prompts')
   .option('--store <id>', STORE_OPTION_DESCRIPTION)
   .addOption(hiddenStorePathOption())
-  .action(async (itemName?: string, options?: { all?: boolean; changes?: boolean; specs?: boolean; report?: string; type?: string; strict?: boolean; json?: boolean; noInteractive?: boolean; concurrency?: string; store?: string; storePath?: string }) => {
+  .action(async (itemName?: string, options?: { all?: boolean; changes?: boolean; specs?: boolean; report?: string; markdown?: string[]; type?: string; strict?: boolean; json?: boolean; noInteractive?: boolean; concurrency?: string; store?: string; storePath?: string }) => {
     try {
       const { ValidateCommand } = await import('../commands/validate.js');
       const validateCommand = new ValidateCommand();

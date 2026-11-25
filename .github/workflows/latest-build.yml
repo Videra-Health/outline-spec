@@ -30,11 +30,20 @@ jobs:
           corepack enable
           pnpm install --frozen-lockfile
           pnpm build
+      # The review page's Mermaid must match the validator's, and `validate --markdown` must work from the packed CLI.
+      - name: Check Mermaid
+        run: pnpm exec vitest run test/core/mermaid-version.test.ts test/cli-e2e/validate-markdown.test.ts
       - name: Pack with runtime dependencies
         run: |
           pnpm pack --pack-destination "$RUNNER_TEMP"
           npm install -g --prefix "$RUNNER_TEMP/pkg" "$RUNNER_TEMP"/outline-spec-*.tgz
           "$RUNNER_TEMP/pkg/bin/outline-spec" --version
+          # The shipped tree must load jsdom and Mermaid.
+          "$RUNNER_TEMP/pkg/bin/outline-spec" validate --markdown test/fixtures/markdown-mermaid/good.md
+          if "$RUNNER_TEMP/pkg/bin/outline-spec" validate --markdown test/fixtures/markdown-mermaid/bad.md --json > "$RUNNER_TEMP/bad.json"; then
+            echo "validate --markdown passed a diagram that doesn't parse" >&2; exit 1
+          fi
+          grep -q '"error": "Parse error' "$RUNNER_TEMP/bad.json"
           git rev-parse HEAD > "$RUNNER_TEMP/pkg/COMMIT"
           tar -czf "$RUNNER_TEMP/outline-spec.tar.gz" -C "$RUNNER_TEMP/pkg" .
       - name: Replace the latest release
