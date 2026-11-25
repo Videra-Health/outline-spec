@@ -3,8 +3,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// The validator parses with the `mermaid` dependency and the review page draws with the CDN build, so a block
-// that passes `validate` only draws when the two are the same version.
+// validate parses with the mermaid dependency and the review page draws with the CDN build, so they must match.
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const TEMPLATE = path.join(ROOT, 'schemas', 'outline', 'templates', 'review.html');
 

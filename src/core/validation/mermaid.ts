@@ -1,4 +1,4 @@
-/** Finds Mermaid blocks in Markdown that Mermaid can't parse: a change's files, or any files named on the command line. */
+/** Finds Mermaid blocks in Markdown that Mermaid can't parse. */
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { ValidationIssue } from './types.js';
@@ -8,10 +8,7 @@ export const MERMAID_FIX_HINT = 'Fix each Mermaid block so it parses; a name tha
 
 const OPEN = /^\s*(`{3,}|~{3,})(.*)$/;
 
-/**
- * Each fenced mermaid block in `markdown`, with the 1-based line of its opening fence: the blocks the review page draws.
- * A block counts when its info string's first word is `mermaid`, and a fence inside another fenced block is that block's text.
- */
+/** Each fenced mermaid block in `markdown`, with the 1-based line of its opening fence, as the review page finds them. */
 export function mermaidBlocks(markdown: string): Array<{ line: number; source: string }> {
   const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
   const blocks: Array<{ line: number; source: string }> = [];
@@ -19,7 +16,7 @@ export function mermaidBlocks(markdown: string): Array<{ line: number; source: s
     const open = OPEN.exec(lines[i]);
     if (!open) continue;
     const [, fence, info] = open;
-    // A backtick fence's info string can't hold a backtick; such a line is inline code, not a fence.
+    // A backtick fence's info string can't contain a backtick (CommonMark).
     if (fence[0] === '`' && info.includes('`')) continue;
     const close = new RegExp(`^\\s*${fence[0]}{${fence.length},}\\s*$`);
     const body: string[] = [];
@@ -51,7 +48,7 @@ function loadParser(): Promise<Parse> {
 }
 
 /** Mermaid's message on one line, without the caret line that points into the block. */
-function parseMessage(error: unknown): string {
+function oneLine(error: unknown): string {
   return String((error as Error)?.message ?? error).split('\n').map((l) => l.trim()).filter((l) => l && !/^-*\^$/.test(l)).join(' ');
 }
 
@@ -65,7 +62,7 @@ export async function mermaidIssuesIn(file: string, text: string): Promise<Valid
     try {
       await parse(b.source);
     } catch (error) {
-      const detail = parseMessage(error);
+      const detail = oneLine(error);
       issues.push({ level: 'ERROR', path: `${file}:${b.line}`, message: `${MERMAID_ISSUE}: ${detail}`, file, line: b.line, error: detail });
     }
   }
@@ -102,10 +99,7 @@ export interface MarkdownFileResult {
   durationMs: number;
 }
 
-/**
- * Checks each named Markdown file's Mermaid blocks, in the order given. Each path resolves against `cwd` and is reported as given;
- * a file that can't be read is one error naming it. When Mermaid itself can't load, this rejects.
- */
+/** Checks each file's Mermaid blocks, in the order given; rejects when Mermaid can't load. */
 export async function checkMarkdownFiles(files: string[], cwd = process.cwd()): Promise<MarkdownFileResult[]> {
   const results: MarkdownFileResult[] = [];
   for (const file of files) {
@@ -114,7 +108,7 @@ export async function checkMarkdownFiles(files: string[], cwd = process.cwd()): 
     try {
       text = await fs.readFile(path.resolve(cwd, file), 'utf-8');
     } catch (error) {
-      const reason = (error as NodeJS.ErrnoException)?.code === 'ENOENT' ? 'no such file' : parseMessage(error);
+      const reason = (error as NodeJS.ErrnoException)?.code === 'ENOENT' ? 'no such file' : oneLine(error);
       results.push({ file, issues: [{ level: 'ERROR', path: file, message: `Cannot read ${file}: ${reason}`, file }], durationMs: Date.now() - start });
       continue;
     }
