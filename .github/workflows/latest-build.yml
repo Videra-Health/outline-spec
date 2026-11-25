@@ -30,7 +30,7 @@ jobs:
           corepack enable
           pnpm install --frozen-lockfile
           pnpm build
-      # The review page's Mermaid must match the validator's, and pr-page.yml depends on validate --markdown.
+      # The review page's Mermaid must match the validator's, and `validate --markdown` must work from the packed CLI.
       - name: Check Mermaid
         run: pnpm exec vitest run test/core/mermaid-version.test.ts test/cli-e2e/validate-markdown.test.ts
       - name: Pack with runtime dependencies
